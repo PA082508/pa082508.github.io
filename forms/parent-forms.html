@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CACFP Parent Forms — Play Academy</title>
+<style>
+  /* ============================================================
+     CACFP Parent Form Packet — index / progress page
+     v1.0 · 2026-06-11
+     ============================================================ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a1a;
+    padding: 20px 14px;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; color: #555; font-size: 13px; margin-bottom: 18px; line-height: 1.4; }
+
+  .card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border: 1px solid #d8dbe0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow .15s;
+  }
+  .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+  .num {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 2px solid #1a56a0;
+    color: #1a56a0;
+    font-weight: bold;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+  }
+  .card.done .num {
+    border-color: #1a7a3a;
+    background: #1a7a3a;
+    color: #fff;
+  }
+  .info { flex: 1; }
+  .info .t { font-weight: bold; font-size: 15px; }
+  .info .d { font-size: 12.5px; color: #666; margin-top: 2px; line-height: 1.35; }
+  .badge {
+    font-size: 12px;
+    font-weight: bold;
+    color: #1a7a3a;
+    flex: 0 0 auto;
+  }
+  .card:not(.done) .badge { color: #1a56a0; }
+
+  .hint {
+    background: #eef4ff;
+    border: 1px solid #c4d4ee;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: #2a4a7a;
+    padding: 10px 12px;
+    line-height: 1.45;
+    margin: 18px 0 14px;
+  }
+
+  .actions { text-align: center; }
+  .actions button {
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 16px;
+    border: 1px solid #888;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+  }
+  #cleared { color: #1a7a3a; font-size: 13px; font-weight: bold; margin-top: 8px; display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>CACFP Parent Forms</h1>
+  <div class="sub">Play Academy Child Care Center<br>
+    Please complete the forms that apply to your child. Shared information
+    fills in automatically after the first form.</div>
+
+  <a class="card" href="./special-diet-form.html" data-form="special_diet">
+    <div class="num">1</div>
+    <div class="info">
+      <div class="t">Special Diet Form</div>
+      <div class="d">Contact information + food accommodations. The medical section is completed by your child&rsquo;s health care provider.</div>
+    </div>
+    <div class="badge"></div>
+  </a>
+
+  <a class="card" href="./fluid-milk-substitution.html" data-form="milk_substitution">
+    <div class="num">2</div>
+    <div class="info">
+      <div class="t">Fluid Milk Substitution</div>
+      <div class="d">Request a non-dairy beverage instead of fluid milk.</div>
+    </div>
+    <div class="badge"></div>
+  </a>
+
+  <a class="card" href="./infant-meals-preference.html" data-form="infant_meals">
+    <div class="num">3</div>
+    <div class="info">
+      <div class="t">Infant Meals &mdash; Parent Preference Letter</div>
+      <div class="d">For infants under one year of age: who provides formula and solid foods.</div>
+    </div>
+    <div class="badge"></div>
+  </a>
+
+  <div class="hint">
+    Your information stays on this device only and is cleared automatically
+    after 90 minutes. Filling out forms for another child or family? Tap
+    &ldquo;Start new family&rdquo; below first.
+  </div>
+
+  <div class="actions">
+    <button id="btnNewFamily">Start new family</button>
+    <div id="cleared">&#10003; Shared data cleared</div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const PACKET_KEY = 'cacfp_packet_v1';
+  const PACKET_TTL_MS = 90 * 60 * 1000;
+
+  function packetLoad() {
+    try {
+      const raw = localStorage.getItem(PACKET_KEY);
+      if (!raw) return null;
+      const o = JSON.parse(raw);
+      if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) {
+        localStorage.removeItem(PACKET_KEY);
+        return null;
+      }
+      return o;
+    } catch (e) { return null; }
+  }
+
+  /* keep the original numbers for not-done cards */
+  document.querySelectorAll('.card').forEach((card, i) => {
+    card.dataset.n = String(i + 1);
+  });
+  function refreshSafe() {
+    const o = packetLoad();
+    const done = (o && o.done) || {};
+    document.querySelectorAll('.card').forEach(card => {
+      const isDone = !!done[card.dataset.form];
+      card.classList.toggle('done', isDone);
+      card.querySelector('.num').innerHTML = isDone ? '&#10003;' : card.dataset.n;
+      card.querySelector('.badge').textContent = isDone ? 'Completed' : 'Fill out';
+    });
+  }
+
+  document.getElementById('btnNewFamily').addEventListener('click', () => {
+    try { localStorage.removeItem(PACKET_KEY); } catch (e) {}
+    refreshSafe();
+    const c = document.getElementById('cleared');
+    c.style.display = 'block';
+    setTimeout(() => { c.style.display = 'none'; }, 2500);
+  });
+
+  refreshSafe();
+  window.addEventListener('focus', refreshSafe);
+  window.addEventListener('pageshow', refreshSafe);
+})();
+</script>
+</body>
+</html>
