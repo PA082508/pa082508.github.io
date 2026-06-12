@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Official CACFP Forms, Now Digital — Play Academy</title>
+<style>
+  :root {
+    --ink: #14213d;
+    --accent: #1a56a0;
+    --green: #1a7a3a;
+    --paper: #ffffff;
+    --soft: #f0f4fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--ink);
+    background: #e8e8e8;
+    line-height: 1.45;
+  }
+  .sheet {
+    width: 8.5in;
+    min-height: 11in;
+    margin: 16px auto;
+    padding: 0.55in 0.6in;
+    background: var(--paper);
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- Hero ---------- */
+  .eyebrow {
+    font-size: 10pt;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: bold;
+  }
+  h1 {
+    font-size: 22pt;
+    line-height: 1.12;
+    margin: 6px 0 8px;
+  }
+  h1 .em { color: var(--accent); }
+  .lede { font-size: 11pt; color: #43506b; max-width: 6.4in; }
+
+  .hero-rule {
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    border-radius: 2px;
+    margin: 12px 0 13px;
+  }
+
+  /* ---------- Benefit grid ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px 12px;
+    margin-bottom: 13px;
+  }
+  .cell {
+    background: var(--soft);
+    border-radius: 8px;
+    padding: 8px 11px;
+  }
+  .cell h3 { font-size: 11.5pt; margin-bottom: 3px; }
+  .cell h3 .ico { color: var(--green); margin-right: 6px; }
+  .cell p { font-size: 9pt; color: #43506b; }
+
+  /* ---------- Numbers strip ---------- */
+  .strip {
+    display: flex;
+    border: 1px solid #d4dbe7;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 13px;
+  }
+  .strip .stat {
+    flex: 1;
+    text-align: center;
+    padding: 7px 6px;
+    border-right: 1px solid #d4dbe7;
+  }
+  .strip .stat:last-child { border-right: none; }
+  .strip .big { font-size: 17pt; font-weight: bold; color: var(--accent); }
+  .strip .small { font-size: 9pt; color: #43506b; }
+
+  /* ---------- How it works ---------- */
+  h2 { font-size: 13pt; margin: 2px 0 8px; }
+  .flow { display: flex; gap: 10px; margin-bottom: 13px; }
+  .step {
+    flex: 1;
+    border-top: 3px solid var(--accent);
+    padding: 6px 4px 0;
+    font-size: 9pt;
+    color: #43506b;
+  }
+  .step b { display: block; color: var(--ink); font-size: 10pt; margin-bottom: 2px; }
+
+  /* ---------- QR section ---------- */
+  .qr-sec {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    background: var(--soft);
+    border-radius: 8px;
+    padding: 9px 14px;
+    margin-bottom: 13px;
+  }
+  .qr-sec img {
+    flex: 0 0 1.3in;
+    width: 1.3in; height: 1.3in;
+    background: #fff;
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    padding: 5px;
+  }
+  .qr-sec h3 { font-size: 12pt; margin-bottom: 3px; }
+  .qr-sec p { font-size: 9pt; color: #43506b; }
+  .qr-sec .url { font-size: 8.5pt; color: #8a93a6; margin-top: 4px; word-break: break-all; }
+
+  /* ---------- Compliance note ---------- */
+  .compliance {
+    background: #fff;
+    border: 1px solid var(--green);
+    border-left: 6px solid var(--green);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 9.5pt;
+    margin-bottom: 13px;
+  }
+  .compliance b { color: var(--green); }
+
+  /* ---------- Footer ---------- */
+  .cta {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-top: 1px solid #d4dbe7;
+    padding-top: 12px;
+  }
+  .cta .org { font-weight: bold; font-size: 11pt; }
+  .cta .sub { font-size: 9.5pt; color: #43506b; }
+  .cta .right { text-align: right; font-size: 9.5pt; color: #43506b; }
+
+  .toolbar {
+    max-width: 8.5in; margin: 14px auto 0;
+    font-family: Arial, sans-serif; font-size: 13px;
+    display: flex; gap: 10px;
+  }
+  .toolbar button {
+    font: inherit; padding: 6px 14px; border: 1px solid #888;
+    border-radius: 4px; background: var(--accent); color: #fff; cursor: pointer;
+  }
+
+  @page { size: letter portrait; margin: 0.5in 0.55in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none !important; }
+    .sheet { width: auto; min-height: 10in; margin: 0; padding: 0; box-shadow: none; }
+    .cell, .strip, .compliance { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button onclick="window.print()">Print / Save PDF</button>
+</div>
+
+<div class="sheet">
+
+  <div class="eyebrow">Play Academy Child Care Center &middot; CACFP Compliance Platform</div>
+  <h1>Official CACFP forms.<br><span class="em">Now digital, signed, and filed in seconds.</span></h1>
+  <p class="lede">Every state and USDA form your families and staff already know &mdash;
+  pixel-identical to the originals &mdash; completed online, e-signed on any phone, and delivered
+  straight into a secure database. No paper. No retyping. No missing signatures.</p>
+
+  <div class="hero-rule"></div>
+
+  <div class="grid">
+    <div class="cell">
+      <h3><span class="ico">&#10003;</span>100% official formatting</h3>
+      <p>Borders, fonts, checkboxes, and every word of the legal text match the state originals.
+      The Print button produces an audit-ready document indistinguishable from the paper form.</p>
+    </div>
+    <div class="cell">
+      <h3><span class="ico">&#10003;</span>E-signature, right on the screen</h3>
+      <p>Parents and medical providers sign with a finger or mouse. The signature is stored with
+      the record &mdash; no print-sign-scan cycle, no chasing missing signatures.</p>
+    </div>
+    <div class="cell">
+      <h3><span class="ico">&#10003;</span>Smart form packet</h3>
+      <p>Fill one form and the rest pre-fill themselves: child&rsquo;s name, birthdate, center,
+      and contacts carry over automatically. A family completes the whole packet in minutes.</p>
+    </div>
+    <div class="cell">
+      <h3><span class="ico">&#10003;</span>Guided, mistake-proof entry</h3>
+      <p>Calendars for dates (today&rsquo;s date set automatically), phone numbers formatted to
+      (216)&nbsp;555-1234 as you type, vendor and center names suggested from your real data,
+      &ldquo;check one&rdquo; sections enforced.</p>
+    </div>
+    <div class="cell">
+      <h3><span class="ico">&#10003;</span>Straight into your database</h3>
+      <p>Submit sends every record to a secure cloud database the moment it is signed &mdash;
+      ready for claims, reviews, and reporting. Cost worksheets even total themselves.</p>
+    </div>
+    <div class="cell">
+      <h3><span class="ico">&#10003;</span>Works on anything</h3>
+      <p>Any phone, tablet, or computer. Nothing to install &mdash; parents open one link or scan
+      a QR code at the front desk.</p>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="stat"><div class="big">1 link</div><div class="small">opens the whole parent packet</div></div>
+    <div class="stat"><div class="big">0 retyping</div><div class="small">shared data auto-fills every form</div></div>
+    <div class="stat"><div class="big">90 min</div><div class="small">auto-erase of shared data on kiosk devices</div></div>
+    <div class="stat"><div class="big">100%</div><div class="small">match to official state forms</div></div>
+  </div>
+
+  <h2>How it works</h2>
+  <div class="flow">
+    <div class="step"><b>1 &middot; Open</b>Parent scans the QR code and sees the form packet with progress check marks.</div>
+    <div class="step"><b>2 &middot; Fill &amp; sign</b>Guided fields, auto-fill, and an on-screen signature box.</div>
+    <div class="step"><b>3 &middot; Submit</b>The record lands in the secure database; the next form opens pre-filled.</div>
+    <div class="step"><b>4 &middot; File</b>Staff print official-format PDFs for the claim file whenever needed.</div>
+  </div>
+
+  <div class="qr-sec">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAewAAAHsAQAAAAA4UaPNAAADYElEQVR4nO2dQW7rMAxEhx/Zyzfo/Y/VG0gn4F9QpCgnXbRN2xAeITAcWw+2AIYYkZQiim+08e87NECcOHHixH8ah2ry9E3tq6pqB5quj/Vse+deeuzEL4w3tTavmWHbcYi+i3aoKobYDyF1foGXJ078S7iIyDFPAMgBs3DtkGN+wslH5xd5eeLEv4sPASBvOm3bHT5GmPpPPp048Z/Fb+cLrWMcADBEAQEU0CE6jk3MP+fpxIn/Pj5tflnzEDQVQMchraN1aV2ail08da49duIXxodYA5Jof7vz6k1N56/Or/DyxIl/rt2w+W0A0CGncx2imGpn71x67MSvie9R9+ZheWDGJ08t91TG54mXx7W7pGkKQEQ0Wk+/hQ59p7YhXhT3lCuQ861b7mnPvUY35mGJ18S3WOXU7YCYn28dIentunUDdJ6XHjvxa+LYpEs4cFXT9usucI7P088TL4nfAEjr04EP0XFE3EYsJzUOBWA+H4B9fc7TiRP/fXzGbUK3zylqT3fj2BPV6eeJF8XTHPZuPmvnD4SNT29p88QL4ljBmVQkH3Zuv4Lw81uEh36eeEncZ6ne5tS1e04qLRvZJrbzWHrsxK+J3+ARSLQeVWRWUSatR/QSHrGMugRp/a9fnjjxr7QHej6tEJw30iQ356ro54kXxJNWz3buM9YoOZhtlzq0eeIF8eXMs6RHrj0Lha9JzFPPEy+Oq6ocEJGp21VzOb0Vns0rvkJQjqc9nTjxX8Rv8CVRs4qmqQyxrCvywqi8GYLf/euXJ078K23Lw6aTmMkCd/KedZXEC+OpriAyUH0vJ87heqxz6nniNXE89PAPfX44+Yjt0OaJF8S9ft4rKnO58BT5UVQfN8ahth9I7bETvyaeCmzais972aRX43wQqKefJ14Q930PzODdmUuY9zgAuFefERtZzr/02IlfE3+0L7EnoYCVhzoLflDPEy+KL3vOGdilZ1J8civFYR6WeFV8zmEFK9OUqyvtio6Zn51HX0v41y9PnPgz8KZWeLA24n5TOVIFmgsb1h4Qr4nf7Uuc6uRX/XzrErPXuRKcezoRL4qf9yV2VdMRlu/XLXojrVvcnvvbEC+Mp62GV2llR/yZDvy/RSLIw32JiZfFt8Trpxv/K5M4ceLEXx3/D1I5+n3maYeHAAAAAElFTkSuQmCC" alt="QR code to the parent form packet">
+    <div>
+      <h3>One QR code replaces the entire paper packet</h3>
+      <p>Posted at the front desk and included in the welcome packet: parents scan it with a
+      regular phone camera and the whole form packet opens instantly &mdash; nothing to
+      download, nothing to hand back, nothing to scan into the file. Enrollment paperwork
+      that took days of back-and-forth now finishes before the tour is over.</p>
+      <div class="url">pa082508.github.io/forms/1-data-sources/parent-forms.html</div>
+    </div>
+  </div>
+
+  <div class="compliance">
+    <b>Built for compliance.</b> Forms reproduce the exact legal language of the Ohio CACFP and
+    USDA originals, including required civil-rights statements &mdash; revision numbers and all.
+    E-signatures are captured as drawn signatures attached to each record with a
+    timestamp &mdash; consistent with the federal E-SIGN Act, Ohio&rsquo;s Uniform Electronic
+    Transactions Act, and USDA guidance on electronic transactions in Child Nutrition Programs
+    (CACFP 07-2007). Data stays on the family&rsquo;s device until Submit, and shared auto-fill
+    details erase themselves automatically.
+  </div>
+
+  <div class="cta">
+    <div>
+      <div class="org">Play Academy Child Care Center</div>
+      <div class="sub">Pearl &middot; Parma Heights &nbsp;&bull;&nbsp; Alpha &middot; Highland Heights &nbsp;&bull;&nbsp; Ridge &middot; Wickliffe</div>
+    </div>
+    <div class="right">CACFP Compliance Platform &middot; 2026<br>Forms: Special Diet &middot; Milk Substitution &middot; Infant Meals &middot; Cost Worksheet</div>
+  </div>
+
+</div>
+</body>
+</html>

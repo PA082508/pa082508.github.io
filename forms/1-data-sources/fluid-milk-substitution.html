@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parent/Guardian Request for Fluid Milk Substitution</title>
+<style>
+  /* ============================================================
+     PARENT/GUARDIAN REQUEST FOR FLUID MILK SUBSTITUTION
+     (USDA / Ohio CACFP · Revised 8/2025)
+     Exact replica · date picker · e-signature pad · Supabase
+     v2.1 · 2026-06-11
+     ============================================================ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    color: #000;
+    background: #e8e8e8;
+  }
+
+  .sheet {
+    width: 8.5in;
+    min-height: 11in;
+    margin: 16px auto;
+    padding: 0.45in 0.55in;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-title {
+    text-align: center;
+    font-size: 17pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1.25;
+    margin: 4px 0 18px;
+  }
+
+  p.intro { font-size: 11pt; line-height: 1.3; margin-bottom: 12px; }
+
+  table { border-collapse: collapse; width: 100%; }
+
+  .nutrients-tbl {
+    width: 88%;
+    margin: 4px auto 26px;
+    font-size: 11pt;
+  }
+  .nutrients-tbl td { border: 1px solid #000; padding: 2px 8px; vertical-align: top; }
+  .nutrients-tbl .lead { line-height: 1.3; }
+  .nutrients-tbl .item .ltr { display: inline-block; width: 22px; }
+
+  .block { width: 100%; margin-bottom: 26px; font-size: 11pt; border: 2px solid #000; }
+  .block td { border: 1px solid #000; padding: 4px 8px; vertical-align: top; line-height: 1.3; }
+  .block .hdr td { font-weight: bold; }
+  .block td.cb { width: 0.85in; text-align: center; vertical-align: middle; }
+  .block td.cb input[type="checkbox"] { width: 15px; height: 15px; }
+
+  input.fill, textarea.fill {
+    width: 100%;
+    border: none;
+    outline: none;
+    font: inherit;
+    background: transparent;
+    padding: 1px 2px;
+  }
+  textarea.fill { resize: none; display: block; }
+  input.fill:focus, textarea.fill:focus { background: #eef4ff; }
+
+  /* ---------- Signature & date row ---------- */
+  .sig-cell { font-weight: bold; position: relative; }
+
+  .sig-wrap { display: flex; align-items: flex-end; gap: 6px; }
+  canvas#sigPad {
+    flex: 1;
+    height: 52px;
+    cursor: crosshair;
+    touch-action: none;
+    background: transparent;
+  }
+  .sig-clear {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: normal;
+    padding: 2px 7px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+
+  input.date-fill {
+    font: inherit;
+    font-weight: normal;
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 75%;
+    padding: 1px 4px;
+  }
+  input.date-fill:focus { background: #eef4ff; }
+
+  .usda-footer {
+    margin-top: auto;
+    font-size: 11pt;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .toolbar {
+    max-width: 8.5in; margin: 14px auto 0;
+    font-family: Arial, sans-serif; font-size: 13px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .toolbar button {
+    font: inherit; padding: 6px 14px; border: 1px solid #888;
+    border-radius: 4px; background: #fff; cursor: pointer;
+  }
+  .toolbar button.primary { background: #1a7a3a; color: #fff; border-color: #1a7a3a; }
+  .toolbar button.blue    { background: #1a56a0; color: #fff; border-color: #1a56a0; }
+  #status { color: #666; }
+  #status.ok    { color: #1a7a3a; font-weight: bold; }
+  #status.error { color: #b00020; font-weight: bold; }
+
+  @page { size: letter portrait; margin: 0.45in 0.55in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar, .sig-clear { display: none !important; }
+    .sheet { width: auto; min-height: 10in; margin: 0; padding: 0; box-shadow: none; }
+    input.fill:focus, textarea.fill:focus, input.date-fill:focus { background: transparent; }
+    input.date-fill::-webkit-calendar-picker-indicator { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button id="btnSubmit" class="primary">Submit</button>
+  <button id="btnReset">Reset</button>
+  <button id="btnNewFamily">New family</button>
+  <button id="btnPrint" class="blue">Print / Save PDF</button>
+  <span id="status"></span>
+</div>
+
+<div class="sheet">
+
+  <div class="form-title">Parent/Guardian Request for Fluid Milk<br>Substitution</div>
+
+  <p class="intro">
+    Parents or guardians may now request in writing that non-dairy beverages be substituted for fluid milk for their
+    children with special dietary needs without providing statement from a recognized medical authority.&nbsp;
+    However, fluid milk substitutions requested are at the <b>option</b> and expense of the facility/center.
+  </p>
+
+  <p class="intro">
+    The non-dairy beverage provided must be nutritionally equivalent to fluid milk and meet the nutritional
+    standards set by the U.S. Department of Agriculture (USDA) for Child Nutrition Programs in order for the
+    facility/center to claim reimbursement for the meal through the Child and Adult Care Food Program (CACFP).
+  </p>
+
+  <table class="nutrients-tbl">
+    <tr>
+      <td colspan="3" class="lead">
+        A non-dairy beverage product must at a minimum contain the following nutrient levels per
+        cup to qualify as an acceptable milk substitution:
+      </td>
+    </tr>
+    <tr>
+      <td class="item"><span class="ltr">a.</span>Calcium 276 mg</td>
+      <td class="item"><span class="ltr">d.</span>Vitamin D 2.5 mcg</td>
+      <td class="item"><span class="ltr">g.</span>Potassium 349 mg</td>
+    </tr>
+    <tr>
+      <td class="item"><span class="ltr">b.</span>Protein 8 g</td>
+      <td class="item"><span class="ltr">e.</span>Magnesium 24 mg</td>
+      <td class="item"><span class="ltr">h.</span>Riboflavin .44 mg</td>
+    </tr>
+    <tr>
+      <td class="item"><span class="ltr">c.</span>Vitamin A 150 mcg</td>
+      <td class="item"><span class="ltr">f.</span>Phosphorus 222 mg</td>
+      <td class="item"><span class="ltr">i.</span>Vitamin B-12 1.1 mcg</td>
+    </tr>
+  </table>
+
+  <!-- ============ Block 1: Center/Provider ============ -->
+  <table class="block">
+    <tr class="hdr">
+      <td colspan="2">To be completed by Child Care Center/Provider prior to distribution of form</td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        Name of Child Care Center/Provider:
+        <input type="text" class="fill" id="centerName" list="centerList" autocomplete="organization" style="margin-top:2px">
+        <datalist id="centerList">
+          <option value="Play Academy Child Care Center — Pearl (Parma Heights)">
+          <option value="Play Academy Child Care Center — Alpha (Highland Heights)">
+          <option value="Play Academy Child Care Center — Ridge (Wickliffe)">
+        </datalist>
+      </td>
+    </tr>
+    <tr>
+      <td class="cb"><input type="checkbox" id="centerProvides"></td>
+      <td>
+        This child care center/provider will provide the following non-dairy beverage which meets the
+        USDA-approved nutrient standards for a milk substitute: (list substitute(s))
+        <input type="text" class="fill" id="centerSubstitutes" style="margin-top:4px">
+      </td>
+    </tr>
+    <tr>
+      <td class="cb"><input type="checkbox" id="centerDeclines"></td>
+      <td>
+        This child care center/provider has chosen not to provide non-dairy beverages for the
+        substitution of fluid milk.
+      </td>
+    </tr>
+  </table>
+
+  <!-- ============ Block 2: Parent/Guardian ============ -->
+  <table class="block">
+    <tr class="hdr">
+      <td colspan="2">To be completed by Parent/Guardian</td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        Child&rsquo;s Full Name:
+        <input type="text" class="fill" id="childName" name="name" autocomplete="name" style="margin-top:2px">
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">
+        Identify the medical or other special dietary need that restricts the diet of your child (why your child
+        needs a non-dairy beverage as a milk substitute):
+        <textarea class="fill" id="dietaryNeed" rows="3" style="margin-top:4px"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td class="cb"><input type="checkbox" name="parent_choice" id="opt1" value="center_provided"></td>
+      <td>
+        I request that my child is served the non-dairy beverage which meets the USDA-approved
+        nutrient standards for a milk substitute that is provided by the center/provider as indicated
+        above.
+      </td>
+    </tr>
+    <tr>
+      <td class="cb"><input type="checkbox" name="parent_choice" id="opt2" value="parent_provided_compliant"></td>
+      <td>
+        I am aware that the center is not providing a non-dairy beverage for the substitution of fluid
+        milk.&nbsp; I will provide a non-dairy beverage for my child that meets the USDA-approved nutrient
+        standards for a milk substitute as stated above.
+      </td>
+    </tr>
+    <tr>
+      <td class="cb"><input type="checkbox" name="parent_choice" id="opt3" value="parent_provided_noncompliant"></td>
+      <td>
+        I will provide a non-dairy beverage for my child that does <b>not</b> meet the USDA-approved
+        nutrient standards for the substitution of fluid milk.&nbsp; I understand that the center cannot claim
+        meals that require milk unless I get written statement from a recognized medical authority.
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="padding:0; border:none">
+        <table style="width:100%">
+          <tr>
+            <td class="sig-cell" style="width:62%; border-left:none; border-bottom:none">
+              Signature of Parent/Guardian:
+              <div class="sig-wrap">
+                <canvas id="sigPad"></canvas>
+                <button type="button" class="sig-clear" id="sigClear">Clear</button>
+              </div>
+            </td>
+            <td class="sig-cell" style="border-right:none; border-bottom:none; vertical-align:top">
+              Date:
+              <input type="date" class="date-fill" id="signedDate">
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <div class="usda-footer">
+    <span>USDA is an equal opportunity provider, employer, and lender.</span>
+    <span>Revised 8/2025</span>
+  </div>
+
+</div>
+
+<script>
+/* ==============================================================
+   CONFIG — Supabase (MenuMaker)
+   Вставьте ANON key. Таблица: menumaker.milk_substitutions
+   (SQL в milk_substitution_tables.sql)
+   ============================================================== */
+const CONFIG = {
+  SUPABASE_URL:  'https://trrmyqfpxntmgxnqkikp.supabase.co',
+  SUPABASE_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko',
+  SCHEMA: 'menumaker',
+  TABLE:  'milk_substitutions'
+};
+
+(function () {
+  'use strict';
+
+  const $ = (sel) => document.querySelector(sel);
+  const status = (msg, cls) => {
+    const el = $('#status');
+    el.textContent = msg || '';
+    el.className = cls || '';
+  };
+
+  /* ==============================================================
+     Form packet — auto-fill shared data across the parent forms
+     (stored only in this browser, expires in 90 minutes)
+     ============================================================== */
+  const PACKET_KEY = 'cacfp_packet_v1';
+  const PACKET_TTL_MS = 90 * 60 * 1000;
+  const FORM_ID = 'milk_substitution';
+
+  function packetLoad() {
+    try {
+      const raw = localStorage.getItem(PACKET_KEY);
+      if (!raw) return null;
+      const o = JSON.parse(raw);
+      if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) {
+        localStorage.removeItem(PACKET_KEY);
+        return null;
+      }
+      return o;
+    } catch (e) { return null; }  /* storage unavailable - packet off */
+  }
+  function packetSave(fields) {
+    try {
+      const o = packetLoad() || { data: {}, done: {} };
+      Object.keys(fields).forEach(k => { if (fields[k]) o.data[k] = fields[k]; });
+      o.done = o.done || {};
+      o.done[FORM_ID] = true;
+      o.ts = Date.now();
+      localStorage.setItem(PACKET_KEY, JSON.stringify(o));
+    } catch (e) { /* best-effort */ }
+  }
+  function packetClear() {
+    try { localStorage.removeItem(PACKET_KEY); } catch (e) {}
+  }
+  function packetPrefill() {
+    const o = packetLoad();
+    if (!o) return;
+    const d = o.data || {};
+    let used = false;
+    if (d.center_name && !$('#centerName').value) { $('#centerName').value = d.center_name; used = true; }
+    if (d.child_name  && !$('#childName').value)  { $('#childName').value  = d.child_name;  used = true; }
+    if (used) status('\u2913 Auto-filled from a previous form \u2014 please verify', 'ok');
+  }
+
+  /* ---------- Date: auto-fill today ---------- */
+  function todayISO() {
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + mm + '-' + dd;
+  }
+  $('#signedDate').value = todayISO();
+  let dateTouched = false;
+  $('#signedDate').addEventListener('input', () => { dateTouched = true; });
+
+  /* ---------- E-signature pad ---------- */
+  const canvas = $('#sigPad');
+  const ctx = canvas.getContext('2d');
+  let drawing = false, hasInk = false;
+
+  function sizeCanvas() {
+    const ratio = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    /* preserve drawing on resize */
+    const prev = hasInk ? canvas.toDataURL() : null;
+    canvas.width = w * ratio;
+    canvas.height = h * ratio;
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#000';
+    if (prev) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, w, h);
+      img.src = prev;
+    }
+  }
+  sizeCanvas();
+  window.addEventListener('resize', sizeCanvas);
+
+  function pos(ev) {
+    const r = canvas.getBoundingClientRect();
+    return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+  }
+  canvas.addEventListener('pointerdown', (ev) => {
+    ev.preventDefault();
+    canvas.setPointerCapture(ev.pointerId);
+    drawing = true;
+    const p = pos(ev);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  });
+  canvas.addEventListener('pointermove', (ev) => {
+    if (!drawing) return;
+    ev.preventDefault();
+    const p = pos(ev);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    hasInk = true;
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(t =>
+    canvas.addEventListener(t, () => { drawing = false; }));
+
+  function clearSig() {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+    hasInk = false;
+  }
+  $('#sigClear').addEventListener('click', clearSig);
+
+  /* ---------- Mutually exclusive checkboxes ---------- */
+  const choiceBoxes = Array.from(document.querySelectorAll('input[name="parent_choice"]'));
+  choiceBoxes.forEach(cb => cb.addEventListener('change', () => {
+    if (cb.checked) choiceBoxes.forEach(o => { if (o !== cb) o.checked = false; });
+  }));
+  const cProvides = $('#centerProvides'), cDeclines = $('#centerDeclines');
+  cProvides.addEventListener('change', () => { if (cProvides.checked) cDeclines.checked = false; });
+  cDeclines.addEventListener('change', () => { if (cDeclines.checked) cProvides.checked = false; });
+
+  /* ---------- Collect / validate / submit ---------- */
+  function collectData() {
+    const choice = choiceBoxes.find(cb => cb.checked);
+    return {
+      center_name:          $('#centerName').value.trim(),
+      center_provides:      cProvides.checked,
+      center_substitutes:   $('#centerSubstitutes').value.trim(),
+      center_declines:      cDeclines.checked,
+      child_name:           $('#childName').value.trim(),
+      dietary_need:         $('#dietaryNeed').value.trim(),
+      parent_choice:        choice ? choice.value : null,
+      parent_signature_img: hasInk ? canvas.toDataURL('image/png') : null,
+      signed_date:          $('#signedDate').value || null
+    };
+  }
+
+  function validate(d) {
+    if (!d.child_name)           return 'Child\u2019s Full Name is required';
+    if (!d.parent_choice)        return 'Select one parent/guardian option';
+    if (!d.parent_signature_img) return 'Signature of Parent/Guardian is required \u2014 sign in the box';
+    if (!d.signed_date)          return 'Date is required';
+    return null;
+  }
+
+  async function submitForm() {
+    if (!dateTouched) $('#signedDate').value = todayISO();
+    const d = collectData();
+    const err = validate(d);
+    if (err) { status(err, 'error'); return; }
+
+    if (!CONFIG.SUPABASE_ANON) {
+      status('CONFIG.SUPABASE_ANON is empty — paste the anon key at the top of the file', 'error');
+      return;
+    }
+
+    status('Submitting\u2026');
+    try {
+      const res = await fetch(CONFIG.SUPABASE_URL + '/rest/v1/' + CONFIG.TABLE, {
+        method: 'POST',
+        headers: {
+          'apikey': CONFIG.SUPABASE_ANON,
+          'Authorization': 'Bearer ' + CONFIG.SUPABASE_ANON,
+          'Content-Type': 'application/json',
+          'Content-Profile': CONFIG.SCHEMA,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(d)
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(res.status + ': ' + t);
+      }
+      status('\u2713 Submitted', 'ok');
+      packetSave({
+        center_name: d.center_name,
+        child_name:  d.child_name
+      });
+    } catch (e) {
+      status('Submit failed \u2014 ' + e.message, 'error');
+    }
+  }
+
+  function resetForm() {
+    document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+    clearSig();
+    $('#signedDate').value = todayISO();
+    dateTouched = false;
+    status('Form cleared');
+  }
+
+  /* Optional prefill via URL: ?center=Pearl&sub=Silk%20Soy */
+  (function prefill() {
+    const p = new URLSearchParams(location.search);
+    if (p.get('center')) $('#centerName').value = p.get('center');
+    if (p.get('sub')) {
+      $('#centerSubstitutes').value = p.get('sub');
+      cProvides.checked = true;
+    }
+  })();
+
+  $('#btnSubmit').addEventListener('click', submitForm);
+  $('#btnReset').addEventListener('click', resetForm);
+  $('#btnPrint').addEventListener('click', () => window.print());
+
+  $('#btnNewFamily').addEventListener('click', () => {
+    packetClear();
+    resetForm();
+    status('Shared data cleared \u2014 ready for a new family');
+  });
+
+  packetPrefill();
+})();
+</script>
+</body>
+</html>

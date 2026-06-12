@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Use the QR Code — CACFP Parent Forms</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11.5pt; color: #14213d;
+         background: #e8e8e8; line-height: 1.45; }
+  .sheet { width: 8.5in; min-height: 11in; margin: 16px auto; padding: 0.6in 0.7in;
+           background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+  .org { font-size: 11pt; letter-spacing: 2px; text-transform: uppercase;
+         color: #1a56a0; font-weight: bold; text-align: center; }
+  h1 { font-size: 21pt; text-align: center; margin: 8px 0 4px; }
+  .sub { text-align: center; color: #43506b; font-size: 12pt; margin-bottom: 18px; }
+
+  .row { display: flex; gap: 28px; align-items: flex-start; margin-bottom: 18px; }
+  .qr-side { flex: 0 0 2.9in; text-align: center; }
+  .qr-side img { width: 2.7in; height: 2.7in; border: 3px solid #1a56a0;
+                 border-radius: 12px; padding: 10px; }
+  .qr-side .url { font-size: 9pt; color: #43506b; margin-top: 6px; word-break: break-all; }
+  .steps-side { flex: 1; }
+
+  .step { display: flex; gap: 12px; margin-bottom: 13px; }
+  .step .n { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%;
+             background: #1a56a0; color: #fff; font-weight: bold; font-size: 14pt;
+             display: flex; align-items: center; justify-content: center; }
+  .step .t b { display: block; font-size: 12pt; margin-bottom: 1px; }
+  .step .t { color: #43506b; font-size: 10.5pt; }
+
+  h2 { font-size: 13pt; color: #1a56a0; margin: 16px 0 8px;
+       border-bottom: 2px solid #1a56a0; padding-bottom: 3px; }
+  ul { margin-left: 20px; }
+  li { margin: 5px 0; font-size: 10.5pt; color: #43506b; }
+  li b { color: #14213d; }
+
+  .privacy { background: #eefaf0; border-left: 4px solid #1a7a3a;
+             padding: 8px 12px; margin-top: 14px; font-size: 10pt; color: #2a5a3a; }
+  .foot { text-align: center; font-size: 9.5pt; color: #8a93a6; margin-top: 18px; }
+
+  .toolbar { max-width: 8.5in; margin: 14px auto 0; }
+  .toolbar button { font-size: 13px; padding: 6px 14px; border: 1px solid #888;
+    border-radius: 4px; background: #1a56a0; color: #fff; cursor: pointer; }
+  @page { size: letter portrait; margin: 0.55in 0.65in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none !important; }
+    .sheet { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; }
+    .qr-side img, .privacy, .step .n { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar"><button onclick="window.print()">Print / Save PDF</button></div>
+<div class="sheet">
+
+  <div class="org">Play Academy Child Care Center</div>
+  <h1>How to Use the QR Code</h1>
+  <div class="sub">Complete your CACFP forms on your phone in about 5 minutes</div>
+
+  <div class="row">
+    <div class="qr-side">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAewAAAHsAQAAAAA4UaPNAAADYElEQVR4nO2dQW7rMAxEhx/Zyzfo/Y/VG0gn4F9QpCgnXbRN2xAeITAcWw+2AIYYkZQiim+08e87NECcOHHixH8ah2ry9E3tq6pqB5quj/Vse+deeuzEL4w3tTavmWHbcYi+i3aoKobYDyF1foGXJ078S7iIyDFPAMgBs3DtkGN+wslH5xd5eeLEv4sPASBvOm3bHT5GmPpPPp048Z/Fb+cLrWMcADBEAQEU0CE6jk3MP+fpxIn/Pj5tflnzEDQVQMchraN1aV2ail08da49duIXxodYA5Jof7vz6k1N56/Or/DyxIl/rt2w+W0A0CGncx2imGpn71x67MSvie9R9+ZheWDGJ08t91TG54mXx7W7pGkKQEQ0Wk+/hQ59p7YhXhT3lCuQ861b7mnPvUY35mGJ18S3WOXU7YCYn28dIentunUDdJ6XHjvxa+LYpEs4cFXT9usucI7P088TL4nfAEjr04EP0XFE3EYsJzUOBWA+H4B9fc7TiRP/fXzGbUK3zylqT3fj2BPV6eeJF8XTHPZuPmvnD4SNT29p88QL4ljBmVQkH3Zuv4Lw81uEh36eeEncZ6ne5tS1e04qLRvZJrbzWHrsxK+J3+ARSLQeVWRWUSatR/QSHrGMugRp/a9fnjjxr7QHej6tEJw30iQ356ro54kXxJNWz3buM9YoOZhtlzq0eeIF8eXMs6RHrj0Lha9JzFPPEy+Oq6ocEJGp21VzOb0Vns0rvkJQjqc9nTjxX8Rv8CVRs4qmqQyxrCvywqi8GYLf/euXJ078K23Lw6aTmMkCd/KedZXEC+OpriAyUH0vJ87heqxz6nniNXE89PAPfX44+Yjt0OaJF8S9ft4rKnO58BT5UVQfN8ahth9I7bETvyaeCmzais972aRX43wQqKefJ14Q930PzODdmUuY9zgAuFefERtZzr/02IlfE3+0L7EnoYCVhzoLflDPEy+KL3vOGdilZ1J8civFYR6WeFV8zmEFK9OUqyvtio6Zn51HX0v41y9PnPgz8KZWeLA24n5TOVIFmgsb1h4Qr4nf7Uuc6uRX/XzrErPXuRKcezoRL4qf9yV2VdMRlu/XLXojrVvcnvvbEC+Mp62GV2llR/yZDvy/RSLIw32JiZfFt8Trpxv/K5M4ceLEXx3/D1I5+n3maYeHAAAAAElFTkSuQmCC" alt="QR code to parent forms">
+      <div class="url">pa082508.github.io/forms/1-data-sources/parent-forms.html</div>
+    </div>
+    <div class="steps-side">
+      <div class="step"><div class="n">1</div><div class="t">
+        <b>Point your phone camera at the code</b>
+        Open the regular Camera app (iPhone or Android) and hold it over the QR code &mdash;
+        no special app needed. Tap the link that pops up on the screen.
+      </div></div>
+      <div class="step"><div class="n">2</div><div class="t">
+        <b>Pick a form</b>
+        You will see a short list. Start with the form that applies to your child &mdash;
+        each card explains when you need it.
+      </div></div>
+      <div class="step"><div class="n">3</div><div class="t">
+        <b>Fill it in</b>
+        Tap each field and type. Your center is in a drop-down list, phone numbers format
+        themselves, and the date is already set to today.
+      </div></div>
+      <div class="step"><div class="n">4</div><div class="t">
+        <b>Sign with your finger</b>
+        Draw your signature in the box, just like signing for a package.
+        Tap Clear to start over if needed.
+      </div></div>
+      <div class="step"><div class="n">5</div><div class="t">
+        <b>Tap Submit</b>
+        A green &check; Submitted means we received it. Open the next form &mdash;
+        your details are already filled in for you.
+      </div></div>
+    </div>
+  </div>
+
+  <h2>Good to know</h2>
+  <ul>
+    <li><b>Camera won&rsquo;t scan?</b> Type the address under the code into your browser instead.</li>
+    <li><b>Filling out forms for two children?</b> Tap <b>New family</b> on any form before
+        starting the second child &mdash; it clears the shared details.</li>
+    <li><b>Made a mistake after submitting?</b> Just fill the same form out again &mdash;
+        the newest one counts. Tell the front desk so we use the right copy.</li>
+    <li><b>Need paper?</b> Every form has a Print / Save PDF button, or ask the front desk
+        for a printed copy.</li>
+    <li><b>Doctor&rsquo;s section?</b> The Special Diet Form has a section for your child&rsquo;s
+        health care provider &mdash; they can complete and sign it on their own device, or on
+        a printout.</li>
+  </ul>
+
+  <div class="privacy">
+    <b>Your privacy:</b> what you type stays on your phone until you press Submit. Shared
+    details used for auto-filling erase themselves after 90 minutes &mdash; nothing is left
+    behind on shared tablets.
+  </div>
+
+  <div class="foot">Questions? Ask at the front desk &middot; Pearl &middot; Alpha &middot; Ridge</div>
+</div>
+</body>
+</html>
