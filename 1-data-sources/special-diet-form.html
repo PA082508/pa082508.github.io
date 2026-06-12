@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Special Diet Form — CACFP</title>
+<style>
+  /* ============================================================
+     SPECIAL DIET FORM (Revised 8/2025)
+     Exact replica · fillable · e-signature · Supabase
+     v1.0 · 2026-06-11
+     ============================================================ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    color: #000;
+    background: #e8e8e8;
+  }
+
+  .sheet {
+    width: 8.5in;
+    min-height: 11in;
+    margin: 16px auto;
+    padding: 0.45in 0.5in;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-title {
+    text-align: center;
+    font-size: 18pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  p.intro { font-size: 10.5pt; line-height: 1.32; margin-bottom: 12px; }
+
+  table { border-collapse: collapse; width: 100%; }
+  .blk { margin-bottom: 16px; }
+  .blk td {
+    border: 1px solid #000;
+    padding: 3px 8px;
+    vertical-align: top;
+    font-size: 11pt;
+    line-height: 1.3;
+  }
+
+  /* Black section header bars */
+  .bar td {
+    background: #000;
+    color: #fff;
+    font-weight: bold;
+    padding: 3px 8px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  .italic-note td { font-style: italic; font-size: 10.5pt; }
+
+  /* Checkbox + bold statement rows */
+  td.cbx { width: 0.75in; text-align: center; vertical-align: middle; }
+  td.cbx input[type="checkbox"] { width: 16px; height: 16px; }
+  td.stmt { font-weight: bold; }
+
+  /* Tall answer cells */
+  td.tall { height: 0.85in; }
+  td.tall textarea {
+    width: 100%;
+    height: 100%;
+    min-height: 0.55in;
+    border: none; outline: none;
+    font: inherit;
+    resize: none;
+    background: transparent;
+    display: block;
+    margin-top: 2px;
+  }
+
+  input.fill {
+    border: none; outline: none;
+    font: inherit;
+    background: transparent;
+    padding: 1px 4px;
+  }
+  input.fill:focus, td.tall textarea:focus { background: #eef4ff; }
+
+  /* Thick double-line block for omit/substitute */
+  table.omit-blk { border: 3px double #000; }
+  table.omit-blk td { border: 1px solid #000; }
+
+  /* Signature block */
+  .sig-tbl td { font-weight: bold; }
+  .sig-tbl td.w64 { width: 64%; }
+  .sig-wrap { display: flex; align-items: flex-end; gap: 6px; }
+  canvas#sigPad {
+    flex: 1;
+    height: 46px;
+    cursor: crosshair;
+    touch-action: none;
+    background: transparent;
+  }
+  .sig-clear {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: normal;
+    padding: 2px 7px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+  input.date-fill {
+    font: inherit; font-weight: normal;
+    border: none; outline: none;
+    background: transparent;
+    width: 70%;
+    padding: 1px 4px;
+  }
+  input.date-fill:focus { background: #eef4ff; }
+
+  .usda-footer {
+    margin-top: auto;
+    font-size: 11pt;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    max-width: 8.5in; margin: 14px auto 0;
+    font-family: Arial, sans-serif; font-size: 13px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .toolbar button {
+    font: inherit; padding: 6px 14px; border: 1px solid #888;
+    border-radius: 4px; background: #fff; cursor: pointer;
+  }
+  .toolbar button.primary { background: #1a7a3a; color: #fff; border-color: #1a7a3a; }
+  .toolbar button.blue    { background: #1a56a0; color: #fff; border-color: #1a56a0; }
+  #status { color: #666; }
+  #status.ok    { color: #1a7a3a; font-weight: bold; }
+  #status.error { color: #b00020; font-weight: bold; }
+
+  /* ---------- Print ---------- */
+  @page { size: letter portrait; margin: 0.45in 0.5in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar, .sig-clear { display: none !important; }
+    .sheet { width: auto; min-height: 10in; margin: 0; padding: 0; box-shadow: none; }
+    input.fill:focus, td.tall textarea:focus, input.date-fill:focus { background: transparent; }
+    input.date-fill::-webkit-calendar-picker-indicator,
+    input.bdate::-webkit-calendar-picker-indicator { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button id="btnSubmit" class="primary">Submit</button>
+  <button id="btnReset">Reset</button>
+  <button id="btnNewFamily">New family</button>
+  <button id="btnPrint" class="blue">Print / Save PDF</button>
+  <span id="status"></span>
+</div>
+
+<div class="sheet">
+
+  <div class="form-title">Special Diet Form</div>
+
+  <p class="intro">
+    This center/facility participates in in the Child and Adult Care Food Program (CACFP) and any meals, snacks, or milk
+    claimed for reimbursement must meet program requirements. Food accommodations must be made when the food
+    accommodation is due to a disability (a physical or mental impairment which substantially limits one or more major life
+    activities, has a record of such impairment, or is regarded as having such impairment). Reasonable food accommodations
+    may be made for children/participants without disabilities who may have special medical or dietary needs. Food
+    accommodations are to be supported by a statement signed by a recognized state medical authority which is defined as a
+    state licensed health care professional who is authorized to write medical prescriptions under state law.
+  </p>
+
+  <!-- ============ Parent block ============ -->
+  <table class="blk">
+    <tr class="bar"><td colspan="3">To be completed by parent, guardian or authorized representative</td></tr>
+    <tr>
+      <td colspan="2" style="width:67%">Child/Participant Name:
+        <input type="text" class="fill" id="childName" name="name" autocomplete="name" style="width:55%">
+      </td>
+      <td>Birth Date:
+        <input type="date" class="date-fill" id="birthDate" autocomplete="bday">
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3">Parent/Guardian/Authorized Representative Name:
+        <input type="text" class="fill" id="parentName" autocomplete="name" style="width:45%">
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3">Email:
+        <input type="email" class="fill" id="email" name="email" autocomplete="email" style="width:60%">
+      </td>
+    </tr>
+    <tr>
+      <td style="width:33%">Home Phone:
+        <input type="tel" class="fill" id="homePhone" autocomplete="home tel" style="width:48%">
+      </td>
+      <td style="width:34%">Work Phone:
+        <input type="tel" class="fill" id="workPhone" autocomplete="work tel" style="width:48%">
+      </td>
+      <td>Cell Phone:
+        <input type="tel" class="fill" id="cellPhone" autocomplete="mobile tel" style="width:50%">
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3">Address:
+        <input type="text" class="fill" id="address" name="address" autocomplete="street-address" style="width:70%">
+      </td>
+    </tr>
+    <tr>
+      <td>City:
+        <input type="text" class="fill" id="city" autocomplete="address-level2" style="width:60%">
+      </td>
+      <td>State:
+        <input type="text" class="fill" id="state" autocomplete="address-level1" style="width:55%">
+      </td>
+      <td>Zip:
+        <input type="text" class="fill" id="zip" autocomplete="postal-code" inputmode="numeric" style="width:55%">
+      </td>
+    </tr>
+  </table>
+
+  <!-- ============ Medical authority block ============ -->
+  <table class="blk">
+    <tr class="bar"><td colspan="2">To be completed by recognized state medical authority</td></tr>
+    <tr class="italic-note"><td colspan="2">Check and complete appropriate information. For the safety of the child, please be as specific as possible.</td></tr>
+    <tr>
+      <td class="cbx"><input type="checkbox" name="diet_basis" id="hasDisability" value="disability"></td>
+      <td class="stmt">Yes, this child/participant has a disability that requires food accommodation?</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">Describe disability:
+        <textarea id="disabilityDesc"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">What major life activity is affected?
+        <textarea id="lifeActivity"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">How does the disability restrict the diet?
+        <textarea id="dietRestriction"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td class="cbx"><input type="checkbox" name="diet_basis" id="noDisability" value="no_disability_special_diet"></td>
+      <td class="stmt">Child/Participant has no disability but requires a special diet</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">Describe the medical or other special dietary need that restricts diet:
+        <textarea id="specialNeedDesc"></textarea>
+      </td>
+    </tr>
+  </table>
+
+  <!-- ============ Omit / substitute thick block ============ -->
+  <table class="blk omit-blk">
+    <tr>
+      <td class="tall">List food/type of food to be omitted.
+        <textarea id="foodsOmitted"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td class="tall">List food/type of food to be substituted for omitted food(s). Please be specific regarding any needed
+        food texture changes or detailed menu to be followed.
+        <textarea id="foodsSubstituted"></textarea>
+      </td>
+    </tr>
+  </table>
+
+  <!-- ============ Signature block ============ -->
+  <table class="blk sig-tbl">
+    <tr>
+      <td class="w64">Signature of Recognized State Medical Authority:
+        <div class="sig-wrap">
+          <canvas id="sigPad"></canvas>
+          <button type="button" class="sig-clear" id="sigClear">Clear</button>
+        </div>
+      </td>
+      <td style="vertical-align:top">Date:
+        <input type="date" class="date-fill" id="signedDate">
+      </td>
+    </tr>
+    <tr>
+      <td class="w64">Printed Name:
+        <input type="text" class="fill" id="authorityName" autocomplete="name" style="width:60%; font-weight:normal">
+      </td>
+      <td>Phone:
+        <input type="tel" class="fill" id="authorityPhone" autocomplete="tel" style="width:65%; font-weight:normal">
+      </td>
+    </tr>
+  </table>
+
+  <div class="usda-footer">
+    <span>USDA is an equal opportunity provider, employer, and lender.</span>
+    <span>Revised 8/2025</span>
+  </div>
+
+</div>
+
+<script>
+/* ==============================================================
+   CONFIG — Supabase (MenuMaker)
+   Вставьте ANON key. Таблица: menumaker.special_diet_forms
+   (SQL в cacfp_form_tables.sql)
+   ============================================================== */
+const CONFIG = {
+  SUPABASE_URL:  'https://trrmyqfpxntmgxnqkikp.supabase.co',
+  SUPABASE_ANON: '',            // <-- PASTE ANON KEY
+  SCHEMA: 'menumaker',
+  TABLE:  'special_diet_forms'
+};
+
+(function () {
+  'use strict';
+
+  const $ = (sel) => document.querySelector(sel);
+  const status = (msg, cls) => {
+    const el = $('#status');
+    el.textContent = msg || '';
+    el.className = cls || '';
+  };
+
+  /* ==============================================================
+     Form packet — auto-fill shared data across the parent forms
+     (stored only in this browser, expires in 90 minutes)
+     ============================================================== */
+  const PACKET_KEY = 'cacfp_packet_v1';
+  const PACKET_TTL_MS = 90 * 60 * 1000;
+  const FORM_ID = 'special_diet';
+
+  function packetLoad() {
+    try {
+      const raw = localStorage.getItem(PACKET_KEY);
+      if (!raw) return null;
+      const o = JSON.parse(raw);
+      if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) {
+        localStorage.removeItem(PACKET_KEY);
+        return null;
+      }
+      return o;
+    } catch (e) { return null; }  /* storage unavailable - packet off */
+  }
+  function packetSave(fields) {
+    try {
+      const o = packetLoad() || { data: {}, done: {} };
+      Object.keys(fields).forEach(k => { if (fields[k]) o.data[k] = fields[k]; });
+      o.done = o.done || {};
+      o.done[FORM_ID] = true;
+      o.ts = Date.now();
+      localStorage.setItem(PACKET_KEY, JSON.stringify(o));
+    } catch (e) { /* best-effort */ }
+  }
+  function packetClear() {
+    try { localStorage.removeItem(PACKET_KEY); } catch (e) {}
+  }
+  function packetPrefill() {
+    const o = packetLoad();
+    if (!o) return;
+    const d = o.data || {};
+    const map = {
+      child_name: 'childName', birth_date: 'birthDate', parent_name: 'parentName',
+      email: 'email', home_phone: 'homePhone', work_phone: 'workPhone',
+      cell_phone: 'cellPhone', address: 'address', city: 'city',
+      state: 'state', zip: 'zip'
+    };
+    let used = false;
+    Object.keys(map).forEach(k => {
+      const el = document.getElementById(map[k]);
+      if (d[k] && el && !el.value) { el.value = d[k]; used = true; }
+    });
+    if (used) status('\u2913 Auto-filled from a previous form \u2014 please verify', 'ok');
+  }
+
+  /* ---------- Date: auto-fill today ---------- */
+  function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+  $('#signedDate').value = todayISO();
+  let dateTouched = false;
+  $('#signedDate').addEventListener('input', () => { dateTouched = true; });
+
+  /* ---------- E-signature pad ---------- */
+  const canvas = $('#sigPad');
+  const ctx = canvas.getContext('2d');
+  let drawing = false, hasInk = false;
+
+  function sizeCanvas() {
+    const ratio = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    const prev = hasInk ? canvas.toDataURL() : null;
+    canvas.width = w * ratio;
+    canvas.height = h * ratio;
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#000';
+    if (prev) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, w, h);
+      img.src = prev;
+    }
+  }
+  sizeCanvas();
+  window.addEventListener('resize', sizeCanvas);
+
+  function pos(ev) {
+    const r = canvas.getBoundingClientRect();
+    return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+  }
+  canvas.addEventListener('pointerdown', (ev) => {
+    ev.preventDefault();
+    canvas.setPointerCapture(ev.pointerId);
+    drawing = true;
+    const p = pos(ev);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  });
+  canvas.addEventListener('pointermove', (ev) => {
+    if (!drawing) return;
+    ev.preventDefault();
+    const p = pos(ev);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    hasInk = true;
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(t =>
+    canvas.addEventListener(t, () => { drawing = false; }));
+
+  function clearSig() {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+    hasInk = false;
+  }
+  $('#sigClear').addEventListener('click', clearSig);
+
+  /* ---------- Phone formatting: (XXX) XXX-XXXX ---------- */
+  function formatPhone(el) {
+    let d = el.value.replace(/\D/g, '');
+    if (d.length === 11 && d[0] === '1') d = d.slice(1);  // strip country code
+    d = d.slice(0, 10);
+    let out = '';
+    if (d.length > 0) out = '(' + d.slice(0, 3);
+    if (d.length >= 4) out += ') ' + d.slice(3, 6);
+    if (d.length >= 7) out += '-' + d.slice(6);
+    el.value = out;
+  }
+  ['homePhone', 'workPhone', 'cellPhone', 'authorityPhone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.maxLength = 14;
+    el.placeholder = '';
+    el.addEventListener('input', (e) => {
+      /* don't reformat mid-deletion so backspace works naturally */
+      if (e.inputType && e.inputType.startsWith('delete')) return;
+      formatPhone(el);
+    });
+    el.addEventListener('blur', () => formatPhone(el));
+  });
+
+  /* ---------- Mutually exclusive basis checkboxes ---------- */
+  const basisBoxes = Array.from(document.querySelectorAll('input[name="diet_basis"]'));
+  basisBoxes.forEach(cb => cb.addEventListener('change', () => {
+    if (cb.checked) basisBoxes.forEach(o => { if (o !== cb) o.checked = false; });
+  }));
+
+  /* ---------- Collect / validate / submit ---------- */
+  function collectData() {
+    const basis = basisBoxes.find(cb => cb.checked);
+    return {
+      child_name:            $('#childName').value.trim(),
+      birth_date:            $('#birthDate').value || null,
+      parent_name:           $('#parentName').value.trim(),
+      email:                 $('#email').value.trim(),
+      home_phone:            $('#homePhone').value.trim(),
+      work_phone:            $('#workPhone').value.trim(),
+      cell_phone:            $('#cellPhone').value.trim(),
+      address:               $('#address').value.trim(),
+      city:                  $('#city').value.trim(),
+      state:                 $('#state').value.trim(),
+      zip:                   $('#zip').value.trim(),
+      diet_basis:            basis ? basis.value : null,
+      disability_desc:       $('#disabilityDesc').value.trim(),
+      major_life_activity:   $('#lifeActivity').value.trim(),
+      diet_restriction:      $('#dietRestriction').value.trim(),
+      special_need_desc:     $('#specialNeedDesc').value.trim(),
+      foods_omitted:         $('#foodsOmitted').value.trim(),
+      foods_substituted:     $('#foodsSubstituted').value.trim(),
+      authority_signature_img: hasInk ? canvas.toDataURL('image/png') : null,
+      signed_date:           $('#signedDate').value || null,
+      authority_printed_name: $('#authorityName').value.trim(),
+      authority_phone:        $('#authorityPhone').value.trim()
+    };
+  }
+
+  function validate(d) {
+    if (!d.child_name)              return 'Child/Participant Name is required';
+    if (!d.parent_name)             return 'Parent/Guardian/Authorized Representative Name is required';
+    if (!d.diet_basis)              return 'Medical authority: check one of the two statements';
+    if (d.diet_basis === 'disability' && !d.disability_desc)
+      return 'Describe disability';
+    if (d.diet_basis === 'no_disability_special_diet' && !d.special_need_desc)
+      return 'Describe the medical or other special dietary need';
+    if (!d.foods_omitted)           return 'List food/type of food to be omitted';
+    if (!d.authority_signature_img) return 'Signature of Recognized State Medical Authority is required \u2014 sign in the box';
+    if (!d.signed_date)             return 'Date is required';
+    if (!d.authority_printed_name)  return 'Printed Name is required';
+    return null;
+  }
+
+  async function submitForm() {
+    if (!dateTouched) $('#signedDate').value = todayISO();
+    const d = collectData();
+    const err = validate(d);
+    if (err) { status(err, 'error'); return; }
+
+    if (!CONFIG.SUPABASE_ANON) {
+      status('CONFIG.SUPABASE_ANON is empty — paste the anon key at the top of the file', 'error');
+      return;
+    }
+
+    status('Submitting\u2026');
+    try {
+      const res = await fetch(CONFIG.SUPABASE_URL + '/rest/v1/' + CONFIG.TABLE, {
+        method: 'POST',
+        headers: {
+          'apikey': CONFIG.SUPABASE_ANON,
+          'Authorization': 'Bearer ' + CONFIG.SUPABASE_ANON,
+          'Content-Type': 'application/json',
+          'Content-Profile': CONFIG.SCHEMA,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(d)
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(res.status + ': ' + t);
+      }
+      status('\u2713 Submitted', 'ok');
+      packetSave({
+        child_name:  d.child_name,
+        birth_date:  d.birth_date,
+        parent_name: d.parent_name,
+        email:       d.email,
+        home_phone:  d.home_phone,
+        work_phone:  d.work_phone,
+        cell_phone:  d.cell_phone,
+        address:     d.address,
+        city:        d.city,
+        state:       d.state,
+        zip:         d.zip
+      });
+    } catch (e) {
+      status('Submit failed \u2014 ' + e.message, 'error');
+    }
+  }
+
+  function resetForm() {
+    document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], textarea')
+      .forEach(el => el.value = '');
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+    $('#birthDate').value = '';
+    clearSig();
+    $('#signedDate').value = todayISO();
+    dateTouched = false;
+    status('Form cleared');
+  }
+
+  $('#btnSubmit').addEventListener('click', submitForm);
+  $('#btnReset').addEventListener('click', resetForm);
+  $('#btnPrint').addEventListener('click', () => window.print());
+
+  $('#btnNewFamily').addEventListener('click', () => {
+    packetClear();
+    resetForm();
+    status('Shared data cleared \u2014 ready for a new family');
+  });
+
+  packetPrefill();
+})();
+</script>
+</body>
+</html>
