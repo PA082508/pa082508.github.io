@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Inventory Record — Form 1 — Ohio CACFP</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:Arial,sans-serif; font-size:10pt; background:#fff; color:#000; }
+  .page { max-width:900px; margin:0 auto; padding:10px 14px 24px; }
+
+  #status-bar { display:none; padding:6px 12px; border-radius:4px; font-size:9pt; margin-bottom:8px; font-weight:bold; }
+  #status-bar.success { background:#d4edda; color:#155724; display:block; }
+  #status-bar.error   { background:#f8d7da; color:#721c24; display:block; }
+  #status-bar.info    { background:#cce5ff; color:#004085; display:block; }
+
+  .btn-row { display:flex; gap:8px; padding:8px 0 6px; flex-wrap:wrap; align-items:center; }
+  .btn { padding:5px 14px; border:none; border-radius:4px; cursor:pointer; font-size:10pt; font-family:Arial,sans-serif; font-weight:bold; }
+  .btn-save  { background:#1a73e8; color:#fff; } .btn-save:hover  { background:#1557b0; }
+  .btn-load  { background:#34a853; color:#fff; } .btn-load:hover  { background:#267038; }
+  .btn-clear { background:#ea4335; color:#fff; } .btn-clear:hover { background:#b5261a; }
+  .btn-print { background:#666;    color:#fff; } .btn-print:hover { background:#444; }
+
+  .form-title { font-size:15pt; font-weight:bold; padding:4px 0 2px; }
+  .form-sub   { font-size:9pt; padding:2px 0 6px; }
+
+  table { width:100%; border-collapse:collapse; }
+  th, td { border:1px solid #000; padding:2px 4px; font-size:10pt; vertical-align:middle; }
+
+  col.c-a { width:22%; }
+  col.c-b { width:30%; }
+  col.c-c { width:12%; }
+  col.c-d { width:14%; }
+  col.c-e { width:14%; }
+  col.c-del { width:8%; }
+
+  .col-hdr { font-size:9pt; font-weight:bold; text-align:center; background:#f0f0f0; }
+  .example-row td { background:#d9d9d9; font-size:9pt; text-align:center; }
+  .example-row td:first-child { text-align:left; padding-left:4px; }
+  .example-row td:nth-child(2) { text-align:left; padding-left:4px; }
+
+  input[type="text"], input[type="number"] {
+    width:100%; border:none; background:transparent;
+    font-family:Arial,sans-serif; font-size:10pt;
+    outline:none; padding:0 2px; text-align:center;
+  }
+  input[type="number"] { -moz-appearance:textfield; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; }
+  input:focus { background:#eef4ff; }
+  .inp-left  { text-align:left; }
+  .inp-right { text-align:right; }
+
+  .del-btn {
+    width:100%; border:none; background:transparent; cursor:pointer;
+    color:#aaa; font-size:12pt; line-height:1; padding:0;
+  }
+  .del-btn:hover { color:#ea4335; }
+
+  .total-row td { font-weight:bold; text-align:right; border-top:2px solid #000; font-size:11pt; }
+  .total-val    { text-align:center !important; font-size:12pt; color:#1a56a0; }
+
+  @media print {
+    .btn-row, #status-bar, .del-btn { display:none !important; }
+    col.c-del { width:0; }
+    .page { padding:4px 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div id="status-bar"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-load"  onclick="loadData()">⬇ Load</button>
+    <button class="btn btn-save"  onclick="saveData()">💾 Save</button>
+    <button class="btn btn-clear" onclick="clearForm()">✕ Clear</button>
+    <button class="btn btn-print" onclick="window.print()">🖨 Print</button>
+  </div>
+
+  <div class="form-title">OHIO CACFP – FOOD INVENTORY RECORD – FORM 1</div>
+  <div class="form-sub">
+    For required ANNUAL inventory: Record inventory <strong>September 30th</strong> each year using this form.
+    Make additional copies as needed.&nbsp;&nbsp;
+    Date Inventory Recorded: Month <strong>9</strong> / Day <strong>30</strong> / Year <strong id="inv-year"></strong>
+  </div>
+
+  <table>
+    <colgroup>
+      <col class="c-a"><col class="c-b"><col class="c-c">
+      <col class="c-d"><col class="c-e"><col class="c-del">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="col-hdr">(A) ITEM</th>
+        <th class="col-hdr">(B) SIZE AND DESCRIPTION<br><span style="font-weight:normal;font-size:8pt;">(can, bag, case, lb.)</span></th>
+        <th class="col-hdr">(C) NO. ON HAND</th>
+        <th class="col-hdr">× (D) UNIT COST</th>
+        <th class="col-hdr">(E) TOTAL COST</th>
+        <th class="col-hdr" style="font-size:8pt;">Del</th>
+      </tr>
+      <tr class="example-row">
+        <td>Example: Green Beans</td>
+        <td>Example: 1lb. can, French Style</td>
+        <td>Example: 6</td>
+        <td>Example: $.89</td>
+        <td>Example: $5.34</td>
+        <td></td>
+      </tr>
+      <tr class="example-row">
+        <td>Example: Cheerios cereal</td>
+        <td>Example: 16 oz. box</td>
+        <td>Example: 5</td>
+        <td>Example: $2.69</td>
+        <td>Example: $13.45</td>
+        <td></td>
+      </tr>
+    </thead>
+    <tbody id="inv-body"></tbody>
+    <tfoot>
+      <tr class="total-row">
+        <td colspan="4" style="text-align:right;border-top:2px solid #000;">
+          TOTAL FOOD (F-1) = $
+        </td>
+        <td class="total-val" id="grand-total">0.00</td>
+        <td style="border-top:2px solid #000;"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
+const FORM_TYPE = 'food_inventory_sep';
+const YEAR      = new Date().getFullYear();
+const MIN_ROWS  = 6;
+
+document.getElementById('inv-year').textContent = YEAR;
+
+let rowCount = 0;
+const tbody  = document.getElementById('inv-body');
+
+// ── Build row ─────────────────────────────────────────────────────────────
+function makeRow(d) {
+  d = d || {};
+  const i  = rowCount++;
+  const tr = document.createElement('tr');
+  tr.id    = `r-${i}`;
+  tr.innerHTML =
+    `<td><input type="text"   id="r${i}-item" class="inp-left"
+       value="${esc(d.item)}" oninput="onInput(${i})"></td>` +
+    `<td><input type="text"   id="r${i}-desc" class="inp-left"
+       value="${esc(d.desc)}" oninput="onInput(${i})"></td>` +
+    `<td><input type="number" id="r${i}-qty"  step="0.01" placeholder="0"
+       value="${d.qty||''}" oninput="onInput(${i});calcRow(${i})"></td>` +
+    `<td><input type="number" id="r${i}-cost" step="0.01" placeholder="0.00"
+       value="${d.cost||''}" oninput="onInput(${i});calcRow(${i})"></td>` +
+    `<td style="text-align:center;font-weight:bold;" id="r${i}-total">
+       ${d.qty && d.cost ? fmt(parseFloat(d.qty)*parseFloat(d.cost)) : '$0.00'}</td>` +
+    `<td><button class="del-btn" onclick="deleteRow(${i})" title="Remove">✕</button></td>`;
+  tbody.appendChild(tr);
+  return i;
+}
+
+function esc(s) { return (s||'').replace(/"/g,'&quot;'); }
+function fmt(v) { return '$' + (isNaN(v)?0:v).toFixed(2); }
+function nv(id) { const el=document.getElementById(id); if(!el) return 0; const v=parseFloat(el.value); return isNaN(v)?0:v; }
+
+// ── Row calc ──────────────────────────────────────────────────────────────
+function calcRow(i) {
+  const t = nv(`r${i}-qty`) * nv(`r${i}-cost`);
+  const el = document.getElementById(`r${i}-total`);
+  if (el) el.textContent = fmt(t);
+  calcTotal();
+}
+
+function calcTotal() {
+  let sum = 0;
+  for (let i = 0; i < rowCount; i++) {
+    if (!document.getElementById(`r-${i}`)) continue;
+    sum += nv(`r${i}-qty`) * nv(`r${i}-cost`);
+  }
+  document.getElementById('grand-total').textContent = sum.toFixed(2);
+}
+
+// ── Dynamic logic ─────────────────────────────────────────────────────────
+function isRowEmpty(i) {
+  return ['item','desc','qty','cost'].every(f => {
+    const el = document.getElementById(`r${i}-${f}`);
+    return !el || !el.value.trim();
+  });
+}
+
+function visibleRows() {
+  const v = [];
+  for (let i = 0; i < rowCount; i++)
+    if (document.getElementById(`r-${i}`)) v.push(i);
+  return v;
+}
+
+function onInput(i) {
+  const visible = visibleRows();
+  const last    = visible[visible.length - 1];
+  if (i === last && !isRowEmpty(i)) { makeRow(); return; }
+  trimEmpties();
+}
+
+function trimEmpties() {
+  let visible = visibleRows();
+  while (visible.length > MIN_ROWS) {
+    const last       = visible[visible.length - 1];
+    const secondLast = visible[visible.length - 2];
+    if (secondLast === undefined) break;
+    if (isRowEmpty(last) && isRowEmpty(secondLast)) {
+      document.getElementById(`r-${last}`)?.remove();
+      visible.pop();
+    } else break;
+  }
+  ensureMinRows();
+}
+
+function ensureMinRows() {
+  let visible = visibleRows();
+  while (visible.length < MIN_ROWS) { makeRow(); visible = visibleRows(); }
+  const last = visible[visible.length - 1];
+  if (!isRowEmpty(last)) makeRow();
+}
+
+function deleteRow(i) {
+  const visible = visibleRows();
+  if (visible.length <= MIN_ROWS) return; // don't go below minimum
+  document.getElementById(`r-${i}`)?.remove();
+  ensureMinRows();
+  calcTotal();
+}
+
+// ── Status ────────────────────────────────────────────────────────────────
+function showStatus(msg, type) {
+  const bar = document.getElementById('status-bar');
+  bar.textContent = msg; bar.className = type;
+  if (type !== 'info') setTimeout(() => { bar.style.display='none'; }, 4000);
+}
+
+// ── Collect ───────────────────────────────────────────────────────────────
+function collectData() {
+  const rows = [];
+  visibleRows().forEach(i => {
+    const item = (document.getElementById(`r${i}-item`)||{}).value?.trim()||'';
+    const desc = (document.getElementById(`r${i}-desc`)||{}).value?.trim()||'';
+    const qty  = (document.getElementById(`r${i}-qty`) ||{}).value?.trim()||'';
+    const cost = (document.getElementById(`r${i}-cost`)||{}).value?.trim()||'';
+    if (!item && !desc && !qty && !cost) return;
+    rows.push({ item, desc, qty, cost });
+  });
+  return { year: YEAR, rows, total: document.getElementById('grand-total').textContent };
+}
+
+// ── Restore ───────────────────────────────────────────────────────────────
+function restoreData(d) {
+  tbody.innerHTML = ''; rowCount = 0;
+  (d.rows || []).forEach(r => makeRow(r));
+  ensureMinRows();
+  calcTotal();
+}
+
+// ── Save / Load ───────────────────────────────────────────────────────────
+async function saveData() {
+  showStatus('Saving…','info');
+  const payload = { center_id:'play-academy', form_type:FORM_TYPE,
+    fiscal_year:YEAR, claim_month:9,
+    form_data:collectData(), updated_at:new Date().toISOString() };
+  try {
+    const chk = await fetch(
+      `${SUPABASE_URL}/rest/v1/cacfp_form_data?center_id=eq.play-academy&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.9`,
+      { headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` }});
+    const ex = await chk.json();
+    const method = ex&&ex.length>0 ? 'PATCH' : 'POST';
+    const url = method==='PATCH'
+      ? `${SUPABASE_URL}/rest/v1/cacfp_form_data?center_id=eq.play-academy&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.9`
+      : `${SUPABASE_URL}/rest/v1/cacfp_form_data`;
+    const res = await fetch(url, { method,
+      headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}`,
+        'Content-Type':'application/json', Prefer:'return=minimal' },
+      body:JSON.stringify(payload) });
+    res.ok ? showStatus('✓ Saved','success') : showStatus('Error: '+await res.text(),'error');
+  } catch(e) {
+    localStorage.setItem(`${FORM_TYPE}_${YEAR}`, JSON.stringify(collectData()));
+    showStatus('✓ Saved locally','success');
+  }
+}
+
+async function loadData() {
+  showStatus('Loading…','info');
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/cacfp_form_data?select=form_data&center_id=eq.play-academy&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.9`,
+      { headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` }});
+    const rows = await res.json();
+    if (rows&&rows.length>0&&rows[0].form_data) {
+      restoreData(rows[0].form_data); showStatus('✓ Loaded','success');
+    } else {
+      const loc = localStorage.getItem(`${FORM_TYPE}_${YEAR}`);
+      if (loc) { restoreData(JSON.parse(loc)); showStatus('✓ Loaded locally','success'); }
+      else showStatus('No data found.','error');
+    }
+  } catch(e) {
+    const loc = localStorage.getItem(`${FORM_TYPE}_${YEAR}`);
+    if (loc) { restoreData(JSON.parse(loc)); showStatus('✓ Loaded locally','success'); }
+    else showStatus('Error: '+e.message,'error');
+  }
+}
+
+function clearForm() {
+  if (!confirm('Clear all entries?')) return;
+  tbody.innerHTML = ''; rowCount = 0;
+  for (let k = 0; k < MIN_ROWS; k++) makeRow();
+  calcTotal();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+for (let k = 0; k < MIN_ROWS; k++) makeRow();
+calcTotal();
+</script>
+</body>
+</html>

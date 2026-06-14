@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Other Monthly Costs — Ohio CACFP</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 10pt; background: #fff; color: #000; }
+  .page { max-width: 760px; margin: 0 auto; padding: 10px 14px 24px; }
+
+  #status-bar { display:none; padding:6px 12px; border-radius:4px; font-size:9pt; margin-bottom:8px; font-weight:bold; }
+  #status-bar.success { background:#d4edda; color:#155724; display:block; }
+  #status-bar.error   { background:#f8d7da; color:#721c24; display:block; }
+  #status-bar.info    { background:#cce5ff; color:#004085; display:block; }
+
+  .btn-row { display:flex; gap:8px; padding:8px 0 6px; flex-wrap:wrap; align-items:center; }
+  .btn { padding:5px 14px; border:none; border-radius:4px; cursor:pointer; font-size:10pt; font-family:Arial,sans-serif; font-weight:bold; }
+  .btn-save  { background:#1a73e8; color:#fff; } .btn-save:hover  { background:#1557b0; }
+  .btn-load  { background:#34a853; color:#fff; } .btn-load:hover  { background:#267038; }
+  .btn-clear { background:#ea4335; color:#fff; } .btn-clear:hover { background:#b5261a; }
+  .btn-print { background:#666;    color:#fff; } .btn-print:hover { background:#444; }
+  .sel { font-size:10pt; padding:4px 8px; border:1px solid #ccc; border-radius:4px; }
+
+  .form-title { font-size:18pt; font-weight:bold; padding:4px 0 0; }
+  .form-month { font-size:14pt; font-weight:bold; text-align:right; padding:2px 0 6px; }
+
+  table { width:100%; border-collapse:collapse; margin-bottom:4px; }
+  th, td { border:2px solid #000; padding:2px 4px; font-size:10pt; vertical-align:middle; }
+
+  .section-title { font-size:11pt; font-weight:bold; border:none; padding:7px 0 2px; display:block; }
+  .col-hdr { font-size:9pt; font-weight:bold; text-align:center; }
+  .col-a { width:44%; }
+  .col-b { width:18%; }
+  .col-c { width:18%; }
+  .col-d { width:20%; }
+
+  .lbl  { text-align:left; padding-left:4px; }
+  .tot  { text-align:center; font-weight:bold; }
+
+  input[type="text"], input[type="number"] {
+    width:100%; border:none; background:transparent;
+    font-family:Arial,sans-serif; font-size:10pt;
+    text-align:center; outline:none; padding:0 2px;
+  }
+  input[type="number"] { -moz-appearance:textfield; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; }
+  input:focus { background:#eef4ff; }
+  .lbl input { text-align:left; }
+
+  .rpt td { font-style:italic; font-size:9pt; }
+  .rpt .rpt-tot { font-style:normal; font-weight:bold; font-size:10pt; text-align:center; }
+
+  /* staff row at bottom of labor */
+  .staff-row td { border-top: 1px solid #000; }
+
+  @media print {
+    .btn-row, #status-bar { display:none !important; }
+    .page { padding:4px 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div id="status-bar"></div>
+
+  <div class="btn-row">
+    <label style="font-size:10pt;font-weight:bold;">Month:</label>
+    <select id="sel-month" class="sel" onchange="updateHeader()">
+      <option value="11">November</option>
+      <option value="12">December</option>
+      <option value="1">January</option>
+      <option value="2">February</option>
+      <option value="3">March</option>
+      <option value="4">April</option>
+      <option value="5">May</option>
+      <option value="6">June</option>
+      <option value="7">July</option>
+      <option value="8">August</option>
+      <option value="9">September</option>
+      <option value="10">October</option>
+    </select>
+    <button class="btn btn-load"  onclick="loadData()">⬇ Load</button>
+    <button class="btn btn-save"  onclick="saveData()">💾 Save</button>
+    <button class="btn btn-clear" onclick="clearForm()">✕ Clear</button>
+    <button class="btn btn-print" onclick="window.print()">🖨 Print</button>
+  </div>
+
+  <div class="form-title">OTHER MONTHLY COSTS</div>
+  <div class="form-month" id="hdr-month"></div>
+
+  <!-- ══ 1. PROGRAM ADMINISTRATION ══ -->
+  <span class="section-title">PROGRAM ADMINISTRATION:</span>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-hdr col-a">POSITION</th>
+        <th class="col-hdr col-b">HOURS</th>
+        <th class="col-hdr col-c">X WAGE</th>
+        <th class="col-hdr col-d">TOTAL</th>
+      </tr>
+    </thead>
+    <tbody id="adm-body"></tbody>
+    <tfoot>
+      <tr class="rpt">
+        <td colspan="3">Report total on online sponsor claim form under cost information</td>
+        <td class="rpt-tot" id="adm-tot">$0.00</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- ══ 2. PROGRAM LABOR ══ -->
+  <span class="section-title">PROGRAM LABOR:</span>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-hdr col-a">POSITION</th>
+        <th class="col-hdr col-b">HOURS</th>
+        <th class="col-hdr col-c">X WAGE</th>
+        <th class="col-hdr col-d">TOTAL</th>
+      </tr>
+    </thead>
+    <tbody id="lab-body"></tbody>
+    <tfoot>
+      <tr class="staff-row">
+        <td class="lbl" style="font-size:9pt;color:#555;">Staff (see attachment)</td>
+        <td colspan="2" style="text-align:right;font-weight:bold;">Total</td>
+        <td><input type="number" id="lab-staff" step="0.01" placeholder="0.00" oninput="calcSectionTot('lab')"></td>
+      </tr>
+      <tr class="rpt">
+        <td colspan="3">Report total on online sponsor claim form under cost information</td>
+        <td class="rpt-tot" id="lab-tot">$0.00</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- ══ 3. FOOD DELIVERY ══ -->
+  <span class="section-title">FOOD DELIVERY:</span>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-hdr col-a">POSITION</th>
+        <th class="col-hdr col-b">HOURS / MILES</th>
+        <th class="col-hdr col-c">X WAGE</th>
+        <th class="col-hdr col-d">TOTAL</th>
+      </tr>
+    </thead>
+    <tbody id="del-body"></tbody>
+    <tfoot>
+      <tr class="rpt">
+        <td colspan="3">Report total on online sponsor claim form under cost information</td>
+        <td class="rpt-tot" id="del-tot">$0.00</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- ══ 4. PURCHASED SERVICES ══ -->
+  <span class="section-title">PURCHASED SERVICES:</span>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-hdr col-a">COMPANY PROVIDING SERVICE</th>
+        <th class="col-hdr col-b">%</th>
+        <th class="col-hdr col-c">Bill</th>
+        <th class="col-hdr col-d">COST OF SERVICE</th>
+      </tr>
+    </thead>
+    <tbody id="svc-body"></tbody>
+    <tfoot>
+      <tr class="rpt">
+        <td colspan="3">Report total on online sponsor claim form under cost information</td>
+        <td class="rpt-tot" id="svc-tot">$0.00</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- ══ 5. UTILITIES ══ -->
+  <span class="section-title">UTILITIES:</span>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-hdr col-a">ITEM</th>
+        <th class="col-hdr col-b">%</th>
+        <th class="col-hdr col-c">Bill</th>
+        <th class="col-hdr col-d">MONTHLY DEPRECIATION</th>
+      </tr>
+    </thead>
+    <tbody id="utl-body"></tbody>
+    <tfoot>
+      <tr class="rpt">
+        <td colspan="3">Report total on online sponsor claim form under cost information</td>
+        <td class="rpt-tot" id="utl-tot">$0.00</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- ══ 6. DEPRECIATION ══ -->
+  <span class="section-title">DEPRECIATION FOOD SERVICE EQUIPMENT:</span>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-hdr" colspan="3">ITEM</th>
+        <th class="col-hdr col-d">MONTHLY DEPRECIATION</th>
+      </tr>
+    </thead>
+    <tbody id="dep-body"></tbody>
+    <tfoot>
+      <tr class="rpt">
+        <td colspan="3">Report total on online sponsor claim form under cost information</td>
+        <td class="rpt-tot" id="dep-tot">$0.00</td>
+      </tr>
+    </tfoot>
+  </table>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
+const FORM_TYPE = 'other_monthly_costs';
+const YEAR      = new Date().getFullYear();
+const MONTHS    = ['','January','February','March','April','May','June',
+                   'July','August','September','October','November','December'];
+const MIN_ROWS  = 3; // minimum visible rows per section
+
+// ── Header ────────────────────────────────────────────────────────────────
+function updateHeader() {
+  const m = +document.getElementById('sel-month').value;
+  document.getElementById('hdr-month').textContent = MONTHS[m] + ' ' + YEAR;
+}
+(function() {
+  const m = new Date().getMonth() + 1;
+  const sel = document.getElementById('sel-month');
+  for (const o of sel.options) if (+o.value === m) { sel.value = m; break; }
+  updateHeader();
+})();
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function nv(el) {
+  if (!el) return 0;
+  const v = parseFloat(String(el.value).replace(/[$,\s]/g,''));
+  return isNaN(v) ? 0 : v;
+}
+function fmt(v) { return '$' + v.toFixed(2); }
+function setT(id, v) { const el=document.getElementById(id); if(el) el.textContent=fmt(v); }
+
+// ── Section definitions ───────────────────────────────────────────────────
+// type: 'hw' = Hours×Wage, 'pct' = Bill×%, 'amt' = direct amount, 'dep' = colspan item+amt
+const SECTIONS = {
+  adm: { type:'hw',  cols:['POSITION','HOURS','X WAGE','TOTAL'],       bodyId:'adm-body', totId:'adm-tot' },
+  lab: { type:'hw',  cols:['POSITION','HOURS','X WAGE','TOTAL'],       bodyId:'lab-body', totId:'lab-tot' },
+  del: { type:'hw',  cols:['POSITION','HOURS / MILES','X WAGE','TOTAL'], bodyId:'del-body', totId:'del-tot' },
+  svc: { type:'pct', cols:['COMPANY PROVIDING SERVICE','%','Bill','COST OF SERVICE'], bodyId:'svc-body', totId:'svc-tot' },
+  utl: { type:'pct', cols:['ITEM','%','Bill','MONTHLY DEPRECIATION'],  bodyId:'utl-body', totId:'utl-tot' },
+  dep: { type:'dep', cols:['ITEM','','','MONTHLY DEPRECIATION'],       bodyId:'dep-body', totId:'dep-tot' },
+};
+
+// ── Row counters (never decrement — stable IDs) ───────────────────────────
+const rowCount = { adm:0, lab:0, del:0, svc:0, utl:0, dep:0 };
+
+// ── Build one row ─────────────────────────────────────────────────────────
+function makeRow(sec, idx, data) {
+  data = data || {};
+  const tr = document.createElement('tr');
+  tr.id = `${sec}-tr-${idx}`;
+
+  if (sec === 'dep') {
+    // colspan 3 for item, then amount
+    tr.innerHTML =
+      `<td class="lbl" colspan="3"><input type="text" id="${sec}-${idx}-item" style="text-align:left"
+         value="${esc(data.item)}" oninput="onRowInput('${sec}',${idx})"></td>` +
+      `<td><input type="number" id="${sec}-${idx}-amt" step="0.01" placeholder="0.00"
+         value="${data.amt||''}" oninput="onRowInput('${sec}',${idx});calcSectionTot('${sec}')"></td>`;
+  } else if (sec === 'svc' || sec === 'utl') {
+    const labelField = sec === 'svc' ? 'co' : 'item';
+    tr.innerHTML =
+      `<td class="lbl"><input type="text" id="${sec}-${idx}-${labelField}" style="text-align:left"
+         value="${esc(data[labelField])}" oninput="onRowInput('${sec}',${idx})"></td>` +
+      `<td><input type="number" id="${sec}-${idx}-pct" step="1" min="0" max="100" placeholder="%"
+         value="${data.pct||''}" oninput="onRowInput('${sec}',${idx});calcPctRow('${sec}',${idx})"></td>` +
+      `<td><input type="number" id="${sec}-${idx}-bill" step="0.01" placeholder="0.00"
+         value="${data.bill||''}" oninput="onRowInput('${sec}',${idx});calcPctRow('${sec}',${idx})"></td>` +
+      `<td class="tot" id="${sec}-${idx}-t">$0.00</td>`;
+  } else {
+    // hw: adm / lab / del
+    tr.innerHTML =
+      `<td class="lbl"><input type="text" id="${sec}-${idx}-pos" style="text-align:left"
+         value="${esc(data.pos)}" oninput="onRowInput('${sec}',${idx})"></td>` +
+      `<td><input type="number" id="${sec}-${idx}-h" step="0.01" placeholder="0.00"
+         value="${data.h||''}" oninput="onRowInput('${sec}',${idx});calcHWRow('${sec}',${idx})"></td>` +
+      `<td><input type="number" id="${sec}-${idx}-w" step="0.01" placeholder="0.00"
+         value="${data.w||''}" oninput="onRowInput('${sec}',${idx});calcHWRow('${sec}',${idx})"></td>` +
+      `<td class="tot" id="${sec}-${idx}-t">$0.00</td>`;
+  }
+  return tr;
+}
+
+function esc(s) { return (s||'').replace(/"/g,'&quot;'); }
+
+// ── Add row to section ────────────────────────────────────────────────────
+function addRow(sec, data) {
+  const idx = rowCount[sec]++;
+  const tbody = document.getElementById(SECTIONS[sec].bodyId);
+  const tr = makeRow(sec, idx, data);
+  tbody.appendChild(tr);
+  // restore calculated totals
+  if (data) {
+    if ((sec==='adm'||sec==='lab'||sec==='del') && data.h && data.w)
+      calcHWRow(sec, idx);
+    if ((sec==='svc'||sec==='utl') && data.bill && data.pct)
+      calcPctRow(sec, idx);
+  }
+  return idx;
+}
+
+// ── Is row empty? ─────────────────────────────────────────────────────────
+function isRowEmpty(sec, idx) {
+  const tr = document.getElementById(`${sec}-tr-${idx}`);
+  if (!tr) return true;
+  return Array.from(tr.querySelectorAll('input')).every(el => !el.value.trim());
+}
+
+// ── Remove row ────────────────────────────────────────────────────────────
+function removeRow(sec, idx) {
+  const tr = document.getElementById(`${sec}-tr-${idx}`);
+  if (tr) tr.remove();
+}
+
+// ── Visible rows for a section ────────────────────────────────────────────
+function visibleRows(sec) {
+  const v = [];
+  for (let i = 0; i < rowCount[sec]; i++)
+    if (document.getElementById(`${sec}-tr-${i}`)) v.push(i);
+  return v;
+}
+
+// ── Dynamic row logic ─────────────────────────────────────────────────────
+function onRowInput(sec, idx) {
+  const visible = visibleRows(sec);
+  const last    = visible[visible.length - 1];
+  // Typed in last row → add new empty row
+  if (idx === last && !isRowEmpty(sec, idx)) {
+    addRow(sec);
+    return;
+  }
+  // Cleared a row → trim trailing empties down to MIN_ROWS
+  trimEmpties(sec);
+}
+
+function trimEmpties(sec) {
+  let visible = visibleRows(sec);
+  while (visible.length > MIN_ROWS) {
+    const last       = visible[visible.length - 1];
+    const secondLast = visible[visible.length - 2];
+    if (secondLast === undefined) break;
+    if (isRowEmpty(sec, last) && isRowEmpty(sec, secondLast)) {
+      removeRow(sec, last);
+      visible.pop();
+    } else break;
+  }
+  ensureMinRows(sec);
+}
+
+function ensureMinRows(sec) {
+  let visible = visibleRows(sec);
+  while (visible.length < MIN_ROWS) { addRow(sec); visible = visibleRows(sec); }
+  const last = visible[visible.length - 1];
+  if (!isRowEmpty(sec, last)) addRow(sec);
+}
+
+// ── Row calculators ───────────────────────────────────────────────────────
+function calcHWRow(sec, idx) {
+  const h = nv(document.getElementById(`${sec}-${idx}-h`));
+  const w = nv(document.getElementById(`${sec}-${idx}-w`));
+  setT(`${sec}-${idx}-t`, h * w);
+  calcSectionTot(sec);
+}
+
+function calcPctRow(sec, idx) {
+  const bill = nv(document.getElementById(`${sec}-${idx}-bill`));
+  const pct  = nv(document.getElementById(`${sec}-${idx}-pct`)) / 100;
+  setT(`${sec}-${idx}-t`, bill * pct);
+  calcSectionTot(sec);
+}
+
+// ── Section totals ────────────────────────────────────────────────────────
+function calcSectionTot(sec) {
+  let sum = 0;
+  const visible = visibleRows(sec);
+
+  if (sec === 'dep') {
+    visible.forEach(i => { sum += nv(document.getElementById(`dep-${i}-amt`)); });
+  } else if (sec === 'svc' || sec === 'utl') {
+    visible.forEach(i => {
+      const bill = nv(document.getElementById(`${sec}-${i}-bill`));
+      const pct  = nv(document.getElementById(`${sec}-${i}-pct`)) / 100;
+      sum += bill * pct;
+    });
+  } else {
+    // hw
+    visible.forEach(i => {
+      sum += nv(document.getElementById(`${sec}-${i}-h`)) *
+             nv(document.getElementById(`${sec}-${i}-w`));
+    });
+    if (sec === 'lab') sum += nv(document.getElementById('lab-staff'));
+  }
+  setT(`${sec}-tot`, sum);
+}
+
+// ── Init sections ─────────────────────────────────────────────────────────
+function initSections() {
+  Object.keys(SECTIONS).forEach(sec => {
+    for (let k = 0; k < MIN_ROWS; k++) addRow(sec);
+    // ensure trailing empty
+    const visible = visibleRows(sec);
+    const last = visible[visible.length - 1];
+    if (!isRowEmpty(sec, last)) addRow(sec);
+  });
+}
+
+// ── Status ────────────────────────────────────────────────────────────────
+function showStatus(msg, type) {
+  const bar = document.getElementById('status-bar');
+  bar.textContent = msg; bar.className = type;
+  if (type !== 'info') setTimeout(() => { bar.style.display='none'; }, 4000);
+}
+
+// ── Collect ───────────────────────────────────────────────────────────────
+function collectData() {
+  const data = { month: +document.getElementById('sel-month').value };
+
+  ['adm','lab','del'].forEach(sec => {
+    data[sec] = visibleRows(sec)
+      .filter(i => !isRowEmpty(sec, i))
+      .map(i => ({
+        pos:  (document.getElementById(`${sec}-${i}-pos`)  ||{}).value?.trim()||'',
+        h:    (document.getElementById(`${sec}-${i}-h`)    ||{}).value?.trim()||'',
+        w:    (document.getElementById(`${sec}-${i}-w`)    ||{}).value?.trim()||'',
+      }));
+  });
+  data.lab_staff = (document.getElementById('lab-staff')||{}).value?.trim()||'';
+
+  ['svc','utl'].forEach(sec => {
+    const lf = sec==='svc' ? 'co' : 'item';
+    data[sec] = visibleRows(sec)
+      .filter(i => !isRowEmpty(sec, i))
+      .map(i => ({
+        [lf]:  (document.getElementById(`${sec}-${i}-${lf}`) ||{}).value?.trim()||'',
+        pct:   (document.getElementById(`${sec}-${i}-pct`)   ||{}).value?.trim()||'',
+        bill:  (document.getElementById(`${sec}-${i}-bill`)  ||{}).value?.trim()||'',
+      }));
+  });
+
+  data.dep = visibleRows('dep')
+    .filter(i => !isRowEmpty('dep', i))
+    .map(i => ({
+      item: (document.getElementById(`dep-${i}-item`)||{}).value?.trim()||'',
+      amt:  (document.getElementById(`dep-${i}-amt`) ||{}).value?.trim()||'',
+    }));
+
+  return data;
+}
+
+// ── Restore ───────────────────────────────────────────────────────────────
+function restoreData(d) {
+  if (!d) return;
+  // Clear all sections
+  Object.keys(SECTIONS).forEach(sec => {
+    document.getElementById(SECTIONS[sec].bodyId).innerHTML = '';
+    rowCount[sec] = 0;
+  });
+
+  if (d.month) { document.getElementById('sel-month').value = d.month; updateHeader(); }
+
+  ['adm','lab','del'].forEach(sec => {
+    (d[sec]||[]).forEach(r => addRow(sec, r));
+    ensureMinRows(sec);
+    calcSectionTot(sec);
+  });
+  if (d.lab_staff) { const el=document.getElementById('lab-staff'); if(el) el.value=d.lab_staff; }
+  calcSectionTot('lab');
+
+  ['svc','utl'].forEach(sec => {
+    (d[sec]||[]).forEach(r => addRow(sec, r));
+    ensureMinRows(sec);
+    calcSectionTot(sec);
+  });
+
+  (d.dep||[]).forEach(r => addRow('dep', r));
+  ensureMinRows('dep');
+  calcSectionTot('dep');
+}
+
+// ── Save / Load ───────────────────────────────────────────────────────────
+async function saveData() {
+  const mon = +document.getElementById('sel-month').value;
+  showStatus('Saving…','info');
+  const payload = { center_id: 'play-academy', form_type: FORM_TYPE,
+    fiscal_year: YEAR, claim_month: mon,
+    form_data: collectData(), updated_at: new Date().toISOString() };
+  try {
+    const chk = await fetch(
+      `${SUPABASE_URL}/rest/v1/cacfp_form_data?center_id=eq.play-academy&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.${mon}`,
+      { headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` }});
+    const ex = await chk.json();
+    const method = ex&&ex.length>0 ? 'PATCH' : 'POST';
+    const url = method==='PATCH'
+      ? `${SUPABASE_URL}/rest/v1/cacfp_form_data?center_id=eq.play-academy&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.${mon}`
+      : `${SUPABASE_URL}/rest/v1/cacfp_form_data`;
+    const res = await fetch(url, { method,
+      headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}`,
+        'Content-Type':'application/json', Prefer:'return=minimal' },
+      body: JSON.stringify(payload) });
+    res.ok ? showStatus('✓ Saved','success') : showStatus('Error: '+await res.text(),'error');
+  } catch(e) {
+    localStorage.setItem(`${FORM_TYPE}_${YEAR}_${mon}`, JSON.stringify(collectData()));
+    showStatus('✓ Saved locally','success');
+  }
+}
+
+async function loadData() {
+  const mon = +document.getElementById('sel-month').value;
+  showStatus('Loading…','info');
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/cacfp_form_data?select=form_data&center_id=eq.play-academy&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.${mon}`,
+      { headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` }});
+    const rows = await res.json();
+    if (rows&&rows.length>0&&rows[0].form_data) {
+      restoreData(rows[0].form_data); showStatus('✓ Loaded','success');
+    } else {
+      const loc = localStorage.getItem(`${FORM_TYPE}_${YEAR}_${mon}`);
+      if (loc) { restoreData(JSON.parse(loc)); showStatus('✓ Loaded locally','success'); }
+      else showStatus('No data found.','error');
+    }
+  } catch(e) {
+    const loc = localStorage.getItem(`${FORM_TYPE}_${YEAR}_${mon}`);
+    if (loc) { restoreData(JSON.parse(loc)); showStatus('✓ Loaded locally','success'); }
+    else showStatus('Error: '+e.message,'error');
+  }
+}
+
+function clearForm() {
+  if (!confirm('Clear all entries?')) return;
+  Object.keys(SECTIONS).forEach(sec => {
+    document.getElementById(SECTIONS[sec].bodyId).innerHTML = '';
+    rowCount[sec] = 0;
+  });
+  const sf = document.getElementById('lab-staff'); if(sf) sf.value='';
+  Object.keys(SECTIONS).forEach(sec => {
+    for(let k=0;k<MIN_ROWS;k++) addRow(sec);
+    setT(`${sec}-tot`, 0);
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+initSections();
+</script>
+</body>
+</html>
