@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food/Non-Food Cost Worksheet — Ohio CACFP</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; color: #000; background: #e8e8e8; }
+  .sheet { width: 8.5in; min-height: 11in; margin: 16px auto; padding: 0.4in 0.45in; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+  .form-title { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 10px; }
+  .instructions { font-size: 9.5pt; line-height: 1.35; margin-bottom: 8px; }
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  th, td { border: 1px solid #000; padding: 2px 4px; vertical-align: middle; }
+  thead { display: table-header-group; }
+  col.c-date    { width: 0.95in; }
+  col.c-vendor  { width: 2.45in; }
+  col.c-food    { width: 1.05in; }
+  col.c-nonfood { width: 1.05in; }
+  col.c-milk    { width: 0.70in; }
+  .band th { font-size: 10pt; font-weight: bold; vertical-align: top; padding: 4px; }
+  .band .ohio { font-size: 10.5pt; }
+  .band th.year-cell { position: relative; cursor: pointer; vertical-align: middle; }
+  #yearDisplay { border-bottom: 1px dashed #777; padding: 0 2px; }
+  #monthPicker { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; }
+  #monthPicker::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+  .band .months { font-weight: bold; letter-spacing: 1px; line-height: 1.9; }
+  .band .months span { display: inline-block; padding: 0 5px; margin: 0 4px; cursor: pointer; }
+  .band .months span.circled { border: 2px solid #000; border-radius: 50%; padding: 1px 7px; }
+  .cols th { font-size: 9pt; font-weight: bold; text-align: center; line-height: 1.25; padding: 3px 2px; }
+  tr.example td { background: #c9c9c9; font-weight: bold; text-align: center; font-size: 9.5pt; }
+  tbody td { height: 0.205in; font-size: 9.5pt; padding: 0; }
+  tbody input { width: 100%; height: 100%; border: none; outline: none; font: inherit; font-size: 9.5pt; padding: 2px 4px; background: transparent; }
+  tbody input.a-c { text-align: center; }
+  tbody input.a-r { text-align: right; }
+  tbody input:focus { background: #eef4ff; }
+  tfoot td { font-weight: bold; }
+  tfoot .tot-label { font-size: 9pt; text-align: center; line-height: 1.3; }
+  tfoot .tot-money { text-align: center; }
+  tfoot .gal-title { text-align: center; font-size: 12pt; }
+  tfoot .gal-num   { text-align: center; }
+  .footnotes { margin-top: 10px; font-size: 9.5pt; font-weight: bold; line-height: 1.45; }
+  .footnotes .rev { font-weight: bold; margin-top: 4px; }
+  .toolbar { max-width: 8.5in; margin: 14px auto 0; font-family: Arial, sans-serif; font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar button { font: inherit; padding: 6px 14px; border: 1px solid #888; border-radius: 4px; background: #fff; cursor: pointer; }
+  .toolbar button.primary { background: #1a7a3a; color: #fff; border-color: #1a7a3a; }
+  .toolbar button.blue    { background: #1a56a0; color: #fff; border-color: #1a56a0; }
+  #status { color: #666; }
+  #status.ok    { color: #1a7a3a; font-weight: bold; }
+  #status.error { color: #b00020; font-weight: bold; }
+  @page { size: letter portrait; margin: 0.4in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none !important; }
+    #monthPicker { display: none !important; }
+    #yearDisplay { border-bottom: none; }
+    .sheet { width: auto; min-height: auto; margin: 0; padding: 0; box-shadow: none; }
+    tr { page-break-inside: avoid; }
+    tr.example td { background: #c9c9c9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    tbody input:focus { background: transparent; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button id="btnSubmit" class="primary">Submit</button>
+  <button id="btnReset">Reset</button>
+  <button id="btnDemo">Load demo data</button>
+  <button id="btnPrint" class="blue">Print / Save PDF</button>
+  <span id="status"></span>
+</div>
+
+<datalist id="vendorList"></datalist>
+
+<div class="sheet">
+  <div class="form-title">Food/Non-Food Cost Worksheet</div>
+  <div class="instructions">
+    Use this form to document and organize costs submitted on the monthly CACFP claim and to record the amount of milk purchased on each receipt.<br>
+    If self-preparing any meals or snacks, use the monthly forms provided in the annual inventory packet to record and determine costs for October and September.
+  </div>
+
+  <table>
+    <colgroup>
+      <col class="c-date"><col class="c-vendor"><col class="c-food">
+      <col class="c-nonfood"><col class="c-milk"><col class="c-milk"><col class="c-milk">
+    </colgroup>
+    <thead>
+      <tr class="band">
+        <th class="ohio">OHIO<br>CACFP</th>
+        <th class="year-cell" title="Tap to select claim month and year">
+          YEAR: <span id="yearDisplay"></span>
+          <input type="month" id="monthPicker">
+        </th>
+        <th colspan="2">
+          CIRCLE CLAIM MONTH:<br>
+          <div class="months">
+            <span data-month="NOV">NOV</span><span data-month="DEC">DEC</span><span data-month="JAN">JAN</span><span data-month="FEB">FEB</span><span data-month="MAR">MAR</span>
+          </div>
+          <div class="months">
+            <span data-month="APR">APR</span><span data-month="MAY">MAY</span><span data-month="JUN">JUN</span><span data-month="JUL">JUL</span><span data-month="AUG">AUG</span>
+          </div>
+        </th>
+        <th colspan="3" style="vertical-align:middle">Number gallons<br>of milk purchased on receipt</th>
+      </tr>
+      <tr class="cols">
+        <th>RECEIPT<br>DATE</th>
+        <th>NAME OF COMPANY PURCHASED<br>FOOD/NON-FOOD ITEMS FROM</th>
+        <th>RECEIPT TOTAL<br>FOR ALLOWABLE<br>FOOD ITEMS</th>
+        <th>RECEIPT TOTAL<br>FOR ALLOWABLE<br>NON-FOOD<br>ITEMS</th>
+        <th>Whole milk<br>(1 yr. olds)</th>
+        <th>Skim<br>milk<br>(2 yrs. of<br>age and<br>older)</th>
+        <th>1% milk<br>(2 yrs. of<br>age and<br>older)</th>
+      </tr>
+      <tr class="example">
+        <td>9/4/16</td><td>Example &ndash; Giant Eagle</td><td>Example: $276.95</td>
+        <td>Example $89.75</td><td>ex. 3</td><td>ex. 12</td><td>ex. 0</td>
+      </tr>
+    </thead>
+    <tbody id="receiptRows"></tbody>
+    <tfoot>
+      <tr>
+        <td style="border:none"></td>
+        <td class="tot-label">TOTAL OF ALL MONTHLY RECEIPTS EQUAL=<br>ACTUAL COST FOR CLAIM MONTH</td>
+        <td class="tot-money" data-field="total_food">$0.00</td>
+        <td class="tot-money" data-field="total_nonfood">$0.00</td>
+        <td colspan="3" class="gal-title">*** TOTAL GALLONS</td>
+      </tr>
+      <tr>
+        <td style="border:none"></td><td style="border:none"></td>
+        <td style="border:none"></td><td style="border:none"></td>
+        <td class="gal-num" data-field="total_milk_whole">0</td>
+        <td class="gal-num" data-field="total_milk_skim">0</td>
+        <td class="gal-num" data-field="total_milk_pct1">0</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="footnotes">
+    <div>*&nbsp;&nbsp;&nbsp;&nbsp;Report total on the CACFP online sponsor claim form under Claim Cost Details, Operating Expenses, Food</div>
+    <div>**&nbsp;&nbsp;Report total on the CACFP online sponsor claim form under Claim cost Details, Operating Expenses, Non-Food</div>
+    <div>*** If purchasing milk in 4 or 8 oz. cartons, convert to total ounces then divide by 128 to get total gallons.</div>
+    <div>For example:&nbsp; 200, 8 oz. cartons purchased: 200 x 8 oz. = 1600 oz. divided by 128 oz. = 12.5 gallons</div>
+    <div class="rev">Rev. 10/2016</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Config ─────────────────────────────────────────────────── */
+  const CONFIG = {
+    SUPABASE_URL:  'https://trrmyqfpxntmgxnqkikp.supabase.co',
+    SUPABASE_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko',
+    SCHEMA: 'menumaker',
+    TABLE:  'worksheet_submissions'
+  };
+
+  /* ── Helpers ─────────────────────────────────────────────────── */
+  const $  = (sel) => document.querySelector(sel);
+  const fmtMoney = (v) => (v == null || v === '' || isNaN(v)) ? '' :
+    '$' + Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const num = (s) => { const n = parseFloat(String(s).replace(/[$,\s]/g, '')); return isNaN(n) ? 0 : n; };
+  const status = (msg, cls) => { const el = $('#status'); el.textContent = msg || ''; el.className = cls || ''; };
+  function setField(name, value) {
+    document.querySelectorAll('[data-field="' + name + '"]')
+      .forEach(el => { el.textContent = value == null ? '' : value; });
+  }
+
+  /* ── Constants ───────────────────────────────────────────────── */
+  const MIN_ROWS    = 6;
+  const MONTH_ABBR  = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const CLAIM_MONTHS = ['NOV','DEC','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG'];
+
+  /* ── Vendor autocomplete ─────────────────────────────────────── */
+  const vendorSet = new Set([
+    'GFS STORE','COSTCO WHSE','ALDI','GIANT EAGLE',"SAM'S CLUB",
+    'WALMART','TARGET','MEIJER',"MARC'S","HEINEN'S",
+    "DAVE'S SUPERMARKET",'RESTAURANT DEPOT',"BJ'S WHOLESALE"
+  ]);
+  function refreshVendorList() {
+    const dl = $('#vendorList'); dl.innerHTML = '';
+    Array.from(vendorSet).sort().forEach(v => {
+      const o = document.createElement('option'); o.value = v; dl.appendChild(o);
+    });
+  }
+  refreshVendorList();
+  function learnVendor(v) {
+    v = (v || '').trim();
+    if (v && !vendorSet.has(v)) { vendorSet.add(v); refreshVendorList(); }
+  }
+  async function loadVendorsFromSupabase() {
+    if (!CONFIG.SUPABASE_ANON) return;
+    try {
+      const res = await fetch(CONFIG.SUPABASE_URL + '/rest/v1/vendor_names?select=vendor&order=vendor', {
+        headers: { 'apikey': CONFIG.SUPABASE_ANON, 'Authorization': 'Bearer ' + CONFIG.SUPABASE_ANON, 'Accept-Profile': CONFIG.SCHEMA }
+      });
+      if (!res.ok) return;
+      const arr = await res.json();
+      arr.forEach(r => { if (r.vendor) vendorSet.add(String(r.vendor).trim()); });
+      refreshVendorList();
+    } catch (e) {}
+  }
+  loadVendorsFromSupabase();
+
+  /* ── Date helpers ────────────────────────────────────────────── */
+  function toISO(s) {
+    if (!s) return '';
+    s = String(s).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+    if (m) { let y = m[3].length === 2 ? '20' + m[3] : m[3]; return y + '-' + m[1].padStart(2,'0') + '-' + m[2].padStart(2,'0'); }
+    return '';
+  }
+  function dispDate(s) {
+    const iso = toISO(s); if (!iso) return (s || '');
+    const p = iso.split('-');
+    return Number(p[1]) + '/' + Number(p[2]) + '/' + p[0].slice(2);
+  }
+
+  /* ── Year / month picker ─────────────────────────────────────── */
+  let claimMonth = null;
+  let claimYear  = new Date().getFullYear();
+
+  function setYear(y) { claimYear = y; $('#yearDisplay').textContent = y; }
+  function circleMonth(month) {
+    claimMonth = month ? String(month).toUpperCase() : null;
+    document.querySelectorAll('.months span').forEach(el => {
+      el.classList.toggle('circled', el.dataset.month === claimMonth);
+    });
+    document.title = 'FoodCost Worksheet — ' + (claimMonth ? claimMonth + ' ' : '') + claimYear;
+  }
+  document.querySelectorAll('.months span').forEach(el => {
+    el.addEventListener('click', () => { circleMonth(el.dataset.month); syncPicker(); });
+  });
+  const picker = $('#monthPicker');
+  function syncPicker() {
+    if (claimMonth) {
+      const mi = MONTH_ABBR.indexOf(claimMonth);
+      if (mi >= 0) picker.value = claimYear + '-' + String(mi + 1).padStart(2,'0');
+    }
+  }
+  picker.addEventListener('change', () => {
+    if (!picker.value) return;
+    const [y, m] = picker.value.split('-').map(Number);
+    const abbr = MONTH_ABBR[m - 1];
+    if (!CLAIM_MONTHS.includes(abbr)) {
+      status(abbr + ' is not on this form — October and September use the inventory packet forms', 'error');
+      syncPicker(); return;
+    }
+    setYear(y); circleMonth(abbr); status('');
+  });
+  $('.year-cell').addEventListener('click', () => {
+    if (typeof picker.showPicker === 'function') { try { picker.showPicker(); } catch (e) { picker.focus(); } }
+    else { picker.focus(); }
+  });
+
+  /* ── Dynamic rows ────────────────────────────────────────────── */
+  const tbody = $('#receiptRows');
+
+  function isRowEmpty(tr) {
+    return Array.from(tr.querySelectorAll('input')).every(inp => !inp.value.trim());
+  }
+
+  function makeRow(r) {
+    r = r || {};
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><input class="a-c f-date"   value="' + dispDate(r.date)   + '"></td>' +
+      '<td><input class="a-c f-vendor" list="vendorList" autocomplete="off" value="' + (r.vendor || '') + '"></td>' +
+      '<td><input class="a-r f-food"    inputmode="decimal" value="' + (r.food    != null ? r.food    : '') + '"></td>' +
+      '<td><input class="a-r f-nonfood" inputmode="decimal" value="' + (r.nonfood != null ? r.nonfood : '') + '"></td>' +
+      '<td><input class="a-c f-whole"   inputmode="decimal" value="' + (r.milk_whole || '') + '"></td>' +
+      '<td><input class="a-c f-skim"    inputmode="decimal" value="' + (r.milk_skim  || '') + '"></td>' +
+      '<td><input class="a-c f-pct1"    inputmode="decimal" value="' + (r.milk_pct1  || '') + '"></td>';
+    if (r.vendor) learnVendor(r.vendor);
+    return tr;
+  }
+
+  /* Return list of all current tbody rows */
+  function allRows() { return Array.from(tbody.querySelectorAll('tr')); }
+
+  /* Ensure MIN_ROWS visible + always 1 empty trailing row */
+  function ensureMinRows() {
+    let rows = allRows();
+    // Pad up to MIN_ROWS
+    while (rows.length < MIN_ROWS) { const tr = makeRow(); tbody.appendChild(tr); rows.push(tr); }
+    // Always have 1 empty trailing row
+    const last = rows[rows.length - 1];
+    if (!isRowEmpty(last)) { tbody.appendChild(makeRow()); }
+  }
+
+  /* Remove excess empty trailing rows; never below MIN_ROWS; keep 1 empty */
+  function trimTrailingEmpties() {
+    let rows = allRows();
+    while (rows.length > MIN_ROWS) {
+      const last       = rows[rows.length - 1];
+      const secondLast = rows[rows.length - 2];
+      if (!secondLast) break;
+      // Remove last only if both last and second-to-last are empty
+      if (isRowEmpty(last) && isRowEmpty(secondLast)) {
+        tbody.removeChild(last);
+        rows.pop();
+      } else {
+        break;
+      }
+    }
+    ensureMinRows();
+  }
+
+  /* ── Input handler ───────────────────────────────────────────── */
+  tbody.addEventListener('input', (ev) => {
+    recalc();
+    const rows = allRows();
+    const tr   = ev.target.closest('tr');
+    const last = rows[rows.length - 1];
+
+    if (tr === last && !isRowEmpty(last)) {
+      // Typed in last row → add new empty row
+      tbody.appendChild(makeRow());
+    } else if (isRowEmpty(tr)) {
+      // Cleared a row → trim excess empties
+      trimTrailingEmpties();
+    }
+  });
+  tbody.addEventListener('focusout', (ev) => {
+    if (ev.target.classList.contains('f-vendor')) learnVendor(ev.target.value);
+  });
+
+  /* ── Recalc totals ───────────────────────────────────────────── */
+  function recalc() {
+    let tFood = 0, tNonfood = 0, tW = 0, tS = 0, tP1 = 0;
+    allRows().forEach(tr => {
+      tFood    += num(tr.querySelector('.f-food').value);
+      tNonfood += num(tr.querySelector('.f-nonfood').value);
+      tW       += num(tr.querySelector('.f-whole').value);
+      tS       += num(tr.querySelector('.f-skim').value);
+      tP1      += num(tr.querySelector('.f-pct1').value);
+    });
+    setField('total_food',       fmtMoney(tFood)    || '$0.00');
+    setField('total_nonfood',    fmtMoney(tNonfood)  || '$0.00');
+    setField('total_milk_whole', String(tW));
+    setField('total_milk_skim',  String(tS));
+    setField('total_milk_pct1',  String(tP1));
+    return { tFood, tNonfood, tW, tS, tP1 };
+  }
+
+  /* ── renderWorksheet ─────────────────────────────────────────── */
+  function renderWorksheet(data) {
+    data = data || {};
+    window.__lastData = data;
+    setYear(data.year || new Date().getFullYear());
+    circleMonth(data.claim_month);
+    syncPicker();
+    if (!data.claim_month) picker.value = '';
+
+    tbody.innerHTML = '';
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+    rows.forEach(r => tbody.appendChild(makeRow(r)));
+
+    ensureMinRows();
+    recalc();
+  }
+  window.renderWorksheet = renderWorksheet;
+
+  /* ── Collect data ────────────────────────────────────────────── */
+  function collectData() {
+    const rows = [];
+    allRows().forEach(tr => {
+      const date    = toISO(tr.querySelector('.f-date').value) || tr.querySelector('.f-date').value.trim();
+      const vendor  = tr.querySelector('.f-vendor').value.trim();
+      const food    = tr.querySelector('.f-food').value.trim();
+      const nonfood = tr.querySelector('.f-nonfood').value.trim();
+      const w  = tr.querySelector('.f-whole').value.trim();
+      const s  = tr.querySelector('.f-skim').value.trim();
+      const p1 = tr.querySelector('.f-pct1').value.trim();
+      if (date || vendor || food || nonfood || w || s || p1) {
+        rows.push({ date, vendor,
+          food:       food    ? num(food)    : null,
+          nonfood:    nonfood ? num(nonfood) : null,
+          milk_whole: w  ? num(w)  : null,
+          milk_skim:  s  ? num(s)  : null,
+          milk_pct1:  p1 ? num(p1) : null });
+      }
+    });
+    const t = recalc();
+    return { year: claimYear, claim_month: claimMonth, rows,
+      total_food: t.tFood, total_nonfood: t.tNonfood,
+      milk_whole: t.tW, milk_skim: t.tS, milk_pct1: t.tP1 };
+  }
+
+  /* ── Submit ──────────────────────────────────────────────────── */
+  async function submitForm() {
+    const d = collectData();
+    if (!d.claim_month) { status('Tap the year in "YEAR:" to select claim month', 'error'); return; }
+    if (!d.rows.length) { status('No receipt rows entered', 'error'); return; }
+    if (!CONFIG.SUPABASE_ANON) { status('SUPABASE_ANON is empty', 'error'); return; }
+    status('Submitting…');
+    try {
+      const res = await fetch(CONFIG.SUPABASE_URL + '/rest/v1/' + CONFIG.TABLE, {
+        method: 'POST',
+        headers: {
+          'apikey': CONFIG.SUPABASE_ANON, 'Authorization': 'Bearer ' + CONFIG.SUPABASE_ANON,
+          'Content-Type': 'application/json', 'Content-Profile': CONFIG.SCHEMA, 'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(d)
+      });
+      if (!res.ok) { const t = await res.text(); throw new Error(res.status + ': ' + t); }
+      status('✓ Submitted', 'ok');
+    } catch (e) { status('Submit failed — ' + e.message, 'error'); }
+  }
+
+  /* ── Demo data ───────────────────────────────────────────────── */
+  const DEMO = {
+    year: 2026, claim_month: 'MAY',
+    rows: [
+      { date:'2026-05-01', vendor:'GFS STORE #1234',   food:245.18, nonfood:12.40, milk_whole:4, milk_skim:2, milk_pct1:6 },
+      { date:'2026-05-05', vendor:'COSTCO WHSE #0345', food:389.62, nonfood:25.10, milk_whole:6, milk_skim:4, milk_pct1:8 },
+      { date:'2026-05-08', vendor:'ALDI #77',          food:112.07,                               milk_pct1:4 },
+      { date:'2026-05-12', vendor:'GIANT EAGLE #6512', food:174.55, nonfood:8.99,  milk_whole:3, milk_pct1:5 },
+      { date:'2026-05-15', vendor:'GFS STORE #1234',   food:298.40, nonfood:14.75, milk_whole:5, milk_pct1:7 },
+      { date:'2026-05-19', vendor:"SAM'S CLUB #4821",  food:256.90, nonfood:31.20, milk_skim:2,  milk_pct1:6 },
+      { date:'2026-05-22', vendor:'COSTCO WHSE #0345', food:341.15, nonfood:18.60, milk_whole:6, milk_pct1:8 },
+      { date:'2026-05-27', vendor:'GFS STORE #1234',   food:203.77, nonfood:9.45,  milk_whole:4, milk_pct1:5 },
+      { date:'2026-05-30', vendor:'ALDI #77',          food:96.33,                               milk_pct1:3 }
+    ]
+  };
+
+  /* ── Toolbar ─────────────────────────────────────────────────── */
+  $('#btnSubmit').addEventListener('click', submitForm);
+  $('#btnReset').addEventListener('click', () => { renderWorksheet({ year: new Date().getFullYear() }); status('Form cleared'); });
+  $('#btnDemo').addEventListener('click', () => { renderWorksheet(DEMO); status('Demo data loaded'); });
+  $('#btnPrint').addEventListener('click', () => window.print());
+
+  /* ── URL param ?data=<base64 JSON> ──────────────────────────── */
+  function tryUrlData() {
+    const p = new URLSearchParams(location.search);
+    const raw = p.get('data');
+    if (!raw) return false;
+    try {
+      const json = decodeURIComponent(escape(atob(raw.replace(/-/g,'+').replace(/_/g,'/'))));
+      renderWorksheet(JSON.parse(json));
+      if (p.get('print') === '1') setTimeout(() => window.print(), 400);
+      return true;
+    } catch (e) { status('Invalid ?data= parameter: ' + e.message, 'error'); return false; }
+  }
+
+  /* ── postMessage (React iframe) ─────────────────────────────── */
+  window.addEventListener('message', (ev) => {
+    if (ev.data && ev.data.type === 'cacfp-render') {
+      renderWorksheet(ev.data.data);
+      if (ev.data.print) setTimeout(() => window.print(), 400);
+    }
+  });
+
+  /* ── Init ────────────────────────────────────────────────────── */
+  if (!tryUrlData()) renderWorksheet({ year: new Date().getFullYear() });
+
+})();
+</script>
+</body>
+</html>
