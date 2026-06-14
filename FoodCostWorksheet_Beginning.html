@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beginning Fiscal Year Food/Non-Food Cost Worksheet — October</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 10pt; background: #fff; color: #000; }
+
+  /* ── Layout ── */
+  .page { max-width: 940px; margin: 0 auto; padding: 10px 12px 20px; }
+
+  /* ── Header ── */
+  .title-row { font-size: 18pt; font-weight: bold; padding: 4px 0 2px; }
+  .instruction { font-size: 8pt; font-weight: bold; padding: 2px 0 4px; }
+
+  /* ── Status bar ── */
+  #status-bar {
+    display: none; padding: 6px 12px; border-radius: 4px; font-size: 9pt;
+    margin-bottom: 8px; font-weight: bold;
+  }
+  #status-bar.success { background: #d4edda; color: #155724; display: block; }
+  #status-bar.error   { background: #f8d7da; color: #721c24; display: block; }
+  #status-bar.info    { background: #cce5ff; color: #004085; display: block; }
+
+  /* ── Main table ── */
+  table.main { width: 100%; border-collapse: collapse; }
+  table.main th, table.main td {
+    border: 1px solid #000; padding: 2px 3px; vertical-align: top;
+  }
+  table.main td.no-border { border: none; }
+
+  /* Column widths matching original */
+  .col-a { width: 85px; }
+  .col-b { width: 350px; }
+  .col-c { width: 140px; }
+  .col-d { width: 140px; }
+  .col-e { width: 75px; }
+  .col-f { width: 75px; }
+  .col-g { width: 75px; }
+
+  /* Header cells */
+  .hdr-ohio { font-size: 10pt; font-weight: bold; text-align: center; vertical-align: top; }
+  .hdr-month { font-size: 11pt; text-align: center; vertical-align: top; line-height: 1.4; }
+  .hdr-month .month-name { color: #000; font-size: 11pt; }
+  .hdr-month .year-val   { color: #000; font-size: 11pt; }
+  .hdr-inv  { font-size: 9pt; font-weight: bold; text-align: center; vertical-align: top; word-wrap: break-word; }
+  .hdr-inv-val {
+    font-family: 'Courier New', monospace; font-size: 11pt;
+    text-align: center; vertical-align: bottom;
+    border: 1px solid #000; background: #fff;
+  }
+  .hdr-milk { font-size: 9pt; font-weight: bold; text-align: center; vertical-align: top; }
+  .hdr-cols { font-size: 10pt; font-weight: bold; text-align: center; vertical-align: top; word-wrap: break-word; }
+  .hdr-cols-sm { font-size: 9pt; font-weight: bold; text-align: center; vertical-align: top; word-wrap: break-word; }
+
+  /* Example row */
+  .example-row td { background: #d9d9d9; font-size: 10pt; font-weight: bold; text-align: center; }
+
+  /* Data rows */
+  .data-row td { height: 20px; }
+  .cell-date  { border: 1px solid #000; }
+  .cell-name  { border: 1px solid #000; font-size: 8pt; font-weight: bold; }
+  .cell-food  { border: 1px solid #000; text-align: center; }
+  .cell-nonfood { border: 1px solid #000; text-align: center; }
+  .cell-milk  { border: 1px solid #000; text-align: center; font-size: 10pt; }
+
+  /* Editable inputs */
+  input[type="text"], input[type="number"] {
+    width: 100%; border: none; background: transparent;
+    font-family: Arial, sans-serif; font-size: 10pt; text-align: center;
+    outline: none; padding: 0 2px;
+  }
+  input[type="number"] { -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .cell-name input { text-align: left; font-size: 8pt; font-weight: bold; }
+  .cell-date input  { text-align: center; font-size: 10pt; }
+
+  /* Inv inputs */
+  .inv-input {
+    width: 100%; border: none; background: transparent;
+    font-family: 'Courier New', monospace; font-size: 11pt; text-align: center;
+    outline: none; color: #000;
+  }
+
+  /* Totals row */
+  .totals-row td {
+    border: 1px solid #000; font-size: 8pt; font-weight: bold;
+    text-align: center; vertical-align: top; word-wrap: break-word;
+  }
+  .totals-label { font-size: 10pt; font-weight: bold; text-align: center; }
+  .totals-val   {
+    font-size: 10pt; font-weight: bold; text-align: center;
+    border: 1px solid #000; padding: 2px 3px;
+  }
+
+  /* Footnotes */
+  .footnotes { font-size: 9pt; padding: 3px 0 1px; }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; padding: 10px 0 4px; flex-wrap: wrap; align-items: center; }
+  .btn {
+    padding: 6px 16px; border: none; border-radius: 4px; cursor: pointer;
+    font-size: 10pt; font-family: Arial, sans-serif; font-weight: bold;
+  }
+  .btn-save   { background: #1a73e8; color: #fff; }
+  .btn-save:hover { background: #1557b0; }
+  .btn-load   { background: #34a853; color: #fff; }
+  .btn-load:hover { background: #267038; }
+  .btn-clear  { background: #ea4335; color: #fff; }
+  .btn-clear:hover { background: #b5261a; }
+  .btn-print  { background: #666; color: #fff; }
+  .btn-print:hover { background: #444; }
+  .center-select {
+    font-size: 10pt; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px;
+  }
+
+  @media print {
+    .btn-row, #status-bar { display: none !important; }
+    body { font-size: 9pt; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Status bar -->
+  <div id="status-bar"></div>
+
+  <!-- Controls -->
+  <div class="btn-row">
+    <label style="font-size:10pt;font-weight:bold;">Center:</label>
+    <select id="center-select" class="center-select">
+      <option value="881ef4ce-1a27-4d3b-aa60-59d2a307bf2b">Pearl (Parma Heights)</option>
+      <option value="099c404b-e6d3-4543-9d9a-1fb11a2ee62d">Alpha (Highland Heights)</option>
+    </select>
+    <button class="btn btn-load"  onclick="loadData()">⬇ Load</button>
+    <button class="btn btn-save"  onclick="saveData()">💾 Save</button>
+    <button class="btn btn-clear" onclick="clearForm()">✕ Clear</button>
+    <button class="btn btn-print" onclick="window.print()">🖨 Print</button>
+  </div>
+
+  <!-- Title -->
+  <div class="title-row">Beginning Fiscal Year Food/Non-Food Cost Worksheet</div>
+  <div class="instruction">
+    For ANNUAL Inventory: Complete this form at the end of October.
+    Add September ending food and non-food inventory values to October purchases.
+  </div>
+
+  <br>
+
+  <!-- Main table -->
+  <table class="main">
+    <colgroup>
+      <col class="col-a">
+      <col class="col-b">
+      <col class="col-c">
+      <col class="col-d">
+      <col class="col-e">
+      <col class="col-f">
+      <col class="col-g">
+    </colgroup>
+
+    <!-- Row 6 — header with inventory fields -->
+    <tr style="height:76px;">
+      <td class="hdr-ohio">OHIO<br>CACFP</td>
+      <td class="hdr-month">
+        <span>FOOD/NON FOOD COSTS<br>FOR</span><br>
+        <span>MONTH: </span><span class="month-name">OCTOBER</span>
+        <span>&nbsp;&nbsp;YR: </span><span class="year-val">2025</span>
+      </td>
+      <td class="hdr-inv">
+        BEGINNING INVENTORY<br>
+        List Total FOOD inventory (F-1) from September 30
+      </td>
+      <td class="hdr-inv">
+        BEGINNING INVENTORY<br>
+        List Total NON-FOOD inventory (F-2) from September 30
+      </td>
+      <td class="hdr-milk" colspan="3">
+        NUMBER GALLONS<br>OF MILK PURCHASED ON RECEIPT
+      </td>
+    </tr>
+
+    <!-- Row 7 — inventory value inputs -->
+    <tr style="height:24px;">
+      <td style="border:1px solid #000;"></td>
+      <td style="border:1px solid #000;"></td>
+      <td class="hdr-inv-val">
+        $<input type="text" id="inv-food" class="inv-input" placeholder="0.00"
+               oninput="updateTotals()" style="width:calc(100% - 8px)">
+      </td>
+      <td class="hdr-inv-val">
+        $<input type="text" id="inv-nonfood" class="inv-input" placeholder="0.00"
+               oninput="updateTotals()" style="width:calc(100% - 8px)">
+      </td>
+      <td style="border:1px solid #000;font-size:9pt;font-weight:bold;text-align:center;vertical-align:top;"></td>
+      <td style="border:1px solid #000;font-size:9pt;font-weight:bold;text-align:center;vertical-align:top;"></td>
+      <td style="border:1px solid #000;font-size:9pt;font-weight:bold;text-align:center;vertical-align:top;"></td>
+    </tr>
+
+    <!-- Row 8 — column headers -->
+    <tr style="height:36px;">
+      <td class="hdr-cols" style="font-size:10pt;">RECEIPT DATE</td>
+      <td class="hdr-cols" style="font-size:11pt;">NAME OF COMPANY PURCHASED FOOD/NON-FOOD ITEMS FROM</td>
+      <td class="hdr-cols" style="font-size:11pt;">+ RECEIPT TOTAL FOR ALLOWABLE FOOD ITEMS</td>
+      <td class="hdr-cols" style="font-size:11pt;">+ RECEIPT TOTAL FOR ALLOWABLE NON-FOOD ITEMS</td>
+      <td class="hdr-cols-sm">Whole milk<br>(1 yr. olds)</td>
+      <td class="hdr-cols-sm">Skim milk<br>(2 yrs. of age and older)</td>
+      <td class="hdr-cols-sm">1% milk<br>(2 yrs. of age and older)</td>
+    </tr>
+
+    <!-- Row 9 — example row -->
+    <tr class="example-row" style="height:20px;">
+      <td>10-19-13</td>
+      <td>Example – Sack N Save</td>
+      <td>Example $312.76</td>
+      <td>Example $44.35</td>
+      <td>ex. 2</td>
+      <td>ex.  0</td>
+      <td>ex. 7</td>
+    </tr>
+
+    <!-- Data rows 10-52 (40 receipt rows) -->
+    <tbody id="receipt-rows">
+    </tbody>
+
+    <!-- Totals row -->
+    <tr style="height:20px;">
+      <td class="totals-row" colspan="2" style="font-size:10pt;text-align:left;font-weight:bold;word-wrap:break-word;">
+        BEGINNING INVENTORY VALUES LISTED AT TOP PLUS ALL MONTHLY RECEIPTS EQUAL ACTUAL COST FOR OCTOBER
+      </td>
+      <td class="totals-val" id="total-food">$0.00</td>
+      <td class="totals-val" id="total-nonfood">$0.00</td>
+      <td class="totals-val" colspan="3" style="font-size:10pt;font-weight:bold;text-align:left;">
+        ***&nbsp;&nbsp;TOTAL GALLONS
+      </td>
+    </tr>
+    <tr style="height:20px;">
+      <td colspan="4" style="border:none;"></td>
+      <td class="totals-val" id="total-milk-whole">0</td>
+      <td class="totals-val" id="total-milk-skim">0</td>
+      <td class="totals-val" id="total-milk-1pct">0</td>
+    </tr>
+  </table>
+
+  <!-- Footnotes -->
+  <div class="footnotes">
+    *&nbsp;&nbsp; Report total food costs on the October online sponsor claim: CACFP Operating Expenses, Line Item- Food<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;List cost in applicable Column: CACFP Funded Current Month's Costs or Non-CACFP Funded Current Month's Costs.<br>
+    ** Report total non-food costs on the October online sponsor claim: CACFP Operating Expenses, Line Item – Non Food<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;List cost in applicable Column: CACFP Funded Current Month's Costs or Non-CACFP Funded Current Month's Costs.<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;Note: If ending food or non-food cost results in a negative number, zero cost would be claimed for month.<br>
+    *** If purchasing milk in 4 or 8 oz. cartons, convert to total ounces then divide by 128 to get total gallons.<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;For example: 200, 8 oz. cartons purchased: 200 x 8 oz. – 1600 oz. divided by 128 oz. = 12.5 gallons
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// ── Config ──────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk3NTI5NTMsImV4cCI6MjAyNTMyODk1M30.placeholder';
+const FORM_TYPE = 'food_cost_beginning';
+const FORM_MONTH = 10; // October — fixed forever
+
+// ── Auto-detect fiscal year ───────────────────────────────────────────────
+function detectFiscalYear() { return new Date().getFullYear(); }
+const YEAR = detectFiscalYear();
+document.querySelector('.year-val').textContent = YEAR;
+
+// ── Dynamic rows ──────────────────────────────────────────────────────────
+// rowCount tracks how many <tr> rows currently exist in tbody.
+// Always keep exactly 1 empty trailing row.
+let rowCount = 0;
+
+const tbody = document.getElementById('receipt-rows');
+
+// Build one row TR and append to tbody
+function addRow() {
+  const i = rowCount++;
+  const tr = document.createElement('tr');
+  tr.id = `tr-${i}`;
+  tr.style.height = '20px';
+  tr.innerHTML = `
+    <td class="cell-date"><input type="text" id="r${i}-date" placeholder="" oninput="onRowInput(${i})"></td>
+    <td class="cell-name"><input type="text" id="r${i}-name" placeholder="" oninput="onRowInput(${i})"></td>
+    <td class="cell-food"><input type="text" id="r${i}-food" placeholder="" oninput="onRowInput(${i});updateTotals()"></td>
+    <td class="cell-nonfood"><input type="text" id="r${i}-nonfood" placeholder="" oninput="onRowInput(${i});updateTotals()"></td>
+    <td class="cell-milk"><input type="text" id="r${i}-milk-w" placeholder="" oninput="onRowInput(${i});updateTotals()"></td>
+    <td class="cell-milk"><input type="text" id="r${i}-milk-s" placeholder="" oninput="onRowInput(${i});updateTotals()"></td>
+    <td class="cell-milk"><input type="text" id="r${i}-milk-1" placeholder="" oninput="onRowInput(${i});updateTotals()"></td>
+  `;
+  tbody.appendChild(tr);
+  return i;
+}
+
+// Is row i completely empty?
+function isRowEmpty(i) {
+  return ['date','name','food','nonfood','milk-w','milk-s','milk-1'].every(f => {
+    const el = document.getElementById(`r${i}-${f}`);
+    return !el || !el.value.trim();
+  });
+}
+
+// Remove row TR from DOM (does NOT decrement rowCount — indices stay stable)
+function removeRow(i) {
+  const tr = document.getElementById(`tr-${i}`);
+  if (tr) tr.remove();
+}
+
+const MIN_ROWS = 6; // always show at least this many rows
+
+// Get list of currently visible row indices
+function visibleRows() {
+  const v = [];
+  for (let i = 0; i < rowCount; i++) {
+    if (document.getElementById(`tr-${i}`)) v.push(i);
+  }
+  return v;
+}
+
+// Called on any input in row i
+function onRowInput(i) {
+  const visible = visibleRows();
+  const lastIdx = visible[visible.length - 1];
+
+  // Typed in the last row → add a new empty row
+  if (i === lastIdx && !isRowEmpty(i)) {
+    addRow();
+    return;
+  }
+
+  // Otherwise trim extra trailing empties (keep MIN_ROWS minimum + 1 empty at end)
+  trimTrailingEmpties();
+}
+
+// Remove excess empty trailing rows; never go below MIN_ROWS; always keep 1 empty at end
+function trimTrailingEmpties() {
+  let visible = visibleRows();
+
+  // Remove trailing empties until only 1 empty remains OR we're at MIN_ROWS
+  while (visible.length > MIN_ROWS) {
+    const last       = visible[visible.length - 1];
+    const secondLast = visible[visible.length - 2];
+    if (secondLast === undefined) break;
+    // Remove the last row only if both last and second-to-last are empty
+    if (isRowEmpty(last) && isRowEmpty(secondLast)) {
+      removeRow(last);
+      visible.pop();
+    } else {
+      break;
+    }
+  }
+
+  ensureMinRows();
+}
+
+// Ensure MIN_ROWS visible + 1 empty trailing row
+function ensureMinRows() {
+  let visible = visibleRows();
+
+  // Pad up to MIN_ROWS if needed
+  while (visible.length < MIN_ROWS) {
+    addRow();
+    visible.push(rowCount - 1);
+  }
+
+  // Make sure the last row is empty (so user always has somewhere to type)
+  const last = visible[visible.length - 1];
+  if (!isRowEmpty(last)) addRow();
+}
+
+// ── Init: start with MIN_ROWS empty rows ─────────────────────────────────
+for (let k = 0; k < MIN_ROWS; k++) addRow();
+
+// ── Parse currency / numeric helper ──────────────────────────────────────
+function parseMoney(val) {
+  if (!val) return 0;
+  const n = parseFloat(String(val).replace(/[$,\s]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+function parseNum(val) {
+  const n = parseFloat(String(val).replace(/[,\s]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+function fmtMoney(n) { return '$' + n.toFixed(2); }
+
+// ── Update totals ─────────────────────────────────────────────────────────
+function updateTotals() {
+  let sumFood    = parseMoney(document.getElementById('inv-food').value);
+  let sumNonfood = parseMoney(document.getElementById('inv-nonfood').value);
+  let sumMilkW = 0, sumMilkS = 0, sumMilk1 = 0;
+
+  for (let i = 0; i < rowCount; i++) {
+    if (!document.getElementById(`tr-${i}`)) continue;
+    sumFood    += parseMoney((document.getElementById(`r${i}-food`)    || {}).value);
+    sumNonfood += parseMoney((document.getElementById(`r${i}-nonfood`) || {}).value);
+    sumMilkW   += parseNum((document.getElementById(`r${i}-milk-w`)   || {}).value);
+    sumMilkS   += parseNum((document.getElementById(`r${i}-milk-s`)   || {}).value);
+    sumMilk1   += parseNum((document.getElementById(`r${i}-milk-1`)   || {}).value);
+  }
+
+  document.getElementById('total-food').textContent    = fmtMoney(sumFood);
+  document.getElementById('total-nonfood').textContent = fmtMoney(sumNonfood);
+  document.getElementById('total-milk-whole').textContent = sumMilkW % 1 === 0 ? sumMilkW : sumMilkW.toFixed(2);
+  document.getElementById('total-milk-skim').textContent  = sumMilkS % 1 === 0 ? sumMilkS : sumMilkS.toFixed(2);
+  document.getElementById('total-milk-1pct').textContent  = sumMilk1 % 1 === 0 ? sumMilk1 : sumMilk1.toFixed(2);
+}
+
+// ── Status bar ───────────────────────────────────────────────────────────
+function showStatus(msg, type) {
+  const bar = document.getElementById('status-bar');
+  bar.textContent = msg;
+  bar.className = type;
+  if (type !== 'info') setTimeout(() => { bar.style.display = 'none'; }, 4000);
+}
+
+// ── Collect form data (skip fully empty rows) ──────────────────────────
+function collectData() {
+  const rows = [];
+  let seq = 0;
+  for (let i = 0; i < rowCount; i++) {
+    if (!document.getElementById(`tr-${i}`)) continue;
+    const date    = (document.getElementById(`r${i}-date`)    || {}).value?.trim() || '';
+    const name    = (document.getElementById(`r${i}-name`)    || {}).value?.trim() || '';
+    const food    = (document.getElementById(`r${i}-food`)    || {}).value?.trim() || '';
+    const nonfood = (document.getElementById(`r${i}-nonfood`) || {}).value?.trim() || '';
+    const milkW   = (document.getElementById(`r${i}-milk-w`)  || {}).value?.trim() || '';
+    const milkS   = (document.getElementById(`r${i}-milk-s`)  || {}).value?.trim() || '';
+    const milk1   = (document.getElementById(`r${i}-milk-1`)  || {}).value?.trim() || '';
+    if (!date && !name && !food && !nonfood && !milkW && !milkS && !milk1) continue;
+    rows.push({ row_index: seq++, date, name, food_amount: food, nonfood_amount: nonfood,
+                milk_whole: milkW, milk_skim: milkS, milk_1pct: milk1 });
+  }
+  return {
+    inv_food:    document.getElementById('inv-food').value.trim(),
+    inv_nonfood: document.getElementById('inv-nonfood').value.trim(),
+    rows,
+    total_food:    document.getElementById('total-food').textContent,
+    total_nonfood: document.getElementById('total-nonfood').textContent,
+    total_milk_whole: document.getElementById('total-milk-whole').textContent,
+    total_milk_skim:  document.getElementById('total-milk-skim').textContent,
+    total_milk_1pct:  document.getElementById('total-milk-1pct').textContent,
+  };
+}
+
+// ── Restore form data ─────────────────────────────────────────────────────
+function restoreData(data) {
+  document.getElementById('inv-food').value    = data.inv_food    || '';
+  document.getElementById('inv-nonfood').value = data.inv_nonfood || '';
+
+  // Clear all existing rows and reset counter
+  tbody.innerHTML = '';
+  rowCount = 0;
+
+  (data.rows || []).forEach(r => {
+    const i = addRow();
+    document.getElementById(`r${i}-date`).value    = r.date    || '';
+    document.getElementById(`r${i}-name`).value    = r.name    || '';
+    document.getElementById(`r${i}-food`).value    = r.food_amount    || '';
+    document.getElementById(`r${i}-nonfood`).value = r.nonfood_amount || '';
+    document.getElementById(`r${i}-milk-w`).value  = r.milk_whole || '';
+    document.getElementById(`r${i}-milk-s`).value  = r.milk_skim  || '';
+    document.getElementById(`r${i}-milk-1`).value  = r.milk_1pct  || '';
+  });
+
+  ensureMinRows();
+  updateTotals();
+}
+
+// ── Save to Supabase ──────────────────────────────────────────────────────
+async function saveData() {
+  const centerId = document.getElementById('center-select').value;
+  showStatus('Saving…', 'info');
+  const payload = {
+    center_id:  centerId,
+    form_type:  FORM_TYPE,
+    fiscal_year: YEAR,
+    claim_month: FORM_MONTH,
+    form_data:  collectData(),
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    // Upsert by center_id + form_type + fiscal_year + claim_month
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/cacfp_form_data?center_id=eq.${centerId}&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.${FORM_MONTH}`,
+      { method: 'GET', headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    );
+    const existing = await res.json();
+
+    let method, url;
+    if (existing && existing.length > 0) {
+      method = 'PATCH';
+      url = `${SUPABASE_URL}/rest/v1/cacfp_form_data?center_id=eq.${centerId}&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.${FORM_MONTH}`;
+    } else {
+      method = 'POST';
+      url = `${SUPABASE_URL}/rest/v1/cacfp_form_data`;
+    }
+
+    const saveRes = await fetch(url, {
+      method,
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (saveRes.ok) {
+      showStatus('✓ Saved successfully', 'success');
+    } else {
+      const err = await saveRes.text();
+      showStatus('Save error: ' + err, 'error');
+    }
+  } catch (e) {
+    // Fallback: save to localStorage
+    localStorage.setItem(`${FORM_TYPE}_${centerId}_${YEAR}_${FORM_MONTH}`, JSON.stringify(collectData()));
+    showStatus('✓ Saved locally (Supabase unreachable)', 'success');
+  }
+}
+
+// ── Load from Supabase ────────────────────────────────────────────────────
+async function loadData() {
+  const centerId = document.getElementById('center-select').value;
+  showStatus('Loading…', 'info');
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/cacfp_form_data?select=form_data&center_id=eq.${centerId}&form_type=eq.${FORM_TYPE}&fiscal_year=eq.${YEAR}&claim_month=eq.${FORM_MONTH}`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    );
+    const rows = await res.json();
+    if (rows && rows.length > 0 && rows[0].form_data) {
+      restoreData(rows[0].form_data);
+      showStatus('✓ Loaded from Supabase', 'success');
+    } else {
+      // Try localStorage
+      const local = localStorage.getItem(`${FORM_TYPE}_${centerId}_${YEAR}_${FORM_MONTH}`);
+      if (local) {
+        restoreData(JSON.parse(local));
+        showStatus('✓ Loaded from local storage', 'success');
+      } else {
+        showStatus('No saved data found for this center/month.', 'error');
+      }
+    }
+  } catch (e) {
+    const local = localStorage.getItem(`${FORM_TYPE}_${centerId}_${YEAR}_${FORM_MONTH}`);
+    if (local) {
+      restoreData(JSON.parse(local));
+      showStatus('✓ Loaded from local storage (Supabase unreachable)', 'success');
+    } else {
+      showStatus('Load error: ' + e.message, 'error');
+    }
+  }
+}
+
+// ── Clear form ────────────────────────────────────────────────────────────
+function clearForm() {
+  if (!confirm('Clear all entries?')) return;
+  document.getElementById('inv-food').value    = '';
+  document.getElementById('inv-nonfood').value = '';
+  tbody.innerHTML = '';
+  rowCount = 0;
+  addRow();
+  updateTotals();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+updateTotals();
+
+// ── postMessage (React iframe) ────────────────────────────────────────────
+window.addEventListener("message", function(ev) {
+  if (ev.data && ev.data.type === "cacfp-render") {
+    restoreData(ev.data.data);
+  }
+});
+</script>
+</body>
+</html>
