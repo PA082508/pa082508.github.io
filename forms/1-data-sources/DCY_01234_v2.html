@@ -62,25 +62,25 @@ select { padding: 5px 8px; border-radius: 4px; border: 1px solid #ccc; font-size
 
 <div class="page-wrap" id="page1">
   <div class="page-inner">
-    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-1.png" width="1275" height="1650" alt="DCY 01234 Page 1" style="display:block;position:absolute;top:0;left:0;width:1275px;height:1650px;">
+    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-1.png" width="1275" height="1650" alt="DCY 01234 Page 1" style="display:block;position:absolute;top:0;left:0;width:1275px;height:1650px;z-index:0;">
     
   </div>
 </div>
 <div class="page-wrap" id="page2">
   <div class="page-inner">
-    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-2.png" width="1275" height="1650" alt="DCY 01234 Page 2" style="display:block;position:absolute;top:0;left:0;width:1275px;height:1650px;">
+    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-2.png" width="1275" height="1650" alt="DCY 01234 Page 2" style="display:block;position:absolute;top:0;left:0;width:1275px;height:1650px;z-index:0;">
     
   </div>
 </div>
 <div class="page-wrap" id="page3">
   <div class="page-inner">
-    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-3.png" width="1275" height="1650" alt="DCY 01234 Page 3" style="display:block;position:absolute;top:0;left:0;width:1275px;height:1650px;">
+    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-3.png" width="1275" height="1650" alt="DCY 01234 Page 3" style="display:block;position:absolute;top:0;left:0;width:1275px;height:1650px;z-index:0;">
     
   </div>
 </div>
 <div class="page-wrap" id="page4">
   <div class="page-inner">
-    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-4.png" width="1275" height="1650" alt="DCY 01234 Page 4" style="display:block;position:absolute;top:0;left:0;width:1275px;height:1650px;">
+    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-4.png" width="1275" height="1650" alt="DCY 01234 Page 4" style="display:block;position:absolute;top:0;left:0;width:1275px;height:1650px;z-index:0;">
     
   </div>
 </div>
@@ -218,7 +218,7 @@ async function sb(method, path, body) {
 async function loadFromDB() {
   const childId = document.getElementById('child-id-input').value.trim();
   if (!childId) { setStatus('Enter Child ID', 'err'); return; }
-  setStatus('Loading...', 'inf');
+  setStatus('Loading PRL-011...', 'inf');
   try {
     // Load child
     const [child] = await sb('GET', `/rest/v1/children?child_id=eq.${childId}&select=*`);
