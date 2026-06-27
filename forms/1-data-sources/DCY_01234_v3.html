@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1275">
+<title>DCY 01234 v3</title>
+<style>
+body{margin:0;background:#e0e0e0;font-family:Arial,sans-serif}
+#tb{position:sticky;top:0;z-index:100;background:#1a1a2e;color:#fff;padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#tb h1{color:#0097A7;font-size:13pt;margin-right:4px}
+.btn{padding:6px 14px;border:none;border-radius:4px;cursor:pointer;font-size:10pt;font-weight:bold}
+.bs{background:#0097A7;color:#fff}
+.br{background:#E53935;color:#fff}
+.bg{background:#555;color:#fff}
+select,#cid{padding:5px 8px;border-radius:4px;border:1px solid #ccc;font-size:10pt}
+#cid{width:140px}
+#st{font-size:9pt;padding:4px 10px;border-radius:4px;display:none}
+#st.ok{background:#d4edda;color:#155724;display:inline-block}
+#st.er{background:#f8d7da;color:#721c24;display:inline-block}
+#st.in{background:#cce5ff;color:#004085;display:inline-block}
+input:focus,textarea:focus{background:rgba(200,230,255,0.95)!important}
+@media print{#tb{display:none}input,textarea{background:transparent!important;border:none!important;border-bottom:1px solid #000!important}}
+</style>
+</head>
+<body>
+<div id="tb">
+  <h1>DCY 01234</h1>
+  <select id="ctr"><option value="pearl">Pearl — Parma Heights</option><option value="alpha">Alpha — Highland Heights</option><option value="ridge">Ridge — Wickliffe</option></select>
+  <input type="text" id="cid" placeholder="Child ID (PRL-001)">
+  <button class="btn bs" onclick="load_()">&#8595; Load</button>
+  <button class="btn bs" onclick="save_()">&#128190; Save</button>
+  <button class="btn br" onclick="clear_()">&#10005; Clear</button>
+  <button class="btn bg" onclick="window.print()">&#128424; Print</button>
+  <span id="st"></span>
+</div>
+<div style="display:flex;justify-content:center;padding:20px 0 0">
+  <div style="position:relative;width:1275px;height:1650px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.3);margin-bottom:20px;overflow:hidden">
+    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-1.png" width="1275" height="1650" style="display:block;position:absolute;top:0;left:0;z-index:0;">
+    <input type="text" id="f_child_name" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:199.5px;width:522px;height:26.5px;">
+    <input type="date" id="f_dob" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:601.8px;top:199.5px;width:296.8px;height:26.5px;">
+    <input type="date" id="f_start" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:901.8px;top:199.5px;width:327.5px;height:26.5px;">
+    <input type="text" id="f_addr" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:243.8px;width:822px;height:26.5px;">
+    <input type="text" id="f_city" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:901.8px;top:243.8px;width:327.5px;height:26.5px;">
+    <input type="text" id="f_state" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:288px;width:334.5px;height:26.5px;">
+    <input type="text" id="f_zip" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:414.3px;top:288px;width:184.2px;height:26.5px;">
+    <input type="tel" id="f_phone" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:601.8px;top:288px;width:627.5px;height:26.5px;">
+    <input type="text" id="f_p1name" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:335px;width:668px;height:26.5px;">
+    <input type="text" id="f_p1rel" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:746.8px;top:335px;width:482.5px;height:26.5px;">
+    <input type="text" id="f_p1addr" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.3px;top:383.5px;width:575.8px;height:23.2px;">
+    <input type="tel" id="f_p1phone" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:653.8px;top:383.5px;width:575.8px;height:23.2px;">
+    <input type="text" id="f_p1city" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:425.5px;width:665px;height:26.5px;">
+    <input type="text" id="f_p1state" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:744px;top:425.5px;width:166.3px;height:26.5px;">
+    <input type="text" id="f_p1zip" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:912.8px;top:425.5px;width:316.5px;height:26.5px;">
+    <input type="email" id="f_p1email" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:471px;width:575.2px;height:26.5px;">
+    <input type="tel" id="f_p1cell" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:654.3px;top:471px;width:575px;height:26.5px;">
+    <input type="text" id="f_p1work" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:515.2px;width:575.2px;height:26.5px;">
+    <input type="tel" id="f_p1worktel" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:654.3px;top:515.2px;width:575px;height:26.5px;">
+    <input type="text" id="f_p1workaddr" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:560.5px;width:752px;height:26.5px;">
+    <input type="text" id="f_p1workcity" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:830.8px;top:560.5px;width:398.5px;height:26.5px;">
+    <input type="text" id="f_p1reach" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:680.7px;width:1152.8px;height:26.5px;">
+    <input type="text" id="f_p2name" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:727.5px;width:677.3px;height:26.5px;">
+    <input type="text" id="f_p2rel" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:756px;top:727.5px;width:473.2px;height:26.5px;">
+    <input type="text" id="f_p2addr" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.3px;top:776.2px;width:551.2px;height:23.2px;">
+    <input type="tel" id="f_p2phone" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:629.5px;top:776.2px;width:600px;height:23.2px;">
+    <input type="text" id="f_p2city" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:818.2px;width:710px;height:26.5px;">
+    <input type="text" id="f_p2state" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:788.8px;top:818.2px;width:260.2px;height:26.5px;">
+    <input type="text" id="f_p2zip" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:1051.3px;top:818.2px;width:178px;height:26.5px;">
+    <input type="email" id="f_p2email" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:863.5px;width:550.8px;height:26.5px;">
+    <input type="tel" id="f_p2cell" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:629.5px;top:863.5px;width:599.7px;height:26.5px;">
+    <input type="text" id="f_p2work" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:907.8px;width:550.8px;height:26.5px;">
+    <input type="tel" id="f_p2worktel" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:629.5px;top:907.8px;width:599.7px;height:26.5px;">
+    <input type="text" id="f_p2workaddr" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:953px;width:752px;height:26.5px;">
+    <input type="text" id="f_p2workcity" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:831px;top:953px;width:398.2px;height:26.5px;">
+    <input type="text" id="f_p2reach" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:77px;top:1087px;width:1151.8px;height:38.8px;">
+    <input type="text" id="f_ec1name" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:1255.5px;width:597px;height:29.3px;">
+    <input type="text" id="f_ec2name" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:676.8px;top:1255.5px;width:552.5px;height:29.3px;">
+    <input type="text" id="f_ec1city" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:1302.5px;width:434.5px;height:30.3px;">
+    <input type="text" id="f_ec1state" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:514.2px;top:1302.5px;width:159.2px;height:30.3px;">
+    <input type="text" id="f_ec2city" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:676.8px;top:1302.5px;width:396.8px;height:30.3px;">
+    <input type="text" id="f_ec2state" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:1076.8px;top:1302.5px;width:152.5px;height:30.3px;">
+    <input type="tel" id="f_ec1phone" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:1350.5px;width:321px;height:30px;">
+    <input type="text" id="f_ec1rel" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:400.8px;top:1350.5px;width:272.7px;height:30px;">
+    <input type="tel" id="f_ec2phone" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:676.8px;top:1350.5px;width:322.5px;height:30px;">
+    <input type="text" id="f_ec2rel" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:1002.5px;top:1350.5px;width:226.7px;height:30px;">
+    <input type="text" id="f_phys" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:1446.2px;width:1152.8px;height:30.2px;">
+    <input type="text" id="f_physaddr" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:1494.2px;width:1152.8px;height:30px;">
+    <input type="text" id="f_physcity" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.5px;top:1542px;width:465.8px;height:30.3px;">
+    <input type="text" id="f_physstate" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:545.5px;top:1542px;width:128px;height:30.3px;">
+    <input type="tel" id="f_phystel" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:676.8px;top:1542px;width:552.5px;height:30.3px;">
+  </div>
+</div>
+<div style="display:flex;justify-content:center;padding:20px 0 0">
+  <div style="position:relative;width:1275px;height:1650px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.3);margin-bottom:20px;overflow:hidden">
+    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-2.png" width="1275" height="1650" style="display:block;position:absolute;top:0;left:0;z-index:0;">
+    <input type="text" id="f_child2" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.8px;top:88.5px;width:1152.2px;height:35.5px;">
+    <textarea id="f_t1" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:1px solid #0066cc;outline:none;resize:none;left:88.6px;top:301.4px;width:1119.6px;height:154.1px;"></textarea>
+    <textarea id="f_t2" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:1px solid #0066cc;outline:none;resize:none;left:90px;top:642.3px;width:1122.3px;height:151.4px;"></textarea>
+    <textarea id="f_t3" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:1px solid #0066cc;outline:none;resize:none;left:88.6px;top:976.4px;width:1122.3px;height:144.5px;"></textarea>
+    <textarea id="f_t4" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:1px solid #0066cc;outline:none;resize:none;left:87.3px;top:1305px;width:1119.5px;height:144.5px;"></textarea>
+  </div>
+</div>
+<div style="display:flex;justify-content:center;padding:20px 0 0">
+  <div style="position:relative;width:1275px;height:1650px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.3);margin-bottom:20px;overflow:hidden">
+    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-3.png" width="1275" height="1650" style="display:block;position:absolute;top:0;left:0;z-index:0;">
+    <input type="text" id="f_child3" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:75.5px;top:123.5px;width:1127px;height:41px;">
+    <textarea id="f_t5" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:1px solid #0066cc;outline:none;resize:none;left:84.5px;top:215.5px;width:1100.5px;height:245.5px;"></textarea>
+    <textarea id="f_t6" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:1px solid #0066cc;outline:none;resize:none;left:84.5px;top:550.9px;width:1096.4px;height:250.9px;"></textarea>
+    <textarea id="f_t7" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:1px solid #0066cc;outline:none;resize:none;left:85.9px;top:867.3px;width:1093.6px;height:278.2px;"></textarea>
+    <textarea id="f_t8" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:1px solid #0066cc;outline:none;resize:none;left:85.9px;top:1205.5px;width:1096.4px;height:280.9px;"></textarea>
+  </div>
+</div>
+<div style="display:flex;justify-content:center;padding:20px 0 0">
+  <div style="position:relative;width:1275px;height:1650px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.3);margin-bottom:20px;overflow:hidden">
+    <img src="https://pa082508.github.io/forms/1-data-sources/DCY01234_page-4.png" width="1275" height="1650" style="display:block;position:absolute;top:0;left:0;z-index:0;">
+    <input type="text" id="f_child4" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:76.8px;top:92px;width:1127.5px;height:35.8px;">
+    <input type="text" id="f_center1" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:75px;top:435.2px;width:512px;height:30.3px;">
+    <input type="text" id="f_center2" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:666.8px;top:435.2px;width:531px;height:30.3px;">
+  </div>
+</div>
+<script>
+const URL_="https://rkabxzqcikojcphwrkty.supabase.co",KEY_="sb_publishable_px0yZk-jUGwRlzEPiVjjXA_N6yYDSp9";
+function st(m,t){const e=document.getElementById('st');e.textContent=m;e.className=t}
+function g(id){const e=document.getElementById(id);return e?e.value:''}
+function s(id,v){const e=document.getElementById(id);if(e)e.value=v??''}
+function clear_(){document.querySelectorAll('input[id^=f_],textarea[id^=f_]').forEach(e=>e.value='');st('Cleared','in')}
+async function api(path){
+  const r=await fetch(URL_+path,{headers:{'apikey':KEY_,'Authorization':'Bearer '+KEY_}});
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
+async function api_post(path,data,method='POST'){
+  const r=await fetch(URL_+path,{method,headers:{'apikey':KEY_,'Authorization':'Bearer '+KEY_,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(data)});
+  return r.json();
+}
+async function load_(){
+  const cid=document.getElementById('cid').value.trim();
+  if(!cid){st('Enter Child ID','er');return}
+  st('Loading...','in');
+  try{
+    const [c]=await api(`/rest/v1/children?child_id=eq.${cid}&select=*`);
+    if(!c){st('Not found','er');return}
+    s('f_child_name',c.full_name);s('f_child2',c.full_name);s('f_child3',c.full_name);s('f_child4',c.full_name);
+    s('f_dob',c.date_of_birth);s('f_start',c.enrollment_date);
+    if(c.center_id){
+      const [ctr]=await api(`/rest/v1/centers?center_id=eq.${c.center_id}&select=center_name`);
+      if(ctr){s('f_center1',ctr.center_name);s('f_center2',ctr.center_name)}
+    }
+    if(c.family_id){
+      const [f]=await api(`/rest/v1/families?family_id=eq.${c.family_id}&select=*`);
+      if(f){
+        s('f_addr',f.address_street);s('f_city',f.address_city);s('f_state',f.address_state||'OH');s('f_zip',f.address_zip);s('f_phone',f.phone_home);
+        s('f_p1name',(f.parent1_first_name||'')+' '+(f.parent1_last_name||''));
+        s('f_p1rel',f.parent1_relationship);s('f_p1phone',f.parent1_phone_home);s('f_p1email',f.parent1_email);s('f_p1cell',f.parent1_phone_cell);
+        s('f_p1work',f.parent1_work_name);s('f_p1worktel',f.parent1_phone_work);
+        s('f_p2name',(f.parent2_first_name||'')+' '+(f.parent2_last_name||''));
+        s('f_p2rel',f.parent2_relationship);s('f_p2email',f.parent2_email);s('f_p2cell',f.parent2_phone_cell);
+        s('f_p2work',f.parent2_work_name);s('f_p2worktel',f.parent2_phone_work);
+      }
+    }
+    const cts=await api(`/rest/v1/contacts?child_id=eq.${cid}&order=sort_order`);
+    const ec=cts.filter(x=>x.contact_type==='emergency');
+    const ph=cts.find(x=>x.contact_type==='physician');
+    if(ec[0]){s('f_ec1name',ec[0].contact_name);s('f_ec1phone',ec[0].phone_primary);s('f_ec1rel',ec[0].relationship);s('f_ec1city',ec[0].city);s('f_ec1state',ec[0].state)}
+    if(ec[1]){s('f_ec2name',ec[1].contact_name);s('f_ec2phone',ec[1].phone_primary);s('f_ec2rel',ec[1].relationship);s('f_ec2city',ec[1].city);s('f_ec2state',ec[1].state)}
+    if(ph){s('f_phys',ph.contact_name);s('f_physaddr',ph.address_street);s('f_physcity',ph.city);s('f_physstate',ph.state);s('f_phystel',ph.phone_primary)}
+    const [h]=await api(`/rest/v1/health_info?child_id=eq.${cid}&select=*`);
+    if(h){s('f_t1',h.allergy_description);s('f_t2',h.special_condition_notes);s('f_t3',h.medication_notes);s('f_t4',h.dietary_notes);s('f_t5',h.history_notes);s('f_t6',h.additional_notes);s('f_t7',h.fears_notes);s('f_t8',h.staff_notes)}
+    st('Loaded: '+c.full_name,'ok');
+  }catch(e){st('Error: '+e.message,'er');console.error(e)}
+}
+async function save_(){
+  const cid=document.getElementById('cid').value.trim();
+  if(!cid){st('Enter Child ID','er');return}
+  st('Saving...','in');
+  try{
+    const [c]=await api(`/rest/v1/children?child_id=eq.${cid}&select=child_id,family_id,center_id`);
+    if(!c){st('Child not found','er');return}
+    const p1=g('f_p1name').trim().split(/\s+/),p2=g('f_p2name').trim().split(/\s+/);
+    const fdata={address_street:g('f_addr'),address_city:g('f_city'),address_state:g('f_state')||'OH',address_zip:g('f_zip'),phone_home:g('f_phone'),
+      parent1_first_name:p1.slice(0,-1).join(' '),parent1_last_name:p1.slice(-1)[0]||'',parent1_relationship:g('f_p1rel'),parent1_phone_home:g('f_p1phone'),parent1_email:g('f_p1email'),parent1_phone_cell:g('f_p1cell'),parent1_work_name:g('f_p1work'),parent1_phone_work:g('f_p1worktel'),
+      parent2_first_name:p2.slice(0,-1).join(' '),parent2_last_name:p2.slice(-1)[0]||'',parent2_relationship:g('f_p2rel'),parent2_email:g('f_p2email'),parent2_phone_cell:g('f_p2cell'),parent2_work_name:g('f_p2work'),parent2_phone_work:g('f_p2worktel')};
+    if(c.family_id){await api_post(`/rest/v1/families?family_id=eq.${c.family_id}`,fdata,'PATCH')}
+    else{const[nf]=await api_post('/rest/v1/families',{...fdata,family_id:'FAM-'+Date.now()});if(nf)await api_post(`/rest/v1/children?child_id=eq.${cid}`,{family_id:nf.family_id},'PATCH')}
+    const hdata={child_id:cid,allergy_description:g('f_t1'),special_condition_notes:g('f_t2'),medication_notes:g('f_t3'),dietary_notes:g('f_t4'),history_notes:g('f_t5'),additional_notes:g('f_t6'),fears_notes:g('f_t7'),staff_notes:g('f_t8')};
+    const[eh]=await api(`/rest/v1/health_info?child_id=eq.${cid}`);
+    if(eh)await api_post(`/rest/v1/health_info?child_id=eq.${cid}`,hdata,'PATCH');
+    else await api_post('/rest/v1/health_info',hdata);
+    st('Saved!','ok');
+  }catch(e){st('Error: '+e.message,'er');console.error(e)}
+}
+// Auto-load from URL
+const p=new URLSearchParams(location.search);
+if(p.get('child_id')){document.getElementById('cid').value=p.get('child_id');setTimeout(load_,500)}
+</script>
+</body>
+</html>
