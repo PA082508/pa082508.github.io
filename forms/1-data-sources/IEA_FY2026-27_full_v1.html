@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1100">
+<title>CACFP Income Eligibility Application — FY 2026-2027 (Ohio)</title>
+<style>
+:root{--line:#000}
+body{margin:0;background:#e0e0e0;font-family:Arial,Helvetica,sans-serif;color:#000}
+#tb{position:sticky;top:0;z-index:100;background:#1a1a2e;color:#fff;padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#tb h1{color:#0097A7;font-size:13pt;margin:0 4px 0 0}
+.btn{padding:6px 14px;border:none;border-radius:4px;cursor:pointer;font-size:10pt;font-weight:bold}
+.bs{background:#0097A7;color:#fff}.br{background:#E53935;color:#fff}.bg{background:#555;color:#fff}
+#sheet{width:1050px;margin:20px auto;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.3);padding:16px}
+.part{border:3px solid var(--line);margin-bottom:10px}
+.part-head{border-bottom:2px solid var(--line);padding:4px 8px;font-size:10pt;line-height:1.25}
+.gray{background:#f2f2f2}
+input[type=text],input[type=tel]{font:inherit;border:none;outline:none;background:rgba(255,253,150,0.55)}
+input[type=checkbox]{width:17px;height:17px;accent-color:#000;cursor:pointer;vertical-align:middle}
+#instr{border:3px solid var(--line);padding:5px 8px;font-size:8.3pt;line-height:1.3;margin-bottom:0;border-bottom:none}
+
+/* PART 1+2 combined */
+table.p12{width:100%;border-collapse:collapse;table-layout:fixed}
+table.p12 th,table.p12 td{border:1px solid var(--line);font-size:9pt;vertical-align:middle;padding:3px 5px}
+table.p12 th{font-weight:bold}
+.centerband{font-weight:bold;font-size:10pt}
+.centerband input{width:70%;border-bottom:1px solid var(--line);margin-left:6px}
+.fosterhead{font-size:7.6pt;font-weight:bold;text-align:center;line-height:1.15;vertical-align:top}
+.p2head{font-size:8.6pt;font-weight:bold;vertical-align:top;line-height:1.2}
+.benefit{font-size:8.6pt}
+.caseno{white-space:nowrap;font-size:9pt}
+.caseno input{width:110px;border-bottom:1px dashed var(--line);letter-spacing:7px;font-family:monospace;font-size:11pt;text-align:center}
+.caseno input.ok{background:#d4edda}
+.kid input{width:96%;border-bottom:1px solid transparent}
+
+/* PART 3 */
+table.p3{width:100%;border-collapse:collapse;table-layout:fixed}
+table.p3 th,table.p3 td{border:1px solid var(--line);font-size:9pt;vertical-align:middle}
+table.p3 th{font-weight:bold;padding:3px 5px}
+col.c-name{width:26%}col.c-zero{width:9%}col.c-inc{width:16.25%}
+.th-a{text-align:left;vertical-align:top;padding:4px 6px}
+.example td{background:#f2f2f2;font-weight:bold;padding:3px 6px}
+.rownum{padding:2px 6px;white-space:nowrap}
+.rownum input{border-bottom:1px solid transparent;width:calc(100% - 26px)}
+.zero{text-align:center}
+.inc{padding:3px 4px;white-space:nowrap}
+.inc input.amt{width:34%;border:none;border-bottom:1px solid var(--line);outline:none;font:inherit;text-align:right;background:rgba(255,253,150,0.55)}
+.inc select.freq{width:46%;border:none;border-bottom:1px solid var(--line);outline:none;font:inherit;font-size:8pt;background:rgba(255,253,150,0.55)}
+.inc.dis input,.inc.dis select{background:#ddd;pointer-events:none;color:#888}
+
+/* PART 4 */
+table.p4{width:100%;border-collapse:collapse;table-layout:fixed}
+table.p4 td{border:1px solid var(--line);font-size:9pt;padding:4px 6px;vertical-align:bottom}
+.sigcell{position:relative;height:60px}
+.sigcell canvas{position:absolute;left:6px;top:3px;background:rgba(255,253,150,0.4);cursor:crosshair;border-bottom:1px solid var(--line)}
+.sigcell .lbl{position:absolute;left:6px;bottom:2px;font-weight:bold;font-size:8.6pt}
+.sigclear{position:absolute;top:2px;right:4px;font-size:9px;padding:1px 4px;background:#E53935;color:#fff;border:none;border-radius:2px;cursor:pointer;z-index:5}
+.ssnbox{width:28px;height:32px;border:2px solid var(--line);text-align:center;font-size:13pt;background:rgba(255,253,150,0.55);outline:none;margin-left:5px}
+.ssnbox:disabled{background:#ddd}
+.lblrow td{vertical-align:top;height:36px}
+.lblrow input{width:98%;border-bottom:1px solid transparent}
+
+/* PART 5 */
+table.p5{width:100%;border-collapse:collapse;table-layout:fixed}
+table.p5 td{border:1px solid var(--line);font-size:9pt;padding:3px 6px}
+td.cbc{width:40px;text-align:center}
+
+/* SPONSOR */
+table.sp{width:100%;border-collapse:collapse;table-layout:fixed}
+table.sp td{border:1px solid var(--line);font-size:9pt;padding:4px 7px;vertical-align:top}
+.spfoot{border:1px solid var(--line);border-top:2px solid var(--line);padding:5px 8px;font-size:8pt}
+.spfoot .cols{display:flex;gap:16px;align-items:flex-end}
+.spfoot .c{flex:1}
+.spfoot .line{border-bottom:1px solid var(--line);height:36px;position:relative}
+.spfoot input[type=text]{width:100%;background:rgba(200,230,255,0.5)}
+#calc{width:1050px;margin:0 auto 30px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.3);padding:12px 18px;font-size:10pt}
+#calc b{color:#0097A7}
+#verdict{font-weight:bold;padding:2px 10px;border-radius:4px;background:#eee}
+@media print{
+  #tb,#calc,.sigclear{display:none}
+  body{background:#fff}
+  #sheet{box-shadow:none;margin:0;width:auto;padding:0}
+  input,select,canvas{background:transparent!important}
+  select.freq{appearance:none;-webkit-appearance:none}
+  @page{size:letter portrait;margin:8mm}
+}
+</style>
+</head>
+<body>
+<div id="tb">
+  <h1>IEA FY 2026-2027</h1>
+  <button class="btn bs" onclick="addRow()">+ Row (Part 3)</button>
+  <button class="btn br" onclick="clear_()">&#10005; Clear</button>
+  <button class="btn bg" onclick="window.print()">&#128424; Print</button>
+</div>
+
+<div id="pkbanner" style="display:none;width:1050px;margin:10px auto -10px;background:#e7f6f8;border:1px solid #0097A7;border-radius:6px;padding:8px 14px;font-size:10pt;font-family:Arial">
+  &#128190; <b>Saved info from a previous form in this packet found</b> (<span id="pkwho"></span>).
+  <button class="btn bs" style="padding:3px 10px;margin-left:8px" onclick="applyProfile()">Fill known fields</button>
+  <button class="btn bg" style="padding:3px 10px" onclick="document.getElementById('pkbanner').style.display='none'">Dismiss</button>
+  <span style="color:#666;font-size:8.5pt;margin-left:8px">Data stays on this device and auto-erases after 90 minutes.</span>
+</div>
+<div id="sheet">
+
+<div id="formtitle" style="text-align:center;margin-bottom:6px">
+  <div style="font-size:14pt;font-weight:bold">CHILD AND ADULT CARE FOOD PROGRAM: CHILD CARE COMPONENT</div>
+  <div style="font-size:12.5pt;font-weight:bold">INCOME ELIGIBILITY APPLICATION FOR FREE AND REDUCED-PRICE MEALS FISCAL YEAR 2026-2027</div>
+</div>
+
+<!-- ═══ INSTRUCTIONS ═══ -->
+<div id="instr"><b>INSTRUCTIONS:</b> To apply for free and reduced-price meals, read the household Letter and instructions on backside of this form. Complete application and return to the center. In accordance with the NSLA, information on this application may be disclosed to other Child Nutrition Programs or applicable enforcement agencies. Parents/guardians are not required to consent to this disclosure. Part 1 is to be completed by all households. Part 2 is to be used only for a child living in a household receiving food assistance (SNAP) or Ohio Works First (OWF) benefits. Part 3 is only for children NOT receiving Food Assistance or OWF benefits. Part 4, an adult household member must sign and date form; the last 4 digits of social security number must be listed if Part 3 is completed. Part 5 is optional. <b>* Asterisks indicate info that must be completed. The form must be completed annually and valid for only 12 months.</b></div>
+
+<!-- ═══ PART 1 + PART 2 (один ряд) ═══ -->
+<div class="part" style="margin-bottom:10px">
+  <table class="p12">
+    <colgroup>
+      <col style="width:30%"><col style="width:7%"><col style="width:12%">
+      <col style="width:11%"><col style="width:40%">
+    </colgroup>
+    <tr>
+      <td colspan="3" class="centerband" style="border-bottom:none">CENTER NAME<input type="text" id="p1_center"></td>
+      <td rowspan="3" class="fosterhead">CHECK IF<br>A FOSTER CHILD<br><span style="font-weight:normal">(The legal responsibility of a welfare agency or court. Attach documentation)</span></td>
+      <td rowspan="2" class="p2head"><b>PART 2 – LIST EACH CHILD&rsquo;S FOOD ASSISTANCE (SNAP) OR OWF CASE NUMBER, IF ANY. A VALID CASE NUMBER CONTAINS 7 DIGITS.</b></td>
+    </tr>
+    <tr>
+      <td colspan="3" style="border-bottom:none;border-top:none;font-weight:bold;font-size:9.5pt">PART 1 – PRINT INFORMATION FOR ALL CHILDREN ENROLLED AT CENTER</td>
+    </tr>
+    <tr>
+      <th style="text-align:left">* NAME OF ENROLLED CHILD(REN)</th>
+      <th>AGE</th>
+      <th>BIRTH DATE</th>
+      <td class="benefit">Check type&nbsp;&nbsp;<input type="checkbox" id="ben_snap" onchange="oneOf('ben_snap','ben_owf');determine()"> FOOD ASSISTANCE (SNAP) or<br>of benefit:&nbsp;&nbsp;<input type="checkbox" id="ben_owf" onchange="oneOf('ben_owf','ben_snap');determine()"> OHIO WORKS FIRST (OWF)</td>
+    </tr>
+    <!-- child rows 1-4 -->
+    <tr class="kid"><td>1. <input type="text" id="kid1_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid1_age" style="width:90%"></td><td><input type="date" id="kid1_dob" style="width:94%" onchange="kidAge(1);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid1_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid1_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+    <tr class="kid"><td>2. <input type="text" id="kid2_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid2_age" style="width:90%"></td><td><input type="date" id="kid2_dob" style="width:94%" onchange="kidAge(2);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid2_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid2_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+    <tr class="kid"><td>3. <input type="text" id="kid3_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid3_age" style="width:90%"></td><td><input type="date" id="kid3_dob" style="width:94%" onchange="kidAge(3);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid3_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid3_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+    <tr class="kid"><td>4. <input type="text" id="kid4_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid4_age" style="width:90%"></td><td><input type="date" id="kid4_dob" style="width:94%" onchange="kidAge(4);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid4_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid4_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+  </table>
+</div>
+
+<!-- ═══ PART 3 ═══ -->
+<div class="part" id="part3">
+  <div class="part-head"><b>PART 3 – TOTAL HOUSEHOLD SIZE, TOTAL HOUSEHOLD GROSS INCOME AND HOW OFTEN IT WAS RECEIVED:</b> List names of all household
+members. List all gross income: list how much and how often. <b>If Part 2 is completed, skip to Part 4.</b></div>
+  <table class="p3">
+    <colgroup><col class="c-name"><col class="c-zero"><col class="c-inc"><col class="c-inc"><col class="c-inc"><col class="c-inc"></colgroup>
+    <tr>
+      <th class="th-a" rowspan="2">a.&nbsp;&nbsp;LIST NAMES OF ALL<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HOUSEHOLD MEMBERS<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;INCLUDING CHILDREN<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LISTED ABOVE IN PART 1</th>
+      <th rowspan="2">b. CHECK<br>IF<br>NO/ZERO<br>INCOME</th>
+      <th colspan="4" style="border-bottom:1px solid var(--line);font-weight:normal"><b>c. GROSS INCOME</b> during the last month (amount earned before taxes &amp; other deductions) and<br>HOW OFTEN IT WAS RECEIVED: Weekly, Every 2 Weeks, Twice Per Month, Monthly, Annually</th>
+    </tr>
+    <tr>
+      <th style="text-align:left;font-size:8.6pt">1. Earnings from work<br>before deductions</th>
+      <th style="text-align:left;font-size:8.6pt">2. Welfare payments,<br>child support, alimony</th>
+      <th style="text-align:left;font-size:8.6pt">3. Pensions, retirement,<br>Social Security, SSI, VA</th>
+      <th style="text-align:left;font-size:8.6pt">4. All Other Income</th>
+    </tr>
+    <tr class="example">
+      <td>EXAMPLE:&nbsp; JANE SMITH</td>
+      <td class="zero"><input type="checkbox" disabled></td>
+      <td class="inc">$ amount / how often</td><td class="inc">$ amount / how often</td>
+      <td class="inc">$ amount / how often</td><td class="inc">$ amount / how often</td>
+    </tr>
+    <tbody id="p3rows"></tbody>
+  </table>
+</div>
+
+<!-- ═══ PART 4 ═══ -->
+<div class="part" id="part4">
+  <div class="part-head"><b>PART 4 – SIGNATURE &amp; LAST 4 DIGITS OF SOCIAL SECURITY NUMBER:</b> Adult household member must sign/date form. If Part 3 is completed,
+the adult signing the form must also list last 4 digits of his/her Social Security Number or check the &ldquo;I do not have a Social Security Number&rdquo; box.</div>
+  <div class="part-head gray" style="font-size:8.8pt">I certify that all information on this form is true and correct and that all income is reported. I understand that the center will get Federal Funds based on the
+information. I understand that CACFP officials may verify the information. I understand that if I purposely give false information, I may be prosecuted.</div>
+  <table class="p4">
+    <colgroup><col style="width:38%"><col style="width:18%"><col style="width:44%"></colgroup>
+    <tr>
+      <td class="sigcell">
+        <canvas id="sig_adult" width="360" height="38"></canvas>
+        <button class="sigclear" onclick="clearSig('sig_adult')">&#10005;</button>
+        <span class="lbl">*&nbsp;SIGNATURE OF ADULT HOUSEHOLD MEMBER</span>
+      </td>
+      <td class="sigcell">
+        <input type="date" id="p4_date" data-touched="0" onchange="this.dataset.touched=1" style="position:absolute;left:6px;top:12px;width:calc(100% - 14px);border-bottom:1px solid var(--line)">
+        <span class="lbl">*&nbsp;DATE</span>
+      </td>
+      <td style="vertical-align:top">
+        <div style="font-size:8.6pt"><b>*</b> If Part 3 is completed,<br><b>insert last 4 digits of Social Security Number</b>
+          <span style="white-space:nowrap"><input class="ssnbox" id="ssn1" maxlength="1" inputmode="numeric"><input class="ssnbox" id="ssn2" maxlength="1" inputmode="numeric"><input class="ssnbox" id="ssn3" maxlength="1" inputmode="numeric"><input class="ssnbox" id="ssn4" maxlength="1" inputmode="numeric"></span>
+        </div>
+        <div style="margin-top:5px;font-size:8.6pt"><input type="checkbox" id="no_ssn" onchange="toggleSSN()"> <b>(check if applicable)<br>I do not have a Social Security Number</b></div>
+      </td>
+    </tr>
+    <tr class="lblrow">
+      <td>Print Name:<br><input type="text" id="p4_name" autocomplete="name" onblur="saveProfile()"></td>
+      <td>Daytime Phone Number:<br><input type="tel" id="p4_dayphone" autocomplete="tel" oninput="fmtPhone(this)" onblur="saveProfile()"></td>
+      <td>Work Phone Number:<br><input type="tel" id="p4_workphone" autocomplete="tel-work" oninput="fmtPhone(this)" onblur="saveProfile()"></td>
+    </tr>
+    <tr class="lblrow">
+      <td>Street / Apt:<br><input type="text" id="p4_street" autocomplete="address-line1" onblur="saveProfile()"></td>
+      <td>City / State / Zip:<br><input type="text" id="p4_csz" autocomplete="address-level2" onblur="saveProfile()"></td>
+      <td>County:<br><input type="text" id="p4_county" list="dl_county" onblur="saveProfile()"></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══ PART 5 ═══ -->
+<div class="part" id="part5">
+  <div class="part-head gray"><b>PART 5:&nbsp; RACIAL/ETHNIC IDENTITY (Optional):</b> Please check appropriate boxes to identify the race and ethnicity of enrolled child(ren).</div>
+  <table class="p5">
+    <tr>
+      <td class="cbc"><input type="checkbox"></td><td>American Indian or Alaska Native</td>
+      <td class="cbc"><input type="checkbox"></td><td>Asian</td>
+      <td class="cbc"><input type="checkbox"></td><td>Black or African American</td>
+    </tr>
+    <tr>
+      <td class="cbc"><input type="checkbox"></td><td>Native Hawaiian or Other Pacific Islander</td>
+      <td class="cbc"><input type="checkbox"></td><td>White</td>
+      <td class="cbc"><input type="checkbox"></td><td>Other</td>
+    </tr>
+  </table>
+  <div style="padding:4px 8px;font-size:9pt;border-top:1px solid var(--line)">Please mark one ethnic&nbsp; identity:
+    &nbsp;&nbsp;<input type="checkbox" id="eth_h" onchange="oneOf('eth_h','eth_n')"> Hispanic or Latino
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="eth_n" onchange="oneOf('eth_n','eth_h')"> Not Hispanic or Latino
+  </div>
+</div>
+
+<!-- ═══ PRIVACY ACT STATEMENT ═══ -->
+<div id="privacy" style="border:3px solid var(--line);border-bottom:none;padding:4px 8px;font-size:7.8pt;line-height:1.28">
+<b>Privacy Act Statement:</b> The Richard B. Russell National School Lunch Act requires the information on this application. You do not have to give the information, but if you do not, we cannot approve the participant for free or reduced-price meals. You must include the last four digits of the Social Security Number of the adult household member who signs the application. The Social Security Number is not required when you apply on behalf of a foster child or you list a Supplemental Nutrition Assistance Program (SNAP), Temporary Assistance for Needy Families (TANF) Program or Food Distribution Program on Indian Reservations (FDPIR) case number for the participant or other (FDPIR) identifier or when you indicate that the adult household member signing the application does not have a Social Security Number. We will use your information to determine if the participant is eligible for free or reduced-price meals, and for administration and enforcement of the Program.
+</div>
+
+<!-- ═══ SPONSOR SECTION ═══ -->
+<div class="part" id="sponsor" style="margin-bottom:0">
+  <div class="part-head"><b>THIS SECTION TO BE COMPLETED BY CENTER.&nbsp;&nbsp; Note:&nbsp; All information above this section is to be filled in by the parent or guardian.</b></div>
+  <table class="sp">
+    <colgroup><col style="width:60%"><col style="width:40%"></colgroup>
+    <tr>
+      <td rowspan="2">Complete information below only if qualifying child(ren) by household income from Part 3.
+Per the total household size, compare total household income to the USDA Income Eligibility
+Guidelines to determine correct categorization.&nbsp; When income is listed in different frequencies
+of pay in Part 3, you must convert all income to annual income before determination. Use the
+following Annual Income Conversion&nbsp;:<br>
+Weekly x 52, Every 2 Weeks <span style="font-size:7.6pt">(biweekly)</span> x 26, Twice per Month <span style="font-size:7.6pt">(semi-monthly)</span> x 24, Monthly x 12</td>
+      <td>Application Certified/Categorized as:<br>
+        <input type="checkbox" id="cat_free"> <b>FREE,</b> based on&nbsp;&nbsp;
+        <input type="checkbox" id="free_case"> Food Assistance/OWF Case No.<br>
+        <span style="padding-left:112px"><input type="checkbox" id="free_inc"> Household size and income</span><br>
+        <span style="padding-left:112px"><input type="checkbox" id="free_foster"> Foster Child</span>
+      </td>
+    </tr>
+    <tr><td><input type="checkbox" id="cat_red"> <b>REDUCED-PRICE</b>, based on Household size and income</td></tr>
+    <tr>
+      <td style="padding:0">
+        <table style="width:100%;border-collapse:collapse"><tr>
+          <td style="border-right:1px solid var(--line);width:22%;padding:4px 7px;font-size:9pt;vertical-align:top"><b>Total<br>Household<br>Size:</b> <input type="text" id="sp_hh" style="width:52px;border-bottom:1px solid var(--line)"></td>
+          <td style="padding:4px 7px;font-size:9pt;vertical-align:top"><b>Total Household Income:&nbsp; $</b><input type="text" id="sp_income" style="width:220px;border-bottom:1px solid var(--line)"><br><br>
+          Per: <input type="checkbox" id="per_w"> week &nbsp;<input type="checkbox" id="per_2w"> every two weeks &nbsp;<input type="checkbox" id="per_tm"> twice per month &nbsp;<input type="checkbox" id="per_m"> month &nbsp;<input type="checkbox" id="per_y"> year</td>
+        </tr></table>
+      </td>
+      <td><input type="checkbox" id="cat_paid"> <b>PAID,</b> based on&nbsp;&nbsp;
+        <input type="checkbox" id="paid_high"> Income too high<br>
+        <span style="padding-left:98px"><input type="checkbox" id="paid_inc"> Incomplete</span><br>
+        <span style="padding-left:98px"><input type="checkbox" id="paid_inv"> Invalid case number or information</span>
+      </td>
+    </tr>
+  </table>
+  <div class="spfoot">
+    <div class="cols">
+      <div class="c" style="flex:1.5;position:relative">
+        <div class="line"><canvas id="sig_sponsor" width="320" height="34" style="position:absolute;left:0;bottom:0;background:rgba(255,253,150,0.4);cursor:crosshair"></canvas><button class="sigclear" onclick="clearSig('sig_sponsor')">&#10005;</button></div>
+        Signature of Sponsor / Center Representative
+      </div>
+      <div class="c"><div class="line"><input type="date" id="sp_certdate" data-touched="0" onchange="this.dataset.touched=1;calcDates()" style="position:absolute;left:0;bottom:2px;border:none"></div>Date Sponsor Certified/Categorized Form</div>
+      <div class="c"><div class="line"><input type="text" id="sp_eff" style="position:absolute;left:0;bottom:2px;border:none"></div><b>Effective Date</b><br>(From the&nbsp; first of month of date signed)</div>
+      <div class="c"><div class="line"><input type="text" id="sp_exp" style="position:absolute;left:0;bottom:2px;border:none"></div><b>Expiration Date</b><br>(Valid until last day of month in which<br>form was signed one year earlier)</div>
+    </div>
+    <div style="margin-top:4px">Note: Effective date is determined by parent or sponsor signature date as selected on CRRS application.
+If date of parent signature is not within month of certification or immediately preceding month, effective date must be date of sponsor certification.</div>
+  </div>
+</div>
+
+<datalist id="dl_county"><option value="Cuyahoga"><option value="Lake"></datalist>
+</div><!-- /sheet -->
+
+<div id="calc">
+  <b>Screen-only helper (not printed) — FY 2026-2027 USDA thresholds:</b>
+  Household size: <span id="hh">0</span> &nbsp;·&nbsp;
+  Annualized income: $<span id="ann">0</span> &nbsp;·&nbsp;
+  Determination: <span id="verdict">—</span>
+  &nbsp;<button class="btn bs" style="padding:3px 10px" onclick="fillSponsor()">&#8595; Fill Sponsor Section</button>
+  <div style="color:#666;margin-top:4px">FREE ≤ FPL130 · REDUCED ≤ FPL185 · иначе PAID. Foster или валидный 7-значный SNAP/OWF номер → FREE автоматически.
+  Annualization: Weekly ×52 · Every 2 Weeks ×26 · Twice Per Month ×24 · Monthly ×12 · Annually ×1.</div>
+</div>
+
+<script>
+// FY 2026-2027 annual thresholds (Ohio DEW packet 26-27)
+const FREE_A=[0,20748,28132,35516,42900,50284,57668,65052,72436],FREE_ADD=7384;
+const RED_A =[0,29526,40034,50542,61050,71558,82066,92574,103082],RED_ADD=10508;
+function thrFree(n){return n<=8?FREE_A[n]:FREE_A[8]+(n-8)*FREE_ADD}
+function thrRed(n){return n<=8?RED_A[n]:RED_A[8]+(n-8)*RED_ADD}
+
+const FREQ=[['',''],['Weekly','52'],['Every 2 Weeks','26'],['Twice Per Month','24'],['Monthly','12'],['Annually','1']];
+const CATS=['earn','welf','pens','other'];
+let N=0,lastVerdict=null;
+function rowHtml(i){
+  const inc=c=>`<td class="inc" id="td_${i}_${c}">$<input class="amt" id="amt_${i}_${c}" inputmode="decimal" oninput="recalc()"> / <select class="freq" id="frq_${i}_${c}" onchange="recalc()">${FREQ.map(f=>`<option value="${f[1]}">${f[0]}</option>`).join('')}</select></td>`;
+  return `<tr id="row_${i}"><td class="rownum">${i}. <input type="text" id="name_${i}" oninput="recalc()"></td>
+    <td class="zero"><input type="checkbox" id="zero_${i}" onchange="toggleZero(${i})"></td>${CATS.map(inc).join('')}</tr>`;
+}
+function addRow(){N++;document.getElementById('p3rows').insertAdjacentHTML('beforeend',rowHtml(N))}
+function toggleZero(i){
+  const z=document.getElementById('zero_'+i).checked;
+  CATS.forEach(c=>{const td=document.getElementById(`td_${i}_${c}`);td.classList.toggle('dis',z);
+    if(z){document.getElementById(`amt_${i}_${c}`).value='';document.getElementById(`frq_${i}_${c}`).value=''}});
+  recalc();
+}
+function caseChk(e){e.value=e.value.replace(/\D/g,'');e.classList.toggle('ok',e.value.length===7);determine()}
+function oneOf(a,b){if(document.getElementById(a).checked)document.getElementById(b).checked=false}
+function recalc(){
+  let hh=0,ann=0;
+  for(let i=1;i<=N;i++){const nm=document.getElementById('name_'+i);if(!nm)continue;
+    if(nm.value.trim())hh++;
+    CATS.forEach(c=>{const a=parseFloat(document.getElementById(`amt_${i}_${c}`).value)||0;
+      const f=parseFloat(document.getElementById(`frq_${i}_${c}`).value)||0;ann+=a*f})}
+  document.getElementById('hh').textContent=hh;
+  document.getElementById('ann').textContent=ann.toLocaleString('en-US',{maximumFractionDigits:0});
+  determine(hh,ann);
+}
+function determine(hh,ann){
+  if(hh===undefined){hh=parseInt(document.getElementById('hh').textContent)||0;
+    ann=parseFloat(document.getElementById('ann').textContent.replace(/,/g,''))||0}
+  const foster=[1,2,3,4].some(k=>document.getElementById('kid'+k+'_foster').checked);
+  const validCase=[1,2,3,4].some(k=>document.getElementById('kid'+k+'_case').value.length===7)
+      &&(document.getElementById('ben_snap').checked||document.getElementById('ben_owf').checked);
+  const v=document.getElementById('verdict');
+  if(foster){v.textContent='FREE (Foster Child)';v.style.background='#d4edda';lastVerdict={cat:'free',why:'foster'};return}
+  if(validCase){v.textContent='FREE (SNAP/OWF case)';v.style.background='#d4edda';lastVerdict={cat:'free',why:'case'};return}
+  if(!hh||!ann){v.textContent='—';v.style.background='#eee';lastVerdict=null;return}
+  if(ann<=thrFree(hh)){v.textContent=`FREE (≤ $${thrFree(hh).toLocaleString()})`;v.style.background='#d4edda';lastVerdict={cat:'free',why:'income'}}
+  else if(ann<=thrRed(hh)){v.textContent=`REDUCED (≤ $${thrRed(hh).toLocaleString()})`;v.style.background='#fff3cd';lastVerdict={cat:'red',why:'income'}}
+  else{v.textContent=`PAID (> $${thrRed(hh).toLocaleString()})`;v.style.background='#f8d7da';lastVerdict={cat:'paid',why:'high'}}
+}
+function fillSponsor(){
+  document.getElementById('sp_hh').value=document.getElementById('hh').textContent;
+  document.getElementById('sp_income').value=document.getElementById('ann').textContent;
+  ['per_w','per_2w','per_tm','per_m'].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById('per_y').checked=true;
+  ['cat_free','free_case','free_inc','free_foster','cat_red','cat_paid','paid_high','paid_inc','paid_inv']
+    .forEach(id=>document.getElementById(id).checked=false);
+  if(!lastVerdict)return;
+  if(lastVerdict.cat==='free'){document.getElementById('cat_free').checked=true;
+    document.getElementById(lastVerdict.why==='foster'?'free_foster':lastVerdict.why==='case'?'free_case':'free_inc').checked=true}
+  else if(lastVerdict.cat==='red')document.getElementById('cat_red').checked=true;
+  else{document.getElementById('cat_paid').checked=true;document.getElementById('paid_high').checked=true}
+}
+function toggleSSN(){
+  const no=document.getElementById('no_ssn').checked;
+  ['ssn1','ssn2','ssn3','ssn4'].forEach(id=>{const e=document.getElementById(id);e.disabled=no;if(no)e.value=''});
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  ['ssn1','ssn2','ssn3','ssn4'].forEach((id,ix,arr)=>{
+    const e=document.getElementById(id);
+    e.addEventListener('input',()=>{e.value=e.value.replace(/\D/g,'');if(e.value&&ix<3)document.getElementById(arr[ix+1]).focus()});
+  });
+});
+function calcDates(){
+  const v=document.getElementById('sp_certdate').value;const d=new Date(v);if(isNaN(d))return;
+  const eff=new Date(d.getFullYear(),d.getMonth(),1);
+  const exp=new Date(d.getFullYear()+1,d.getMonth()+1,0);
+  const f=x=>String(x.getMonth()+1)+'/'+x.getDate()+'/'+x.getFullYear();
+  document.getElementById('sp_eff').value=f(eff);
+  document.getElementById('sp_exp').value=f(exp);
+}
+function initSigPad(id){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');ctx.strokeStyle='#000080';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
+  let dr=false,lx,ly;
+  const pos=e=>{const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,s=e.touches?e.touches[0]:e;return{x:(s.clientX-r.left)*sx,y:(s.clientY-r.top)*sy}};
+  const dn=e=>{e.preventDefault();dr=true;const p=pos(e);lx=p.x;ly=p.y;ctx.beginPath();ctx.arc(lx,ly,0.8,0,Math.PI*2);ctx.fill()};
+  const mv=e=>{e.preventDefault();if(!dr)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y};
+  const up=()=>dr=false;
+  canvas.addEventListener('mousedown',dn);canvas.addEventListener('mousemove',mv);
+  canvas.addEventListener('mouseup',up);canvas.addEventListener('mouseleave',up);
+  canvas.addEventListener('touchstart',dn,{passive:false});canvas.addEventListener('touchmove',mv,{passive:false});
+  canvas.addEventListener('touchend',up);
+}
+function clearSig(id){const c=document.getElementById(id);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height)}
+function clear_(){
+  document.getElementById('p3rows').innerHTML='';N=0;for(let i=0;i<6;i++)addRow();
+  document.querySelectorAll('#sheet input[type=text]').forEach(e=>{e.value='';e.classList.remove('ok')});
+  document.querySelectorAll('#sheet input[type=checkbox]').forEach(e=>{if(!e.disabled)e.checked=false});
+  ['ssn1','ssn2','ssn3','ssn4'].forEach(id=>{const e=document.getElementById(id);e.disabled=false;e.value=''});
+  clearSig('sig_adult');clearSig('sig_sponsor');recalc();
+}
+
+// ── Packet UX: маска телефона ──
+function fmtPhone(e){
+  let d=e.value.replace(/\D/g,'').slice(0,10);
+  e.value=d.length>6?`(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`:d.length>3?`(${d.slice(0,3)}) ${d.slice(3)}`:d;
+}
+// ── Возраст ребёнка из даты рождения ──
+function kidAge(k){
+  const v=document.getElementById('kid'+k+'_dob').value;if(!v)return;
+  const b=new Date(v),n=new Date();let a=n.getFullYear()-b.getFullYear();
+  const m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate()))a--;
+  if(a>=0)document.getElementById('kid'+k+'_age').value=a;
+}
+// ── Профиль пакета: localStorage, 90 минут ──
+const PK_KEY='pa_packet_profile',PK_TTL=90*60*1000;
+const PK_MAP={p4_name:'parent_name',p4_dayphone:'phone_day',p4_workphone:'phone_work',
+  p4_street:'street',p4_csz:'city_state_zip',p4_county:'county',p1_center:'center_name',
+  kid1_name:'child1_name',kid1_dob:'child1_dob',kid2_name:'child2_name',kid2_dob:'child2_dob',
+  kid3_name:'child3_name',kid3_dob:'child3_dob',kid4_name:'child4_name',kid4_dob:'child4_dob'};
+function loadProfile(){
+  try{const r=JSON.parse(localStorage.getItem(PK_KEY));if(!r)return null;
+    if(Date.now()-r.ts>PK_TTL){localStorage.removeItem(PK_KEY);return null}return r.data}
+  catch(e){return null}
+}
+function saveProfile(){
+  const data=loadProfile()||{};
+  for(const id in PK_MAP){const e=document.getElementById(id);if(e&&e.value.trim())data[PK_MAP[id]]=e.value.trim()}
+  try{localStorage.setItem(PK_KEY,JSON.stringify({ts:Date.now(),data}))}catch(e){}
+}
+function applyProfile(){
+  const d=loadProfile();if(!d)return;
+  for(const id in PK_MAP){const e=document.getElementById(id);if(e&&!e.value.trim()&&d[PK_MAP[id]]){e.value=d[PK_MAP[id]];
+    if(id.endsWith('_dob')){const k=id.match(/kid(\d)/);if(k)kidAge(+k[1])}}}
+  document.getElementById('pkbanner').style.display='none';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const d=loadProfile();
+  if(d&&Object.keys(d).length){
+    document.getElementById('pkwho').textContent=d.child1_name||d.parent_name||'household data';
+    document.getElementById('pkbanner').style.display='block';
+  }
+  // подписные даты: сегодня по умолчанию
+  const today=new Date().toISOString().split('T')[0];
+  const pd=document.getElementById('p4_date');if(pd&&!pd.value)pd.value=today;
+  const sc=document.getElementById('sp_certdate');if(sc&&!sc.value){sc.value=today;calcDates()}
+});
+// ── Печать: пустые date-поля не должны печатать mm/dd/yyyy ──
+let _dtSwap=[];
+window.addEventListener('beforeprint',()=>{
+  _dtSwap=[];
+  // необновлённая вручную дата подписи актуализируется на момент печати
+  const today=new Date().toISOString().split('T')[0];
+  ['p4_date','sp_certdate'].forEach(id=>{const e=document.getElementById(id);
+    if(e&&e.dataset.touched==='0'){e.value=today;if(id==='sp_certdate')calcDates()}});
+  document.querySelectorAll('input[type=date]').forEach(e=>{
+    if(!e.value){_dtSwap.push(e);e.type='text'}});
+});
+window.addEventListener('afterprint',()=>{_dtSwap.forEach(e=>e.type='date');_dtSwap=[]});
+
+for(let i=0;i<6;i++)addRow();
+initSigPad('sig_adult');initSigPad('sig_sponsor');
+recalc();
+</script>
+</body>
+</html>
