@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCY 01234 — Child Enrollment and Health Information</title>
+<style>
+  /* ============================================================
+     DCY 01234 — CHILD ENROLLMENT AND HEALTH INFORMATION FOR CHILD CARE
+     (Rev. 8/2025) · fillable · e-signature · Supabase · v5 · 2026-07-07
+     Ohio Department of Children and Youth
+     ============================================================ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10.5pt; color: #000; background: #e8e8e8; }
+
+  .sheet {
+    width: 8.5in;
+    min-height: 11in;
+    margin: 16px auto;
+    padding: 0.45in 0.5in;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .agency { text-align: center; font-size: 12pt; margin-bottom: 2px; }
+  .form-title { text-align: center; font-size: 14pt; font-weight: bold; text-transform: uppercase; line-height: 1.2; }
+  .subtitle { text-align: center; font-size: 11pt; font-weight: bold; margin: 10px 0 12px; }
+
+  table { border-collapse: collapse; width: 100%; }
+  .blk { margin-bottom: 0; }
+  .blk + .blk { margin-top: -1px; }
+  .blk td {
+    border: 1px solid #000;
+    padding: 3px 6px;
+    vertical-align: top;
+    font-size: 10pt;
+    line-height: 1.3;
+  }
+  .lbl { font-size: 8.5pt; color: #000; display: block; }
+
+  /* Black section header bars */
+  .bar td {
+    background: #000; color: #fff; font-weight: bold; text-align: center;
+    padding: 3px 8px; font-size: 10.5pt;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .note td { font-size: 9pt; line-height: 1.32; }
+
+  input.fill, select.fill {
+    border: none; outline: none; font: inherit; background: transparent;
+    padding: 1px 2px; width: 100%; font-size: 10pt;
+  }
+  input.fill:focus, textarea.tall:focus, input.date-fill:focus, input.sm:focus { background: #eef4ff; }
+  input.sm { border: none; outline: none; font: inherit; background: transparent; border-bottom: 1px solid #000; width: 46px; text-align: center; }
+  input.date-fill { border: none; outline: none; font: inherit; background: transparent; width: 100%; padding: 1px 2px; }
+
+  td.tall { height: 0.8in; }
+  td.tall textarea {
+    width: 100%; height: 100%; min-height: 0.6in;
+    border: none; outline: none; font: inherit; resize: none;
+    background: transparent; display: block; margin-top: 2px;
+  }
+
+  label.cb { display: inline-block; margin-right: 14px; white-space: nowrap; }
+  label.cb input[type=checkbox] { width: 14px; height: 14px; vertical-align: -2px; margin-right: 3px; }
+
+  /* Emergency transportation OR column */
+  .orcol { width: 0.7in; text-align: center; vertical-align: middle; font-weight: bold; background: #f0f0f0;
+           -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .orcol .big { font-size: 15pt; }
+
+  /* Signature */
+  .sig-wrap { display: flex; align-items: flex-end; gap: 6px; }
+  canvas.sigPad { flex: 1; height: 42px; cursor: crosshair; touch-action: none; background: transparent; border-bottom: 1px solid #000; }
+  .sig-clear { font-family: Arial, sans-serif; font-size: 9px; padding: 2px 6px; border: 1px solid #999; border-radius: 3px; background: #fff; cursor: pointer; }
+
+  .pgfoot { margin-top: auto; padding-top: 8px; font-size: 9pt; display: flex; justify-content: space-between; }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 100;
+    max-width: 8.5in; margin: 0 auto; padding: 10px 0;
+    font-family: Arial, sans-serif; font-size: 13px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .toolbar button, .toolbar select {
+    font: inherit; padding: 6px 14px; border: 1px solid #888; border-radius: 4px; background: #fff; cursor: pointer;
+  }
+  .toolbar button.primary { background: #1a7a3a; color: #fff; border-color: #1a7a3a; }
+  .toolbar button.blue    { background: #1a56a0; color: #fff; border-color: #1a56a0; }
+  #status { color: #666; }
+  #status.ok { color: #1a7a3a; font-weight: bold; }
+  #status.er { color: #b00020; font-weight: bold; }
+  #status.in { color: #1a56a0; }
+  select.need { outline: 3px solid #b00020; outline-offset: 1px; }
+
+  .pa-embed .toolbar { display: none !important; }
+
+  /* ---------- Print ---------- */
+  @page { size: letter portrait; margin: 0.4in 0.5in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar, .sig-clear { display: none !important; }
+    .sheet { width: auto; min-height: 10in; margin: 0; padding: 0; box-shadow: none; page-break-after: always; }
+    .sheet:last-of-type { page-break-after: auto; }
+    input.fill:focus, textarea.tall:focus, input.date-fill:focus, input.sm:focus { background: transparent; }
+    input::-webkit-calendar-picker-indicator { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <select id="ctr" onchange="ctrPick()">
+    <option value="">— Select center —</option>
+    <option value="pearl">Play Academy Parma Heights</option>
+    <option value="alpha">Play Academy Mayfield Hills</option>
+    <option value="ridge">Play Academy Wickliffe</option>
+  </select>
+  <button class="primary" onclick="save_()">Submit</button>
+  <button onclick="clear_()">Reset</button>
+  <button class="blue" onclick="window.print()">Print / Save PDF</button>
+  <span id="status"></span>
+</div>
+
+<!-- ============================== PAGE 1 ============================== -->
+<div class="sheet">
+  <div class="agency">Ohio Department of Children and Youth</div>
+  <div class="form-title">Child Enrollment and Health Information<br>for Child Care</div>
+  <div class="subtitle">This form shall be completed prior to the child's first day of attendance and updated annually and as needed.</div>
+
+  <!-- Child identity -->
+  <table class="blk">
+    <tr>
+      <td style="width:42%"><span class="lbl">Child's Name</span><input class="fill" id="f_child_name" autocomplete="name"></td>
+      <td style="width:29%"><span class="lbl">Date of Birth</span><input type="date" class="date-fill" id="f_dob" autocomplete="bday"></td>
+      <td style="width:29%"><span class="lbl">First Day at Program/Home</span><input type="date" class="date-fill" id="f_start"></td>
+    </tr>
+    <tr>
+      <td colspan="2"><span class="lbl">Home Address</span><input class="fill" id="f_addr" autocomplete="street-address"></td>
+      <td><span class="lbl">City</span><input class="fill" id="f_city" autocomplete="address-level2"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">State</span><input class="fill" id="f_state" value="OH" autocomplete="address-level1"></td>
+      <td><span class="lbl">Zip Code</span><input class="fill" id="f_zip" autocomplete="postal-code"></td>
+      <td><span class="lbl">Home Telephone Number</span><input type="tel" class="fill" id="f_phone" oninput="fmtPhone(this)"></td>
+    </tr>
+  </table>
+
+  <!-- Parent/Guardian #1 -->
+  <table class="blk">
+    <tr>
+      <td style="width:55%"><span class="lbl">Parent/Guardian Name #1</span><input class="fill" id="f_p1name"></td>
+      <td style="width:45%"><span class="lbl">Relationship to Child</span><input class="fill" id="f_p1rel"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Home Address&nbsp;&nbsp;<label class="cb"><input type="checkbox" id="cb_p1addr_same">Same as Child's</label></span><input class="fill" id="f_p1addr"></td>
+      <td><span class="lbl">Home Telephone Number&nbsp;&nbsp;<label class="cb"><input type="checkbox" id="cb_p1phone_same">Same as Child's</label></span><input type="tel" class="fill" id="f_p1phone" oninput="fmtPhone(this)"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">City</span><input class="fill" id="f_p1city"></td>
+      <td><table style="width:100%;border:none"><tr>
+        <td style="border:none;padding:0 6px 0 0;width:60%"><span class="lbl">State</span><input class="fill" id="f_p1state"></td>
+        <td style="border:none;padding:0"><span class="lbl">Zip</span><input class="fill" id="f_p1zip"></td>
+      </tr></table></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Email Address <i>(if applicable)</i></span><input type="email" class="fill" id="f_p1email"></td>
+      <td><span class="lbl">Cell Phone <i>(if applicable)</i></span><input type="tel" class="fill" id="f_p1cell" oninput="fmtPhone(this)"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Parent's Work/School Name</span><input class="fill" id="f_p1work"></td>
+      <td><span class="lbl">Parent's Work/School Telephone Number</span><input type="tel" class="fill" id="f_p1worktel" oninput="fmtPhone(this)"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Parent's Work/School Address</span><input class="fill" id="f_p1workaddr"></td>
+      <td><span class="lbl">City</span><input class="fill" id="f_p1workcity"></td>
+    </tr>
+    <tr><td colspan="2" style="font-size:9pt">
+      Please indicate if this name should be released if a parent/guardian, of a child attending the program/home, requests contact information for other parents/guardians.
+      <label class="cb" style="margin-left:8px"><input type="checkbox" id="cb_p1_release_yes">Yes</label>
+      <label class="cb"><input type="checkbox" id="cb_p1_release_no">No</label><br>
+      If you answered yes, please indicate which information above to include on the list:
+      <label class="cb" style="margin-left:6px"><input type="checkbox" id="cb_p1_work">Work #</label>
+      <label class="cb"><input type="checkbox" id="cb_p1_cell">Cell #</label>
+      <label class="cb"><input type="checkbox" id="cb_p1_home">Home #</label>
+      <label class="cb"><input type="checkbox" id="cb_p1_email">Email</label>
+    </td></tr>
+    <tr><td colspan="2"><span class="lbl">Where can you be reached while your child is in this program/home?</span><input class="fill" id="f_p1reach"></td></tr>
+  </table>
+
+  <!-- Parent/Guardian #2 -->
+  <table class="blk">
+    <tr>
+      <td style="width:55%"><span class="lbl">Parent/Guardian Name #2</span><input class="fill" id="f_p2name"></td>
+      <td style="width:45%"><span class="lbl">Relationship to Child</span><input class="fill" id="f_p2rel"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Home Address&nbsp;&nbsp;<label class="cb"><input type="checkbox" id="cb_p2addr_same">Same as Child's</label></span><input class="fill" id="f_p2addr"></td>
+      <td><span class="lbl">Home Telephone Number&nbsp;&nbsp;<label class="cb"><input type="checkbox" id="cb_p2phone_same">Same as Child's</label></span><input type="tel" class="fill" id="f_p2phone" oninput="fmtPhone(this)"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">City</span><input class="fill" id="f_p2city"></td>
+      <td><table style="width:100%;border:none"><tr>
+        <td style="border:none;padding:0 6px 0 0;width:60%"><span class="lbl">State</span><input class="fill" id="f_p2state"></td>
+        <td style="border:none;padding:0"><span class="lbl">Zip</span><input class="fill" id="f_p2zip"></td>
+      </tr></table></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Email Address <i>(if applicable)</i></span><input type="email" class="fill" id="f_p2email"></td>
+      <td><span class="lbl">Cell Phone</span><input type="tel" class="fill" id="f_p2cell" oninput="fmtPhone(this)"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Parent's Work/School Name</span><input class="fill" id="f_p2work"></td>
+      <td><span class="lbl">Parent's Work/School Telephone Number</span><input type="tel" class="fill" id="f_p2worktel" oninput="fmtPhone(this)"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Parent's Work/School Address</span><input class="fill" id="f_p2workaddr"></td>
+      <td><span class="lbl">City</span><input class="fill" id="f_p2workcity"></td>
+    </tr>
+    <tr><td colspan="2" style="font-size:9pt">
+      Please indicate if this name should be released if a parent/guardian, of a child attending the program/home, requests contact information for other parents/guardians.
+      <label class="cb" style="margin-left:8px"><input type="checkbox" id="cb_p2_release_yes">Yes</label>
+      <label class="cb"><input type="checkbox" id="cb_p2_release_no">No</label><br>
+      If you answered yes, please indicate which information above to include on the list:
+      <label class="cb" style="margin-left:6px"><input type="checkbox" id="cb_p2_work">Work #</label>
+      <label class="cb"><input type="checkbox" id="cb_p2_cell">Cell #</label>
+      <label class="cb"><input type="checkbox" id="cb_p2_home">Home #</label>
+      <label class="cb"><input type="checkbox" id="cb_p2_email">Email</label>
+    </td></tr>
+    <tr><td colspan="2"><span class="lbl">Where can you be reached while your child is in this program/home?</span><input class="fill" id="f_p2reach"></td></tr>
+  </table>
+
+  <!-- Emergency contacts -->
+  <table class="blk">
+    <tr class="note"><td colspan="4">
+      <b>Emergency Contacts:</b> Parents <u>cannot be listed</u> as emergency contacts. List the name <u>of at least one person</u> who can be contacted in the event of an emergency or illness <b>if you cannot be reached.</b> Any person listed should be able to assist in contacting you. At least one person listed must be able to take responsibility for the child in case the parent/guardian cannot be contacted and should be at least 18 years of age.
+    </td></tr>
+    <tr>
+      <td colspan="2"><span class="lbl">Name</span><input class="fill" id="f_ec1name"></td>
+      <td colspan="2"><span class="lbl">Name</span><input class="fill" id="f_ec2name"></td>
+    </tr>
+    <tr>
+      <td style="width:32%"><span class="lbl">City</span><input class="fill" id="f_ec1city"></td>
+      <td style="width:18%"><span class="lbl">State</span><input class="fill" id="f_ec1state"></td>
+      <td style="width:32%"><span class="lbl">City</span><input class="fill" id="f_ec2city"></td>
+      <td style="width:18%"><span class="lbl">State</span><input class="fill" id="f_ec2state"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Telephone Number</span><input type="tel" class="fill" id="f_ec1phone" oninput="fmtPhone(this)"></td>
+      <td><span class="lbl">Relationship to Child</span><input class="fill" id="f_ec1rel"></td>
+      <td><span class="lbl">Telephone Number</span><input type="tel" class="fill" id="f_ec2phone" oninput="fmtPhone(this)"></td>
+      <td><span class="lbl">Relationship to Child</span><input class="fill" id="f_ec2rel"></td>
+    </tr>
+    <tr>
+      <td colspan="2"><span class="lbl">Other numbers where emergency contact can be reached <i>(if applicable)</i></span><input class="fill" id="f_ec1other"></td>
+      <td colspan="2"><span class="lbl">Other numbers where emergency contact can be reached <i>(if applicable)</i></span><input class="fill" id="f_ec2other"></td>
+    </tr>
+    <tr><td colspan="4"><span class="lbl">Name of Physician or Clinic/Hospital</span><input class="fill" id="f_phys"></td></tr>
+    <tr><td colspan="4"><span class="lbl">Street Address</span><input class="fill" id="f_physaddr"></td></tr>
+    <tr>
+      <td style="width:32%"><span class="lbl">City</span><input class="fill" id="f_physcity"></td>
+      <td style="width:18%"><span class="lbl">State</span><input class="fill" id="f_physstate"></td>
+      <td colspan="2"><span class="lbl">Telephone Number</span><input type="tel" class="fill" id="f_phystel" oninput="fmtPhone(this)"></td>
+    </tr>
+  </table>
+
+  <div class="pgfoot"><span>DCY 01234 (Rev. 8/2025)</span><span>Page 1 of 4</span></div>
+</div>
+
+<!-- ============================== PAGE 2 ============================== -->
+<div class="sheet">
+  <table class="blk">
+    <tr><td style="height:0.5in"><span class="lbl">Child's Name</span><input class="fill" id="f_child2"></td></tr>
+  </table>
+  <table class="blk">
+    <tr class="bar"><td>Allergies, Special Health or Medical Conditions, and Medical Foods</td></tr>
+    <tr class="note"><td>
+      Fill in this section accurately and completely. Please note that if your child has a <b>current</b> health or medical condition requiring child care staff to perform child specific care, such as: to monitor the condition, provide treatment, care, or to give medication, the DCY 01236 "Child Medical/Physical Care Plan for Child Care" must be completed and be kept on file at the program/home.
+    </td></tr>
+  </table>
+
+  <table class="blk">
+    <tr><td class="tall">
+      Does your child have any food, medication or environmental allergies? <i>(check all that apply)</i><br>
+      <label class="cb"><input type="checkbox" id="cb_no_allergy">No</label><br>
+      <label class="cb"><input type="checkbox" id="cb_has_allergy">Yes - <i>check all that apply</i></label>
+      <label class="cb"><input type="checkbox" id="cb_food">Food</label>
+      <label class="cb"><input type="checkbox" id="cb_medication">Medication</label>
+      <label class="cb"><input type="checkbox" id="cb_environmental">Environmental</label>
+      &nbsp; Please list and explain:
+      <textarea class="tall" id="f_t1" rows="3"></textarea>
+    </td></tr>
+    <tr><td>
+      Does your child's allergy/allergies require child care staff to monitor your child for symptoms to take action if a reaction occurs, or give emergency medication to your child? <i>(check one)</i><br>
+      <label class="cb"><input type="checkbox" id="cb_allergy_no_emerg">No</label><br>
+      <label class="cb"><input type="checkbox" id="cb_allergy_yes_emerg">Yes - a DCY 01236 "Child Medical/Physical Care Plan for Child Care" must be completed.</label>
+    </td></tr>
+  </table>
+
+  <table class="blk">
+    <tr><td class="tall">
+      Does your child have a developmental delay or special health or medical condition? <i>(check one)</i><br>
+      <label class="cb"><input type="checkbox" id="cb_no_spec_cond">No</label><br>
+      <label class="cb"><input type="checkbox" id="cb_yes_spec_cond">Yes - please explain</label>
+      <textarea class="tall" id="f_t2" rows="3"></textarea>
+    </td></tr>
+    <tr><td>
+      Does the special health or medical condition require child care staff to perform a procedure, or perform child specific care such as: to monitor your child for symptoms or administer medication during child care hours? <i>(check one)</i><br>
+      <label class="cb"><input type="checkbox" id="cb_spec_no_care">No</label><br>
+      <label class="cb"><input type="checkbox" id="cb_spec_yes_care">Yes - a DCY 01236 "Child Medical/Physical Care Plan for Child Care" must be completed.</label>
+    </td></tr>
+  </table>
+
+  <table class="blk">
+    <tr><td class="tall">
+      Is your child currently using any medication or medical food? <i>(check one)</i><br>
+      <label class="cb"><input type="checkbox" id="cb_no_medication">No</label><br>
+      <label class="cb"><input type="checkbox" id="cb_yes_medication">Yes - please explain</label>
+      <textarea class="tall" id="f_t3" rows="3"></textarea>
+    </td></tr>
+    <tr><td>
+      If yes, does this medication or medical food need to be administered at the child care program/home?<br>
+      <label class="cb"><input type="checkbox" id="cb_no_med_admin">No</label><br>
+      <label class="cb"><input type="checkbox" id="cb_yes_med_admin">Yes - a DCY 01217 "Request for Administration of Medication" must be completed and kept on file for each medication and a DCY 01236 "Child Medical/Physical Care Plan for Child Care" must be completed for the medical food.</label>
+    </td></tr>
+  </table>
+
+  <table class="blk">
+    <tr><td class="tall">
+      Does your child have any dietary restrictions, including those for medical, religious or cultural reasons? <i>(check one)</i><br>
+      <label class="cb"><input type="checkbox" id="cb_no_diet">No</label><br>
+      <label class="cb"><input type="checkbox" id="cb_yes_diet">Yes - please explain</label>
+      <textarea class="tall" id="f_t4" rows="3"></textarea>
+    </td></tr>
+    <tr><td>
+      Does this dietary restriction require a modified diet that eliminates all types of fluid milk or an entire food group?<br>
+      <label class="cb"><input type="checkbox" id="cb_diet_no_milk">No</label><br>
+      <label class="cb"><input type="checkbox" id="cb_diet_yes_milk">Yes - written instructions from the child's health care provider must be on file.</label><br>
+      <label class="cb"><input type="checkbox" id="cb_diet_na">N/A - program does not provide meals or snacks to the child.</label>
+    </td></tr>
+  </table>
+
+  <div class="pgfoot"><span>DCY 01234 (Rev. 8/2025)</span><span>Page 2 of 4</span></div>
+</div>
+
+<!-- ============================== PAGE 3 ============================== -->
+<div class="sheet">
+  <table class="blk">
+    <tr><td style="height:0.5in"><span class="lbl">Child's Name</span><input class="fill" id="f_child3"></td></tr>
+  </table>
+  <table class="blk">
+    <tr><td style="height:2in">
+      List any history of hospitalization, outpatient surgery, or previous health concerns that would be needed to assist the staff <b>or medical personnel</b> in an emergency situation<b>.</b>
+      <textarea class="tall" id="f_t5" rows="7" style="height:1.5in"></textarea>
+      <label class="cb"><input type="checkbox" id="cb_na1">Not applicable</label>
+    </td></tr>
+    <tr><td style="height:2in">
+      List any additional information about your child that would be useful for staff to know, such as fears or ways that your child prefers to be comforted.
+      <textarea class="tall" id="f_t6" rows="7" style="height:1.5in"></textarea>
+      <label class="cb"><input type="checkbox" id="cb_na2">Not applicable</label>
+    </td></tr>
+    <tr><td style="height:1.9in">
+      List any additional information about your child that would be useful for staff to know, such as eating or sleeping habits.
+      <textarea class="tall" id="f_t7" rows="7" style="height:1.4in"></textarea>
+      <label class="cb"><input type="checkbox" id="cb_na3">Not applicable</label>
+    </td></tr>
+    <tr><td style="height:1.9in">
+      List any additional information about your child that would be useful for staff to know, such as special routines, or behavior needs.
+      <textarea class="tall" id="f_t8" rows="7" style="height:1.4in"></textarea>
+      <label class="cb"><input type="checkbox" id="cb_na4">Not applicable</label>
+    </td></tr>
+  </table>
+
+  <div class="pgfoot"><span>DCY 01234 (Rev. 8/2025)</span><span>Page 3 of 4</span></div>
+</div>
+
+<!-- ============================== PAGE 4 ============================== -->
+<div class="sheet">
+  <table class="blk">
+    <tr><td style="height:0.5in"><span class="lbl">Child's Name</span><input class="fill" id="f_child4"></td></tr>
+  </table>
+
+  <!-- Diapering statement -->
+  <table class="blk">
+    <tr class="bar"><td>Diapering Statement</td></tr>
+    <tr><td>
+      Is your child toilet trained?
+      <label class="cb" style="margin-left:8px"><input type="checkbox" id="cb_toilet_yes">Yes <i>(If yes, skip to Emergency Transportation Authorization section)</i></label><br>
+      <label class="cb" style="margin-left:150px"><input type="checkbox" id="cb_toilet_no">No (If no, fill out the following:)</label><br>
+      <div style="margin-top:6px">The program's policy is to check diapers every <input class="sm" id="f_hours1"> hours. Please indicate if you want your child's diaper checked according to the program's policy or another:</div>
+      <div style="margin-top:6px">
+        <label class="cb"><input type="checkbox" id="cb_diaper_agree">I agree with the program's schedule</label>
+        <label class="cb"><input type="checkbox" id="cb_diaper_disagree">I do not agree, please check my child's diaper every <input class="sm" id="f_hours2"> hours.</label>
+      </div>
+    </td></tr>
+  </table>
+
+  <!-- Emergency transportation authorization -->
+  <table class="blk">
+    <tr class="bar"><td colspan="3">Emergency Transportation Authorization</td></tr>
+    <tr>
+      <td style="width:46%;text-align:center;font-weight:bold">Give <u><i>Permission</i></u> to Transport</td>
+      <td class="orcol"><span class="big">OR</span><br>Do not sign both</td>
+      <td style="width:46%;text-align:center;font-weight:bold"><u><i>Do Not Give Permission</i></u> to Transport</td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Program or Home Name</span><input class="fill" id="f_center1"></td>
+      <td class="orcol"></td>
+      <td><span class="lbl">Program or Home Name</span><input class="fill" id="f_center2"></td>
+    </tr>
+    <tr>
+      <td style="height:1.1in;vertical-align:top">
+        <label class="cb"><input type="checkbox" id="cb_transport_yes"></label>
+        <b>has permission</b> to secure emergency transportation for my child in the event of an illness or injury which requires emergency treatment. The emergency transportation service will determine the facility to which my child will be transported.
+      </td>
+      <td class="orcol"></td>
+      <td style="height:1.1in;vertical-align:top">
+        <label class="cb"><input type="checkbox" id="cb_transport_no"></label>
+        <b>does not have permission</b> to secure emergency transportation for my child in the event of an illness or injury which requires emergency treatment. I wish for the following action to be taken:
+        <textarea class="tall" id="f_emerg_note" rows="2" style="height:0.5in"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Parent's Signature</span>
+        <div class="sig-wrap"><canvas class="sigPad" id="f_transport_give_sig" width="360" height="42"></canvas><button type="button" class="sig-clear" onclick="clearSig('f_transport_give_sig')">Clear</button></div>
+        <span class="lbl" style="margin-top:3px">Date</span><input type="date" class="date-fill" id="f_transport_give_date">
+      </td>
+      <td class="orcol"></td>
+      <td><span class="lbl">Parent's Signature</span>
+        <div class="sig-wrap"><canvas class="sigPad" id="f_transport_deny_sig" width="360" height="42"></canvas><button type="button" class="sig-clear" onclick="clearSig('f_transport_deny_sig')">Clear</button></div>
+        <span class="lbl" style="margin-top:3px">Date</span><input type="date" class="date-fill" id="f_transport_deny_date">
+      </td>
+    </tr>
+  </table>
+
+  <!-- Acknowledgement -->
+  <table class="blk">
+    <tr class="bar"><td colspan="2">Acknowledgement of Policies and Procedures</td></tr>
+    <tr><td colspan="2">
+      I have reviewed and received a copy of the program's or home's policies and procedures/handbook.
+      <label class="cb" style="margin-left:8px"><input type="checkbox" id="cb_ack_yes">Yes</label>
+      <label class="cb"><input type="checkbox" id="cb_ack_no">No</label> <i>(check one)</i>
+    </td></tr>
+    <tr><td colspan="2" style="font-size:9.5pt">
+      This form, after being completed and signed by the parent/guardian, must be reviewed for completeness and signed by the administrator/designee prior to the child receiving care.
+    </td></tr>
+    <tr>
+      <td style="width:70%"><span class="lbl">Parent/Guardian Signature(s)</span>
+        <div class="sig-wrap"><canvas class="sigPad" id="f_parent_sig" width="520" height="42"></canvas><button type="button" class="sig-clear" onclick="clearSig('f_parent_sig')">Clear</button></div>
+      </td>
+      <td><span class="lbl">Date</span><input type="date" class="date-fill" id="f_sig_date"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Administrator/Designee Signature</span>
+        <div class="sig-wrap"><canvas class="sigPad" id="f_admin_sig" width="520" height="42"></canvas><button type="button" class="sig-clear" onclick="clearSig('f_admin_sig')">Clear</button></div>
+      </td>
+      <td><span class="lbl">Date</span><input type="date" class="date-fill" id="f_admin_date"></td>
+    </tr>
+  </table>
+
+  <!-- Annual review -->
+  <table class="blk">
+    <tr class="note"><td colspan="4" style="background:#f0f0f0;-webkit-print-color-adjust:exact;print-color-adjust:exact">
+      The form is to be initialed and dated, at least annually, after it has been reviewed by the parent/guardian. This is to indicate all information has stayed the same or changes have been noted. If significant changes are needed, please complete a new form.
+    </td></tr>
+    <tr>
+      <td style="width:25%"><span class="lbl">Parent/Guardian Initials</span><input class="fill" id="f_pg_init1"></td>
+      <td style="width:25%"><span class="lbl">Date of Review</span><input type="date" class="date-fill" id="f_rev_date1"></td>
+      <td style="width:25%"><span class="lbl">Administrator/Designee Initials</span><input class="fill" id="f_adm_init1"></td>
+      <td style="width:25%"><span class="lbl">Date of Review</span><input type="date" class="date-fill" id="f_rev_date2"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Parent/Guardian Initials</span><input class="fill" id="f_pg_init2"></td>
+      <td><span class="lbl">Date of Review</span><input type="date" class="date-fill" id="f_rev_date3"></td>
+      <td><span class="lbl">Administrator/Designee Initials</span><input class="fill" id="f_adm_init2"></td>
+      <td><span class="lbl">Date of Review</span><input type="date" class="date-fill" id="f_rev_date4"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Parent/Guardian Initials</span><input class="fill" id="f_pg_init3"></td>
+      <td><span class="lbl">Date of Review</span><input type="date" class="date-fill" id="f_rev_date5"></td>
+      <td><span class="lbl">Administrator/Designee Initials</span><input class="fill" id="f_adm_init3"></td>
+      <td><span class="lbl">Date of Review</span><input type="date" class="date-fill" id="f_rev_date6"></td>
+    </tr>
+  </table>
+
+  <div class="note" style="text-align:center;margin-top:10px;font-size:9pt">
+    <b>Note:</b><br>
+    This is a prescribed form which must be used by child care providers to meet the requirements to rules 5180:2-12-15, 5180:2-13-15, and 5180:2-14-04.<br><br>
+    This form must be on file at the program or home on or before the child's first day of attendance and thereafter while the child is enrolled.
+  </div>
+
+  <div class="pgfoot"><span>DCY 01234 (Rev. 8/2025)</span><span>Page 4 of 4</span></div>
+</div>
+
+<script>
+const URL_="https://trrmyqfpxntmgxnqkikp.supabase.co",
+KEY_="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko",
+ORG_="3a9a290e-7e49-491e-946b-ad86f2399910",
+CENTERS_={pearl:"881ef4ce-1a27-4d3b-aa60-59d2a307bf2b",alpha:"099c404b-e6d3-4543-9d9a-1fb11a2ee62d",ridge:"4aed7d5a-00d0-4a4c-ac99-311046ad2027"};
+
+function st(m,t){const e=document.getElementById('status');e.textContent=m;e.className=t}
+function g(id){const e=document.getElementById(id);return e?e.value:''}
+function gc(id){const e=document.getElementById(id);return e&&e.checked}
+function s(id,v){const e=document.getElementById(id);if(e&&e.tagName!=='CANVAS')e.value=v??''}
+
+function ctrPick(){
+  const e=document.getElementById('ctr');
+  e.classList.remove('need');
+  if(e.value){
+    const nm=e.options[e.selectedIndex].text;
+    ['f_center1','f_center2'].forEach(id=>{const f=document.getElementById(id);if(f&&!f.value.trim())f.value=nm});
+  }
+}
+function needCenter(){
+  const e=document.getElementById('ctr');
+  if(e.value)return false;
+  e.classList.add('need');e.focus();
+  st('⚠ Select center first','er');
+  return true;
+}
+
+function clear_(){
+  document.querySelectorAll('input[id^=f_],select[id^=f_]').forEach(e=>{if(e.tagName!=='CANVAS')e.value=''});
+  document.querySelectorAll('textarea[id^=f_]').forEach(e=>e.value='');
+  document.querySelectorAll('[id^=cb_]').forEach(e=>e.checked=false);
+  ['f_parent_sig','f_admin_sig','f_transport_give_sig','f_transport_deny_sig'].forEach(clearSig);
+  const st_=document.getElementById('f_state');if(st_)st_.value='OH';
+  setToday();
+  st('Cleared','in');
+}
+
+function fmtPhone(e){
+  let d=e.value.replace(/\D/g,'').slice(0,10);
+  e.value=d.length>6?`(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`:d.length>3?`(${d.slice(0,3)}) ${d.slice(3)}`:d;
+}
+
+// mirror child's name across page headers
+function mirrorName(){const v=g('f_child_name');['f_child2','f_child3','f_child4'].forEach(id=>s(id,v));}
+
+async function rpc_(fd, sigs, sigDate){
+  if(window.PA_EMBED&&PA_EMBED.active)return PA_EMBED.save(fd,sigs,sigDate);
+  const r = await fetch(URL_+'/rest/v1/rpc/submit_enrollment_form',{
+    method:'POST',
+    headers:{'apikey':KEY_,'Authorization':'Bearer '+KEY_,
+      'Content-Type':'application/json','Content-Profile':'menumaker'},
+    body:JSON.stringify({p_org:ORG_,p_center:CENTERS_[document.getElementById('ctr').value],
+      p_submission_type:'enrollment',p_form_data:fd,p_signatures:sigs,
+      p_signature_date:sigDate,p_source:'online'})});
+  if(!r.ok)throw new Error(await r.text());
+  return r.json();
+}
+
+async function save_(){
+  if(needCenter())return;
+  mirrorName();
+  if(!g('f_child_name').trim()){st("⚠ Enter the child's name",'er');return}
+  const parentSig=getSigData('f_parent_sig');
+  if(!parentSig){st('⚠ Parent/guardian signature required','er');return}
+  const sigDate=g('f_sig_date')||new Date().toISOString().split('T')[0];
+  st('Saving...','in');
+  try{
+    const ctr=document.getElementById('ctr');
+    const form_data={
+      type:'enrollment',dcy_form:'01234',
+      center_code:ctr.value,center_name:ctr.options[ctr.selectedIndex].text,
+      child_name:g('f_child_name'),birthdate:g('f_dob'),first_day:g('f_start'),
+      home:{street:g('f_addr'),city:g('f_city'),state:g('f_state'),zip:g('f_zip'),phone:g('f_phone')},
+      parent1:{name:g('f_p1name'),relationship:g('f_p1rel'),
+        address:g('f_p1addr'),addr_same_as_child:gc('cb_p1addr_same'),
+        phone:g('f_p1phone'),phone_same_as_child:gc('cb_p1phone_same'),
+        city:g('f_p1city'),state:g('f_p1state'),zip:g('f_p1zip'),
+        email:g('f_p1email'),cell:g('f_p1cell'),
+        work_name:g('f_p1work'),work_phone:g('f_p1worktel'),work_address:g('f_p1workaddr'),work_city:g('f_p1workcity'),
+        release:gc('cb_p1_release_yes')?'yes':(gc('cb_p1_release_no')?'no':''),
+        release_include:{work:gc('cb_p1_work'),cell:gc('cb_p1_cell'),home:gc('cb_p1_home'),email:gc('cb_p1_email')},
+        reachable:g('f_p1reach')},
+      parent2:{name:g('f_p2name'),relationship:g('f_p2rel'),
+        address:g('f_p2addr'),addr_same_as_child:gc('cb_p2addr_same'),
+        phone:g('f_p2phone'),phone_same_as_child:gc('cb_p2phone_same'),
+        city:g('f_p2city'),state:g('f_p2state'),zip:g('f_p2zip'),
+        email:g('f_p2email'),cell:g('f_p2cell'),
+        work_name:g('f_p2work'),work_phone:g('f_p2worktel'),work_address:g('f_p2workaddr'),work_city:g('f_p2workcity'),
+        release:gc('cb_p2_release_yes')?'yes':(gc('cb_p2_release_no')?'no':''),
+        release_include:{work:gc('cb_p2_work'),cell:gc('cb_p2_cell'),home:gc('cb_p2_home'),email:gc('cb_p2_email')},
+        reachable:g('f_p2reach')},
+      emergency_contacts:[
+        {name:g('f_ec1name'),city:g('f_ec1city'),state:g('f_ec1state'),phone:g('f_ec1phone'),relationship:g('f_ec1rel'),other_numbers:g('f_ec1other')},
+        {name:g('f_ec2name'),city:g('f_ec2city'),state:g('f_ec2state'),phone:g('f_ec2phone'),relationship:g('f_ec2rel'),other_numbers:g('f_ec2other')}
+      ],
+      physician:{name:g('f_phys'),street:g('f_physaddr'),city:g('f_physcity'),state:g('f_physstate'),phone:g('f_phystel')},
+      allergies:{
+        has:gc('cb_has_allergy'),none:gc('cb_no_allergy'),
+        types:{food:gc('cb_food'),medication:gc('cb_medication'),environmental:gc('cb_environmental')},
+        description:g('f_t1'),
+        requires_staff_action:gc('cb_allergy_yes_emerg')?'yes':(gc('cb_allergy_no_emerg')?'no':'')},
+      special_condition:{
+        has:gc('cb_yes_spec_cond'),none:gc('cb_no_spec_cond'),notes:g('f_t2'),
+        requires_staff_care:gc('cb_spec_yes_care')?'yes':(gc('cb_spec_no_care')?'no':'')},
+      medication:{
+        uses:gc('cb_yes_medication'),none:gc('cb_no_medication'),notes:g('f_t3'),
+        administered_at_program:gc('cb_yes_med_admin')?'yes':(gc('cb_no_med_admin')?'no':'')},
+      dietary:{
+        has_restriction:gc('cb_yes_diet'),none:gc('cb_no_diet'),notes:g('f_t4'),
+        eliminates_milk_or_food_group:gc('cb_diet_yes_milk')?'yes':(gc('cb_diet_no_milk')?'no':(gc('cb_diet_na')?'na':''))},
+      history_hospitalization:{notes:g('f_t5'),na:gc('cb_na1')},
+      comfort_fears:{notes:g('f_t6'),na:gc('cb_na2')},
+      eating_sleeping:{notes:g('f_t7'),na:gc('cb_na3')},
+      routines_behavior:{notes:g('f_t8'),na:gc('cb_na4')},
+      diapering:{toilet_trained:gc('cb_toilet_yes')?'yes':(gc('cb_toilet_no')?'no':''),
+        program_check_hours:g('f_hours1'),agree_schedule:gc('cb_diaper_agree'),
+        disagree_schedule:gc('cb_diaper_disagree'),alternate_check_hours:g('f_hours2')},
+      transportation:{
+        give_permission:gc('cb_transport_yes'),deny_permission:gc('cb_transport_no'),
+        program_name_give:g('f_center1'),program_name_deny:g('f_center2'),
+        deny_action:g('f_emerg_note'),
+        give_signature_date:g('f_transport_give_date'),deny_signature_date:g('f_transport_deny_date')},
+      acknowledgement:{received_handbook:gc('cb_ack_yes')?'yes':(gc('cb_ack_no')?'no':''),
+        parent_signature_date:sigDate,admin_signature_date:g('f_admin_date')},
+      annual_review:[
+        {parent_initials:g('f_pg_init1'),parent_date:g('f_rev_date1'),admin_initials:g('f_adm_init1'),admin_date:g('f_rev_date2')},
+        {parent_initials:g('f_pg_init2'),parent_date:g('f_rev_date3'),admin_initials:g('f_adm_init2'),admin_date:g('f_rev_date4')},
+        {parent_initials:g('f_pg_init3'),parent_date:g('f_rev_date5'),admin_initials:g('f_adm_init3'),admin_date:g('f_rev_date6')}
+      ]
+    };
+    const sigs={
+      parent_sig:parentSig,
+      admin_sig:getSigData('f_admin_sig'),
+      transport_give_sig:getSigData('f_transport_give_sig'),
+      transport_deny_sig:getSigData('f_transport_deny_sig')
+    };
+    await rpc_(form_data,sigs,sigDate);
+    st('Submitted for center review','ok');
+  }catch(e){st('Error: '+e.message,'er');console.error(e)}
+}
+
+// ── Signature pads (verbatim from CACFP_v8) ──
+function initSigPad(id){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  ctx.strokeStyle='#000080';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
+  let drawing=false,lx,ly;
+  function pos(e){const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy}}
+  function dn(e){e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;ctx.beginPath();ctx.arc(lx,ly,0.8,0,Math.PI*2);ctx.fill()}
+  function mv(e){e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y}
+  function up(){drawing=false}
+  canvas.addEventListener('mousedown',dn);canvas.addEventListener('mousemove',mv);
+  canvas.addEventListener('mouseup',up);canvas.addEventListener('mouseleave',up);
+  canvas.addEventListener('touchstart',dn,{passive:false});
+  canvas.addEventListener('touchmove',mv,{passive:false});
+  canvas.addEventListener('touchend',up);
+}
+function clearSig(id){const c=document.getElementById(id);if(c&&c.tagName==='CANVAS')c.getContext('2d').clearRect(0,0,c.width,c.height)}
+function getSigData(id){const c=document.getElementById(id);if(!c||c.tagName!=='CANVAS')return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return d.some((v,i)=>i%4===3&&v>0)?c.toDataURL('image/png'):null}
+['f_parent_sig','f_admin_sig','f_transport_give_sig','f_transport_deny_sig'].forEach(initSigPad);
+
+// ── Same as Child's ──
+function bindSame(cbId,fn){const e=document.getElementById(cbId);if(e)e.addEventListener('change',fn);}
+bindSame('cb_p1addr_same',function(){if(this.checked){s('f_p1addr',g('f_addr'));s('f_p1city',g('f_city'));s('f_p1state',g('f_state'));s('f_p1zip',g('f_zip'))}else{['f_p1addr','f_p1city','f_p1state','f_p1zip'].forEach(id=>s(id,''))}});
+bindSame('cb_p1phone_same',function(){s('f_p1phone',this.checked?g('f_phone'):'')});
+bindSame('cb_p2addr_same',function(){if(this.checked){s('f_p2addr',g('f_addr'));s('f_p2city',g('f_city'));s('f_p2state',g('f_state'));s('f_p2zip',g('f_zip'))}else{['f_p2addr','f_p2city','f_p2state','f_p2zip'].forEach(id=>s(id,''))}});
+bindSame('cb_p2phone_same',function(){s('f_p2phone',this.checked?g('f_phone'):'')});
+
+// mirror name on blur
+const cn=document.getElementById('f_child_name');if(cn)cn.addEventListener('blur',mirrorName);
+
+// default signing date to today
+function setToday(){const sd=document.getElementById('f_sig_date');if(sd&&!sd.value)sd.value=new Date().toISOString().split('T')[0];}
+document.addEventListener('DOMContentLoaded',setToday);
+setToday();
+
+// print: swap empty date inputs to text so blank cells print clean
+let _dtSwap=[];
+window.addEventListener('beforeprint',()=>{_dtSwap=[];document.querySelectorAll('input[type=date]').forEach(e=>{if(!e.value){_dtSwap.push(e);e.type='text'}})});
+window.addEventListener('afterprint',()=>{_dtSwap.forEach(e=>e.type='date');_dtSwap=[]});
+
+/* ═══ pa-embed shim (from CACFP_v8, form-specific) ═══ */
+const PA_EMBED=(function(){
+  const q=new URLSearchParams(location.search);
+  const active=q.get('embed')==='1';
+  const st_={active,HOST:null,pend:{}};
+  if(!active)return st_;
+  document.documentElement.classList.add('pa-embed');
+  const FORM_TYPE='enrollment',DCY_FORM='01234',FORM_VERSION='v5';
+  const env=m=>Object.assign({__paEmbed:true,ns:'pa-embed',v:1},m);
+  const send=m=>{if(st_.HOST)parent.postMessage(env(m),st_.HOST)};
+  st_.save=(fd,sigs,sigDate)=>new Promise((res,rej)=>{
+    const nonce=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2));
+    st_.pend[nonce]={res,rej};
+    send({type:'save',formType:FORM_TYPE,dcyForm:DCY_FORM,formData:fd,signatures:sigs||null,signatureDate:sigDate||null,nonce});
+    setTimeout(()=>{if(st_.pend[nonce]){delete st_.pend[nonce];rej(new Error('No response from host'))}},20000);
+  });
+  async function init(){
+    document.body.classList.add('pa-embed');
+    try{
+      const host=q.get('host'),reg=q.get('registry'),center=q.get('center');
+      if(!host||!reg)throw 0;
+      const r=await fetch(reg);if(!r.ok)throw 0;
+      const j=await r.json();
+      const allow=j.allowedParentOrigins||[];
+      if(!allow.includes(host))throw 0;
+      st_.HOST=host;
+      if(center){const c=document.getElementById('ctr');if(c){c.value=center;ctrPick()}}
+      window.addEventListener('message',ev=>{
+        if(ev.origin!==st_.HOST)return;
+        const d=ev.data;
+        if(!d||d.__paEmbed!==true||d.ns!=='pa-embed'||d.v!==1)return;
+        if(d.type==='saved'){const p=st_.pend[d.nonce];if(p){delete st_.pend[d.nonce];p.res(d)}}
+        else if(d.type==='error'){const p=st_.pend[d.nonce];if(p){delete st_.pend[d.nonce];p.rej(new Error(d.message||'Host error'))}}
+        else if(d.type==='inject'){try{
+          if(d.reset)clear_();
+          if(d.center){const c=document.getElementById('ctr');if(c){c.value=d.center;ctrPick()}}
+          send({type:'resize',height:document.documentElement.scrollHeight});
+        }catch(e){console.error('inject',e)}}
+        else if(d.type==='submit'){
+          const c=document.getElementById('ctr'),n=document.getElementById('f_child_name');
+          if(!c||!c.value){send({type:'saveerror',nonce:d.nonce,message:'Please choose a center first'});return}
+          if(!n||!n.value.trim()){send({type:'saveerror',nonce:d.nonce,message:'Enter the child’s name on the form'});return}
+          if(!getSigData('f_parent_sig')){send({type:'saveerror',nonce:d.nonce,message:'Parent/guardian signature required'});return}
+          save_();
+        }
+      });
+      send({type:'ready',formType:FORM_TYPE,dcyForm:DCY_FORM,version:FORM_VERSION});
+      const ro=new ResizeObserver(()=>send({type:'resize',height:document.documentElement.scrollHeight}));
+      ro.observe(document.documentElement);
+      send({type:'resize',height:document.documentElement.scrollHeight});
+    }catch(e){
+      document.body.innerHTML='<div style="font-family:Arial;padding:48px;text-align:center;color:#555;font-size:13pt">This form must be opened from the Play Academy application.</div>';
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+  else init();
+  return st_;
+})();
+</script>
+</body>
+</html>

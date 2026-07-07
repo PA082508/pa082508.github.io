@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play Academy — Parent Forms (registry-driven · smoke)</title>
+<style>
+:root{--green:#1b5e20;--soft:#e8f2ea;--ink:#1d2b20;--line:#d6e2d8;--muted:#4c5a4f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Georgia,'Times New Roman',serif;background:#f6f8f6;color:var(--ink)}
+header{background:var(--green);color:#fff;padding:34px 20px 26px;text-align:center}
+header h1{margin:0;font-size:26pt;letter-spacing:.5px}
+header p{margin:8px 0 0;font-family:Arial,sans-serif;font-size:11pt;opacity:.92}
+main{max-width:880px;margin:0 auto;padding:28px 18px 60px}
+h2{font-size:15pt;color:var(--green);border-bottom:2px solid var(--line);padding-bottom:6px;margin:34px 0 6px}
+.note{font-family:Arial,sans-serif;font-size:10pt;color:var(--muted);margin:0 0 16px}
+.smoke{font-family:Arial,sans-serif;font-size:9pt;background:#fff8e1;border:1px solid #ffe08a;color:#7a5b00;
+  border-radius:8px;padding:8px 12px;margin:0 0 20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0;
+  display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:inherit;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);transition:box-shadow .15s}
+a.card:hover{box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.card.soon{opacity:.62;cursor:default}
+.card .ic{font-size:22pt;line-height:1}
+.card h3{margin:0 0 4px;font-size:12.5pt}
+.card p{margin:0;font-family:Arial,sans-serif;font-size:9.5pt;color:var(--muted);line-height:1.45}
+.badges{margin-top:7px}
+.b{display:inline-block;font-family:Arial,sans-serif;font-size:8pt;font-weight:bold;
+  padding:2px 9px;border-radius:10px;margin-right:6px;margin-top:3px}
+.b.on{background:var(--soft);color:var(--green)}
+.b.pr{background:#eef0f3;color:#3c4858}
+.b.md{background:#fdeaea;color:#a12a2a}
+.b.cond{background:#eaf1fb;color:#24507e}
+.b.soon{background:#f0ede3;color:#7a6a2e}
+.b.ver{background:#eef0f3;color:#6b776e;font-weight:normal}
+footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:center;padding:24px}
+#err{font-family:Arial,sans-serif;font-size:10pt;color:#b00020;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Play Academy</h1>
+  <p>Parent Forms &middot; Parma Heights &middot; Mayfield Hills &middot; Wickliffe</p>
+</header>
+<main>
+  <div class="smoke">
+    <strong>Smoke build (parent-forms-v2).</strong> Cards render from
+    <code>enroll-registry.json</code>. Not the production page — swapping the live
+    <code>parent-forms.html</code> and flipping any <code>current</code> is a separate decision.
+    Registry source is configurable via <code>REGISTRY_URL</code> below.
+  </div>
+  <div id="cards"><p class="note">Loading forms from registry…</p></div>
+  <div id="err" hidden></div>
+  <p class="note" style="margin-top:30px">Questions? Ask your center director — we are happy to help you complete any form.</p>
+</main>
+<footer>Play Academy Inc. &middot; Child and Adult Care Food Program &middot; This institution is an equal opportunity provider.</footer>
+
+<script>
+/* Registry source. For this smoke build a copy of the canonical registry is dropped next to
+   this file (./enroll-registry.json). PRODUCTION (evening decision): point at the single
+   canonical registry served by the app and settle CORS, rather than duplicating the file. */
+const REGISTRY_URL = './enroll-registry.json';
+
+/* Grouping / presentation config */
+const ORG_ORDER = ['ODE Nutrition/CACFP', 'ODJFS/DCY', 'County Health', 'Internal'];
+const ORG_TITLE = {
+  'ODE Nutrition/CACFP': 'Food Program (CACFP)',
+  'ODJFS/DCY': 'State of Ohio — Child Care (DCY)',
+  'County Health': 'County Health',
+  'Internal': 'Play Academy'
+};
+const ICON = {
+  enroll:'\u{1F37D}️', iea:'\u{1F4B0}', usda_waiver:'\u{1F4DD}', dcy_01234:'\u{1F4CB}',
+  dcy_01236:'\u{1FA7A}', dcy_01217:'\u{1F48A}', dcy_01305:'\u{1FA7A}',
+  special_diet:'\u{1F957}', fluid_milk:'\u{1F95B}', infant_meals:'\u{1F37C}'
+};
+const esc = (s) => String(s ?? '').replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+
+function currentUrl(f) {
+  if (!f.current) return null;
+  const v = (f.versions || {})[f.current];
+  if (!v || v === 'PENDING' || !/^https?:/.test(v)) return null;
+  return v;
+}
+function badges(key, f) {
+  const out = [];
+  if (f.intakeMode === 'online') out.push(['on','Fill online']);
+  else if (f.intakeMode === 'paper_scan') out.push(['on','Fill online'], ['pr','Print / scan']);
+  if (f.signer === 'physician') out.push(['md','Physician-signed']);
+  if (f.conditional) out.push(['cond','If needed']);
+  if (f.perInstance) out.push(['pr','One per item']);
+  if (f.expiryDays) out.push(['pr', f.expiryDays + '-day validity']);
+  else if (f.expiryMonths) out.push(['pr', f.expiryMonths + '-mo validity']);
+  if (!currentUrl(f)) out.push(['soon','Coming soon']);
+  else out.push(['ver', f.current]);
+  return out.map(([c,t]) => `<span class="b ${c}">${esc(t)}</span>`).join('');
+}
+function cardHtml(key, f) {
+  const url = currentUrl(f);
+  const ic = ICON[key] || '\u{1F4C4}';
+  const inner = `
+    <div class="ic">${ic}</div>
+    <div>
+      <h3>${esc(f.title || key)}</h3>
+      <p>${esc(f.note || '')}</p>
+      <div class="badges">${badges(key, f)}</div>
+    </div>`;
+  return url
+    ? `<a class="card" href="${esc(url)}">${inner}</a>`
+    : `<div class="card soon" title="Not published yet">${inner}</div>`;
+}
+
+fetch(REGISTRY_URL, { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(reg => {
+    const forms = reg.forms || {};
+    const byOrg = {};
+    Object.keys(forms).forEach(k => {
+      const org = forms[k].requiringOrg || 'Internal';
+      (byOrg[org] = byOrg[org] || []).push([k, forms[k]]);
+    });
+    const orgs = ORG_ORDER.filter(o => byOrg[o]).concat(Object.keys(byOrg).filter(o => !ORG_ORDER.includes(o)));
+    const html = orgs.map(org => {
+      const cards = byOrg[org]
+        .sort((a,b) => (a[1].title||a[0]).localeCompare(b[1].title||b[0]))
+        .map(([k,f]) => cardHtml(k,f)).join('');
+      return `<h2>${esc(ORG_TITLE[org] || org)}</h2>${cards}`;
+    }).join('');
+    document.getElementById('cards').innerHTML = html;
+  })
+  .catch(e => {
+    document.getElementById('cards').hidden = true;
+    const err = document.getElementById('err');
+    err.hidden = false;
+    err.textContent = 'Could not load the forms registry (' + e.message + '). '
+      + 'Check REGISTRY_URL / that enroll-registry.json is reachable.';
+  });
+</script>
+</body>
+</html>

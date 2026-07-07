@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCY 01236 — Health Care Plan Documentation &amp; Permission to Administer Medication</title>
+<style>
+  /* ============================================================
+     HEALTH CARE PLAN DOCUMENTATION & PERMISSION TO ADMINISTER
+     MEDICATION FOR EARLY CARE AND EDUCATION PROGRAMS
+     DCY 01236 (Rev. 7/2026) · fillable · e-signature · Supabase
+     v1 · 2026-07-07
+     Signer = physician (physician_sig) + parent + certified trainer
+     Care plan for a child with special health care needs
+     ============================================================ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    color: #000;
+    background: #e8e8e8;
+  }
+
+  .sheet {
+    width: 8.5in;
+    min-height: 11in;
+    margin: 16px auto;
+    padding: 0.45in 0.5in;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .agency { text-align: center; font-size: 11pt; margin-bottom: 2px; }
+  .form-title {
+    text-align: center;
+    font-size: 13.5pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+
+  p.intro { font-size: 10pt; font-weight: bold; line-height: 1.32; margin-bottom: 12px; }
+
+  table { border-collapse: collapse; width: 100%; }
+  .blk { margin-bottom: 14px; }
+  .blk td {
+    border: 1px solid #000;
+    padding: 3px 8px;
+    vertical-align: top;
+    font-size: 10.5pt;
+    line-height: 1.3;
+  }
+  td .lbl { font-size: 9pt; color: #000; }
+
+  /* Colored section header bars (match the PDF's colored bands) */
+  .bar td {
+    font-weight: bold;
+    text-align: center;
+    padding: 4px 8px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .bar-blue   td { background: #2e9bd6; color: #fff; }
+  .bar-green  td { background: #aac44f; color: #000; }
+  .bar-yellow td { background: #f2d27a; color: #000; }
+  .bar-orange td { background: #f2a01e; color: #000; }
+
+  td.shade { background: #e6e6e6; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  td.stmt  { font-weight: bold; }
+  .section-hd { font-weight: bold; }
+  .redstop { color: #c00000; font-weight: bold; }
+
+  .italic-note td, .italic-note { font-style: italic; font-size: 10pt; }
+
+  td.cbx { width: 0.35in; text-align: center; vertical-align: middle; }
+  td.cbx input[type="checkbox"] { width: 15px; height: 15px; }
+  .inline-cb { font-size: 10.5pt; }
+  .inline-cb input[type="checkbox"] { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px; }
+  .inline-cb label { display: block; margin: 5px 0; }
+
+  ul.bullets { margin: 4px 0 2px 22px; font-size: 10pt; line-height: 1.4; }
+  ul.bullets li { margin-bottom: 2px; }
+
+  /* Tall answer cells */
+  td.tall   { height: 0.9in; }
+  td.taller { height: 1.9in; }
+  td.tall textarea, td.taller textarea, td.med textarea {
+    width: 100%;
+    border: none; outline: none;
+    font: inherit;
+    resize: none;
+    background: transparent;
+    display: block;
+    margin-top: 3px;
+  }
+  td.tall textarea   { height: 0.62in; min-height: 0.5in; }
+  td.taller textarea { height: 1.55in; min-height: 0.7in; }
+  td.med { height: 0.75in; width: 33.33%; }
+  td.med textarea { height: 0.5in; min-height: 0.4in; }
+
+  input.fill {
+    border: none; outline: none;
+    font: inherit;
+    background: transparent;
+    padding: 1px 4px;
+    width: 60%;
+  }
+  input.fill:focus, textarea:focus { background: #eef4ff; }
+
+  /* Signature block */
+  .sig-tbl td { font-weight: bold; }
+  .sig-wrap { display: flex; align-items: flex-end; gap: 6px; }
+  canvas.sigPad {
+    flex: 1;
+    height: 46px;
+    border-bottom: 1px solid #999;
+    cursor: crosshair;
+    touch-action: none;
+    background: transparent;
+  }
+  .sig-clear {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: normal;
+    padding: 2px 7px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    background: #fff;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+  input.date-fill {
+    font: inherit; font-weight: normal;
+    border: none; outline: none;
+    background: transparent;
+    width: 92%;
+    padding: 1px 4px;
+  }
+  input.date-fill:focus { background: #eef4ff; }
+
+  /* Program-staff + administration log tables */
+  .grid-tbl td, .grid-tbl th {
+    border: 1px solid #000;
+    padding: 3px 6px;
+    font-size: 10pt;
+    height: 0.34in;
+    vertical-align: middle;
+  }
+  .grid-tbl th { font-weight: bold; text-align: left; }
+  .log-tbl th { text-align: center; background: #f2a01e;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .grid-tbl input { border: none; outline: none; font: inherit; background: transparent; width: 100%; padding: 0 2px; }
+  .grid-tbl input:focus { background: #eef4ff; }
+
+  .foot {
+    margin-top: auto;
+    font-size: 9.5pt;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    max-width: 8.5in; margin: 14px auto 0;
+    font-family: Arial, sans-serif; font-size: 13px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .toolbar select {
+    font: inherit; padding: 6px 8px; border: 1px solid #888; border-radius: 4px; background: #fff;
+  }
+  .toolbar select.need { outline: 3px solid #E53935; outline-offset: 1px; }
+  .toolbar button {
+    font: inherit; padding: 6px 14px; border: 1px solid #888;
+    border-radius: 4px; background: #fff; cursor: pointer;
+  }
+  .toolbar button.primary { background: #1a7a3a; color: #fff; border-color: #1a7a3a; }
+  .toolbar button.blue    { background: #1a56a0; color: #fff; border-color: #1a56a0; }
+  #status { color: #666; }
+  #status.ok    { color: #1a7a3a; font-weight: bold; }
+  #status.error { color: #b00020; font-weight: bold; }
+
+  .pa-embed .toolbar { display: none !important; }
+
+  /* ---------- Print ---------- */
+  @page { size: letter portrait; margin: 0.45in 0.5in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar, .sig-clear { display: none !important; }
+    .sheet { width: auto; min-height: 10in; margin: 0; padding: 0; box-shadow: none; page-break-after: always; }
+    .sheet:last-child { page-break-after: auto; }
+    input.fill:focus, textarea:focus, input.date-fill:focus { background: transparent; }
+    input.date-fill::-webkit-calendar-picker-indicator,
+    input[type=date]::-webkit-calendar-picker-indicator { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <select id="ctr"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
+  <button id="btnSubmit" class="primary">Submit</button>
+  <button id="btnReset">Reset</button>
+  <button id="btnPrint" class="blue">Print / Save PDF</button>
+  <span id="status"></span>
+</div>
+
+<!-- ==================== PAGE 1 ==================== -->
+<div class="sheet">
+
+  <div class="agency">Ohio Department of Children and Youth</div>
+  <div class="form-title">Health Care Plan Documentation &amp; Permission to Administer Medication for Early Care and Education Programs</div>
+
+  <p class="intro">
+    Parents: Complete this form or an electronic version in its entirety prior to the child's first day of attendance and update
+    annually and as needed when a child has a special chronic health condition that may require the program to perform a medical
+    procedure or administer medication. The program may supplement or substitute this document with their own content equivalent
+    form and request additional information from the parent/guardian.
+  </p>
+
+  <table class="blk">
+    <tr class="bar bar-blue"><td colspan="2">HEALTH CARE PLAN DOCUMENTATION</td></tr>
+    <tr>
+      <td style="width:68%">Child's Name
+        <div><input type="text" class="fill" id="childName" name="name" autocomplete="name" style="width:94%"></div>
+      </td>
+      <td style="width:32%">Date of Birth
+        <div><input type="date" class="date-fill" id="birthDate" autocomplete="bday"></div>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="shade stmt">
+        If the child does not have a special chronic health condition or diagnosis check here:
+        <input type="checkbox" id="noCondition" style="vertical-align:-2px;margin:0 4px;width:15px;height:15px;"><br>
+        Skip to page 2 to give permission to administer medication/medical food.
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">Complete a new form or provide separate documentation for each condition that requires different actions to be taken.</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">
+        <div class="inline-cb"><label><input type="checkbox" id="attachedDoc"><b>Check here if additional information/documentation is attached from a licensed dentist, licensed physician, physician
+          assistant (PA), or advanced practice registered nurse (APRN).</b> This documentation may serve as a substitute for page 1.</label></div>
+        <div class="section-hd" style="margin-top:6px">Special Chronic Health Condition</div>
+        <textarea id="specialCondition" style="height:0.55in"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">What are the signs, symptoms, or situations which require staff to take action, perform a medical procedure and/or administer medication or medical food?
+        <textarea id="signsSymptoms"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">What are the activities, foods, conditions, etc. to avoid?
+        <span class="inline-cb" style="white-space:nowrap"><label style="display:inline;margin-left:8px"><input type="checkbox" id="avoidNA">Not Applicable</label></span>
+        <textarea id="avoid"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">What are the instructions to care for the child or perform a medical procedure?
+        <textarea id="careInstructions"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">If the child's health condition does not improve or side effects to medication appear, trained staff will do one or more of the following:
+        <div class="inline-cb">
+          <label><input type="checkbox" id="call911">Call 9-1-1</label>
+          <label><input type="checkbox" id="callParent">Call Parent</label>
+          <label><input type="checkbox" id="otherAction">Other:
+            <input type="text" class="fill" id="otherActionText" style="width:60%"></label>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="tall">Additional Information and/or what is needed if the child care program must be evacuated:
+        <textarea id="evacuationInfo"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="stmt">If the special health condition does not require administering medication/medical food:
+        <span class="redstop">STOP HERE AND SKIP TO PAGE 3</span></td>
+    </tr>
+    <tr>
+      <td colspan="2">Page 1 is completed to provide instructions for performing a medical procedure.</td>
+    </tr>
+  </table>
+
+  <div class="foot"><span>DCY 01236 (Rev. 7/2026)</span><span>Page 1 of 4</span></div>
+</div>
+
+<!-- ==================== PAGE 2 ==================== -->
+<div class="sheet">
+
+  <table class="blk">
+    <tr class="bar bar-green"><td colspan="3">PERMISSION TO ADMINISTER MEDICATION</td></tr>
+    <tr>
+      <td colspan="3">Instructions from a licensed dentist, licensed physician, physician assistant (PA), or advanced practice registered nurse (APRN) are required for administering:
+        <ul class="bullets">
+          <li>Medical foods.</li>
+          <li>Prescription medications, including samples.</li>
+          <li>Non-prescription medicines containing aspirin.</li>
+          <li>Topical preventative products and lotions or non-prescription medications, when the instructions for use exceed or do not match the manufacturer's instructions or are not stored in original container.</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:38%">Child's Name
+        <div><input type="text" class="fill" id="childName2" autocomplete="name" style="width:92%"></div>
+      </td>
+      <td style="width:30%">Date of Birth
+        <div><input type="date" class="date-fill" id="birthDate2"></div>
+      </td>
+      <td style="width:32%">Weight <span class="lbl">(if needed to determine dosage)</span>
+        <div><input type="text" class="fill" id="weight" style="width:92%"></div>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3" class="taller">What are the instructions to administer medication or medical food?
+        <textarea id="medInstructions"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3" class="stmt">
+        <input type="checkbox" id="medInstructionsNA" style="vertical-align:-2px;margin-right:5px;width:14px;height:14px;">Not Applicable: Instructions are not required if the prescription medication is stored in the original
+        container with prescription label that includes the child's full name, exact dosage, and directions for use.
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3" class="tall">What actions are to be taken if the medication or medical food is not available?
+        <textarea id="medNotAvailable"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td class="med">Name of Medication/Medical Food<textarea id="med1Name"></textarea></td>
+      <td class="med">Name of Medication/Medical Food<textarea id="med2Name"></textarea></td>
+      <td class="med">Name of Medication/Medical Food<textarea id="med3Name"></textarea></td>
+    </tr>
+    <tr>
+      <td class="med">Dosage of Medication/Medical Food<textarea id="med1Dosage"></textarea></td>
+      <td class="med">Dosage of Medication/Medical Food<textarea id="med2Dosage"></textarea></td>
+      <td class="med">Dosage of Medication/Medical Food<textarea id="med3Dosage"></textarea></td>
+    </tr>
+    <tr>
+      <td class="med">Time of Medication/Medical Food Administration<textarea id="med1Time" style="height:0.35in"></textarea>
+        <div class="inline-cb"><label><input type="checkbox" id="med1Symptoms">Administer because symptoms are present</label></div></td>
+      <td class="med">Time of Medication/Medical Food Administration<textarea id="med2Time" style="height:0.35in"></textarea>
+        <div class="inline-cb"><label><input type="checkbox" id="med2Symptoms">Administer because symptoms are present</label></div></td>
+      <td class="med">Time of Medication/Medical Food Administration<textarea id="med3Time" style="height:0.35in"></textarea>
+        <div class="inline-cb"><label><input type="checkbox" id="med3Symptoms">Administer because symptoms are present</label></div></td>
+    </tr>
+  </table>
+
+  <div class="foot"><span>DCY 01236 (Rev. 7/2026)</span><span>Page 2 of 4</span></div>
+</div>
+
+<!-- ==================== PAGE 3 — SIGNATURE PAGE ==================== -->
+<div class="sheet">
+
+  <table class="blk">
+    <tr class="bar bar-yellow"><td colspan="2">SIGNATURE PAGE</td></tr>
+    <tr>
+      <td colspan="2">Child's Name
+        <div><input type="text" class="fill" id="childName3" autocomplete="name" style="width:70%"></div>
+      </td>
+    </tr>
+    <!-- Parent / Guardian -->
+    <tr>
+      <td colspan="2"><div class="section-hd">PARENT/GUARDIAN</div>
+        By signing this form I attest that: (check all that apply)
+        <div class="inline-cb" style="margin-left:14px">
+          <label><input type="checkbox" id="parentAttest1">I have provided information for care or implementing a medical procedure</label>
+          <label><input type="checkbox" id="parentAttest2">I have trained staff and have given permission to perform the procedure</label>
+          <label><input type="checkbox" id="parentAttest3">I have trained staff and have given permission to administer medication to my child</label>
+        </div>
+      </td>
+    </tr>
+    <tr class="sig-tbl">
+      <td style="width:65%">Parent Signature
+        <div class="sig-wrap">
+          <canvas id="parentSig" class="sigPad" width="380" height="46"></canvas>
+          <button type="button" class="sig-clear" data-clear="parentSig">Clear</button>
+        </div>
+      </td>
+      <td>Date of Signature
+        <div><input type="date" class="date-fill" id="parentDate"></div>
+      </td>
+    </tr>
+    <!-- Health care professional -->
+    <tr>
+      <td colspan="2"><div class="section-hd">LICENSED PHYSICIAN, PHYSICIAN ASSISTANT, ADVANCED PRACTICE REGISTERED NURSE, LICENSED DENTIST</div>
+        Health Care Professional's signature is only required in this box if their instructions have been provided on this form, prescribed
+        medication does not have a prescription label, or as directed by the manufacturer's instructions.
+      </td>
+    </tr>
+    <tr class="sig-tbl">
+      <td style="width:65%">Physician Signature
+        <div class="sig-wrap">
+          <canvas id="physicianSig" class="sigPad" width="380" height="46"></canvas>
+          <button type="button" class="sig-clear" data-clear="physicianSig">Clear</button>
+        </div>
+      </td>
+      <td>Date of Signature
+        <div><input type="date" class="date-fill" id="signedDate"></div>
+      </td>
+    </tr>
+    <!-- Certified professional trainer -->
+    <tr>
+      <td colspan="2"><div class="section-hd">CERTIFIED PROFESSIONAL TRAINER</div>
+        <b>(A signature from a Certified Professional Trainer is not required if the parent/guardian has provided instructions for care,
+        training, or administering medication)</b><br>
+        If a Certified Professional Trainer provided instructions, my signature indicates that:
+        <div class="inline-cb" style="margin-left:14px">
+          <label><input type="checkbox" id="trainerCare">I have provided instructions for care and/or training for the medical procedure.</label>
+          <label><input type="checkbox" id="trainerMed">I have provided instructions for administering medication.</label>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="width:65%">Certified Professionals Name (please print)
+        <div><input type="text" class="fill" id="trainerName" autocomplete="name" style="width:88%"></div>
+      </td>
+      <td>Phone Number
+        <div><input type="tel" class="fill" id="trainerPhone" autocomplete="tel" style="width:88%"></div>
+      </td>
+    </tr>
+    <tr class="sig-tbl">
+      <td style="width:65%">Certified Professionals Signature
+        <div class="sig-wrap">
+          <canvas id="trainerSig" class="sigPad" width="380" height="46"></canvas>
+          <button type="button" class="sig-clear" data-clear="trainerSig">Clear</button>
+        </div>
+      </td>
+      <td>Date of Signature
+        <div><input type="date" class="date-fill" id="trainerDate"></div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Program staff -->
+  <div class="section-hd">PROGRAM STAFF</div>
+  <div style="font-size:10pt;margin:2px 0 4px">Signatures of all individuals who have received instructions for care, have been trained in performing the procedure for this
+    child and/or administering medication. Additional names and signatures can be attached on a separate sheet.</div>
+  <table class="grid-tbl blk">
+    <tr><th style="width:33%">Printed Name</th><th style="width:34%">Signature</th><th style="width:33%">Date</th></tr>
+    <tr><td><input type="text" id="staffName1"></td><td><input type="text" id="staffSig1"></td><td><input type="text" id="staffDate1"></td></tr>
+    <tr><td><input type="text" id="staffName2"></td><td><input type="text" id="staffSig2"></td><td><input type="text" id="staffDate2"></td></tr>
+    <tr><td><input type="text" id="staffName3"></td><td><input type="text" id="staffSig3"></td><td><input type="text" id="staffDate3"></td></tr>
+    <tr><td><input type="text" id="staffName4"></td><td><input type="text" id="staffSig4"></td><td><input type="text" id="staffDate4"></td></tr>
+    <tr><td><input type="text" id="staffName5"></td><td><input type="text" id="staffSig5"></td><td><input type="text" id="staffDate5"></td></tr>
+  </table>
+
+  <div class="foot"><span>DCY 01236 (Rev. 7/2026)</span><span>Page 3 of 4</span></div>
+</div>
+
+<!-- ==================== PAGE 4 — ADMINISTRATION LOG ==================== -->
+<div class="sheet">
+
+  <table class="grid-tbl blk log-tbl">
+    <tr class="bar bar-orange"><td colspan="4">DOCUMENTATION OF ADMINISTRATION OF MEDICATION OR MEDICAL FOOD</td></tr>
+    <tr>
+      <td colspan="2">Child's Name<div><input type="text" id="childName4" style="width:92%"></div></td>
+      <td colspan="2">Name of Medication/Medical Food<div><input type="text" id="logMedName" style="width:92%"></div></td>
+    </tr>
+    <tr>
+      <th style="width:16%">Date</th>
+      <th style="width:16%">Time</th>
+      <th style="width:20%">Dosage</th>
+      <th style="width:48%">Signature of person administering medication/medical food</th>
+    </tr>
+    <tbody id="logRows"></tbody>
+  </table>
+
+  <div class="foot"><span>DCY 01236 (Rev. 7/2026)</span><span>Page 4 of 4</span></div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — Supabase (MenuMaker) — copied from CACFP_v8
+   ============================================================ */
+const URL_="https://trrmyqfpxntmgxnqkikp.supabase.co",
+  KEY_="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko",
+  ORG_="3a9a290e-7e49-491e-946b-ad86f2399910",
+  CENTERS_={pearl:"881ef4ce-1a27-4d3b-aa60-59d2a307bf2b",alpha:"099c404b-e6d3-4543-9d9a-1fb11a2ee62d",ridge:"4aed7d5a-00d0-4a4c-ac99-311046ad2027"};
+const CENTER_NAMES_={pearl:"Play Academy Parma Heights",alpha:"Play Academy Mayfield Hills",ridge:"Play Academy Wickliffe"};
+
+(function () {
+  'use strict';
+  const $ = (sel) => document.querySelector(sel);
+  const val = (id) => { const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+  const chk = (id) => { const e = document.getElementById(id); return !!(e && e.checked); };
+  const status = (msg, cls) => { const el = $('#status'); el.textContent = msg || ''; el.className = cls || ''; };
+
+  /* ---------- Date: auto-fill today (physician date of signature) ---------- */
+  function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  $('#signedDate').value = todayISO();
+  let dateTouched = false;
+  $('#signedDate').addEventListener('input', () => { dateTouched = true; });
+
+  /* ---------- Administration log rows (print fidelity) ---------- */
+  (function buildLog(){
+    const body = document.getElementById('logRows');
+    let html = '';
+    for (let i = 0; i < 19; i++) {
+      html += '<tr><td><input type="text" class="logDate"></td><td><input type="text" class="logTime"></td><td><input type="text" class="logDosage"></td><td><input type="text" class="logSig"></td></tr>';
+    }
+    body.innerHTML = html;
+  })();
+
+  /* ---------- Mirror child name across pages; medication name onto log ---------- */
+  function mirror(){
+    const cn = $('#childName').value;
+    ['childName2','childName3','childName4'].forEach(id => { const e = document.getElementById(id); if (e) e.value = cn; });
+    const mn = $('#med1Name').value;
+    const lm = document.getElementById('logMedName'); if (lm && !lm.value) lm.value = mn;
+  }
+  $('#childName').addEventListener('input', mirror);
+  $('#med1Name').addEventListener('input', mirror);
+
+  /* ---------- Center select ---------- */
+  const ctr = $('#ctr');
+  ctr.addEventListener('change', () => {
+    ctr.classList.remove('need');
+    try {
+      const r = JSON.parse(localStorage.getItem('pa_packet_profile')) || { ts: Date.now(), data: {} };
+      r.data.center_code = ctr.value; r.ts = Date.now();
+      localStorage.setItem('pa_packet_profile', JSON.stringify(r));
+    } catch (_) {}
+  });
+  try {
+    const r = JSON.parse(localStorage.getItem('pa_packet_profile'));
+    if (r && Date.now() - r.ts < 90*60*1000 && r.data.center_code) ctr.value = r.data.center_code;
+  } catch (_) {}
+
+  /* ---------- E-signature pads (verbatim mechanics from CACFP_v8) ---------- */
+  function initSigPad(id){
+    const canvas=document.getElementById(id);if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    ctx.strokeStyle='#000080';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
+    let drawing=false,lx,ly;
+    function pos(e){const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy}}
+    function dn(e){e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;ctx.beginPath();ctx.arc(lx,ly,0.8,0,Math.PI*2);ctx.fill()}
+    function mv(e){e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y}
+    function up(){drawing=false}
+    canvas.addEventListener('mousedown',dn);canvas.addEventListener('mousemove',mv);
+    canvas.addEventListener('mouseup',up);canvas.addEventListener('mouseleave',up);
+    canvas.addEventListener('touchstart',dn,{passive:false});
+    canvas.addEventListener('touchmove',mv,{passive:false});
+    canvas.addEventListener('touchend',up);
+  }
+  function clearSig(id){const c=document.getElementById(id);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height)}
+  function getSigData(id){const c=document.getElementById(id);if(!c)return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return d.some((v,i)=>i%4===3&&v>0)?c.toDataURL('image/png'):null}
+  initSigPad('parentSig');
+  initSigPad('physicianSig');
+  initSigPad('trainerSig');
+  document.querySelectorAll('.sig-clear').forEach(b => b.addEventListener('click', () => clearSig(b.dataset.clear)));
+
+  /* ---------- Phone formatting: (XXX) XXX-XXXX ---------- */
+  function formatPhone(el) {
+    let d = el.value.replace(/\D/g, '');
+    if (d.length === 11 && d[0] === '1') d = d.slice(1);
+    d = d.slice(0, 10);
+    let out = '';
+    if (d.length > 0) out = '(' + d.slice(0, 3);
+    if (d.length >= 4) out += ') ' + d.slice(3, 6);
+    if (d.length >= 7) out += '-' + d.slice(6);
+    el.value = out;
+  }
+  const phoneEl = $('#trainerPhone');
+  phoneEl.maxLength = 14;
+  phoneEl.addEventListener('input', (e) => { if (e.inputType && e.inputType.startsWith('delete')) return; formatPhone(phoneEl); });
+  phoneEl.addEventListener('blur', () => formatPhone(phoneEl));
+
+  /* ---------- Packet auto-fill (child identity across the medical forms) ---------- */
+  const PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 90 * 60 * 1000;
+  function packetLoad(){ try{ const raw=localStorage.getItem(PACKET_KEY); if(!raw)return null; const o=JSON.parse(raw); if(!o.ts||Date.now()-o.ts>PACKET_TTL_MS){localStorage.removeItem(PACKET_KEY);return null;} return o; }catch(e){return null;} }
+  function packetSave(fields){ try{ const o=packetLoad()||{data:{},done:{}}; Object.keys(fields).forEach(k=>{if(fields[k])o.data[k]=fields[k];}); o.ts=Date.now(); localStorage.setItem(PACKET_KEY,JSON.stringify(o)); }catch(e){} }
+  function packetPrefill(){
+    const o=packetLoad(); if(!o)return; const d=o.data||{};
+    const map={ child_name:'childName', birth_date:'birthDate', weight:'weight' };
+    let used=false;
+    Object.keys(map).forEach(k=>{ const el=document.getElementById(map[k]); if(d[k]&&el&&!el.value){el.value=d[k];used=true;} });
+    if(d.birth_date){ const b2=document.getElementById('birthDate2'); if(b2&&!b2.value)b2.value=d.birth_date; }
+    if(used){ mirror(); status('⤓ Auto-filled from a previous form — please verify','ok'); }
+  }
+
+  /* ---------- Collect / validate / submit ---------- */
+  function collectData() {
+    const medications = [1,2,3].map(i => ({
+      name:  val('med'+i+'Name'),
+      dosage: val('med'+i+'Dosage'),
+      time:  val('med'+i+'Time'),
+      administer_when_symptoms_present: chk('med'+i+'Symptoms')
+    })).filter(m => m.name || m.dosage || m.time || m.administer_when_symptoms_present);
+
+    const program_staff = [1,2,3,4,5].map(i => ({
+      printed_name: val('staffName'+i),
+      signature_note: val('staffSig'+i),
+      date: val('staffDate'+i)
+    })).filter(s => s.printed_name || s.signature_note || s.date);
+
+    const med_log = Array.from(document.querySelectorAll('#logRows tr')).map(tr => ({
+      date:   tr.querySelector('.logDate').value.trim(),
+      time:   tr.querySelector('.logTime').value.trim(),
+      dosage: tr.querySelector('.logDosage').value.trim(),
+      administered_by: tr.querySelector('.logSig').value.trim()
+    })).filter(r => r.date || r.time || r.dosage || r.administered_by);
+
+    return {
+      type:                                'medical',
+      dcy_form:                            '01236',
+      center_code:                         ctr.value,
+      center_name:                         ctr.value ? CENTER_NAMES_[ctr.value] : '',
+      child_name:                          val('childName'),
+      date_of_birth:                       val('birthDate') || null,
+      no_special_condition:                chk('noCondition'),
+      additional_documentation_attached:   chk('attachedDoc'),
+      special_chronic_health_condition:    val('specialCondition'),
+      signs_symptoms:                      val('signsSymptoms'),
+      activities_foods_to_avoid:           val('avoid'),
+      activities_to_avoid_not_applicable:  chk('avoidNA'),
+      care_instructions:                   val('careInstructions'),
+      action_call_911:                     chk('call911'),
+      action_call_parent:                  chk('callParent'),
+      action_other:                        chk('otherAction'),
+      action_other_text:                   val('otherActionText'),
+      evacuation_info:                     val('evacuationInfo'),
+      weight:                              val('weight'),
+      medication_instructions:             val('medInstructions'),
+      medication_instructions_not_applicable: chk('medInstructionsNA'),
+      actions_if_medication_not_available: val('medNotAvailable'),
+      medications:                         medications,
+      parent_attest_provided_info:         chk('parentAttest1'),
+      parent_attest_permission_procedure:  chk('parentAttest2'),
+      parent_attest_permission_medication: chk('parentAttest3'),
+      parent_signature_date:               val('parentDate') || null,
+      physician_date_of_signature:         val('signedDate') || null,
+      trainer_provided_care_instructions:  chk('trainerCare'),
+      trainer_provided_med_instructions:   chk('trainerMed'),
+      trainer_name:                        val('trainerName'),
+      trainer_phone:                       val('trainerPhone'),
+      trainer_signature_date:              val('trainerDate') || null,
+      program_staff:                       program_staff,
+      medication_log_name:                 val('logMedName'),
+      medication_log:                      med_log
+    };
+  }
+
+  function validate(d, sigs) {
+    if (!ctr.value)          { ctr.classList.add('need'); return '⚠ Select center first'; }
+    if (!d.child_name)         return "Child's Name is required";
+    // Physician signature is CONDITIONAL on this form (only required when the health-care
+    // professional's instructions are provided here). A parent-only submission is allowed and
+    // routes to the Inbox as "awaiting physician". Parent/guardian signature gates the submit.
+    if (!sigs.parent_sig)      return 'Parent/guardian signature is required — sign in the parent box (page 3)';
+    return null;
+  }
+
+  async function rpc_(fd, sigs, sigDate){
+    if (window.PA_EMBED && PA_EMBED.active) return PA_EMBED.save(fd, sigs, sigDate);
+    const r = await fetch(URL_ + '/rest/v1/rpc/submit_enrollment_form', {
+      method: 'POST',
+      headers: { 'apikey': KEY_, 'Authorization': 'Bearer ' + KEY_,
+        'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+      body: JSON.stringify({ p_org: ORG_, p_center: CENTERS_[ctr.value],
+        p_submission_type: 'medical', p_form_data: fd, p_signatures: sigs,
+        p_signature_date: sigDate, p_source: 'online' })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  async function submitForm() {
+    if (!dateTouched) $('#signedDate').value = todayISO();
+    const d = collectData();
+    const sigs = { physician_sig: getSigData('physicianSig'), parent_sig: getSigData('parentSig'), trainer_sig: getSigData('trainerSig') };
+    const err = validate(d, sigs);
+    if (err) { status(err, 'error'); return; }
+
+    // Physician conditional: flag parent-only submissions for the "awaiting physician" Inbox lane.
+    d.physician_signed   = !!sigs.physician_sig;
+    d.awaiting_physician = !sigs.physician_sig;
+    const sigDate = (sigs.physician_sig && d.physician_date_of_signature)
+      ? d.physician_date_of_signature
+      : (d.parent_signature_date || todayISO());
+    status('Submitting…');
+    try {
+      await rpc_(d, sigs, sigDate);
+      status(d.awaiting_physician
+        ? '✓ Submitted — awaiting physician signature'
+        : '✓ Submitted for center review', 'ok');
+      packetSave({ child_name: d.child_name, birth_date: d.date_of_birth, weight: d.weight });
+    } catch (e) {
+      status('Submit failed — ' + e.message, 'error');
+      console.error(e);
+    }
+  }
+
+  function resetForm() {
+    document.querySelectorAll('input[type="text"], input[type="tel"], textarea').forEach(el => el.value = '');
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+    document.querySelectorAll('input[type="date"]').forEach(el => el.value = '');
+    clearSig('parentSig'); clearSig('physicianSig'); clearSig('trainerSig');
+    $('#signedDate').value = todayISO();
+    dateTouched = false;
+    status('Form cleared');
+  }
+
+  $('#btnSubmit').addEventListener('click', submitForm);
+  $('#btnReset').addEventListener('click', resetForm);
+  $('#btnPrint').addEventListener('click', () => window.print());
+
+  packetPrefill();
+
+  /* ---------- Blank date inputs → text on print so empty boxes stay clean ---------- */
+  let _dtSwap = [];
+  window.addEventListener('beforeprint', () => {
+    _dtSwap = [];
+    document.querySelectorAll('input[type=date]').forEach(e => { if (!e.value) { _dtSwap.push(e); e.type = 'text'; } });
+  });
+  window.addEventListener('afterprint', () => { _dtSwap.forEach(e => e.type = 'date'); _dtSwap = []; });
+
+  /* ============================================================
+     PA_EMBED bridge — verbatim shim from CACFP_v8 (medical variant)
+     ============================================================ */
+  window.PA_EMBED = (function(){
+    const q = new URLSearchParams(location.search);
+    const active = q.get('embed') === '1';
+    const st_ = { active, HOST: null, pend: {} };
+    if (!active) return st_;
+    document.documentElement.classList.add('pa-embed');
+    const FORM_TYPE = 'medical', FORM_VERSION = 'v1';
+    const env = m => Object.assign({ __paEmbed: true, ns: 'pa-embed', v: 1 }, m);
+    const send = m => { if (st_.HOST) parent.postMessage(env(m), st_.HOST); };
+    st_.save = (fd, sigs, sigDate) => new Promise((res, rej) => {
+      const nonce = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
+      st_.pend[nonce] = { res, rej };
+      send({ type: 'save', formType: FORM_TYPE, formData: fd, signatures: sigs || null, signatureDate: sigDate || null, nonce });
+      setTimeout(() => { if (st_.pend[nonce]) { delete st_.pend[nonce]; rej(new Error('No response from host')); } }, 20000);
+    });
+    async function init(){
+      document.body.classList.add('pa-embed');
+      try {
+        const host = q.get('host'), reg = q.get('registry'), center = q.get('center');
+        if (!host || !reg) throw 0;
+        const r = await fetch(reg); if (!r.ok) throw 0;
+        const j = await r.json();
+        const allow = j.allowedParentOrigins || [];
+        if (!allow.includes(host)) throw 0;
+        st_.HOST = host;
+        if (center) { const c = document.getElementById('ctr'); if (c) c.value = center; }
+        window.addEventListener('message', ev => {
+          if (ev.origin !== st_.HOST) return;
+          const d = ev.data;
+          if (!d || d.__paEmbed !== true || d.ns !== 'pa-embed' || d.v !== 1) return;
+          if (d.type === 'saved') { const p = st_.pend[d.nonce]; if (p) { delete st_.pend[d.nonce]; p.res(d); } }
+          else if (d.type === 'error') { const p = st_.pend[d.nonce]; if (p) { delete st_.pend[d.nonce]; p.rej(new Error(d.message || 'Host error')); } }
+          else if (d.type === 'inject') { try {
+            if (d.reset) resetForm();
+            if (d.center) { const c = document.getElementById('ctr'); if (c) c.value = d.center; }
+            if (d.prefill) {
+              const fd = d.prefill, S = (id, v) => { const e = document.getElementById(id); if (e && v != null) e.value = v; };
+              S('childName', fd.child_name); S('birthDate', fd.date_of_birth); S('weight', fd.weight);
+              mirror();
+            }
+            send({ type: 'resize', height: document.documentElement.scrollHeight });
+          } catch (e) { console.error('inject', e); } }
+          else if (d.type === 'submit') {
+            const c = document.getElementById('ctr'), n = document.getElementById('childName');
+            if (!c || !c.value) { send({ type: 'saveerror', nonce: d.nonce, message: 'Please choose a center first' }); return; }
+            if (!n || !n.value.trim()) { send({ type: 'saveerror', nonce: d.nonce, message: "Enter the child's name on the form" }); return; }
+            submitForm();
+          }
+        });
+        send({ type: 'ready', formType: FORM_TYPE, version: FORM_VERSION });
+        const ro = new ResizeObserver(() => send({ type: 'resize', height: document.documentElement.scrollHeight }));
+        ro.observe(document.documentElement);
+        send({ type: 'resize', height: document.documentElement.scrollHeight });
+      } catch (e) {
+        document.body.innerHTML = '<div style="font-family:Arial;padding:48px;text-align:center;color:#555;font-size:13pt">This form must be opened from the Play Academy application.</div>';
+      }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    return st_;
+  })();
+})();
+</script>
+</body>
+</html>

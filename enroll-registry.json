@@ -1,0 +1,178 @@
+{
+  "schema": 2,
+  "_note": "Version registry + config for the embed loader (public/embed.js). Forms live in the ROOT GitHub Pages repo pa082508.github.io under forms/1-data-sources/. embed.js pins the iframe to versions[<current|data-version>]; resolves the center slug via `centers`; and (in embed mode) writes the submission via `supabase` anon RPC submit_enrollment_form (p_source=embed). anon key is public (same as the SPA bundle).",
+  "_stage1_note": "Schema 2 (Stage 1): forms.enroll and forms.iea keep their embed-loader fields (current/versions/fallbackUrl/submissionType) UNCHANGED — only descriptive fields were added, so embed.js is unaffected. `current` points ONLY at files that exist today; no `current` was flipped. Records whose signed conversions are not built yet carry versions:{v1:'PENDING'} with current:null (fluid conversions = Stage 2). Stage-1 deltas applied 2026-07-07 (evening-packet answers): (a) conditional.trigger string → conditional.triggers[] array; (b) usda_waiver uses satisfies:['iea'] (retired pairedWith); (c) submissionType:'medical' added to dcy_01236/01217/01305 (single type + form_data.dcy_form discriminator — the loader ignores these records so embed is unaffected). Still deferred to evening: intakeMode/signer for special_diet/fluid_milk/infant_meals/usda_waiver; titles for dcy_01305/dcy_01236/dcy_01217.",
+  "supabase": {
+    "url": "https://trrmyqfpxntmgxnqkikp.supabase.co",
+    "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko"
+  },
+  "forms": {
+    "enroll": {
+      "current": "v8",
+      "versions": {
+        "v7": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v7.html",
+        "v8": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v8.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v8.html",
+      "submissionType": "cacfp_enrollment",
+      "slug": "enroll",
+      "title": "CACFP Enrollment",
+      "aliases": ["cacfp_enrollment"],
+      "requiringOrg": "ODE Nutrition/CACFP",
+      "intakeMode": "paper_scan",
+      "signer": "parent",
+      "badge": "Paper + scan (online available)",
+      "perInstance": false,
+      "history": []
+    },
+    "iea": {
+      "current": "v5",
+      "versions": {
+        "v5": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v5.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v5.html",
+      "submissionType": "iea",
+      "slug": "iea",
+      "title": "Income Eligibility Application (FY2026-27)",
+      "aliases": ["iea_fy2026_27"],
+      "requiringOrg": "ODE Nutrition/CACFP",
+      "intakeMode": "online",
+      "signer": "parent",
+      "perInstance": false,
+      "expiryMonths": 12,
+      "history": []
+    },
+    "dcy_01234": {
+      "slug": "dcy_01234",
+      "title": "DCY 01234 — Child Medical/Enrollment (Rev. 8/2025)",
+      "requiringOrg": "ODJFS/DCY",
+      "intakeMode": "paper_scan",
+      "signer": "parent",
+      "current": "v4",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/DCY_01234.html",
+        "v4": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v4.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v4.html",
+      "perInstance": false,
+      "history": [],
+      "triggersConditional": ["dcy_01236", "dcy_01217", "fluid_milk", "special_diet"]
+    },
+    "dcy_01236": {
+      "slug": "dcy_01236",
+      "title": "DCY 01236 — Care Plan for a Child with Special Needs",
+      "requiringOrg": "ODJFS/DCY",
+      "intakeMode": "paper_scan",
+      "signer": "physician",
+      "submissionType": "medical",
+      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["allergy", "special health condition", "medical food"] },
+      "current": null,
+      "versions": { "v1": "PENDING" },
+      "fallbackUrl": null,
+      "perInstance": false,
+      "history": []
+    },
+    "dcy_01217": {
+      "slug": "dcy_01217",
+      "title": "DCY 01217 — Request for Administration of Medication",
+      "requiringOrg": "ODJFS/DCY",
+      "intakeMode": "paper_scan",
+      "signer": "physician",
+      "submissionType": "medical",
+      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["medication"] },
+      "perInstance": true,
+      "expiryMonths": 12,
+      "current": null,
+      "versions": { "v1": "PENDING" },
+      "fallbackUrl": null,
+      "history": []
+    },
+    "dcy_01305": {
+      "slug": "dcy_01305",
+      "title": "JFS 01305 — Child Medical Statement (Rev. 10/2021)",
+      "requiringOrg": "ODJFS/DCY",
+      "intakeMode": "paper_scan",
+      "signer": "physician",
+      "submissionType": "medical",
+      "expiryDays": 30,
+      "perInstance": false,
+      "current": null,
+      "versions": { "v1": "PENDING" },
+      "fallbackUrl": null,
+      "history": []
+    },
+    "special_diet": {
+      "slug": "special_diet",
+      "title": "Special Diet Statement (medical)",
+      "requiringOrg": "ODE Nutrition/CACFP",
+      "intakeMode": "paper_scan",
+      "signer": "physician",
+      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["special diet: exclude a food group"] },
+      "current": "v1",
+      "versions": { "v1": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html" },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html",
+      "perInstance": false,
+      "history": []
+    },
+    "fluid_milk": {
+      "slug": "fluid_milk",
+      "title": "Fluid Milk Substitution Request",
+      "requiringOrg": "ODE Nutrition/CACFP",
+      "intakeMode": "online",
+      "signer": "parent",
+      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["special diet: exclude fluid milk"] },
+      "current": "v1",
+      "versions": { "v1": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html" },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html",
+      "perInstance": false,
+      "history": []
+    },
+    "infant_meals": {
+      "slug": "infant_meals",
+      "title": "Infant Meal Preference",
+      "requiringOrg": "ODE Nutrition/CACFP",
+      "intakeMode": "online",
+      "signer": "parent",
+      "current": "v1",
+      "versions": { "v1": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html" },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html",
+      "perInstance": false,
+      "history": []
+    },
+    "usda_waiver": {
+      "slug": "usda_waiver",
+      "title": "USDA Income Eligibility Waiver (declined IEA)",
+      "requiringOrg": "Internal",
+      "intakeMode": "online",
+      "signer": "parent",
+      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["packet: will you apply for free/reduced-price meals? = No"] },
+      "satisfies": ["iea"],
+      "note": "Alternative to IEA for the same income_eligibility child-record slot: packet asks 'Will you apply for free/reduced-price meals?' → Yes ⇒ iea, No ⇒ this waiver (parent-signed). Exactly one is always on file; satisfies:['iea'] marks the shared slot met.",
+      "current": null,
+      "versions": { "v1": "PENDING" },
+      "fallbackUrl": null,
+      "perInstance": false,
+      "history": []
+    }
+  },
+  "centers": {
+    "pearl": {
+      "org_id": "3a9a290e-7e49-491e-946b-ad86f2399910",
+      "center_id": "881ef4ce-1a27-4d3b-aa60-59d2a307bf2b"
+    },
+    "alpha": {
+      "org_id": "3a9a290e-7e49-491e-946b-ad86f2399910",
+      "center_id": "099c404b-e6d3-4543-9d9a-1fb11a2ee62d"
+    },
+    "ridge": {
+      "org_id": "3a9a290e-7e49-491e-946b-ad86f2399910",
+      "center_id": "4aed7d5a-00d0-4a4c-ac99-311046ad2027"
+    }
+  },
+  "allowedParentOrigins": [
+    "https://playacademyusa.com",
+    "https://www.playacademyusa.com",
+    "https://menumaker-app.vercel.app",
+    "http://localhost:5173"
+  ]
+}
