@@ -218,7 +218,14 @@
   var FIELDS = ['arr1', 'dep1', 'arr2', 'dep2'];
   // Default CACFP service windows (center config overrides via CFG.mealSlots).
   var DEFAULT_SLOTS = { b: ['06:30', '08:30'], as: ['09:00', '10:00'], l: ['11:00', '13:00'], ps: ['14:30', '15:30'], su: ['17:00', '18:30'], es: ['19:30', '20:30'] };
-  function toMin(t) { if (!t) return null; var p = t.split(':'); return (+p[0]) * 60 + (+p[1]); }
+  function toMin(t) { // accepts "HH:MM" (24h) and "H:MM am/pm" (form selects)
+    if (!t) return null; t = String(t).trim().toLowerCase();
+    var ap = (t.match(/(am|pm)$/) || [])[1]; if (ap) t = t.replace(/(am|pm)$/, '').trim();
+    var p = t.split(':'); if (p.length < 2) return null;
+    var h = +p[0], mi = +p[1]; if (isNaN(h) || isNaN(mi)) return null;
+    if (ap === 'pm' && h < 12) h += 12; if (ap === 'am' && h === 12) h = 0;
+    return h * 60 + mi;
+  }
   function autoMeals(day) {
     var grid = $('[data-fk-meals]'); if (!grid) return;
     var slots = CFG.mealSlots || DEFAULT_SLOTS;
