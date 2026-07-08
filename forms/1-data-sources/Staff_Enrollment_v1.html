@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Staff Enrollment — Play Academy</title>
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  :root { --green:#0f4c35; --line:#c0d8c0; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#1a2e1a; background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px; }
+  .toolbar { position: sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  h1 { font-size: 22px; color: var(--green); margin: 14px 0 2px; }
+  .sub { color:#6b7280; font-size:13px; margin-bottom:14px; }
+  fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 16px; background:#fff; }
+  legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px; }
+  label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
+  input[type=text], input[type=date], input[type=email], input[type=tel], select {
+    width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
+  input[type=file] { margin-top:6px; font-size:12px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  .sigbox { position:relative; margin-top:6px; }
+  canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
+  .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+  #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
+  #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <select id="ctr">
+    <option value="">— Select center —</option>
+    <option value="pearl">Play Academy Parma Heights</option>
+    <option value="alpha">Play Academy Mayfield Hills</option>
+    <option value="ridge">Play Academy Wickliffe</option>
+  </select>
+  <button class="btn bs" data-formkit="submit">✔ Submit</button>
+  <button class="btn br" onclick="staffReset()">✕ Clear</button>
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+  <span id="st"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="wrap">
+  <div data-formkit="banner" data-fk-banner-msg></div>
+  <h1>Staff Enrollment</h1>
+  <div class="sub">New staff onboarding. Complete every required field, sign, and submit — the office reviews and finalizes your record.</div>
+  <div id="done">✓ Submitted for office review</div>
+
+  <fieldset>
+    <legend>1 · Identity</legend>
+    <label class="f">Full name *</label>
+    <input type="text" id="full_name" autocomplete="name" data-required data-label="Full name">
+    <div class="row">
+      <div><label class="f">Date of birth *</label><input type="date" id="dob" autocomplete="bday" data-required data-label="Date of birth"></div>
+      <div><label class="f">Phone *</label><input type="tel" id="phone" autocomplete="tel" data-required data-label="Phone"></div>
+    </div>
+    <label class="f">Email *</label>
+    <input type="email" id="email" autocomplete="email" data-required data-label="Email">
+    <label class="f">Home address *</label>
+    <input type="text" id="address" autocomplete="street-address" data-required data-label="Home address" placeholder="Street, City, State ZIP">
+    <div class="row">
+      <div><label class="f">Emergency contact — name *</label><input type="text" id="ec_name" autocomplete="name" data-required data-label="Emergency contact name"></div>
+      <div><label class="f">Emergency contact — phone *</label><input type="tel" id="ec_phone" autocomplete="tel" data-required data-label="Emergency contact phone"></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>2 · Position</legend>
+    <div class="row">
+      <div><label class="f">Role *</label>
+        <select id="role" data-required data-label="Role">
+          <option value="">— choose —</option>
+          <option value="teacher">Teacher</option>
+          <option value="floater">Floater</option>
+          <option value="cook">Cook</option>
+          <option value="driver">Driver</option>
+          <option value="office">Office</option>
+          <option value="director">Director</option>
+        </select>
+      </div>
+      <div><label class="f">Desired start date *</label><input type="date" id="start_date" data-required data-label="Desired start date"></div>
+    </div>
+    <div class="note">Salary, contract hours, and classroom assignment are set by the office at approval — not on this form.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>3 · Compliance</legend>
+    <div class="row">
+      <div><label class="f">BCI/FBI fingerprints — date *</label><input type="date" id="bci_fbi_date" data-required data-label="BCI/FBI date"></div>
+      <div><label class="f">BCI/FBI scan</label><input type="file" id="bci_fbi_scan" accept="image/*,.pdf" data-tip="Upload the fingerprint result. Document images are attached and verified separately."></div>
+    </div>
+    <div class="row">
+      <div><label class="f">CPR / First Aid — date *</label><input type="date" id="cpr_date" data-required data-label="CPR/First Aid date"></div>
+      <div><label class="f">CPR / First Aid scan</label><input type="file" id="cpr_scan" accept="image/*,.pdf"></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>4 · Role-specific &amp; work authorization</legend>
+    <label class="f" style="display:flex;gap:8px;align-items:center;font-weight:600;">
+      <input type="checkbox" id="is_driver" style="width:auto;margin:0"> I will drive for the center
+    </label>
+    <div data-show-when="is_driver:truthy" hidden style="padding-left:8px;border-left:3px solid var(--line);margin-top:8px">
+      <div class="row">
+        <div><label class="f">Driver's license class *</label><input type="text" id="dl_class" data-required data-label="DL class" placeholder="e.g. Class D"></div>
+        <div><label class="f">License expiry *</label><input type="date" id="dl_expiry" data-required data-label="DL expiry"></div>
+      </div>
+      <label class="f">License scan</label><input type="file" id="dl_scan" accept="image/*,.pdf">
+      <div class="note">We record class + expiry + a scan only — the license number is not stored.</div>
+    </div>
+
+    <label class="f" style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:12px">
+      <input type="checkbox" id="is_cook" style="width:auto;margin:0"> I will prepare/handle food
+    </label>
+    <div data-show-when="is_cook:truthy" hidden style="padding-left:8px;border-left:3px solid var(--line);margin-top:8px">
+      <div class="row">
+        <div><label class="f">Food handler cert — date *</label><input type="date" id="food_handler_date" data-required data-label="Food handler date"></div>
+        <div><label class="f">Food handler scan</label><input type="file" id="food_handler_scan" accept="image/*,.pdf"></div>
+      </div>
+    </div>
+
+    <label class="f" style="margin-top:12px">Work authorization *</label>
+    <select id="work_auth_type" data-required data-label="Work authorization">
+      <option value="">— choose —</option>
+      <option value="citizen">U.S. citizen</option>
+      <option value="permanent_resident">Permanent resident</option>
+      <option value="ead">Employment Authorization (EAD)</option>
+      <option value="parole">Parole</option>
+      <option value="visa">Work visa</option>
+    </select>
+    <div data-show-when="work_auth_type:ead,parole,visa" hidden style="padding-left:8px;border-left:3px solid var(--line);margin-top:8px">
+      <div class="row">
+        <div><label class="f">Authorization expiry *</label><input type="date" id="work_auth_expiry" data-required data-label="Work authorization expiry"></div>
+        <div><label class="f">Authorization scan</label><input type="file" id="work_auth_scan" accept="image/*,.pdf"></div>
+      </div>
+      <div class="note">We record type + expiry + a scan only — document numbers are not stored.</div>
+    </div>
+    <div class="note">SSN, Form I-9, and Form W-4 are completed offline with the office — they are not collected on this form.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>5 · Signature</legend>
+    <label class="f">Employee signature *</label>
+    <div class="sigbox">
+      <canvas id="empSig" width="700" height="90" data-formkit="signature" data-required data-label="Employee signature"></canvas>
+      <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('empSig')">✕</button>
+    </div>
+    <label class="f">Date *</label>
+    <input type="date" id="signed_date" data-required data-label="Date">
+  </fieldset>
+</div>
+
+<script>
+/* Staff Enrollment v1 — form-specific config; shared behaviour = form-kit.js */
+function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
+function gc(id){var e=document.getElementById(id);return !!(e&&e.checked)}
+function fileName(id){var e=document.getElementById(id);return e&&e.files&&e.files[0]?e.files[0].name:''}
+function staffReset(){
+  document.querySelectorAll('input,select').forEach(function(e){ if(e.id==='ctr')return; if(e.type==='checkbox')e.checked=false; else if(e.tagName!=='CANVAS')e.value=''; });
+  if(window.FormKit){FormKit.clearSig('empSig');FormKit.applyConditionals();FormKit.refreshCounter();FormKit.status('Cleared','')}
+}
+window.FORMKIT_CONFIG = {
+  formType:'staff', version:'v1', centerSelect:'#ctr', reset:staffReset,
+  collect:function(){
+    var driver=gc('is_driver'), cook=gc('is_cook'), wa=g('work_auth_type');
+    var waTimed = (wa==='ead'||wa==='parole'||wa==='visa');
+    var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
+    var fd={
+      type:'staff', center_code:FormKit.centerCode(),
+      full_name:g('full_name'), dob:g('dob'), phone:g('phone'), email:g('email'), address:g('address'),
+      emergency_contact:{ name:g('ec_name'), phone:g('ec_phone') },
+      role:g('role'), desired_start_date:g('start_date'),
+      compliance:{
+        bci_fbi_date:g('bci_fbi_date'), bci_fbi_scan_file:fileName('bci_fbi_scan'),
+        cpr_first_aid_date:g('cpr_date'), cpr_first_aid_scan_file:fileName('cpr_scan')
+      },
+      is_driver:driver, driver: driver ? { dl_class:g('dl_class'), dl_expiry:g('dl_expiry'), dl_scan_file:fileName('dl_scan') } : null,
+      is_cook:cook, cook: cook ? { food_handler_date:g('food_handler_date'), food_handler_scan_file:fileName('food_handler_scan') } : null,
+      work_authorization:{ kind:wa, expiry: waTimed ? g('work_auth_expiry') : null, scan_file: waTimed ? fileName('work_auth_scan') : '' },
+      // Scans are captured as filenames only here; document image upload is a
+      // follow-up (RPC carries JSON). SSN/I-9/W-4 collected offline by the office.
+      scans_pending:true
+    };
+    return { formData:fd, signatures:{ employee_sig: FormKit.getSig('empSig') }, signatureDate: sigDate };
+  },
+  onSuccess:function(){ var d=document.getElementById('done'); if(d){d.style.display='block'; setTimeout(function(){d.style.display='none'},6000)} staffReset(); }
+};
+document.addEventListener('DOMContentLoaded',function(){
+  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];
+  // Standalone center pre-select via ?center= (embed mode is handled by the kit).
+  try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
+});
+</script>
+<script defer src="form-kit.js"></script>
+</body>
+</html>
