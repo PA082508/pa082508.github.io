@@ -303,7 +303,11 @@
     if (!data) { status('Nothing to submit', 'er'); return; }
     status('Saving…', 'in');
     try {
-      if (EMBED.active) { await EMBED.save(data.formData, data.signatures, data.signatureDate); }
+      if (CFG.submit) {
+        // Form supplies its own transport (e.g. a legacy dedicated-table insert)
+        // — the kit still owns validation/UX, this only replaces the write.
+        await CFG.submit(data);
+      } else if (EMBED.active) { await EMBED.save(data.formData, data.signatures, data.signatureDate); }
       else {
         await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online' });
       }
@@ -383,5 +387,8 @@
     centerUuid: centerUuid, centerCode: centerCode,
     refreshCounter: refreshCounter, applyConditionals: applyConditionals,
     CENTERS: CENTERS, ORG: ORG,
+    // Exposed so a form's CFG.submit override can POST to its own dedicated
+    // table without re-inlining the anon key (UX-only retrofit path).
+    supa: { url: SUPA_URL, key: SUPA_KEY, headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' } },
   };
 })();
