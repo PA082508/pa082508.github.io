@@ -1,0 +1,68 @@
+/* ============================================================
+   form-kit.css — shared UX chrome for every parent/physician form.
+   Progressive enhancement: nothing here applies unless the form opts in
+   with data-formkit / data-fk-* attributes. All kit chrome is print-hidden
+   so paper parity is preserved. See docs/form-ux-standard.md.
+   ============================================================ */
+
+/* Inline validation (§1) */
+.fk-invalid { border-bottom: 2px solid #dc2626 !important; }
+.fk-msg { color: #dc2626; font-size: 11px; margin-top: 3px; line-height: 1.3; }
+
+/* "N remaining" counter + submit (§1) */
+.fk-counter { font-size: 12px; font-weight: 700; color: #92400e; background: #fffbeb;
+  border: 1px solid #fde68a; border-radius: 20px; padding: 4px 12px; display: inline-block; }
+.fk-counter[data-done="1"] { color: #0f4c35; background: #f0fff4; border-color: #bbf7d0; }
+
+/* Conditional sections (§2) — native [hidden] hides; nothing extra needed. */
+
+/* Smart Monday chip (§3) + one-level undo */
+.fk-chip { font-size: 12px; font-weight: 600; color: #0f4c35; background: #f0fff4;
+  border: 1px solid #bbf7d0; border-radius: 20px; padding: 4px 12px; cursor: pointer;
+  font-family: inherit; margin: 6px 0; }
+.fk-chip:hover { background: #dcfce7; }
+
+/* Auto-derived meal tag (§4) */
+.fk-auto { font-size: 9px; font-weight: 700; color: #0f4c35; background: #dcfce7;
+  border-radius: 4px; padding: 0 4px; margin-left: 4px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* Explicit choice / consent buttons (§5) */
+.fk-choice { display: inline-flex; gap: 0; border: 1.5px solid #c0d8c0; border-radius: 9px; overflow: hidden; }
+.fk-choice button { border: none; background: #fff; color: #374151; font-family: inherit; font-size: 13px;
+  font-weight: 600; padding: 8px 14px; cursor: pointer; border-right: 1.5px solid #c0d8c0; }
+.fk-choice button:last-child { border-right: none; }
+.fk-choice button[aria-pressed="true"] { background: #0f4c35; color: #fff; }
+.fk-choice button[aria-pressed="true"].fk-deny { background: #991b1b; }
+
+/* Tooltips (§6) */
+.fk-tip { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px;
+  border-radius: 50%; background: #0f4c35; color: #fff; font-size: 10px; font-weight: 700; cursor: pointer;
+  margin-left: 5px; vertical-align: middle; position: relative; }
+.fk-tip-pop { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  width: 220px; background: #0a3320; color: #fff; font-size: 11.5px; font-weight: 400; line-height: 1.4;
+  padding: 8px 10px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); z-index: 50;
+  text-transform: none; letter-spacing: normal; }
+
+/* Cross-form autofill banner (§7) */
+.fk-autofill { display: flex; align-items: center; gap: 12px; background: #f0f7ff; border: 1.5px solid #bfdbfe;
+  border-radius: 10px; padding: 10px 14px; margin: 10px 0; font-size: 13px; color: #1e3a5f; }
+.fk-autofill button { border: none; border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 12px;
+  font-weight: 700; cursor: pointer; }
+.fk-autofill .fk-apply { background: #1e40af; color: #fff; }
+.fk-autofill .fk-dismiss { background: transparent; color: #64748b; }
+
+/* Encouragement banner + progress (§8) */
+.fk-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  background: linear-gradient(90deg,#f0fff4,#eafff2); border: 1.5px solid #bbf7d0; border-radius: 12px;
+  padding: 12px 16px; margin: 0 0 14px; }
+.fk-banner-msg { font-size: 14px; font-weight: 700; color: #0a3320; }
+.fk-progress { font-size: 12px; font-weight: 700; color: #0f4c35; background: #fff; border: 1px solid #bbf7d0;
+  border-radius: 20px; padding: 4px 12px; white-space: nowrap; }
+
+/* Print parity — hide ALL kit chrome on paper */
+@media print {
+  .fk-counter, .fk-chip, .fk-auto, .fk-tip, .fk-tip-pop, .fk-autofill,
+  .fk-banner, .fk-print-hidden { display: none !important; }
+  .fk-invalid { border-bottom: inherit !important; }
+  .fk-msg { display: none !important; }
+}
