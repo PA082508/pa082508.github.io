@@ -122,10 +122,11 @@
     <option value="alpha">Play Academy Mayfield Hills</option>
     <option value="ridge">Play Academy Wickliffe</option>
   </select>
-  <button class="primary" onclick="save_()">Submit</button>
+  <button class="primary" data-formkit="submit">Submit</button>
   <button onclick="clear_()">Reset</button>
   <button class="blue" onclick="window.print()">Print / Save PDF</button>
-  <span id="status"></span>
+  <span id="status" data-formkit="status"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
 </div>
 
 <!-- ============================== PAGE 1 ============================== -->
@@ -137,25 +138,25 @@
   <!-- Child identity -->
   <table class="blk">
     <tr>
-      <td style="width:42%"><span class="lbl">Child's Name</span><input class="fill" id="f_child_name" autocomplete="name"></td>
-      <td style="width:29%"><span class="lbl">Date of Birth</span><input type="date" class="date-fill" id="f_dob" autocomplete="bday"></td>
+      <td style="width:42%"><span class="lbl">Child's Name</span><input class="fill" id="f_child_name" data-required data-label="Child's name" data-fk-field="child_name" autocomplete="name"></td>
+      <td style="width:29%"><span class="lbl">Date of Birth</span><input type="date" class="date-fill" id="f_dob" data-fk-field="dob" autocomplete="bday"></td>
       <td style="width:29%"><span class="lbl">First Day at Program/Home</span><input type="date" class="date-fill" id="f_start"></td>
     </tr>
     <tr>
-      <td colspan="2"><span class="lbl">Home Address</span><input class="fill" id="f_addr" autocomplete="street-address"></td>
-      <td><span class="lbl">City</span><input class="fill" id="f_city" autocomplete="address-level2"></td>
+      <td colspan="2"><span class="lbl">Home Address</span><input class="fill" id="f_addr" data-fk-field="street" autocomplete="street-address"></td>
+      <td><span class="lbl">City</span><input class="fill" id="f_city" data-fk-field="city" autocomplete="address-level2"></td>
     </tr>
     <tr>
       <td><span class="lbl">State</span><input class="fill" id="f_state" value="OH" autocomplete="address-level1"></td>
-      <td><span class="lbl">Zip Code</span><input class="fill" id="f_zip" autocomplete="postal-code"></td>
-      <td><span class="lbl">Home Telephone Number</span><input type="tel" class="fill" id="f_phone" oninput="fmtPhone(this)"></td>
+      <td><span class="lbl">Zip Code</span><input class="fill" id="f_zip" data-fk-field="zip" autocomplete="postal-code"></td>
+      <td><span class="lbl">Home Telephone Number</span><input type="tel" class="fill" id="f_phone" data-fk-field="phone_day" oninput="fmtPhone(this)"></td>
     </tr>
   </table>
 
   <!-- Parent/Guardian #1 -->
   <table class="blk">
     <tr>
-      <td style="width:55%"><span class="lbl">Parent/Guardian Name #1</span><input class="fill" id="f_p1name"></td>
+      <td style="width:55%"><span class="lbl">Parent/Guardian Name #1</span><input class="fill" id="f_p1name" data-fk-field="parent_name"></td>
       <td style="width:45%"><span class="lbl">Relationship to Child</span><input class="fill" id="f_p1rel"></td>
     </tr>
     <tr>
@@ -170,7 +171,7 @@
       </tr></table></td>
     </tr>
     <tr>
-      <td><span class="lbl">Email Address <i>(if applicable)</i></span><input type="email" class="fill" id="f_p1email"></td>
+      <td><span class="lbl">Email Address <i>(if applicable)</i></span><input type="email" class="fill" id="f_p1email" data-fk-field="parent_email"></td>
       <td><span class="lbl">Cell Phone <i>(if applicable)</i></span><input type="tel" class="fill" id="f_p1cell" oninput="fmtPhone(this)"></td>
     </tr>
     <tr>
@@ -296,7 +297,7 @@
       &nbsp; Please list and explain:
       <textarea class="tall" id="f_t1" rows="3"></textarea>
     </td></tr>
-    <tr><td>
+    <tr data-show-when="cb_has_allergy:truthy"><td>
       Does your child's allergy/allergies require child care staff to monitor your child for symptoms to take action if a reaction occurs, or give emergency medication to your child? <i>(check one)</i><br>
       <label class="cb"><input type="checkbox" id="cb_allergy_no_emerg">No</label><br>
       <label class="cb"><input type="checkbox" id="cb_allergy_yes_emerg">Yes - a DCY 01236 "Child Medical/Physical Care Plan for Child Care" must be completed.</label>
@@ -310,7 +311,7 @@
       <label class="cb"><input type="checkbox" id="cb_yes_spec_cond">Yes - please explain</label>
       <textarea class="tall" id="f_t2" rows="3"></textarea>
     </td></tr>
-    <tr><td>
+    <tr data-show-when="cb_yes_spec_cond:truthy"><td>
       Does the special health or medical condition require child care staff to perform a procedure, or perform child specific care such as: to monitor your child for symptoms or administer medication during child care hours? <i>(check one)</i><br>
       <label class="cb"><input type="checkbox" id="cb_spec_no_care">No</label><br>
       <label class="cb"><input type="checkbox" id="cb_spec_yes_care">Yes - a DCY 01236 "Child Medical/Physical Care Plan for Child Care" must be completed.</label>
@@ -324,7 +325,7 @@
       <label class="cb"><input type="checkbox" id="cb_yes_medication">Yes - please explain</label>
       <textarea class="tall" id="f_t3" rows="3"></textarea>
     </td></tr>
-    <tr><td>
+    <tr data-show-when="cb_yes_medication:truthy"><td>
       If yes, does this medication or medical food need to be administered at the child care program/home?<br>
       <label class="cb"><input type="checkbox" id="cb_no_med_admin">No</label><br>
       <label class="cb"><input type="checkbox" id="cb_yes_med_admin">Yes - a DCY 01217 "Request for Administration of Medication" must be completed and kept on file for each medication and a DCY 01236 "Child Medical/Physical Care Plan for Child Care" must be completed for the medical food.</label>
@@ -338,7 +339,7 @@
       <label class="cb"><input type="checkbox" id="cb_yes_diet">Yes - please explain</label>
       <textarea class="tall" id="f_t4" rows="3"></textarea>
     </td></tr>
-    <tr><td>
+    <tr data-show-when="cb_yes_diet:truthy"><td>
       Does this dietary restriction require a modified diet that eliminates all types of fluid milk or an entire food group?<br>
       <label class="cb"><input type="checkbox" id="cb_diet_no_milk">No</label><br>
       <label class="cb"><input type="checkbox" id="cb_diet_yes_milk">Yes - written instructions from the child's health care provider must be on file.</label><br>
@@ -428,12 +429,12 @@
     </tr>
     <tr>
       <td><span class="lbl">Parent's Signature</span>
-        <div class="sig-wrap"><canvas class="sigPad" id="f_transport_give_sig" width="360" height="42"></canvas><button type="button" class="sig-clear" onclick="clearSig('f_transport_give_sig')">Clear</button></div>
+        <div class="sig-wrap"><canvas class="sigPad" id="f_transport_give_sig" data-formkit="signature" width="360" height="42"></canvas><button type="button" class="sig-clear" onclick="FormKit.clearSig('f_transport_give_sig')">Clear</button></div>
         <span class="lbl" style="margin-top:3px">Date</span><input type="date" class="date-fill" id="f_transport_give_date">
       </td>
       <td class="orcol"></td>
       <td><span class="lbl">Parent's Signature</span>
-        <div class="sig-wrap"><canvas class="sigPad" id="f_transport_deny_sig" width="360" height="42"></canvas><button type="button" class="sig-clear" onclick="clearSig('f_transport_deny_sig')">Clear</button></div>
+        <div class="sig-wrap"><canvas class="sigPad" id="f_transport_deny_sig" data-formkit="signature" width="360" height="42"></canvas><button type="button" class="sig-clear" onclick="FormKit.clearSig('f_transport_deny_sig')">Clear</button></div>
         <span class="lbl" style="margin-top:3px">Date</span><input type="date" class="date-fill" id="f_transport_deny_date">
       </td>
     </tr>
@@ -452,13 +453,13 @@
     </td></tr>
     <tr>
       <td style="width:70%"><span class="lbl">Parent/Guardian Signature(s)</span>
-        <div class="sig-wrap"><canvas class="sigPad" id="f_parent_sig" width="520" height="42"></canvas><button type="button" class="sig-clear" onclick="clearSig('f_parent_sig')">Clear</button></div>
+        <div class="sig-wrap"><canvas class="sigPad" id="f_parent_sig" data-formkit="signature" data-required data-label="Parent signature" width="520" height="42"></canvas><button type="button" class="sig-clear" onclick="FormKit.clearSig('f_parent_sig')">Clear</button></div>
       </td>
       <td><span class="lbl">Date</span><input type="date" class="date-fill" id="f_sig_date"></td>
     </tr>
     <tr>
       <td><span class="lbl">Administrator/Designee Signature</span>
-        <div class="sig-wrap"><canvas class="sigPad" id="f_admin_sig" width="520" height="42"></canvas><button type="button" class="sig-clear" onclick="clearSig('f_admin_sig')">Clear</button></div>
+        <div class="sig-wrap"><canvas class="sigPad" id="f_admin_sig" data-formkit="signature" width="520" height="42"></canvas><button type="button" class="sig-clear" onclick="FormKit.clearSig('f_admin_sig')">Clear</button></div>
       </td>
       <td><span class="lbl">Date</span><input type="date" class="date-fill" id="f_admin_date"></td>
     </tr>
@@ -498,75 +499,57 @@
   <div class="pgfoot"><span>DCY 01234 (Rev. 8/2025)</span><span>Page 4 of 4</span></div>
 </div>
 
+<link rel="stylesheet" href="form-kit.css">
 <script>
-const URL_="https://trrmyqfpxntmgxnqkikp.supabase.co",
-KEY_="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko",
-ORG_="3a9a290e-7e49-491e-946b-ad86f2399910",
-CENTERS_={pearl:"881ef4ce-1a27-4d3b-aa60-59d2a307bf2b",alpha:"099c404b-e6d3-4543-9d9a-1fb11a2ee62d",ridge:"4aed7d5a-00d0-4a4c-ac99-311046ad2027"};
+/* DCY 01234 v5 — form-specific config only; shared behaviour = form-kit.js */
+function g(id){var e=document.getElementById(id);return e?e.value:''}
+function gc(id){var e=document.getElementById(id);return e&&e.checked}
+function s(id,v){var e=document.getElementById(id);if(e&&e.tagName!=='CANVAS')e.value=(v==null?'':v)}
 
-function st(m,t){const e=document.getElementById('status');e.textContent=m;e.className=t}
-function g(id){const e=document.getElementById(id);return e?e.value:''}
-function gc(id){const e=document.getElementById(id);return e&&e.checked}
-function s(id,v){const e=document.getElementById(id);if(e&&e.tagName!=='CANVAS')e.value=v??''}
-
-function ctrPick(){
-  const e=document.getElementById('ctr');
-  e.classList.remove('need');
-  if(e.value){
-    const nm=e.options[e.selectedIndex].text;
-    ['f_center1','f_center2'].forEach(id=>{const f=document.getElementById(id);if(f&&!f.value.trim())f.value=nm});
-  }
-}
-function needCenter(){
-  const e=document.getElementById('ctr');
-  if(e.value)return false;
-  e.classList.add('need');e.focus();
-  st('⚠ Select center first','er');
-  return true;
-}
-
-function clear_(){
-  document.querySelectorAll('input[id^=f_],select[id^=f_]').forEach(e=>{if(e.tagName!=='CANVAS')e.value=''});
-  document.querySelectorAll('textarea[id^=f_]').forEach(e=>e.value='');
-  document.querySelectorAll('[id^=cb_]').forEach(e=>e.checked=false);
-  ['f_parent_sig','f_admin_sig','f_transport_give_sig','f_transport_deny_sig'].forEach(clearSig);
-  const st_=document.getElementById('f_state');if(st_)st_.value='OH';
-  setToday();
-  st('Cleared','in');
-}
-
-function fmtPhone(e){
-  let d=e.value.replace(/\D/g,'').slice(0,10);
-  e.value=d.length>6?`(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`:d.length>3?`(${d.slice(0,3)}) ${d.slice(3)}`:d;
-}
+function fmtPhone(e){var d=e.value.replace(/\D/g,'').slice(0,10);e.value=d.length>6?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):d.length>3?'('+d.slice(0,3)+') '+d.slice(3):d}
 
 // mirror child's name across page headers
-function mirrorName(){const v=g('f_child_name');['f_child2','f_child3','f_child4'].forEach(id=>s(id,v));}
+function mirrorName(){var v=g('f_child_name');['f_child2','f_child3','f_child4'].forEach(function(id){s(id,v)})}
 
-async function rpc_(fd, sigs, sigDate){
-  if(window.PA_EMBED&&PA_EMBED.active)return PA_EMBED.save(fd,sigs,sigDate);
-  const r = await fetch(URL_+'/rest/v1/rpc/submit_enrollment_form',{
-    method:'POST',
-    headers:{'apikey':KEY_,'Authorization':'Bearer '+KEY_,
-      'Content-Type':'application/json','Content-Profile':'menumaker'},
-    body:JSON.stringify({p_org:ORG_,p_center:CENTERS_[document.getElementById('ctr').value],
-      p_submission_type:'enrollment',p_form_data:fd,p_signatures:sigs,
-      p_signature_date:sigDate,p_source:'online'})});
-  if(!r.ok)throw new Error(await r.text());
-  return r.json();
+function ctrPick(){
+  var e=document.getElementById('ctr');if(!e)return;
+  e.classList.remove('need');
+  if(e.value){
+    var nm=e.options[e.selectedIndex].text;
+    ['f_center1','f_center2'].forEach(function(id){var f=document.getElementById(id);if(f&&!f.value.trim())f.value=nm});
+  }
+  if(window.FormKit)FormKit.savePacket();
 }
 
-async function save_(){
-  if(needCenter())return;
-  mirrorName();
-  if(!g('f_child_name').trim()){st("⚠ Enter the child's name",'er');return}
-  const parentSig=getSigData('f_parent_sig');
-  if(!parentSig){st('⚠ Parent/guardian signature required','er');return}
-  const sigDate=g('f_sig_date')||new Date().toISOString().split('T')[0];
-  st('Saving...','in');
-  try{
-    const ctr=document.getElementById('ctr');
-    const form_data={
+function setToday(){var sd=document.getElementById('f_sig_date');if(sd&&!sd.value)sd.value=new Date().toISOString().split('T')[0]}
+
+function clear_(){
+  document.querySelectorAll('input[id^=f_],select[id^=f_]').forEach(function(e){if(e.tagName!=='CANVAS')e.value=''});
+  document.querySelectorAll('textarea[id^=f_]').forEach(function(e){e.value=''});
+  document.querySelectorAll('[id^=cb_]').forEach(function(e){e.checked=false});
+  ['f_parent_sig','f_admin_sig','f_transport_give_sig','f_transport_deny_sig'].forEach(function(id){if(window.FormKit)FormKit.clearSig(id)});
+  var st_=document.getElementById('f_state');if(st_)st_.value='OH';
+  setToday();
+  if(window.FormKit){FormKit.status('Cleared','');if(FormKit.applyConditionals)FormKit.applyConditionals();if(FormKit.refreshCounter)FormKit.refreshCounter()}
+}
+
+// ── Same as Child's ──
+function bindSame(cbId,fn){var e=document.getElementById(cbId);if(e)e.addEventListener('change',fn)}
+bindSame('cb_p1addr_same',function(){if(this.checked){s('f_p1addr',g('f_addr'));s('f_p1city',g('f_city'));s('f_p1state',g('f_state'));s('f_p1zip',g('f_zip'))}else{['f_p1addr','f_p1city','f_p1state','f_p1zip'].forEach(function(id){s(id,'')})}});
+bindSame('cb_p1phone_same',function(){s('f_p1phone',this.checked?g('f_phone'):'')});
+bindSame('cb_p2addr_same',function(){if(this.checked){s('f_p2addr',g('f_addr'));s('f_p2city',g('f_city'));s('f_p2state',g('f_state'));s('f_p2zip',g('f_zip'))}else{['f_p2addr','f_p2city','f_p2state','f_p2zip'].forEach(function(id){s(id,'')})}});
+bindSame('cb_p2phone_same',function(){s('f_p2phone',this.checked?g('f_phone'):'')});
+
+// mirror name on blur
+var cn=document.getElementById('f_child_name');if(cn)cn.addEventListener('blur',mirrorName);
+
+window.FORMKIT_CONFIG={
+  formType:'enrollment',version:'v5',centerSelect:'#ctr',reset:clear_,
+  collect:function(){
+    mirrorName();
+    var ctr=document.getElementById('ctr');
+    var sigDate=g('f_sig_date')||new Date().toISOString().split('T')[0];
+    var form_data={
       type:'enrollment',dcy_form:'01234',
       center_code:ctr.value,center_name:ctr.options[ctr.selectedIndex].text,
       child_name:g('f_child_name'),birthdate:g('f_dob'),first_day:g('f_start'),
@@ -628,115 +611,18 @@ async function save_(){
         {parent_initials:g('f_pg_init3'),parent_date:g('f_rev_date5'),admin_initials:g('f_adm_init3'),admin_date:g('f_rev_date6')}
       ]
     };
-    const sigs={
-      parent_sig:parentSig,
-      admin_sig:getSigData('f_admin_sig'),
-      transport_give_sig:getSigData('f_transport_give_sig'),
-      transport_deny_sig:getSigData('f_transport_deny_sig')
+    var signatures={
+      parent_sig:FormKit.getSig('f_parent_sig'),
+      admin_sig:FormKit.getSig('f_admin_sig'),
+      transport_give_sig:FormKit.getSig('f_transport_give_sig'),
+      transport_deny_sig:FormKit.getSig('f_transport_deny_sig')
     };
-    await rpc_(form_data,sigs,sigDate);
-    st('Submitted for center review','ok');
-  }catch(e){st('Error: '+e.message,'er');console.error(e)}
-}
-
-// ── Signature pads (verbatim from CACFP_v8) ──
-function initSigPad(id){
-  const canvas=document.getElementById(id);if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  ctx.strokeStyle='#000080';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
-  let drawing=false,lx,ly;
-  function pos(e){const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy}}
-  function dn(e){e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;ctx.beginPath();ctx.arc(lx,ly,0.8,0,Math.PI*2);ctx.fill()}
-  function mv(e){e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y}
-  function up(){drawing=false}
-  canvas.addEventListener('mousedown',dn);canvas.addEventListener('mousemove',mv);
-  canvas.addEventListener('mouseup',up);canvas.addEventListener('mouseleave',up);
-  canvas.addEventListener('touchstart',dn,{passive:false});
-  canvas.addEventListener('touchmove',mv,{passive:false});
-  canvas.addEventListener('touchend',up);
-}
-function clearSig(id){const c=document.getElementById(id);if(c&&c.tagName==='CANVAS')c.getContext('2d').clearRect(0,0,c.width,c.height)}
-function getSigData(id){const c=document.getElementById(id);if(!c||c.tagName!=='CANVAS')return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return d.some((v,i)=>i%4===3&&v>0)?c.toDataURL('image/png'):null}
-['f_parent_sig','f_admin_sig','f_transport_give_sig','f_transport_deny_sig'].forEach(initSigPad);
-
-// ── Same as Child's ──
-function bindSame(cbId,fn){const e=document.getElementById(cbId);if(e)e.addEventListener('change',fn);}
-bindSame('cb_p1addr_same',function(){if(this.checked){s('f_p1addr',g('f_addr'));s('f_p1city',g('f_city'));s('f_p1state',g('f_state'));s('f_p1zip',g('f_zip'))}else{['f_p1addr','f_p1city','f_p1state','f_p1zip'].forEach(id=>s(id,''))}});
-bindSame('cb_p1phone_same',function(){s('f_p1phone',this.checked?g('f_phone'):'')});
-bindSame('cb_p2addr_same',function(){if(this.checked){s('f_p2addr',g('f_addr'));s('f_p2city',g('f_city'));s('f_p2state',g('f_state'));s('f_p2zip',g('f_zip'))}else{['f_p2addr','f_p2city','f_p2state','f_p2zip'].forEach(id=>s(id,''))}});
-bindSame('cb_p2phone_same',function(){s('f_p2phone',this.checked?g('f_phone'):'')});
-
-// mirror name on blur
-const cn=document.getElementById('f_child_name');if(cn)cn.addEventListener('blur',mirrorName);
-
-// default signing date to today
-function setToday(){const sd=document.getElementById('f_sig_date');if(sd&&!sd.value)sd.value=new Date().toISOString().split('T')[0];}
+    return {formData:form_data,signatures:signatures,signatureDate:sigDate};
+  }
+};
 document.addEventListener('DOMContentLoaded',setToday);
 setToday();
-
-// print: swap empty date inputs to text so blank cells print clean
-let _dtSwap=[];
-window.addEventListener('beforeprint',()=>{_dtSwap=[];document.querySelectorAll('input[type=date]').forEach(e=>{if(!e.value){_dtSwap.push(e);e.type='text'}})});
-window.addEventListener('afterprint',()=>{_dtSwap.forEach(e=>e.type='date');_dtSwap=[]});
-
-/* ═══ pa-embed shim (from CACFP_v8, form-specific) ═══ */
-const PA_EMBED=(function(){
-  const q=new URLSearchParams(location.search);
-  const active=q.get('embed')==='1';
-  const st_={active,HOST:null,pend:{}};
-  if(!active)return st_;
-  document.documentElement.classList.add('pa-embed');
-  const FORM_TYPE='enrollment',DCY_FORM='01234',FORM_VERSION='v5';
-  const env=m=>Object.assign({__paEmbed:true,ns:'pa-embed',v:1},m);
-  const send=m=>{if(st_.HOST)parent.postMessage(env(m),st_.HOST)};
-  st_.save=(fd,sigs,sigDate)=>new Promise((res,rej)=>{
-    const nonce=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2));
-    st_.pend[nonce]={res,rej};
-    send({type:'save',formType:FORM_TYPE,dcyForm:DCY_FORM,formData:fd,signatures:sigs||null,signatureDate:sigDate||null,nonce});
-    setTimeout(()=>{if(st_.pend[nonce]){delete st_.pend[nonce];rej(new Error('No response from host'))}},20000);
-  });
-  async function init(){
-    document.body.classList.add('pa-embed');
-    try{
-      const host=q.get('host'),reg=q.get('registry'),center=q.get('center');
-      if(!host||!reg)throw 0;
-      const r=await fetch(reg);if(!r.ok)throw 0;
-      const j=await r.json();
-      const allow=j.allowedParentOrigins||[];
-      if(!allow.includes(host))throw 0;
-      st_.HOST=host;
-      if(center){const c=document.getElementById('ctr');if(c){c.value=center;ctrPick()}}
-      window.addEventListener('message',ev=>{
-        if(ev.origin!==st_.HOST)return;
-        const d=ev.data;
-        if(!d||d.__paEmbed!==true||d.ns!=='pa-embed'||d.v!==1)return;
-        if(d.type==='saved'){const p=st_.pend[d.nonce];if(p){delete st_.pend[d.nonce];p.res(d)}}
-        else if(d.type==='error'){const p=st_.pend[d.nonce];if(p){delete st_.pend[d.nonce];p.rej(new Error(d.message||'Host error'))}}
-        else if(d.type==='inject'){try{
-          if(d.reset)clear_();
-          if(d.center){const c=document.getElementById('ctr');if(c){c.value=d.center;ctrPick()}}
-          send({type:'resize',height:document.documentElement.scrollHeight});
-        }catch(e){console.error('inject',e)}}
-        else if(d.type==='submit'){
-          const c=document.getElementById('ctr'),n=document.getElementById('f_child_name');
-          if(!c||!c.value){send({type:'saveerror',nonce:d.nonce,message:'Please choose a center first'});return}
-          if(!n||!n.value.trim()){send({type:'saveerror',nonce:d.nonce,message:'Enter the child’s name on the form'});return}
-          if(!getSigData('f_parent_sig')){send({type:'saveerror',nonce:d.nonce,message:'Parent/guardian signature required'});return}
-          save_();
-        }
-      });
-      send({type:'ready',formType:FORM_TYPE,dcyForm:DCY_FORM,version:FORM_VERSION});
-      const ro=new ResizeObserver(()=>send({type:'resize',height:document.documentElement.scrollHeight}));
-      ro.observe(document.documentElement);
-      send({type:'resize',height:document.documentElement.scrollHeight});
-    }catch(e){
-      document.body.innerHTML='<div style="font-family:Arial;padding:48px;text-align:center;color:#555;font-size:13pt">This form must be opened from the Play Academy application.</div>';
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
-  else init();
-  return st_;
-})();
 </script>
+<script defer src="form-kit.js"></script>
 </body>
 </html>

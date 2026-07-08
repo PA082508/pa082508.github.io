@@ -167,8 +167,9 @@
   .toolbar button.primary { background: #1a7a3a; color: #fff; border-color: #1a7a3a; }
   .toolbar button.blue    { background: #1a56a0; color: #fff; border-color: #1a56a0; }
   #status { color: #666; }
-  #status.ok    { color: #1a7a3a; font-weight: bold; }
-  #status.error { color: #b00020; font-weight: bold; }
+  #status.ok { color: #1a7a3a; font-weight: bold; }
+  #status.er { color: #b00020; font-weight: bold; }
+  #status.in { color: #004085; font-weight: bold; }
 
   .pa-embed .toolbar { display: none !important; }
 
@@ -187,12 +188,17 @@
 <body>
 
 <div class="toolbar">
-  <select id="ctr"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
-  <button id="btnSubmit" class="primary">Submit</button>
-  <button id="btnReset">Reset</button>
-  <button id="btnPrint" class="blue">Print / Save PDF</button>
-  <span id="status"></span>
+  <select id="ctr" onchange="ctrPick()"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
+  <button class="primary" data-formkit="submit">Submit</button>
+  <button type="button" onclick="resetForm()">Reset</button>
+  <button type="button" class="blue" onclick="window.print()">Print / Save PDF</button>
+  <span id="status" data-formkit="status"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
 </div>
+
+<div id="pkbanner" class="fk-autofill fk-print-hidden" data-formkit="autofill-banner" style="max-width:8.5in;margin:10px auto 0;display:none">&#128190; <b>Info from a previous form found</b> (<span data-fk-autofill-who></span>)
+  <button type="button" class="fk-apply">Fill known fields</button>
+  <button type="button" class="fk-dismiss">Dismiss</button></div>
 
 <div class="sheet">
 
@@ -203,10 +209,10 @@
   <table class="blk">
     <tr>
       <td style="width:68%">Child's Name <span class="italic">(print or type)</span>
-        <div><input type="text" class="nofill" id="childName" name="name" autocomplete="name"></div>
+        <div><input type="text" class="nofill" id="childName" name="name" autocomplete="name" data-required data-label="Child's Name" data-fk-field="child_name"></div>
       </td>
       <td style="width:32%">Date of Birth
-        <div><input type="date" class="date-fill" id="birthDate" autocomplete="bday"></div>
+        <div><input type="date" class="date-fill" id="birthDate" autocomplete="bday" data-fk-field="dob"></div>
       </td>
     </tr>
   </table>
@@ -278,12 +284,12 @@
     <tr class="thickbox">
       <td style="width:68%">Signature of Examining Health Care Practitioner
         <div class="sig-wrap">
-          <canvas id="physicianSig" class="sigPad" width="440" height="46"></canvas>
-          <button type="button" class="sig-clear" data-clear="physicianSig">Clear</button>
+          <canvas id="physicianSig" class="sigPad" width="440" height="46" data-formkit="signature" data-required data-label="Signature of Examining Health Care Practitioner"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('physicianSig')">Clear</button>
         </div>
       </td>
       <td style="width:32%;vertical-align:top">Date of Examination
-        <div><input type="date" class="date-fill" id="signedDate"></div>
+        <div><input type="date" class="date-fill" id="signedDate" data-required data-label="Date of Examination"></div>
       </td>
     </tr>
     <tr>
@@ -354,8 +360,8 @@
       </td>
       <td style="height:0.9in;vertical-align:top">
         <div class="sig-wrap">
-          <canvas id="parentSig" class="sigPad" width="280" height="46"></canvas>
-          <button type="button" class="sig-clear" data-clear="parentSig">Clear</button>
+          <canvas id="parentSig" class="sigPad" width="280" height="46" data-formkit="signature"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('parentSig')">Clear</button>
         </div>
       </td>
     </tr>
@@ -369,286 +375,107 @@
   <div class="foot"><span>JFS 01305 (Rev. 10/2021)</span><span>Child Medical Statement for Child Care</span></div>
 </div>
 
+<link rel="stylesheet" href="form-kit.css">
 <script>
-/* ============================================================
-   CONFIG — Supabase (MenuMaker) — copied from CACFP_v8
-   ============================================================ */
-const URL_="https://trrmyqfpxntmgxnqkikp.supabase.co",
-  KEY_="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko",
-  ORG_="3a9a290e-7e49-491e-946b-ad86f2399910",
-  CENTERS_={pearl:"881ef4ce-1a27-4d3b-aa60-59d2a307bf2b",alpha:"099c404b-e6d3-4543-9d9a-1fb11a2ee62d",ridge:"4aed7d5a-00d0-4a4c-ac99-311046ad2027"};
-const CENTER_NAMES_={pearl:"Play Academy Parma Heights",alpha:"Play Academy Mayfield Hills",ridge:"Play Academy Wickliffe"};
+/* DCY 01305 — Child Medical Statement (JFS 01305 Rev.10/2021).
+   Form-specific config only; shared transport/signatures/validation = form-kit.js.
+   Submission: submission_type='medical' (FormKit uses formType), form_data.dcy_form='01305'. */
+var CENTER_NAMES={pearl:'Play Academy Parma Heights',alpha:'Play Academy Mayfield Hills',ridge:'Play Academy Wickliffe'};
+function g(id){var e=document.getElementById(id);return e?(e.value||''):'';}
+function gc(id){var e=document.getElementById(id);return !!(e&&e.checked);}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 
-(function () {
-  'use strict';
-  const $ = (sel) => document.querySelector(sel);
-  const status = (msg, cls) => { const el = $('#status'); el.textContent = msg || ''; el.className = cls || ''; };
+/* Yes/No screening pair → 'yes'|'no'|null (form-specific) */
+function ynVal(name){var y=document.querySelector('input[data-yn="'+name+'_yes"]'),n=document.querySelector('input[data-yn="'+name+'_no"]');if(y&&y.checked)return 'yes';if(n&&n.checked)return 'no';return null;}
 
-  /* ---------- Date: auto-fill today ---------- */
-  function todayISO() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  }
-  $('#signedDate').value = todayISO();
-  let dateTouched = false;
-  $('#signedDate').addEventListener('input', () => { dateTouched = true; });
+/* Phone formatting: (XXX) XXX-XXXX (form-specific) */
+function fmtPhone(el){var d=el.value.replace(/\D/g,'');if(d.length===11&&d[0]==='1')d=d.slice(1);d=d.slice(0,10);var out='';if(d.length>0)out='('+d.slice(0,3);if(d.length>=4)out+=') '+d.slice(3,6);if(d.length>=7)out+='-'+d.slice(6);el.value=out;}
 
-  /* ---------- Yes/No screening pairs: mutually exclusive ---------- */
-  document.querySelectorAll('.yn[data-excl]').forEach(group => {
-    const boxes = Array.from(group.querySelectorAll('input[type="checkbox"]'));
-    boxes.forEach(cb => cb.addEventListener('change', () => {
-      if (cb.checked) boxes.forEach(o => { if (o !== cb) o.checked = false; });
-    }));
-  });
-  function ynVal(name) {
-    const y = document.querySelector('input[data-yn="' + name + '_yes"]');
-    const n = document.querySelector('input[data-yn="' + name + '_no"]');
-    if (y && y.checked) return 'yes';
-    if (n && n.checked) return 'no';
-    return null;
-  }
+/* Center select: clear "need" highlight + persist center_code via kit packet */
+function ctrPick(){var e=document.getElementById('ctr');if(!e)return;e.classList.remove('need');if(window.FormKit)FormKit.savePacket();}
 
-  /* ---------- Center select ---------- */
-  const ctr = $('#ctr');
-  ctr.addEventListener('change', () => {
-    ctr.classList.remove('need');
-    try {
-      const r = JSON.parse(localStorage.getItem('pa_packet_profile')) || { ts: Date.now(), data: {} };
-      r.data.center_code = ctr.value; r.ts = Date.now();
-      localStorage.setItem('pa_packet_profile', JSON.stringify(r));
-    } catch (_) {}
-  });
-  try {
-    const r = JSON.parse(localStorage.getItem('pa_packet_profile'));
-    if (r && Date.now() - r.ts < 90*60*1000 && r.data.center_code) ctr.value = r.data.center_code;
-  } catch (_) {}
+/* Reset (toolbar button + embed inject) */
+function resetForm(){
+  document.querySelectorAll('input[type="text"],input[type="tel"],textarea').forEach(function(el){el.value='';});
+  document.querySelectorAll('input[type="checkbox"]').forEach(function(el){el.checked=false;});
+  document.querySelectorAll('input[type="date"]').forEach(function(el){el.value='';});
+  if(window.FormKit){FormKit.clearSig('physicianSig');FormKit.clearSig('parentSig');}
+  var sd=document.getElementById('signedDate');if(sd)sd.value=todayISO();
+  if(window.FormKit)FormKit.status('Form cleared','');
+}
 
-  /* ---------- E-signature pads (verbatim mechanics from CACFP_v8) ---------- */
-  function initSigPad(id){
-    const canvas=document.getElementById(id);if(!canvas)return;
-    const ctx=canvas.getContext('2d');
-    ctx.strokeStyle='#000080';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
-    let drawing=false,lx,ly;
-    function pos(e){const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy}}
-    function dn(e){e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;ctx.beginPath();ctx.arc(lx,ly,0.8,0,Math.PI*2);ctx.fill()}
-    function mv(e){e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y}
-    function up(){drawing=false}
-    canvas.addEventListener('mousedown',dn);canvas.addEventListener('mousemove',mv);
-    canvas.addEventListener('mouseup',up);canvas.addEventListener('mouseleave',up);
-    canvas.addEventListener('touchstart',dn,{passive:false});
-    canvas.addEventListener('touchmove',mv,{passive:false});
-    canvas.addEventListener('touchend',up);
-  }
-  function clearSig(id){const c=document.getElementById(id);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height)}
-  function getSigData(id){const c=document.getElementById(id);if(!c)return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return d.some((v,i)=>i%4===3&&v>0)?c.toDataURL('image/png'):null}
-  initSigPad('physicianSig');
-  initSigPad('parentSig');
-  document.querySelectorAll('.sig-clear').forEach(b => b.addEventListener('click', () => clearSig(b.dataset.clear)));
+/* Embed prefill (child identity shared across medical forms) */
+function PA_APPLY(fd){var S=function(id,v){var e=document.getElementById(id);if(e&&v!=null&&!e.value)e.value=v;};S('childName',fd.child_name);S('birthDate',fd.date_of_birth);S('weight',fd.weight);}
 
-  /* ---------- Phone formatting: (XXX) XXX-XXXX ---------- */
-  function formatPhone(el) {
-    let d = el.value.replace(/\D/g, '');
-    if (d.length === 11 && d[0] === '1') d = d.slice(1);
-    d = d.slice(0, 10);
-    let out = '';
-    if (d.length > 0) out = '(' + d.slice(0, 3);
-    if (d.length >= 4) out += ') ' + d.slice(3, 6);
-    if (d.length >= 7) out += '-' + d.slice(6);
-    el.value = out;
-  }
-  const phoneEl = $('#practitionerPhone');
-  phoneEl.maxLength = 14;
-  phoneEl.addEventListener('input', (e) => { if (e.inputType && e.inputType.startsWith('delete')) return; formatPhone(phoneEl); });
-  phoneEl.addEventListener('blur', () => formatPhone(phoneEl));
-
-  /* ---------- Packet auto-fill (child identity across the medical forms) ---------- */
-  const PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 90 * 60 * 1000;
-  function packetLoad(){ try{ const raw=localStorage.getItem(PACKET_KEY); if(!raw)return null; const o=JSON.parse(raw); if(!o.ts||Date.now()-o.ts>PACKET_TTL_MS){localStorage.removeItem(PACKET_KEY);return null;} return o; }catch(e){return null;} }
-  function packetSave(fields){ try{ const o=packetLoad()||{data:{},done:{}}; Object.keys(fields).forEach(k=>{if(fields[k])o.data[k]=fields[k];}); o.ts=Date.now(); localStorage.setItem(PACKET_KEY,JSON.stringify(o)); }catch(e){} }
-  function packetPrefill(){
-    const o=packetLoad(); if(!o)return; const d=o.data||{};
-    const map={ child_name:'childName', birth_date:'birthDate', weight:'weight' };
-    let used=false;
-    Object.keys(map).forEach(k=>{ const el=document.getElementById(map[k]); if(d[k]&&el&&!el.value){el.value=d[k];used=true;} });
-    if(used){ status('⤓ Auto-filled from a previous form — please verify','ok'); }
-  }
-
-  /* ---------- Collect / validate / submit ---------- */
-  function collectData() {
+window.FORMKIT_CONFIG={
+  formType:'medical',version:'v1',centerSelect:'#ctr',reset:resetForm,applyPrefill:PA_APPLY,
+  collect:function(){
+    var sigDate=g('signedDate')||todayISO();
     return {
-      type:                        'medical',
-      dcy_form:                    '01305',
-      center_code:                 ctr.value,
-      center_name:                 ctr.value ? CENTER_NAMES_[ctr.value] : '',
-      child_name:                  $('#childName').value.trim(),
-      date_of_birth:               $('#birthDate').value || null,
-      /* Section A — examination */
-      examined:                    $('#examined').checked,
-      suitable_for_group_care:     $('#suitable').checked,
-      allergy_statement_checked:   $('#allergyStmt').checked,
-      allergy_list:                $('#allergyList').value.trim(),
-      additional_info_attached:    $('#additionalInfo').checked,
-      height:                      $('#height').value.trim(),
-      weight:                      $('#weight').value.trim(),
-      bmi:                         $('#bmi').value.trim(),
-      vision:                      $('#vision').value.trim(),
-      vision_screen:               ynVal('vision'),
-      hearing:                     $('#hearing').value.trim(),
-      hearing_screen:              ynVal('hearing'),
-      dental:                      $('#dental').value.trim(),
-      dental_screen:               ynVal('dental'),
-      lead:                        $('#lead').value.trim(),
-      lead_screen:                 ynVal('lead'),
-      hemoglobin:                  $('#hemoglobin').value.trim(),
-      hemoglobin_screen:           ynVal('hemoglobin'),
-      other_screening:             $('#otherScreen').value.trim(),
-      notes:                       $('#notes').value.trim(),
-      /* Practitioner */
-      practitioner_name:           $('#practitionerName').value.trim(),
-      practitioner_phone:          $('#practitionerPhone').value.trim(),
-      practitioner_street_address: $('#streetAddress').value.trim(),
-      practitioner_city_state_zip: $('#cityStateZip').value.trim(),
-      date_of_examination:         $('#signedDate').value || null,
-      /* Section B — immunization */
-      immunized:                   $('#immunized').checked,
-      immunization_exceptions:     $('#immunizationExceptions').value.trim(),
-      practitioner_initials:       $('#practitionerInitials').value.trim(),
-      section_b_date:              $('#sectionBDate').value || null,
-      /* Section C — parent waiver */
-      immunization_waiver:         $('#waiver').checked,
-      waiver_diseases:             $('#waiverDiseases').value.trim(),
-      section_c_date:              $('#sectionCDate').value || null
+      formData:{
+        type:'medical',
+        dcy_form:'01305',
+        center_code:FormKit.centerCode(),
+        center_name:CENTER_NAMES[FormKit.centerCode()]||'',
+        child_name:g('childName').trim(),
+        date_of_birth:g('birthDate')||null,
+        /* Section A — examination */
+        examined:gc('examined'),
+        suitable_for_group_care:gc('suitable'),
+        allergy_statement_checked:gc('allergyStmt'),
+        allergy_list:g('allergyList').trim(),
+        additional_info_attached:gc('additionalInfo'),
+        height:g('height').trim(),
+        weight:g('weight').trim(),
+        bmi:g('bmi').trim(),
+        vision:g('vision').trim(),
+        vision_screen:ynVal('vision'),
+        hearing:g('hearing').trim(),
+        hearing_screen:ynVal('hearing'),
+        dental:g('dental').trim(),
+        dental_screen:ynVal('dental'),
+        lead:g('lead').trim(),
+        lead_screen:ynVal('lead'),
+        hemoglobin:g('hemoglobin').trim(),
+        hemoglobin_screen:ynVal('hemoglobin'),
+        other_screening:g('otherScreen').trim(),
+        notes:g('notes').trim(),
+        /* Practitioner */
+        practitioner_name:g('practitionerName').trim(),
+        practitioner_phone:g('practitionerPhone').trim(),
+        practitioner_street_address:g('streetAddress').trim(),
+        practitioner_city_state_zip:g('cityStateZip').trim(),
+        date_of_examination:g('signedDate')||null,
+        /* Section B — immunization (practitioner) */
+        immunized:gc('immunized'),
+        immunization_exceptions:g('immunizationExceptions').trim(),
+        practitioner_initials:g('practitionerInitials').trim(),
+        section_b_date:g('sectionBDate')||null,
+        /* Section C — parent waiver */
+        immunization_waiver:gc('waiver'),
+        waiver_diseases:g('waiverDiseases').trim(),
+        section_c_date:g('sectionCDate')||null
+      },
+      signatures:{physician_sig:FormKit.getSig('physicianSig'),parent_sig:FormKit.getSig('parentSig')},
+      signatureDate:sigDate
     };
   }
+};
 
-  function validate(d, sigs) {
-    if (!ctr.value)             { ctr.classList.add('need'); return '⚠ Select center first'; }
-    if (!d.child_name)          return "Child's Name is required";
-    if (!sigs.physician_sig)    return 'Signature of Examining Health Care Practitioner is required — sign in the box';
-    if (!d.date_of_examination) return 'Date of Examination is required';
-    return null;
-  }
-
-  async function rpc_(fd, sigs, sigDate){
-    if (window.PA_EMBED && PA_EMBED.active) return PA_EMBED.save(fd, sigs, sigDate);
-    const r = await fetch(URL_ + '/rest/v1/rpc/submit_enrollment_form', {
-      method: 'POST',
-      headers: { 'apikey': KEY_, 'Authorization': 'Bearer ' + KEY_,
-        'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
-      body: JSON.stringify({ p_org: ORG_, p_center: CENTERS_[ctr.value],
-        p_submission_type: 'medical', p_form_data: fd, p_signatures: sigs,
-        p_signature_date: sigDate, p_source: 'online' })
-    });
-    if (!r.ok) throw new Error(await r.text());
-    return r.json();
-  }
-
-  async function submitForm() {
-    if (!dateTouched) $('#signedDate').value = todayISO();
-    const d = collectData();
-    const sigs = { physician_sig: getSigData('physicianSig'), parent_sig: getSigData('parentSig') };
-    const err = validate(d, sigs);
-    if (err) { status(err, 'error'); return; }
-
-    const sigDate = d.date_of_examination || todayISO();
-    status('Submitting…');
-    try {
-      await rpc_(d, sigs, sigDate);
-      status('✓ Submitted for center review', 'ok');
-      packetSave({ child_name: d.child_name, birth_date: d.date_of_birth, weight: d.weight });
-    } catch (e) {
-      status('Submit failed — ' + e.message, 'error');
-      console.error(e);
-    }
-  }
-
-  function resetForm() {
-    document.querySelectorAll('input[type="text"], input[type="tel"], textarea').forEach(el => el.value = '');
-    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
-    document.querySelectorAll('input[type="date"]').forEach(el => el.value = '');
-    clearSig('physicianSig'); clearSig('parentSig');
-    $('#signedDate').value = todayISO();
-    dateTouched = false;
-    status('Form cleared');
-  }
-
-  $('#btnSubmit').addEventListener('click', submitForm);
-  $('#btnReset').addEventListener('click', resetForm);
-  $('#btnPrint').addEventListener('click', () => window.print());
-
-  packetPrefill();
-
-  /* ---------- Blank date inputs → text on print so empty boxes stay clean ---------- */
-  let _dtSwap = [];
-  window.addEventListener('beforeprint', () => {
-    _dtSwap = [];
-    document.querySelectorAll('input[type=date]').forEach(e => { if (!e.value) { _dtSwap.push(e); e.type = 'text'; } });
+document.addEventListener('DOMContentLoaded',function(){
+  var sd=document.getElementById('signedDate');if(sd&&!sd.value)sd.value=todayISO();
+  /* Yes/No screening pairs: mutually exclusive */
+  document.querySelectorAll('.yn[data-excl]').forEach(function(group){
+    var boxes=Array.prototype.slice.call(group.querySelectorAll('input[type="checkbox"]'));
+    boxes.forEach(function(cb){cb.addEventListener('change',function(){if(cb.checked)boxes.forEach(function(o){if(o!==cb)o.checked=false;});});});
   });
-  window.addEventListener('afterprint', () => { _dtSwap.forEach(e => e.type = 'date'); _dtSwap = []; });
-
-  /* ============================================================
-     PA_EMBED bridge — verbatim shim from CACFP_v8 (medical variant)
-     ============================================================ */
-  window.PA_EMBED = (function(){
-    const q = new URLSearchParams(location.search);
-    const active = q.get('embed') === '1';
-    const st_ = { active, HOST: null, pend: {} };
-    if (!active) return st_;
-    document.documentElement.classList.add('pa-embed');
-    const FORM_TYPE = 'medical', FORM_VERSION = 'v1';
-    const env = m => Object.assign({ __paEmbed: true, ns: 'pa-embed', v: 1 }, m);
-    const send = m => { if (st_.HOST) parent.postMessage(env(m), st_.HOST); };
-    st_.save = (fd, sigs, sigDate) => new Promise((res, rej) => {
-      const nonce = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
-      st_.pend[nonce] = { res, rej };
-      send({ type: 'save', formType: FORM_TYPE, formData: fd, signatures: sigs || null, signatureDate: sigDate || null, nonce });
-      setTimeout(() => { if (st_.pend[nonce]) { delete st_.pend[nonce]; rej(new Error('No response from host')); } }, 20000);
-    });
-    async function init(){
-      document.body.classList.add('pa-embed');
-      try {
-        const host = q.get('host'), reg = q.get('registry'), center = q.get('center');
-        if (!host || !reg) throw 0;
-        const r = await fetch(reg); if (!r.ok) throw 0;
-        const j = await r.json();
-        const allow = j.allowedParentOrigins || [];
-        if (!allow.includes(host)) throw 0;
-        st_.HOST = host;
-        if (center) { const c = document.getElementById('ctr'); if (c) c.value = center; }
-        window.addEventListener('message', ev => {
-          if (ev.origin !== st_.HOST) return;
-          const d = ev.data;
-          if (!d || d.__paEmbed !== true || d.ns !== 'pa-embed' || d.v !== 1) return;
-          if (d.type === 'saved') { const p = st_.pend[d.nonce]; if (p) { delete st_.pend[d.nonce]; p.res(d); } }
-          else if (d.type === 'error') { const p = st_.pend[d.nonce]; if (p) { delete st_.pend[d.nonce]; p.rej(new Error(d.message || 'Host error')); } }
-          else if (d.type === 'inject') { try {
-            if (d.reset) resetForm();
-            if (d.center) { const c = document.getElementById('ctr'); if (c) c.value = d.center; }
-            if (d.prefill) {
-              const fd = d.prefill, S = (id, v) => { const e = document.getElementById(id); if (e && v != null) e.value = v; };
-              S('childName', fd.child_name); S('birthDate', fd.date_of_birth); S('weight', fd.weight);
-            }
-            send({ type: 'resize', height: document.documentElement.scrollHeight });
-          } catch (e) { console.error('inject', e); } }
-          else if (d.type === 'submit') {
-            const c = document.getElementById('ctr'), n = document.getElementById('childName');
-            if (!c || !c.value) { send({ type: 'saveerror', nonce: d.nonce, message: 'Please choose a center first' }); return; }
-            if (!n || !n.value.trim()) { send({ type: 'saveerror', nonce: d.nonce, message: "Enter the child's name on the form" }); return; }
-            submitForm();
-          }
-        });
-        send({ type: 'ready', formType: FORM_TYPE, version: FORM_VERSION });
-        const ro = new ResizeObserver(() => send({ type: 'resize', height: document.documentElement.scrollHeight }));
-        ro.observe(document.documentElement);
-        send({ type: 'resize', height: document.documentElement.scrollHeight });
-      } catch (e) {
-        document.body.innerHTML = '<div style="font-family:Arial;padding:48px;text-align:center;color:#555;font-size:13pt">This form must be opened from the Play Academy application.</div>';
-      }
-    }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-    return st_;
-  })();
-})();
+  /* Phone formatting */
+  var phone=document.getElementById('practitionerPhone');
+  if(phone){phone.maxLength=14;phone.addEventListener('input',function(e){if(e.inputType&&e.inputType.indexOf('delete')===0)return;fmtPhone(phone);});phone.addEventListener('blur',function(){fmtPhone(phone);});}
+  /* Restore last-used center from kit packet */
+  try{var r=JSON.parse(localStorage.getItem('pa_packet_profile'));if(r&&Date.now()-r.ts<5400000&&r.data.center_code){var c=document.getElementById('ctr');if(c&&!c.value){c.value=r.data.center_code;ctrPick();}}}catch(_){}
+});
 </script>
+<script defer src="form-kit.js"></script>
 </body>
 </html>

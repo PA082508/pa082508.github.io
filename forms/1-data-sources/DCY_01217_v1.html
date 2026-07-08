@@ -8,7 +8,7 @@
   /* ============================================================
      REQUEST FOR ADMINISTRATION OF MEDICATION FOR CHILD CARE
      DCY 01217 (Rev. 10/2025) · fillable · e-signature · Supabase
-     v1 · 2026-07-07
+     v1 · 2026-07-07 · retrofit onto shared form-kit (2026-07-08)
      Signer = physician (physician_sig) + parent authorization (parent_sig)
      PER-INSTANCE: one form per medication — medication name required
      ============================================================ */
@@ -178,8 +178,9 @@
   .toolbar button.primary { background: #1a7a3a; color: #fff; border-color: #1a7a3a; }
   .toolbar button.blue    { background: #1a56a0; color: #fff; border-color: #1a56a0; }
   #status { color: #666; }
-  #status.ok    { color: #1a7a3a; font-weight: bold; }
-  #status.error { color: #b00020; font-weight: bold; }
+  #status.ok { color: #1a7a3a; font-weight: bold; }
+  #status.er { color: #b00020; font-weight: bold; }
+  #status.in { color: #004085; font-weight: bold; }
 
   .pa-embed .toolbar { display: none !important; }
 
@@ -199,11 +200,12 @@
 <body>
 
 <div class="toolbar">
-  <select id="ctr"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
-  <button id="btnSubmit" class="primary">Submit</button>
-  <button id="btnReset">Reset</button>
-  <button id="btnPrint" class="blue">Print / Save PDF</button>
-  <span id="status"></span>
+  <select id="ctr" onchange="ctrPick()"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
+  <button id="btnSubmit" class="primary" data-formkit="submit">Submit</button>
+  <button id="btnReset" onclick="resetForm()">Reset</button>
+  <button id="btnPrint" class="blue" onclick="window.print()">Print / Save PDF</button>
+  <span id="status" data-formkit="status"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
 </div>
 
 <!-- ==================== PAGE 1 ==================== -->
@@ -223,10 +225,10 @@
   <table class="blk">
     <tr>
       <td style="width:44%">Child's Name
-        <div><input type="text" class="fill" id="childName" name="name" autocomplete="name" style="width:96%"></div>
+        <div><input type="text" class="fill" id="childName" name="name" autocomplete="name" data-required data-label="Child's Name" data-fk-field="child_name" style="width:96%"></div>
       </td>
       <td style="width:28%"><span class="lbl">Date of Birth <i>(if needed to determine the correct dosage)</i></span>
-        <div><input type="date" class="date-fill" id="birthDate" autocomplete="bday"></div>
+        <div><input type="date" class="date-fill" id="birthDate" autocomplete="bday" data-fk-field="dob"></div>
       </td>
       <td style="width:28%"><span class="lbl">Weight <i>(if needed to determine the correct dosage)</i></span>
         <div><input type="text" class="fill" id="weight" style="width:96%"></div>
@@ -239,7 +241,7 @@
     <tr class="bar"><td colspan="3"><span class="boxlbl">Box 1</span>The following section must always be completed by the parent/guardian.</td></tr>
     <tr>
       <td colspan="2" style="width:50%" class="tall">Name of medication
-        <textarea id="medName"></textarea>
+        <textarea id="medName" data-required data-label="Name of medication"></textarea>
       </td>
       <td class="tall">Dosage
         <textarea id="dosage" style="min-height:0.5in"></textarea>
@@ -269,8 +271,8 @@
     <tr class="sig-tbl">
       <td colspan="2">Signature of Parent/Guardian
         <div class="sig-wrap">
-          <canvas id="parentSig" class="sigPad" width="360" height="46"></canvas>
-          <button type="button" class="sig-clear" data-clear="parentSig">Clear</button>
+          <canvas id="parentSig" class="sigPad" width="360" height="46" data-formkit="signature" data-required data-label="Parent/guardian authorization signature"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('parentSig')">Clear</button>
         </div>
       </td>
       <td>Date
@@ -324,12 +326,12 @@
     <tr>
       <td style="width:70%">Signature of licensed physician, licensed dentist, advanced practice registered nurse or certified physician's assistant
         <div class="sig-wrap">
-          <canvas id="physicianSig" class="sigPad" width="440" height="46"></canvas>
-          <button type="button" class="sig-clear" data-clear="physicianSig">Clear</button>
+          <canvas id="physicianSig" class="sigPad" width="440" height="46" data-formkit="signature"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('physicianSig')">Clear</button>
         </div>
       </td>
       <td>Date of Signature
-        <div><input type="date" class="date-fill" id="signedDate"></div>
+        <div><input type="date" class="date-fill" id="signedDate" oninput="dateTouched=true"></div>
       </td>
     </tr>
     <tr>
@@ -371,280 +373,145 @@
   <div class="foot"><span>DCY 01217 (Rev. 10/2025)</span><span>Page 3 of 3</span></div>
 </div>
 
+<link rel="stylesheet" href="form-kit.css">
 <script>
 /* ============================================================
-   CONFIG — Supabase (MenuMaker) — copied from CACFP_v8
+   DCY 01217 medical — form-specific config only.
+   Shared transport / signatures / print / embed = form-kit.js.
+   PRESERVED: p_submission_type='medical' (formType), form_data.dcy_form='01217',
+   per-instance medication_name (required), parent authorization signature
+   (required) + physician signature (conditional → awaiting_physician flag).
    ============================================================ */
-const URL_="https://trrmyqfpxntmgxnqkikp.supabase.co",
-  KEY_="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko",
-  ORG_="3a9a290e-7e49-491e-946b-ad86f2399910",
-  CENTERS_={pearl:"881ef4ce-1a27-4d3b-aa60-59d2a307bf2b",alpha:"099c404b-e6d3-4543-9d9a-1fb11a2ee62d",ridge:"4aed7d5a-00d0-4a4c-ac99-311046ad2027"};
-const CENTER_NAMES_={pearl:"Play Academy Parma Heights",alpha:"Play Academy Mayfield Hills",ridge:"Play Academy Wickliffe"};
+var CENTER_NAMES_ = { pearl: 'Play Academy Parma Heights', alpha: 'Play Academy Mayfield Hills', ridge: 'Play Academy Wickliffe' };
+var dateTouched = false;
+var _lastAwaiting = false;
 
-(function () {
-  'use strict';
-  const $ = (sel) => document.querySelector(sel);
-  const status = (msg, cls) => { const el = $('#status'); el.textContent = msg || ''; el.className = cls || ''; };
+function g(id) { var e = document.getElementById(id); return e ? (e.value || '').trim() : ''; }
+function gc(id) { var e = document.getElementById(id); return !!(e && e.checked); }
+function todayISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
-  /* ---------- Date: auto-fill today ---------- */
-  function todayISO() {
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+/* Mirror child + medication name onto the page-3 administration log */
+function mirror() {
+  var c = document.getElementById('logChildName'); if (c) c.value = g('childName');
+  var m = document.getElementById('logMedName'); if (m) m.value = g('medName');
+}
+
+/* Phone formatting: (XXX) XXX-XXXX */
+function fmtPhone(el) {
+  var d = el.value.replace(/\D/g, '');
+  if (d.length === 11 && d[0] === '1') d = d.slice(1);
+  d = d.slice(0, 10);
+  var out = '';
+  if (d.length > 0) out = '(' + d.slice(0, 3);
+  if (d.length >= 4) out += ') ' + d.slice(3, 6);
+  if (d.length >= 7) out += '-' + d.slice(6);
+  el.value = out;
+}
+
+function ctrPick() {
+  var e = document.getElementById('ctr'); if (!e) return;
+  e.classList.remove('need');
+  if (window.FormKit) FormKit.savePacket();
+}
+
+function resetForm() {
+  document.querySelectorAll('input[type=text], input[type=tel], textarea').forEach(function (el) { el.value = ''; });
+  document.querySelectorAll('input[type=checkbox]').forEach(function (el) { el.checked = false; });
+  document.querySelectorAll('input[type=date]').forEach(function (el) { el.value = ''; });
+  if (window.FormKit) { FormKit.clearSig('parentSig'); FormKit.clearSig('physicianSig'); }
+  var sd = document.getElementById('signedDate'); if (sd) sd.value = todayISO();
+  dateTouched = false;
+  mirror();
+  if (window.FormKit) FormKit.status('Form cleared', '');
+}
+
+/* Embed inject prefill (host → form) — preserves CACFP_v8 medical variant fields */
+function PA_APPLY(fd) {
+  var S = function (id, v) { var e = document.getElementById(id); if (e && v != null) e.value = v; };
+  S('childName', fd.child_name); S('birthDate', fd.date_of_birth); S('weight', fd.weight);
+  S('medName', fd.medication_name);
+  mirror();
+}
+
+window.FORMKIT_CONFIG = {
+  formType: 'medical', version: 'v1', centerSelect: '#ctr',
+  reset: resetForm, applyPrefill: PA_APPLY,
+  collect: function () {
+    if (!dateTouched) { var sd = document.getElementById('signedDate'); if (sd) sd.value = todayISO(); }
+    var sigs = { physician_sig: FormKit.getSig('physicianSig'), parent_sig: FormKit.getSig('parentSig') };
+    var code = FormKit.centerCode();
+    var fd = {
+      type:                        'medical',
+      dcy_form:                    '01217',
+      center_code:                 code,
+      center_name:                 code ? CENTER_NAMES_[code] : '',
+      child_name:                  g('childName'),
+      date_of_birth:               g('birthDate') || null,
+      weight:                      g('weight'),
+      medication_name:             g('medName'),
+      dosage:                      g('dosage'),
+      dosage_see_attached:         gc('dosageSeeAttached'),
+      administration_times:        g('adminTimes'),
+      period_of_time:              g('periodOfTime'),
+      medication_expiration_date:  g('medExpiration') || null,
+      parent_signature_date:       g('parentDate') || null,
+      instructions:                g('instructions'),
+      instructions_see_attached:   gc('instructionsSeeAttached'),
+      side_effects:                g('sideEffects'),
+      side_effects_see_attached:   gc('sideEffectsSeeAttached'),
+      physician_date_of_signature: g('signedDate') || null,
+      physician_phone:             g('physicianPhone')
+    };
+    // Physician conditional: parent-only submissions route to the "awaiting physician" Inbox lane.
+    fd.physician_signed   = !!sigs.physician_sig;
+    fd.awaiting_physician = !sigs.physician_sig;
+    _lastAwaiting = fd.awaiting_physician;
+    var sigDate = (sigs.physician_sig && fd.physician_date_of_signature)
+      ? fd.physician_date_of_signature
+      : (fd.parent_signature_date || todayISO());
+    return { formData: fd, signatures: sigs, signatureDate: sigDate };
+  },
+  onSuccess: function () {
+    if (window.FormKit) FormKit.status(_lastAwaiting
+      ? '✓ Submitted — awaiting physician signature'
+      : '✓ Submitted for center review', 'ok');
   }
-  $('#signedDate').value = todayISO();
-  let dateTouched = false;
-  $('#signedDate').addEventListener('input', () => { dateTouched = true; });
+};
 
-  /* ---------- Administration log rows (print fidelity) ---------- */
-  (function buildLog(){
-    const body = document.getElementById('logRows');
-    let html = '';
-    for (let i = 0; i < 19; i++) {
+/* Form-specific wiring (runs at parse, after all markup) */
+(function () {
+  var body = document.getElementById('logRows');
+  if (body) {
+    var html = '';
+    for (var i = 0; i < 19; i++) {
       html += '<tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>';
     }
     body.innerHTML = html;
-  })();
-
-  /* ---------- Mirror child + medication name onto the page-3 log ---------- */
-  function mirror(){
-    document.getElementById('logChildName').value = $('#childName').value;
-    document.getElementById('logMedName').value = $('#medName').value;
   }
-  $('#childName').addEventListener('input', mirror);
-  $('#medName').addEventListener('input', mirror);
-
-  /* ---------- Center select ---------- */
-  const ctr = $('#ctr');
-  ctr.addEventListener('change', () => {
-    ctr.classList.remove('need');
-    try {
-      const r = JSON.parse(localStorage.getItem('pa_packet_profile')) || { ts: Date.now(), data: {} };
-      r.data.center_code = ctr.value; r.ts = Date.now();
-      localStorage.setItem('pa_packet_profile', JSON.stringify(r));
-    } catch (_) {}
-  });
-  // restore center from packet
-  try {
-    const r = JSON.parse(localStorage.getItem('pa_packet_profile'));
-    if (r && Date.now() - r.ts < 90*60*1000 && r.data.center_code) ctr.value = r.data.center_code;
-  } catch (_) {}
-
-  /* ---------- E-signature pads (verbatim mechanics from CACFP_v8) ---------- */
-  function initSigPad(id){
-    const canvas=document.getElementById(id);if(!canvas)return;
-    const ctx=canvas.getContext('2d');
-    ctx.strokeStyle='#000080';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
-    let drawing=false,lx,ly;
-    function pos(e){const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy}}
-    function dn(e){e.preventDefault();drawing=true;const p=pos(e);lx=p.x;ly=p.y;ctx.beginPath();ctx.arc(lx,ly,0.8,0,Math.PI*2);ctx.fill()}
-    function mv(e){e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y}
-    function up(){drawing=false}
-    canvas.addEventListener('mousedown',dn);canvas.addEventListener('mousemove',mv);
-    canvas.addEventListener('mouseup',up);canvas.addEventListener('mouseleave',up);
-    canvas.addEventListener('touchstart',dn,{passive:false});
-    canvas.addEventListener('touchmove',mv,{passive:false});
-    canvas.addEventListener('touchend',up);
+  var cn = document.getElementById('childName'); if (cn) cn.addEventListener('input', mirror);
+  var mn = document.getElementById('medName'); if (mn) mn.addEventListener('input', mirror);
+  var ph = document.getElementById('physicianPhone');
+  if (ph) {
+    ph.maxLength = 14;
+    ph.addEventListener('input', function (e) { if (e.inputType && e.inputType.indexOf('delete') === 0) return; fmtPhone(ph); });
+    ph.addEventListener('blur', function () { fmtPhone(ph); });
   }
-  function clearSig(id){const c=document.getElementById(id);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height)}
-  function getSigData(id){const c=document.getElementById(id);if(!c)return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return d.some((v,i)=>i%4===3&&v>0)?c.toDataURL('image/png'):null}
-  initSigPad('parentSig');
-  initSigPad('physicianSig');
-  document.querySelectorAll('.sig-clear').forEach(b => b.addEventListener('click', () => clearSig(b.dataset.clear)));
-
-  /* ---------- Phone formatting: (XXX) XXX-XXXX ---------- */
-  function formatPhone(el) {
-    let d = el.value.replace(/\D/g, '');
-    if (d.length === 11 && d[0] === '1') d = d.slice(1);
-    d = d.slice(0, 10);
-    let out = '';
-    if (d.length > 0) out = '(' + d.slice(0, 3);
-    if (d.length >= 4) out += ') ' + d.slice(3, 6);
-    if (d.length >= 7) out += '-' + d.slice(6);
-    el.value = out;
-  }
-  const phoneEl = $('#physicianPhone');
-  phoneEl.maxLength = 14;
-  phoneEl.addEventListener('input', (e) => { if (e.inputType && e.inputType.startsWith('delete')) return; formatPhone(phoneEl); });
-  phoneEl.addEventListener('blur', () => formatPhone(phoneEl));
-
-  /* ---------- Packet auto-fill (child identity across the medical forms) ---------- */
-  const PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 90 * 60 * 1000;
-  function packetLoad(){ try{ const raw=localStorage.getItem(PACKET_KEY); if(!raw)return null; const o=JSON.parse(raw); if(!o.ts||Date.now()-o.ts>PACKET_TTL_MS){localStorage.removeItem(PACKET_KEY);return null;} return o; }catch(e){return null;} }
-  function packetSave(fields){ try{ const o=packetLoad()||{data:{},done:{}}; Object.keys(fields).forEach(k=>{if(fields[k])o.data[k]=fields[k];}); o.ts=Date.now(); localStorage.setItem(PACKET_KEY,JSON.stringify(o)); }catch(e){} }
-  function packetPrefill(){
-    const o=packetLoad(); if(!o)return; const d=o.data||{};
-    const map={ child_name:'childName', birth_date:'birthDate', weight:'weight' };
-    let used=false;
-    Object.keys(map).forEach(k=>{ const el=document.getElementById(map[k]); if(d[k]&&el&&!el.value){el.value=d[k];used=true;} });
-    if(used){ mirror(); status('⤓ Auto-filled from a previous form — please verify','ok'); }
-  }
-
-  /* ---------- Collect / validate / submit ---------- */
-  function collectData() {
-    return {
-      type:                        'medical',
-      dcy_form:                    '01217',
-      center_code:                 ctr.value,
-      center_name:                 ctr.value ? CENTER_NAMES_[ctr.value] : '',
-      child_name:                  $('#childName').value.trim(),
-      date_of_birth:               $('#birthDate').value || null,
-      weight:                      $('#weight').value.trim(),
-      medication_name:             $('#medName').value.trim(),
-      dosage:                      $('#dosage').value.trim(),
-      dosage_see_attached:         $('#dosageSeeAttached').checked,
-      administration_times:        $('#adminTimes').value.trim(),
-      period_of_time:              $('#periodOfTime').value.trim(),
-      medication_expiration_date:  $('#medExpiration').value || null,
-      parent_signature_date:       $('#parentDate').value || null,
-      instructions:                $('#instructions').value.trim(),
-      instructions_see_attached:   $('#instructionsSeeAttached').checked,
-      side_effects:                $('#sideEffects').value.trim(),
-      side_effects_see_attached:   $('#sideEffectsSeeAttached').checked,
-      physician_date_of_signature: $('#signedDate').value || null,
-      physician_phone:             $('#physicianPhone').value.trim()
-    };
-  }
-
-  function validate(d, sigs) {
-    if (!ctr.value)             { ctr.classList.add('need'); return '⚠ Select center first'; }
-    if (!d.child_name)          return "Child's Name is required";
-    if (!d.medication_name)     return 'Name of medication is required (one form per medication)';
-    // Physician instruction is CONDITIONAL on this form (only required for the listed cases —
-    // codeine/aspirin, physician-instruction needed, off-label duration, etc.). Parent-only
-    // submit is allowed and routes to the Inbox "awaiting physician". Parent authorization gates it.
-    if (!sigs.parent_sig)       return 'Parent/guardian authorization signature is required — sign in the parent box (page 1)';
-    return null;
-  }
-
-  async function rpc_(fd, sigs, sigDate){
-    if (window.PA_EMBED && PA_EMBED.active) return PA_EMBED.save(fd, sigs, sigDate);
-    const r = await fetch(URL_ + '/rest/v1/rpc/submit_enrollment_form', {
-      method: 'POST',
-      headers: { 'apikey': KEY_, 'Authorization': 'Bearer ' + KEY_,
-        'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
-      body: JSON.stringify({ p_org: ORG_, p_center: CENTERS_[ctr.value],
-        p_submission_type: 'medical', p_form_data: fd, p_signatures: sigs,
-        p_signature_date: sigDate, p_source: 'online' })
-    });
-    if (!r.ok) throw new Error(await r.text());
-    return r.json();
-  }
-
-  async function submitForm() {
-    if (!dateTouched) $('#signedDate').value = todayISO();
-    const d = collectData();
-    const sigs = { physician_sig: getSigData('physicianSig'), parent_sig: getSigData('parentSig') };
-    const err = validate(d, sigs);
-    if (err) { status(err, 'error'); return; }
-
-    // Physician conditional: flag parent-only submissions for the "awaiting physician" Inbox lane.
-    d.physician_signed   = !!sigs.physician_sig;
-    d.awaiting_physician = !sigs.physician_sig;
-    const sigDate = (sigs.physician_sig && d.physician_date_of_signature)
-      ? d.physician_date_of_signature
-      : (d.parent_signature_date || todayISO());
-    status('Submitting…');
-    try {
-      await rpc_(d, sigs, sigDate);
-      status(d.awaiting_physician
-        ? '✓ Submitted — awaiting physician signature'
-        : '✓ Submitted for center review', 'ok');
-      packetSave({ child_name: d.child_name, birth_date: d.date_of_birth, weight: d.weight });
-    } catch (e) {
-      status('Submit failed — ' + e.message, 'error');
-      console.error(e);
-    }
-  }
-
-  function resetForm() {
-    document.querySelectorAll('input[type="text"], input[type="tel"], textarea').forEach(el => el.value = '');
-    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
-    document.querySelectorAll('input[type="date"]').forEach(el => el.value = '');
-    clearSig('parentSig'); clearSig('physicianSig');
-    $('#signedDate').value = todayISO();
-    dateTouched = false;
-    status('Form cleared');
-  }
-
-  $('#btnSubmit').addEventListener('click', submitForm);
-  $('#btnReset').addEventListener('click', resetForm);
-  $('#btnPrint').addEventListener('click', () => window.print());
-
-  packetPrefill();
-
-  /* ---------- Blank date inputs → text on print so empty boxes stay clean ---------- */
-  let _dtSwap = [];
-  window.addEventListener('beforeprint', () => {
-    _dtSwap = [];
-    document.querySelectorAll('input[type=date]').forEach(e => { if (!e.value) { _dtSwap.push(e); e.type = 'text'; } });
-  });
-  window.addEventListener('afterprint', () => { _dtSwap.forEach(e => e.type = 'date'); _dtSwap = []; });
-
-  /* ============================================================
-     PA_EMBED bridge — verbatim shim from CACFP_v8 (medical variant)
-     ============================================================ */
-  window.PA_EMBED = (function(){
-    const q = new URLSearchParams(location.search);
-    const active = q.get('embed') === '1';
-    const st_ = { active, HOST: null, pend: {} };
-    if (!active) return st_;
-    document.documentElement.classList.add('pa-embed');
-    const FORM_TYPE = 'medical', FORM_VERSION = 'v1';
-    const env = m => Object.assign({ __paEmbed: true, ns: 'pa-embed', v: 1 }, m);
-    const send = m => { if (st_.HOST) parent.postMessage(env(m), st_.HOST); };
-    st_.save = (fd, sigs, sigDate) => new Promise((res, rej) => {
-      const nonce = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
-      st_.pend[nonce] = { res, rej };
-      send({ type: 'save', formType: FORM_TYPE, formData: fd, signatures: sigs || null, signatureDate: sigDate || null, nonce });
-      setTimeout(() => { if (st_.pend[nonce]) { delete st_.pend[nonce]; rej(new Error('No response from host')); } }, 20000);
-    });
-    async function init(){
-      document.body.classList.add('pa-embed');
-      try {
-        const host = q.get('host'), reg = q.get('registry'), center = q.get('center');
-        if (!host || !reg) throw 0;
-        const r = await fetch(reg); if (!r.ok) throw 0;
-        const j = await r.json();
-        const allow = j.allowedParentOrigins || [];
-        if (!allow.includes(host)) throw 0;
-        st_.HOST = host;
-        if (center) { const c = document.getElementById('ctr'); if (c) c.value = center; }
-        window.addEventListener('message', ev => {
-          if (ev.origin !== st_.HOST) return;
-          const d = ev.data;
-          if (!d || d.__paEmbed !== true || d.ns !== 'pa-embed' || d.v !== 1) return;
-          if (d.type === 'saved') { const p = st_.pend[d.nonce]; if (p) { delete st_.pend[d.nonce]; p.res(d); } }
-          else if (d.type === 'error') { const p = st_.pend[d.nonce]; if (p) { delete st_.pend[d.nonce]; p.rej(new Error(d.message || 'Host error')); } }
-          else if (d.type === 'inject') { try {
-            if (d.reset) resetForm();
-            if (d.center) { const c = document.getElementById('ctr'); if (c) c.value = d.center; }
-            if (d.prefill) {
-              const fd = d.prefill, S = (id, v) => { const e = document.getElementById(id); if (e && v != null) e.value = v; };
-              S('childName', fd.child_name); S('birthDate', fd.date_of_birth); S('weight', fd.weight);
-              S('medName', fd.medication_name); mirror();
-            }
-            send({ type: 'resize', height: document.documentElement.scrollHeight });
-          } catch (e) { console.error('inject', e); } }
-          else if (d.type === 'submit') {
-            const c = document.getElementById('ctr'), n = document.getElementById('childName'), m = document.getElementById('medName');
-            if (!c || !c.value) { send({ type: 'saveerror', nonce: d.nonce, message: 'Please choose a center first' }); return; }
-            if (!n || !n.value.trim()) { send({ type: 'saveerror', nonce: d.nonce, message: "Enter the child's name on the form" }); return; }
-            if (!m || !m.value.trim()) { send({ type: 'saveerror', nonce: d.nonce, message: 'Enter the medication name on the form' }); return; }
-            submitForm();
-          }
-        });
-        send({ type: 'ready', formType: FORM_TYPE, version: FORM_VERSION });
-        const ro = new ResizeObserver(() => send({ type: 'resize', height: document.documentElement.scrollHeight }));
-        ro.observe(document.documentElement);
-        send({ type: 'resize', height: document.documentElement.scrollHeight });
-      } catch (e) {
-        document.body.innerHTML = '<div style="font-family:Arial;padding:48px;text-align:center;color:#555;font-size:13pt">This form must be opened from the Play Academy application.</div>';
-      }
-    }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-    return st_;
-  })();
+  var sd = document.getElementById('signedDate');
+  if (sd) { if (!sd.value) sd.value = todayISO(); sd.addEventListener('input', function () { dateTouched = true; }); }
 })();
+
+/* Restore center + cross-form autofill once form-kit has booted */
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    var r = JSON.parse(localStorage.getItem('pa_packet_profile'));
+    if (r && Date.now() - r.ts < 5400000 && r.data.center_code) {
+      var c = document.getElementById('ctr');
+      if (c && !c.value) { c.value = r.data.center_code; ctrPick(); }
+    }
+  } catch (_) {}
+  if (window.FormKit) FormKit.applyPacket();
+});
 </script>
+<script defer src="form-kit.js"></script>
 </body>
 </html>

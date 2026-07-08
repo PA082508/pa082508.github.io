@@ -54,7 +54,9 @@
   .toolbar button.blue { background: #1a56a0; color: #fff; border-color: #1a56a0; }
   #status { color: #666; }
   #status.ok { color: #1a7a3a; font-weight: bold; }
-  #status.error { color: #b00020; font-weight: bold; }
+  #status.er { color: #b00020; font-weight: bold; }
+  #status.in { color: #004085; font-weight: bold; }
+  .pa-embed .toolbar, .pa-embed .center-pick { display: none !important; }
   @page { size: letter portrait; margin: 0.5in 0.6in; }
   @media print {
     body { background: #fff; }
@@ -67,10 +69,11 @@
 <body>
 
 <div class="toolbar">
-  <button id="btnSubmit" class="primary">Submit</button>
-  <button id="btnReset">Reset</button>
-  <button id="btnPrint" class="blue">Print / Save PDF</button>
-  <span id="status"></span>
+  <button class="primary" data-formkit="submit">Submit</button>
+  <button onclick="resetForm()">Reset</button>
+  <button class="blue" onclick="window.print()">Print / Save PDF</button>
+  <span id="status" data-formkit="status"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
 </div>
 
 <div class="center-pick">
@@ -105,7 +108,7 @@
   </p>
 
   <div class="attest">
-    <input type="checkbox" id="attest" name="attest">
+    <input type="checkbox" id="attest" name="attest" data-required data-label="Attestation">
     <span class="stmt">I have reviewed the Reduced and Eligibility Guidelines and I DO NOT qualify for
       the USDA food program.</span>
   </div>
@@ -113,19 +116,19 @@
   <table>
     <tr class="fieldrow">
       <td style="width:60%"><span class="lbl">Child&rsquo;s Name</span>
-        <input type="text" class="fill" id="childName" autocomplete="name"></td>
+        <input type="text" class="fill" id="childName" data-required data-label="Child&rsquo;s Name" data-fk-field="child_name" autocomplete="name"></td>
       <td style="width:40%"><span class="lbl">Date</span>
         <input type="date" class="fill" id="signedDate"></td>
     </tr>
     <tr class="fieldrow">
       <td colspan="2"><span class="lbl">Parent Name (print)</span>
-        <input type="text" class="fill" id="parentName" autocomplete="name"></td>
+        <input type="text" class="fill" id="parentName" data-required data-label="Parent Name" data-fk-field="parent_name" autocomplete="name"></td>
     </tr>
     <tr class="fieldrow">
       <td colspan="2"><span class="lbl">Parent Signature</span>
         <div class="sig-wrap">
-          <canvas id="sigPad"></canvas>
-          <button type="button" class="sig-clear" id="sigClear">Clear</button>
+          <canvas id="sigPad" width="600" height="52" data-formkit="signature" data-required data-label="Parent signature"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('sigPad')">Clear</button>
         </div>
       </td>
     </tr>
@@ -170,108 +173,37 @@
   </div>
 </div>
 
+<link rel="stylesheet" href="form-kit.css">
 <script>
-const URL_="https://trrmyqfpxntmgxnqkikp.supabase.co",
-  KEY_="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko",
-  ORG_="3a9a290e-7e49-491e-946b-ad86f2399910",
-  CENTERS_={pearl:"881ef4ce-1a27-4d3b-aa60-59d2a307bf2b",alpha:"099c404b-e6d3-4543-9d9a-1fb11a2ee62d",ridge:"4aed7d5a-00d0-4a4c-ac99-311046ad2027"};
-
-(function () {
-  'use strict';
-  const $ = (s) => document.querySelector(s);
-  const status = (m, c) => { const e = $('#status'); e.textContent = m || ''; e.className = c || ''; };
-  function todayISO() { const d = new Date();
-    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-
-  $('#signedDate').value = todayISO();
-  let dateTouched = false;
-  $('#signedDate').addEventListener('input', () => { dateTouched = true; });
-
-  /* ---- E-signature pad (same mechanics as house forms) ---- */
-  const canvas = $('#sigPad'), ctx = canvas.getContext('2d');
-  let drawing = false, hasInk = false;
-  function sizeCanvas() {
-    const ratio = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
-    if (!w || !h) return;
-    const prev = hasInk ? canvas.toDataURL() : null;
-    canvas.width = w * ratio; canvas.height = h * ratio;
-    ctx.setTransform(ratio,0,0,ratio,0,0);
-    ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#000080';
-    if (prev) { const img = new Image(); img.onload = () => ctx.drawImage(img,0,0,w,h); img.src = prev; }
-  }
-  sizeCanvas(); window.addEventListener('resize', sizeCanvas);
-  function pos(ev){ const r = canvas.getBoundingClientRect(); return {x: ev.clientX-r.left, y: ev.clientY-r.top}; }
-  canvas.addEventListener('pointerdown', (ev)=>{ ev.preventDefault(); canvas.setPointerCapture(ev.pointerId);
-    drawing = true; const p = pos(ev); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
-  canvas.addEventListener('pointermove', (ev)=>{ if(!drawing) return; ev.preventDefault();
-    const p = pos(ev); ctx.lineTo(p.x,p.y); ctx.stroke(); hasInk = true; });
-  ['pointerup','pointercancel','pointerleave'].forEach(t => canvas.addEventListener(t, ()=>{ drawing = false; }));
-  function clearSig(){ ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.restore(); hasInk = false; }
-  $('#sigClear').addEventListener('click', clearSig);
-
-  function needCenter() {
-    const e = $('#ctr');
-    if (e.value) return false;
-    e.classList.add('need'); e.focus(); status('⚠ Select center first', 'error'); return true;
-  }
-
-  function collect() {
+/* USDA Food Program Waiver v1 — form-specific config only; shared behaviour = form-kit.js */
+function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
+function gc(id){var e=document.getElementById(id);return e&&e.checked}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function resetForm(){var c=document.getElementById('childName');if(c)c.value='';var p=document.getElementById('parentName');if(p)p.value='';var a=document.getElementById('attest');if(a)a.checked=false;if(window.FormKit)FormKit.clearSig('sigPad');var sd=document.getElementById('signedDate');if(sd)sd.value=todayISO();if(window.FormKit){FormKit.status('Form cleared','');FormKit.refreshCounter();}}
+window.FORMKIT_CONFIG={
+  formType:'usda_waiver',version:'v1',centerSelect:'#ctr',reset:resetForm,
+  collect:function(){
+    var ctr=document.getElementById('ctr');
+    var sigDate=g('signedDate')||todayISO();
     return {
-      type: 'usda_waiver',
-      dcy_form: null,
-      center_code: $('#ctr').value,
-      center_name: $('#ctr').options[$('#ctr').selectedIndex].text,
-      child_name: $('#childName').value.trim(),
-      parent_name: $('#parentName').value.trim(),
-      attestation_declined: $('#attest').checked,
-      attestation_text: 'I have reviewed the Reduced and Eligibility Guidelines and I DO NOT qualify for the USDA food program.',
-      signed_date: $('#signedDate').value || null
+      formData:{
+        type:'usda_waiver',
+        dcy_form:null,
+        center_code:FormKit.centerCode(),
+        center_name:ctr?ctr.options[ctr.selectedIndex].text:'',
+        child_name:g('childName'),
+        parent_name:g('parentName'),
+        attestation_declined:gc('attest'),
+        attestation_text:'I have reviewed the Reduced and Eligibility Guidelines and I DO NOT qualify for the USDA food program.',
+        signed_date:sigDate
+      },
+      signatures:{parent_sig:FormKit.getSig('sigPad')},
+      signatureDate:sigDate
     };
   }
-  function validate(d) {
-    if (!$('#ctr').value)  return 'Select your center';
-    if (!d.child_name)     return "Child's Name is required";
-    if (!d.attestation_declined) return 'Check the attestation box to sign the waiver';
-    if (!d.parent_name)    return 'Parent Name (print) is required';
-    if (!hasInk)           return 'Parent Signature is required — sign in the box';
-    if (!d.signed_date)    return 'Date is required';
-    return null;
-  }
-
-  async function submitForm() {
-    if (needCenter()) return;
-    if (!dateTouched) $('#signedDate').value = todayISO();
-    const d = collect();
-    const err = validate(d);
-    if (err) { status(err, 'error'); return; }
-    const sigs = { parent_sig: hasInk ? canvas.toDataURL('image/png') : null };
-    const sigDate = d.signed_date;
-    if (window.PA_EMBED && window.PA_EMBED.active) { window.PA_EMBED.save(d, sigs, sigDate); return; }
-    status('Submitting…');
-    try {
-      const r = await fetch(URL_ + '/rest/v1/rpc/submit_enrollment_form', {
-        method: 'POST',
-        headers: { 'apikey': KEY_, 'Authorization': 'Bearer ' + KEY_,
-          'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
-        body: JSON.stringify({ p_org: ORG_, p_center: CENTERS_[$('#ctr').value],
-          p_submission_type: 'usda_waiver', p_form_data: d, p_signatures: sigs,
-          p_signature_date: sigDate, p_source: 'online' })
-      });
-      if (!r.ok) throw new Error(await r.text());
-      status('✓ Submitted for center review', 'ok');
-    } catch (e) { status('Submit failed — ' + e.message, 'error'); }
-  }
-
-  function resetForm() {
-    $('#childName').value = ''; $('#parentName').value = ''; $('#attest').checked = false;
-    clearSig(); $('#signedDate').value = todayISO(); dateTouched = false; status('Form cleared');
-  }
-
-  $('#btnSubmit').addEventListener('click', submitForm);
-  $('#btnReset').addEventListener('click', resetForm);
-  $('#btnPrint').addEventListener('click', () => window.print());
-})();
+};
+document.addEventListener('DOMContentLoaded',function(){var sd=document.getElementById('signedDate');if(sd&&!sd.value)sd.value=todayISO();try{var r=JSON.parse(localStorage.getItem('pa_packet_profile'));if(r&&Date.now()-r.ts<5400000&&r.data.center_code){var c=document.getElementById('ctr');if(c&&!c.value)c.value=r.data.center_code;}}catch(_){}});
 </script>
+<script defer src="form-kit.js"></script>
 </body>
 </html>

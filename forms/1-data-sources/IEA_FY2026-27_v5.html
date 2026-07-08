@@ -99,17 +99,18 @@ select.need{outline:3px solid #E53935;outline-offset:1px}
 <div id="tb">
   <h1>IEA FY 2026-2027 v5</h1>
   <select id="ctr" onchange="ctrPick()" style="padding:5px 8px;border-radius:4px;border:1px solid #ccc;font-size:10pt"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
-  <button class="btn bs" onclick="save_()">&#128232; Submit</button>
+  <button class="btn bs" data-formkit="submit">&#128232; Submit</button>
   <button class="btn bs" onclick="addRow()">+ Row (Part 3)</button>
   <button class="btn br" onclick="clear_()">&#10005; Clear</button>
   <button class="btn bg" onclick="window.print()">&#128424; Print</button>
   <span id="st" style="font-size:9pt;padding:4px 10px;border-radius:4px;display:none"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
 </div>
 
-<div id="pkbanner" style="display:none;width:1050px;margin:10px auto -10px;background:#e7f6f8;border:1px solid #0097A7;border-radius:6px;padding:8px 14px;font-size:10pt;font-family:Arial">
-  &#128190; <b>Saved info from a previous form in this packet found</b> (<span id="pkwho"></span>).
-  <button class="btn bs" style="padding:3px 10px;margin-left:8px" onclick="applyProfile()">Fill known fields</button>
-  <button class="btn bg" style="padding:3px 10px" onclick="document.getElementById('pkbanner').style.display='none'">Dismiss</button>
+<div id="pkbanner" class="fk-autofill" data-formkit="autofill-banner" style="display:none;width:1050px;margin:10px auto -10px;background:#e7f6f8;border:1px solid #0097A7;border-radius:6px;padding:8px 14px;font-size:10pt;font-family:Arial">
+  &#128190; <b>Saved info from a previous form in this packet found</b> (<span id="pkwho" data-fk-autofill-who></span>).
+  <button type="button" class="btn bs fk-apply" style="padding:3px 10px;margin-left:8px">Fill known fields</button>
+  <button type="button" class="btn bg fk-dismiss" style="padding:3px 10px">Dismiss</button>
   <span style="color:#666;font-size:8.5pt;margin-left:8px">Data stays on this device and auto-erases after 90 minutes.</span>
 </div>
 <div id="sheet">
@@ -144,7 +145,7 @@ select.need{outline:3px solid #E53935;outline-offset:1px}
       <td class="benefit">Check type&nbsp;&nbsp;<input type="checkbox" id="ben_snap" onchange="oneOf('ben_snap','ben_owf');determine()"> FOOD ASSISTANCE (SNAP) or<br>of benefit:&nbsp;&nbsp;<input type="checkbox" id="ben_owf" onchange="oneOf('ben_owf','ben_snap');determine()"> OHIO WORKS FIRST (OWF)</td>
     </tr>
     <!-- child rows 1-4 -->
-    <tr class="kid"><td>1. <input type="text" id="kid1_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid1_age" style="width:90%"></td><td><input type="date" id="kid1_dob" style="width:94%" onchange="kidAge(1);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid1_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid1_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+    <tr class="kid"><td>1. <input type="text" id="kid1_name" data-required data-label="Child 1 name" data-fk-field="child_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid1_age" style="width:90%"></td><td><input type="date" id="kid1_dob" data-fk-field="dob" style="width:94%" onchange="kidAge(1);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid1_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid1_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
     <tr class="kid"><td>2. <input type="text" id="kid2_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid2_age" style="width:90%"></td><td><input type="date" id="kid2_dob" style="width:94%" onchange="kidAge(2);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid2_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid2_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
     <tr class="kid"><td>3. <input type="text" id="kid3_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid3_age" style="width:90%"></td><td><input type="date" id="kid3_dob" style="width:94%" onchange="kidAge(3);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid3_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid3_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
     <tr class="kid"><td>4. <input type="text" id="kid4_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid4_age" style="width:90%"></td><td><input type="date" id="kid4_dob" style="width:94%" onchange="kidAge(4);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid4_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid4_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
@@ -188,8 +189,8 @@ information. I understand that CACFP officials may verify the information. I und
     <colgroup><col style="width:38%"><col style="width:18%"><col style="width:44%"></colgroup>
     <tr>
       <td class="sigcell">
-        <canvas id="sig_adult" width="430" height="52"></canvas>
-        <button class="sigclear" onclick="clearSig('sig_adult')">&#10005;</button>
+        <canvas id="sig_adult" width="430" height="52" data-formkit="signature" data-required data-label="Signature of adult household member"></canvas>
+        <button type="button" class="sigclear" onclick="FormKit.clearSig('sig_adult')">&#10005;</button>
         <span class="lbl">*&nbsp;SIGNATURE OF ADULT HOUSEHOLD MEMBER</span>
       </td>
       <td class="sigcell">
@@ -204,12 +205,12 @@ information. I understand that CACFP officials may verify the information. I und
       </td>
     </tr>
     <tr class="lblrow">
-      <td>Print Name:<br><input type="text" id="p4_name" autocomplete="name" onblur="saveProfile()"></td>
-      <td>Daytime Phone Number:<br><input type="tel" id="p4_dayphone" autocomplete="tel" oninput="fmtPhone(this)" onblur="saveProfile()"></td>
+      <td>Print Name:<br><input type="text" id="p4_name" data-fk-field="parent_name" autocomplete="name" onblur="saveProfile()"></td>
+      <td>Daytime Phone Number:<br><input type="tel" id="p4_dayphone" data-fk-field="phone_day" autocomplete="tel" oninput="fmtPhone(this)" onblur="saveProfile()"></td>
       <td>Work Phone Number:<br><input type="tel" id="p4_workphone" autocomplete="tel-work" oninput="fmtPhone(this)" onblur="saveProfile()"></td>
     </tr>
     <tr class="lblrow">
-      <td>Street / Apt:<br><input type="text" id="p4_street" autocomplete="address-line1" onblur="saveProfile()"></td>
+      <td>Street / Apt:<br><input type="text" id="p4_street" data-fk-field="street" autocomplete="address-line1" onblur="saveProfile()"></td>
       <td>City / State / Zip:<br><input type="text" id="p4_csz" autocomplete="address-level2" onblur="saveProfile()"></td>
       <td>County:<br><input type="text" id="p4_county" list="dl_county" onblur="saveProfile()"></td>
     </tr>
@@ -280,7 +281,7 @@ Weekly x 52, Every 2 Weeks <span style="font-size:7.6pt">(biweekly)</span> x 26,
   <div class="spfoot">
     <div class="cols">
       <div class="c" style="flex:1.5;position:relative">
-        <div class="line"><canvas id="sig_sponsor" width="410" height="46" style="position:absolute;left:0;bottom:0;background:rgba(255,253,150,0.4);cursor:crosshair"></canvas><button class="sigclear" onclick="clearSig('sig_sponsor')">&#10005;</button></div>
+        <div class="line"><canvas id="sig_sponsor" width="410" height="46" data-formkit="signature" style="position:absolute;left:0;bottom:0;background:rgba(255,253,150,0.4);cursor:crosshair"></canvas><button type="button" class="sigclear" onclick="FormKit.clearSig('sig_sponsor')">&#10005;</button></div>
         Signature of Sponsor / Center Representative
       </div>
       <div class="c"><div class="line"><input type="date" id="sp_certdate" data-touched="0" onchange="this.dataset.touched=1;calcDates()" style="position:absolute;left:0;bottom:2px;border:none"></div>Date Sponsor Certified/Categorized Form</div>
@@ -307,76 +308,16 @@ If date of parent signature is not within month of certification or immediately 
 </div>
 
 <script>
-
-function st(m,t){const e=document.getElementById('st');e.textContent=m;e.className=t}
+/* IEA FY 2026-2027 v5 \u2014 form-specific config only; shared behaviour = form-kit.js */
 function ctrPick(){
-  const e=document.getElementById('ctr');e.classList.remove('need');
-  if(e.value){const f=document.getElementById('p1_center');if(f&&!f.value.trim())f.value=e.options[e.selectedIndex].text;
-    try{const r=JSON.parse(localStorage.getItem('pa_packet_profile'))||{ts:Date.now(),data:{}};
-      r.data.center_code=e.value;r.ts=Date.now();
-      localStorage.setItem('pa_packet_profile',JSON.stringify(r))}catch(_){}}
+  const e=document.getElementById('ctr');if(!e)return;e.classList.remove('need');
+  if(e.value){const f=document.getElementById('p1_center');if(f&&!f.value.trim())f.value=e.options[e.selectedIndex].text}
+  if(window.FormKit)FormKit.savePacket();
 }
-function needCenter(){
-  const e=document.getElementById('ctr');if(e.value)return false;
-  e.classList.add('need');e.focus();st('\u26a0 Select center first','er');return true;
-}
-const URL2_="https://trrmyqfpxntmgxnqkikp.supabase.co",
-KEY2_="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko",
-ORG2_="3a9a290e-7e49-491e-946b-ad86f2399910",
-CENTERS2_={pearl:"881ef4ce-1a27-4d3b-aa60-59d2a307bf2b",alpha:"099c404b-e6d3-4543-9d9a-1fb11a2ee62d",ridge:"4aed7d5a-00d0-4a4c-ac99-311046ad2027"};
+// Thin shim: form-specific onblur hooks funnel into the shared session packet.
+function saveProfile(){if(window.FormKit)FormKit.savePacket()}
 function gv(id){const e=document.getElementById(id);return e?e.value:''}
 function gcb(id){const e=document.getElementById(id);return !!(e&&e.checked)}
-async function save_(){
-  if(needCenter())return;
-  if(!gv('kid1_name').trim()){st("\u26a0 Enter at least child 1 name (Part 1)",'er');return}
-  st('Saving...','in');
-  try{
-    const kids=[1,2,3,4].map(k=>({name:gv('kid'+k+'_name'),age:gv('kid'+k+'_age'),
-      dob:gv('kid'+k+'_dob'),foster:gcb('kid'+k+'_foster'),case_no:gv('kid'+k+'_case')}))
-      .filter(k=>k.name.trim());
-    const rows=[];
-    for(let i=1;i<=N;i++){const nm=document.getElementById('name_'+i);if(!nm||!nm.value.trim())continue;
-      rows.push({name:nm.value.trim(),zero:gcb('zero_'+i),
-        income:Object.fromEntries(CATS.map(c=>[c,{amt:gv(`amt_${i}_${c}`).replace(/,/g,''),freq_mult:gv(`frq_${i}_${c}`)}]))})}
-    const form_data={type:'iea_fy2026_27',center_code:document.getElementById('ctr').value,
-      center_name:gv('p1_center'),
-      children:kids,benefit:{snap:gcb('ben_snap'),owf:gcb('ben_owf')},
-      household:rows,schedule_none:null,
-      adult:{print_name:gv('p4_name'),date:gv('p4_date'),
-        ssn_last4:['ssn1','ssn2','ssn3','ssn4'].map(gv).join(''),no_ssn:gcb('no_ssn'),
-        day_phone:gv('p4_dayphone'),work_phone:gv('p4_workphone'),
-        street:gv('p4_street'),city_state_zip:gv('p4_csz'),county:gv('p4_county')},
-      ethnicity:{hispanic:gcb('eth_h'),not_hispanic:gcb('eth_n')},
-      race:{ai:gcb('race_ai'),asian:gcb('race_as'),black:gcb('race_bl'),
-        pacific:gcb('race_nh'),white:gcb('race_wh'),other:gcb('race_ot')},
-      helper:{household_size:document.getElementById('hh').textContent,
-        annualized:document.getElementById('ann').textContent,
-        verdict:document.getElementById('verdict').textContent},
-      sponsor:{free:gcb('cat_free'),free_case:gcb('free_case'),free_income:gcb('free_inc'),
-        free_foster:gcb('free_foster'),reduced:gcb('cat_red'),paid:gcb('cat_paid'),
-        paid_high:gcb('paid_high'),paid_incomplete:gcb('paid_inc'),paid_invalid:gcb('paid_inv'),
-        hh:gv('sp_hh'),income:gv('sp_income'),cert_date:gv('sp_certdate'),
-        effective:gv('sp_eff'),expiration:gv('sp_exp')}};
-    const sigs={adult_sig:getSigData('sig_adult'),sponsor_sig:getSigData('sig_sponsor')};
-    const sigDate=gv('p4_date')||null;
-    if(window.PA_EMBED&&PA_EMBED.active){await PA_EMBED.save(form_data,sigs,sigDate);}else{
-    const r=await fetch(URL2_+'/rest/v1/rpc/submit_enrollment_form',{
-      method:'POST',headers:{'apikey':KEY2_,'Authorization':'Bearer '+KEY2_,
-        'Content-Type':'application/json','Content-Profile':'menumaker'},
-      body:JSON.stringify({p_org:ORG2_,p_center:CENTERS2_[document.getElementById('ctr').value],
-        p_submission_type:'iea',p_form_data:form_data,p_signatures:sigs,
-        p_signature_date:sigDate,p_source:'online'})});
-    if(!r.ok)throw new Error(await r.text());}
-    st('Submitted for center review','ok');
-    const dn=document.getElementById('done');dn.style.display='block';
-    setTimeout(()=>dn.style.display='none',6000);
-  }catch(e){st('Error: '+e.message,'er');console.error(e)}
-}
-document.addEventListener('DOMContentLoaded',()=>{
-  try{const r=JSON.parse(localStorage.getItem('pa_packet_profile'));
-    if(r&&Date.now()-r.ts<90*60*1000&&r.data.center_code){
-      document.getElementById('ctr').value=r.data.center_code;ctrPick()}}catch(_){}
-});
 
 // FY 2026-2027 annual thresholds (Ohio DEW packet 26-27)
 const FREE_A=[0,20748,28132,35516,42900,50284,57668,65052,72436],FREE_ADD=7384;
@@ -460,27 +401,13 @@ function calcDates(){
   document.getElementById('sp_eff').value=f(eff);
   document.getElementById('sp_exp').value=f(exp);
 }
-function initSigPad(id){
-  const canvas=document.getElementById(id);if(!canvas)return;
-  const ctx=canvas.getContext('2d');ctx.strokeStyle='#000080';ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
-  let dr=false,lx,ly;
-  const pos=e=>{const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height,s=e.touches?e.touches[0]:e;return{x:(s.clientX-r.left)*sx,y:(s.clientY-r.top)*sy}};
-  const dn=e=>{e.preventDefault();dr=true;const p=pos(e);lx=p.x;ly=p.y;ctx.beginPath();ctx.arc(lx,ly,0.8,0,Math.PI*2);ctx.fill()};
-  const mv=e=>{e.preventDefault();if(!dr)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y};
-  const up=()=>dr=false;
-  canvas.addEventListener('mousedown',dn);canvas.addEventListener('mousemove',mv);
-  canvas.addEventListener('mouseup',up);canvas.addEventListener('mouseleave',up);
-  canvas.addEventListener('touchstart',dn,{passive:false});canvas.addEventListener('touchmove',mv,{passive:false});
-  canvas.addEventListener('touchend',up);
-}
-function getSigData(id){const c=document.getElementById(id);if(!c)return null;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return d.some((v,i)=>i%4===3&&v>0)?c.toDataURL('image/png'):null}
-function clearSig(id){const c=document.getElementById(id);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height)}
 function clear_(){
   document.getElementById('p3rows').innerHTML='';N=0;for(let i=0;i<6;i++)addRow();
   document.querySelectorAll('#sheet input[type=text]').forEach(e=>{e.value='';e.classList.remove('ok')});
   document.querySelectorAll('#sheet input[type=checkbox]').forEach(e=>{if(!e.disabled)e.checked=false});
   ['ssn1','ssn2','ssn3','ssn4'].forEach(id=>{const e=document.getElementById(id);e.disabled=false;e.value=''});
-  clearSig('sig_adult');clearSig('sig_sponsor');recalc();
+  if(window.FormKit){FormKit.clearSig('sig_adult');FormKit.clearSig('sig_sponsor')}recalc();
+  if(window.FormKit)FormKit.status('Cleared','');
 }
 
 // ── Packet UX: маска телефона ──
@@ -497,58 +424,20 @@ function kidAge(k){
   if(a<0)return;
   document.getElementById('kid'+k+'_age').value=(a===0?Math.max(m,0)+' mo':a);
 }
-// ── Профиль пакета: localStorage, 90 минут ──
-const PK_KEY='pa_packet_profile',PK_TTL=90*60*1000;
-const PK_MAP={p4_name:'parent_name',p4_dayphone:'phone_day',p4_workphone:'phone_work',
-  p4_street:'street',p4_csz:'city_state_zip',p4_county:'county',p1_center:'center_name',
-  kid1_name:'child1_name',kid1_dob:'child1_dob',kid2_name:'child2_name',kid2_dob:'child2_dob',
-  kid3_name:'child3_name',kid3_dob:'child3_dob',kid4_name:'child4_name',kid4_dob:'child4_dob'};
-function loadProfile(){
-  try{const r=JSON.parse(localStorage.getItem(PK_KEY));if(!r)return null;
-    if(Date.now()-r.ts>PK_TTL){localStorage.removeItem(PK_KEY);return null}return r.data}
-  catch(e){return null}
-}
-function saveProfile(){
-  const data=loadProfile()||{};
-  for(const id in PK_MAP){const e=document.getElementById(id);if(e&&e.value.trim())data[PK_MAP[id]]=e.value.trim()}
-  try{localStorage.setItem(PK_KEY,JSON.stringify({ts:Date.now(),data}))}catch(e){}
-}
-function applyProfile(){
-  const d=loadProfile();if(!d)return;
-  for(const id in PK_MAP){const e=document.getElementById(id);if(e&&!e.value.trim()&&d[PK_MAP[id]]){e.value=d[PK_MAP[id]];
-    if(id.endsWith('_dob')){const k=id.match(/kid(\d)/);if(k)kidAge(+k[1])}}}
-  document.getElementById('pkbanner').style.display='none';
-}
+// ── Signature/certification dates default to today; restore center from packet ──
 document.addEventListener('DOMContentLoaded',()=>{
-  const d=loadProfile();
-  if(d&&Object.keys(d).length){
-    document.getElementById('pkwho').textContent=d.child1_name||d.parent_name||'household data';
-    document.getElementById('pkbanner').style.display='block';
-  }
-  // подписные даты: сегодня по умолчанию
   const today=new Date().toISOString().split('T')[0];
   const pd=document.getElementById('p4_date');if(pd&&!pd.value)pd.value=today;
   const sc=document.getElementById('sp_certdate');if(sc&&!sc.value){sc.value=today;calcDates()}
+  try{const r=JSON.parse(localStorage.getItem('pa_packet_profile'));
+    if(r&&Date.now()-r.ts<5400000&&r.data.center_code){
+      const c=document.getElementById('ctr');if(c&&!c.value){c.value=r.data.center_code;ctrPick()}}}catch(_){}
 });
-// ── Печать: пустые date-поля не должны печатать mm/dd/yyyy ──
-let _dtSwap=[];
-window.addEventListener('beforeprint',()=>{
-  _dtSwap=[];
-  // необновлённая вручную дата подписи актуализируется на момент печати
-  const today=new Date().toISOString().split('T')[0];
-  ['p4_date','sp_certdate'].forEach(id=>{const e=document.getElementById(id);
-    if(e&&e.dataset.touched==='0'){e.value=today;if(id==='sp_certdate')calcDates()}});
-  document.querySelectorAll('input[type=date]').forEach(e=>{
-    if(!e.value){_dtSwap.push(e);e.type='text'}});
-});
-window.addEventListener('afterprint',()=>{_dtSwap.forEach(e=>e.type='date');_dtSwap=[]});
 
 for(let i=0;i<6;i++)addRow();
-initSigPad('sig_adult');initSigPad('sig_sponsor');
 recalc();
 
-/* ═══ pa-embed shim v1 (спека CC, срез E) ═══ */
-
+/* ═══ cross-form prefill applier (used by FORMKIT_CONFIG.applyPrefill) ═══ */
 function PA_APPLY(fd){
   const S=(id,v)=>{const e=document.getElementById(id);if(e&&v!=null)e.value=v};
   const C=(id,v)=>{const e=document.getElementById(id);if(e){e.checked=!!v;
@@ -586,66 +475,44 @@ function PA_APPLY(fd){
   if(typeof recalc==='function')recalc();
 }
 
-const PA_EMBED=(function(){
-  const q=new URLSearchParams(location.search);
-  const active=q.get('embed')==='1';
-  const st_={active,HOST:null,pend:{}};
-  if(!active)return st_;
-  document.documentElement.classList.add('pa-embed');
-  const FORM_TYPE='iea',FORM_VERSION='v5';
-  const env=m=>Object.assign({__paEmbed:true,ns:'pa-embed',v:1},m);
-  const send=m=>{if(st_.HOST)parent.postMessage(env(m),st_.HOST)};
-  st_.save=(fd,sigs,sigDate)=>new Promise((res,rej)=>{
-    const nonce=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2));
-    st_.pend[nonce]={res,rej};
-    send({type:'save',formType:FORM_TYPE,formData:fd,signatures:sigs||null,
-      signatureDate:sigDate||null,nonce});
-    setTimeout(()=>{if(st_.pend[nonce]){delete st_.pend[nonce];
-      rej(new Error('No response from host'))}},20000);
-  });
-  async function init(){
-    document.body.classList.add('pa-embed');
-    try{
-      const host=q.get('host'),reg=q.get('registry'),center=q.get('center');
-      if(!host||!reg)throw 0;
-      const r=await fetch(reg);if(!r.ok)throw 0;
-      const j=await r.json();
-      const allow=j.allowedParentOrigins||[];
-      if(!allow.includes(host))throw 0;
-      st_.HOST=host;
-      if(center){const c=document.getElementById('ctr');
-        if(c){c.value=center;if(typeof ctrPick==='function')ctrPick()}}
-      window.addEventListener('message',ev=>{
-        if(ev.origin!==st_.HOST)return;
-        const d=ev.data;
-        if(!d||d.__paEmbed!==true||d.ns!=='pa-embed'||d.v!==1)return;
-        if(d.type==='saved'){const p=st_.pend[d.nonce];
-          if(p){delete st_.pend[d.nonce];p.res(d)}}
-        else if(d.type==='error'){const p=st_.pend[d.nonce];
-          if(p){delete st_.pend[d.nonce];p.rej(new Error(d.message||'Host error'))}}
-        else if(d.type==='inject'){try{
-          if(d.reset&&typeof clear_==='function')clear_();
-          if(d.center){const c=document.getElementById('ctr');
-            if(c){c.value=d.center;if(typeof ctrPick==='function')ctrPick()}}
-          if(d.prefill)PA_APPLY(d.prefill);
-          send({type:'resize',height:document.documentElement.scrollHeight});
-        }catch(e){console.error('inject',e)}}
-        /* неизвестные type игнорируются (forward-compat) */
-      });
-      send({type:'ready',formType:FORM_TYPE,version:FORM_VERSION});
-      const ro=new ResizeObserver(()=>send({type:'resize',
-        height:document.documentElement.scrollHeight}));
-      ro.observe(document.documentElement);
-      send({type:'resize',height:document.documentElement.scrollHeight});
-    }catch(e){
-      document.body.innerHTML='<div style="font-family:Arial;padding:48px;text-align:center;color:#555;font-size:13pt">This form must be opened from the Play Academy application.</div>';
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
-  else init();
-  return st_;
-})();
-
+/* ═══ FORMKIT_CONFIG — shared transport/embed/signatures live in form-kit.js ═══ */
+window.FORMKIT_CONFIG={
+  formType:'iea',version:'v5',centerSelect:'#ctr',reset:clear_,applyPrefill:PA_APPLY,
+  collect:function(){
+    var kids=[1,2,3,4].map(function(k){return {name:gv('kid'+k+'_name'),age:gv('kid'+k+'_age'),
+      dob:gv('kid'+k+'_dob'),foster:gcb('kid'+k+'_foster'),case_no:gv('kid'+k+'_case')};})
+      .filter(function(k){return k.name.trim();});
+    var rows=[];
+    for(var i=1;i<=N;i++){var nm=document.getElementById('name_'+i);if(!nm||!nm.value.trim())continue;
+      rows.push({name:nm.value.trim(),zero:gcb('zero_'+i),
+        income:Object.fromEntries(CATS.map(function(c){return [c,{amt:gv('amt_'+i+'_'+c).replace(/,/g,''),freq_mult:gv('frq_'+i+'_'+c)}];}))});}
+    var form_data={type:'iea_fy2026_27',center_code:FormKit.centerCode(),
+      center_name:gv('p1_center'),
+      children:kids,benefit:{snap:gcb('ben_snap'),owf:gcb('ben_owf')},
+      household:rows,schedule_none:null,
+      adult:{print_name:gv('p4_name'),date:gv('p4_date'),
+        ssn_last4:['ssn1','ssn2','ssn3','ssn4'].map(gv).join(''),no_ssn:gcb('no_ssn'),
+        day_phone:gv('p4_dayphone'),work_phone:gv('p4_workphone'),
+        street:gv('p4_street'),city_state_zip:gv('p4_csz'),county:gv('p4_county')},
+      ethnicity:{hispanic:gcb('eth_h'),not_hispanic:gcb('eth_n')},
+      race:{ai:gcb('race_ai'),asian:gcb('race_as'),black:gcb('race_bl'),
+        pacific:gcb('race_nh'),white:gcb('race_wh'),other:gcb('race_ot')},
+      helper:{household_size:document.getElementById('hh').textContent,
+        annualized:document.getElementById('ann').textContent,
+        verdict:document.getElementById('verdict').textContent},
+      sponsor:{free:gcb('cat_free'),free_case:gcb('free_case'),free_income:gcb('free_inc'),
+        free_foster:gcb('free_foster'),reduced:gcb('cat_red'),paid:gcb('cat_paid'),
+        paid_high:gcb('paid_high'),paid_incomplete:gcb('paid_inc'),paid_invalid:gcb('paid_inv'),
+        hh:gv('sp_hh'),income:gv('sp_income'),cert_date:gv('sp_certdate'),
+        effective:gv('sp_eff'),expiration:gv('sp_exp')}};
+    var sigs={adult_sig:FormKit.getSig('sig_adult'),sponsor_sig:FormKit.getSig('sig_sponsor')};
+    var sigDate=gv('p4_date')||null;
+    return {formData:form_data,signatures:sigs,signatureDate:sigDate};
+  },
+  onSuccess:function(){var dn=document.getElementById('done');if(dn){dn.style.display='block';setTimeout(function(){dn.style.display='none'},6000)}}
+};
 </script>
+<link rel="stylesheet" href="form-kit.css">
+<script defer src="form-kit.js"></script>
 </body>
 </html>
