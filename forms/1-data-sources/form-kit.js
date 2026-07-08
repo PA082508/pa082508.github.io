@@ -28,6 +28,21 @@
   var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
   var ORG = '3a9a290e-7e49-491e-946b-ad86f2399910';
   var CENTERS = { pearl: '881ef4ce-1a27-4d3b-aa60-59d2a307bf2b', alpha: '099c404b-e6d3-4543-9d9a-1fb11a2ee62d', ridge: '4aed7d5a-00d0-4a4c-ac99-311046ad2027' };
+  // Per-center identity for the resolved-center header (center-auto-detect spec).
+  var CENTERS_INFO = {
+    pearl: { name: 'Play Academy Parma Heights', address: '6285 Pearl Rd, Parma Heights', phone: '440-884-7529' },
+    alpha: { name: 'Play Academy Mayfield Hills', address: '201 Alpha Park, Highland Heights', phone: '440-460-0600' },
+    ridge: { name: 'Play Academy Wickliffe', address: '28930 Ridge Rd, Wickliffe', phone: '440-520-0031' },
+  };
+  // Per-center CACFP meal schedule (menumaker.meal_schedule; uniform across all
+  // classrooms 2026-07). §4 auto-derives ONLY from the resolved center's slots —
+  // meals not served here (PM snack / evening snack) are NEVER auto-checked.
+  var CM = { b: ['07:00', '08:00'], as: ['09:15', '09:45'], l: ['11:30', '12:30'], su: ['15:30', '16:30'] };
+  var CENTER_MEALS = { pearl: CM, alpha: CM, ridge: CM };
+  var MEALS = ['b', 'as', 'l', 'ps', 'su', 'es'];
+  // Shared brand assets (drop pa-logo.png 603×203 + pa-icon-144.png into this dir).
+  var LOGO_URL = 'pa-logo.png', FAVICON_URL = 'pa-icon-144.png';
+  var centerResolved = false; // true once embed/?center/kiosk resolves a center
 
   var CFG = window.FORMKIT_CONFIG || {};
   var FORM_TYPE = CFG.formType || document.body.getAttribute('data-formkit-form') || 'unknown';
@@ -216,8 +231,6 @@
   // ── §3 Smart Monday + §4 meal auto-derive (CACFP weekly grid) ────────────────
   var DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'], COPY = ['tue', 'wed', 'thu', 'fri'];
   var FIELDS = ['arr1', 'dep1', 'arr2', 'dep2'];
-  // Default CACFP service windows (center config overrides via CFG.mealSlots).
-  var DEFAULT_SLOTS = { b: ['06:30', '08:30'], as: ['09:00', '10:00'], l: ['11:00', '13:00'], ps: ['14:30', '15:30'], su: ['17:00', '18:30'], es: ['19:30', '20:30'] };
   function toMin(t) { // accepts "HH:MM" (24h) and "H:MM am/pm" (form selects)
     if (!t) return null; t = String(t).trim().toLowerCase();
     var ap = (t.match(/(am|pm)$/) || [])[1]; if (ap) t = t.replace(/(am|pm)$/, '').trim();
@@ -226,9 +239,12 @@
     if (ap === 'pm' && h < 12) h += 12; if (ap === 'am' && h === 12) h = 0;
     return h * 60 + mi;
   }
+  // §4 — auto-check meals STRICTLY from the resolved center's meal_schedule
+  // ("hours × the CENTER's slots"). No center resolved ⇒ do nothing (waits, no
+  // generic fallback). Meals the center doesn't serve are never auto-checked.
   function autoMeals(day) {
     var grid = $('[data-fk-meals]'); if (!grid) return;
-    var slots = CFG.mealSlots || DEFAULT_SLOTS;
+    var slots = CENTER_MEALS[centerCode()]; if (!slots) return;   // ← center gate
     var win = [];
     [['arr1', 'dep1'], ['arr2', 'dep2']].forEach(function (pr) {
       var a = toMin((document.getElementById('f_' + day + '_' + pr[0]) || {}).value), d = toMin((document.getElementById('f_' + day + '_' + pr[1]) || {}).value);
@@ -246,24 +262,35 @@
     var lbl = cb.closest('label') || cb.parentNode; if (!lbl || lbl.querySelector('.fk-auto')) return;
     var t = document.createElement('span'); t.className = 'fk-auto'; t.textContent = 'auto'; lbl.appendChild(t);
   }
+  function untagAuto(cb) { var lbl = cb.closest('label') || cb.parentNode; if (!lbl) return; var t = lbl.querySelector('.fk-auto'); if (t) t.remove(); }
+  function rederiveAll() { DAYS.forEach(autoMeals); }
   function initWeek() {
     var grid = $('[data-fk-week]'); if (!grid) return;
     // meal auto-derive on arrival/departure change; mark user overrides
     $$('[id^=cb_]').forEach(function (cb) { if (/^cb_[a-z]+_[a-z]+$/.test(cb.id)) cb.addEventListener('change', function () { cb.setAttribute('data-fk-userset', '1'); }); });
     DAYS.forEach(function (day) { FIELDS.forEach(function (f) { var el = document.getElementById('f_' + day + '_' + f); if (el) el.addEventListener('change', function () { autoMeals(day); }); }); });
+    // Re-derive every in-care day when the center changes (§4 depends on it).
+    var ce = centerEl(); if (ce) ce.addEventListener('change', rederiveAll);
     // Smart-Monday chip
     var host = $('[data-fk-week-apply]'); if (!host) return;
     var chip = document.createElement('button'); chip.type = 'button'; chip.className = 'fk-chip fk-print-hidden'; chip.textContent = '↓ Apply Monday to Tue–Fri';
     var undo = null, snapshot = null;
     chip.addEventListener('click', function () {
       snapshot = {};
+      var snap = function (id, v) { if (!(id in snapshot)) snapshot[id] = v; };
       COPY.forEach(function (day) {
-        var inCare = document.getElementById('cb_' + day); if (inCare && !inCare.checked) return; // skip not-in-care days
-        FIELDS.forEach(function (f) { var src = document.getElementById('f_mon_' + f), dst = document.getElementById('f_' + day + '_' + f); if (src && dst) { snapshot['f_' + day + '_' + f] = dst.value; dst.value = src.value; } });
-        Object.keys(CFG.mealSlots || DEFAULT_SLOTS).forEach(function (m) { var src = document.getElementById('cb_mon_' + m), dst = document.getElementById('cb_' + day + '_' + m); if (src && dst) { snapshot['cb_' + day + '_' + m] = dst.checked; dst.checked = src.checked; } });
+        // (a) copy Monday's in-care day checkbox
+        var srcDay = document.getElementById('cb_mon'), dstDay = document.getElementById('cb_' + day);
+        if (srcDay && dstDay) { snap('cb_' + day, dstDay.checked); dstDay.checked = srcDay.checked; }
+        // (b) copy arrive/depart
+        FIELDS.forEach(function (f) { var src = document.getElementById('f_mon_' + f), dst = document.getElementById('f_' + day + '_' + f); if (src && dst) { snap('f_' + day + '_' + f, dst.value); dst.value = src.value; } });
+        // clear this day's non-user-set meal checks, then re-derive from center slots
+        MEALS.forEach(function (m) { var d = document.getElementById('cb_' + day + '_' + m); if (d && !d.getAttribute('data-fk-userset')) { snap('cb_' + day + '_' + m, d.checked); d.checked = false; untagAuto(d); } });
+        autoMeals(day);
       });
+      refreshCounter();
       status('Applied Monday to Tue–Fri', '');
-      if (!undo) { undo = document.createElement('button'); undo.type = 'button'; undo.className = 'fk-chip fk-print-hidden'; undo.textContent = '↶ Undo'; undo.addEventListener('click', function () { if (!snapshot) return; Object.keys(snapshot).forEach(function (id) { var e = document.getElementById(id); if (!e) return; if (id.indexOf('cb_') === 0) e.checked = snapshot[id]; else e.value = snapshot[id]; }); snapshot = null; status('Undone', ''); }); host.appendChild(undo); }
+      if (!undo) { undo = document.createElement('button'); undo.type = 'button'; undo.className = 'fk-chip fk-print-hidden'; undo.textContent = '↶ Undo'; undo.addEventListener('click', function () { if (!snapshot) return; Object.keys(snapshot).forEach(function (id) { var e = document.getElementById(id); if (!e) return; if (id.indexOf('cb_') === 0) { e.checked = snapshot[id]; untagAuto(e); } else e.value = snapshot[id]; }); snapshot = null; refreshCounter(); status('Undone', ''); }); host.appendChild(undo); }
     });
     host.appendChild(chip);
   }
@@ -342,7 +369,7 @@
         var j = await r.json();
         if (!(j.allowedParentOrigins || []).includes(host)) throw 0;
         st.HOST = host;
-        if (center && centerEl()) { centerEl().value = center; centerEl().dispatchEvent(new Event('change', { bubbles: true })); }
+        if (center) setResolvedCenter(center);
         window.addEventListener('message', function (ev) {
           if (ev.origin !== st.HOST) return;
           var d = ev.data; if (!d || d.__paEmbed !== true || d.ns !== 'pa-embed' || d.v !== 1) return;
@@ -351,7 +378,7 @@
           else if (d.type === 'inject') {
             try {
               if (d.reset && CFG.reset) CFG.reset();
-              if (d.center && centerEl()) { centerEl().value = d.center; centerEl().dispatchEvent(new Event('change', { bubbles: true })); }
+              if (d.center) setResolvedCenter(d.center);
               if (d.prefill) { var r2 = pkLoad() || { ts: Date.now(), data: {} }; Object.assign(r2.data, d.prefill); pkWrite(r2.data); applyPacket(); if (CFG.applyPrefill) CFG.applyPrefill(d.prefill); }
               send({ type: 'resize', height: document.documentElement.scrollHeight });
             } catch (e) { if (window.console) console.error('inject', e); }
@@ -370,12 +397,43 @@
   })();
 
   // ── Boot ─────────────────────────────────────────────────────────────────────
+  // ── Center auto-detect + resolved-center header + brand assets ───────────────
+  function injectFavicon() {
+    if (!document.head || document.querySelector('link[rel="icon"][data-fk]')) return;
+    var l = document.createElement('link'); l.rel = 'icon'; l.setAttribute('data-fk', '1'); l.setAttribute('sizes', '144x144'); l.href = FAVICON_URL; document.head.appendChild(l);
+    var a = document.createElement('link'); a.rel = 'apple-touch-icon'; a.href = FAVICON_URL; document.head.appendChild(a);
+  }
+  function renderCenterHeader(code) {
+    var info = CENTERS_INFO[code]; if (!info) return;
+    var box = $('[data-formkit="center-header"]');
+    if (!box) { box = document.createElement('div'); box.setAttribute('data-formkit', 'center-header'); document.body.insertBefore(box, document.body.firstChild); }
+    box.className = 'fk-center-header';
+    box.innerHTML = '<img class="fk-logo" src="' + LOGO_URL + '" alt="Play Academy" onerror="this.style.display=\'none\'">'
+      + '<div class="fk-center-meta"><div class="fk-center-name">' + info.name + '</div>'
+      + '<div class="fk-center-contact">' + info.address + ' · ' + info.phone + '</div></div>';
+  }
+  function setResolvedCenter(code) {
+    if (!code || !CENTERS[code]) return;
+    centerResolved = true;
+    var e = centerEl(); if (e) { e.value = code; e.dispatchEvent(new Event('change', { bubbles: true })); e.style.display = 'none'; } // parent never sees "Select center"
+    renderCenterHeader(code);
+  }
+  function resolveCenter() {
+    // Priority: embed (handled in EMBED.boot) → ?center= → kiosk device → staff <select> fallback.
+    try { var c = new URLSearchParams(location.search).get('center'); if (c && CENTERS[c]) { setResolvedCenter(c); return; } } catch (_) {}
+    if (window.PA_KIOSK && window.PA_KIOSK.center && CENTERS[window.PA_KIOSK.center]) { setResolvedCenter(window.PA_KIOSK.center); return; }
+    // unresolved → visible center <select> stays (staff / fallback).
+  }
+  var ACOMP = { child_name: 'name', parent_name: 'name', full_name: 'name', dob: 'bday', birthdate: 'bday', parent_birthdate: 'bday', street: 'street-address', address: 'street-address', city: 'address-level2', zip: 'postal-code', phone_day: 'tel', phone: 'tel', email: 'email', parent_email: 'email' };
+  function initAutocomplete() { $$('[data-fk-field]').forEach(function (e) { var k = e.getAttribute('data-fk-field'); if (ACOMP[k] && !e.getAttribute('autocomplete')) e.setAttribute('autocomplete', ACOMP[k]); }); }
+
   function boot() {
+    injectFavicon();
     $$('[data-formkit="signature"]').forEach(initSig);
     initConditionals(); initValidation(); initTooltips(); initChoices();
-    initWeek(); initBanner(); initAutofill();
+    initWeek(); initBanner(); initAutofill(); initAutocomplete();
     var sub = $('[data-formkit="submit"]'); if (sub) sub.addEventListener('click', function (e) { e.preventDefault(); submit(); });
-    if (EMBED.active) EMBED.boot();
+    if (EMBED.active) EMBED.boot(); else resolveCenter();  // embed resolves its own center
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 

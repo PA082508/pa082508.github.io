@@ -59,6 +59,14 @@
 .fk-progress { font-size: 12px; font-weight: 700; color: #0f4c35; background: #fff; border: 1px solid #bbf7d0;
   border-radius: 20px; padding: 4px 12px; white-space: nowrap; }
 
+/* Resolved-center header (center-auto-detect) — logo + center identity.
+   Prints (branding); parents never see the center picker once resolved. */
+.fk-center-header { display: flex; align-items: center; gap: 16px; padding: 12px 20px;
+  background: #fff; border-bottom: 2px solid #0f4c35; }
+.fk-center-header .fk-logo { height: 46px; width: auto; max-width: 220px; flex-shrink: 0; }
+.fk-center-header .fk-center-name { font-weight: 700; font-size: 15px; color: #0a3320; }
+.fk-center-header .fk-center-contact { font-size: 12px; color: #6b7280; margin-top: 1px; }
+
 /* Print parity — hide ALL kit chrome on paper */
 @media print {
   .fk-counter, .fk-chip, .fk-auto, .fk-tip, .fk-tip-pop, .fk-autofill,
