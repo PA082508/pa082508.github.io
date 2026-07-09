@@ -254,7 +254,11 @@
     Object.keys(slots).forEach(function (m) {
       var cb = document.getElementById('cb_' + day + '_' + m); if (!cb || cb.getAttribute('data-fk-userset')) return;
       var s = toMin(slots[m][0]), e = toMin(slots[m][1]);
-      var overlap = win.some(function (w) { return w[0] < e && s < w[1]; });
+      // «≤» lenient border: arrival exactly at a slot's end still counts as
+      // present for that meal (e.g. arrive 8:00, Breakfast 07:00–08:00 → check
+      // Breakfast — the 8:00 child eats breakfast). Arrival side only (w[0] <= e);
+      // departure side stays strict (s < w[1]). Strict «<» is a later config.
+      var overlap = win.some(function (w) { return w[0] <= e && s < w[1]; });
       if (overlap && !cb.checked) { cb.checked = true; tagAuto(cb); }
     });
   }
