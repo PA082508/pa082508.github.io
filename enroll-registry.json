@@ -227,7 +227,7 @@
       "slug": "parent_consent",
       "title": "Parent Consent for Electronic Signatures",
       "requiringOrg": "Play Academy",
-      "current": null,
+      "current": "v1",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v1.html"
       },
@@ -237,8 +237,7 @@
       "signer": "parent",
       "adoptsSignature": true,
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until Nikolay's gate-smoke passes → flip current to v1. File is built + smoke-testable at versions.v1; not surfaced live (storefront/packet-live position) until flip."
+      "history": []
     },
     "dcy_01218": {
       "slug": "dcy_01218",
