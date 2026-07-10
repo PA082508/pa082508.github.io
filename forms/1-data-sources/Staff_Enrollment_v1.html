@@ -118,8 +118,9 @@
       <input type="checkbox" id="is_cook" style="width:auto;margin:0"> I will prepare/handle food
     </label>
     <div data-show-when="is_cook:truthy" hidden style="padding-left:8px;border-left:3px solid var(--line);margin-top:8px">
+      <div class="note">Cert still in progress? Leave the date blank — it does <strong>not</strong> block onboarding; the office tracks it as pending and it catches up.</div>
       <div class="row">
-        <div><label class="f">Food handler cert — date *</label><input type="date" id="food_handler_date" data-required data-label="Food handler date"></div>
+        <div><label class="f">Food handler cert — date</label><input type="date" id="food_handler_date" data-label="Food handler date"></div>
         <div><label class="f">Food handler scan</label><input type="file" id="food_handler_scan" accept="image/*,.pdf"></div>
       </div>
     </div>
@@ -180,7 +181,7 @@ window.FORMKIT_CONFIG = {
         cpr_first_aid_date:g('cpr_date'), cpr_first_aid_scan_file:fileName('cpr_scan')
       },
       is_driver:driver, driver: driver ? { dl_class:g('dl_class'), dl_expiry:g('dl_expiry'), dl_scan_file:fileName('dl_scan') } : null,
-      is_cook:cook, cook: cook ? { food_handler_date:g('food_handler_date'), food_handler_scan_file:fileName('food_handler_scan') } : null,
+      is_cook:cook, cook: cook ? { food_handler_date:g('food_handler_date'), food_handler_scan_file:fileName('food_handler_scan'), food_handler_pending: !g('food_handler_date') } : null,
       work_authorization:{ kind:wa, expiry: waTimed ? g('work_auth_expiry') : null, scan_file: waTimed ? fileName('work_auth_scan') : '' },
       // Scans are captured as filenames only here; document image upload is a
       // follow-up (RPC carries JSON). SSN/I-9/W-4 collected offline by the office.
