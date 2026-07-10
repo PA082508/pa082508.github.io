@@ -280,6 +280,9 @@
     // RESETS that row's manual meal overrides (predictable — set overrides after the
     // final time), then full re-derive drops stale checks (e.g. Supper at 3:00pm).
     DAYS.forEach(function (day) { FIELDS.forEach(function (f) { var el = document.getElementById('f_' + day + '_' + f); if (el) el.addEventListener('change', function () {
+      // F3 — entering a time = the day is in care: auto-check the day box so a filled
+      // row can never be silently out-of-care (which would drop it on serialize).
+      var dcb = document.getElementById('cb_' + day); if (dcb && el.value) dcb.checked = true;
       MEALS.forEach(function (m) { var cb = document.getElementById('cb_' + day + '_' + m); if (cb) cb.removeAttribute('data-fk-userset'); });
       autoMeals(day); refreshCounter();
     }); }); });
@@ -300,10 +303,13 @@
     chip.addEventListener('click', function () {
       snapshot = {};
       var snap = function (id, v) { if (!(id in snapshot)) snapshot[id] = v; };
+      // F3 — if Monday has any hours it IS in care, so Apply checks Tue–Fri days too
+      // (a filled copied row is never left out-of-care → no silent drop on serialize).
+      var monHasHours = FIELDS.some(function (f) { var e = document.getElementById('f_mon_' + f); return e && e.value; });
       COPY.forEach(function (day) {
-        // (a) copy Monday's in-care day checkbox
+        // (a) copy Monday's in-care day checkbox (or force-check when Monday is filled)
         var srcDay = document.getElementById('cb_mon'), dstDay = document.getElementById('cb_' + day);
-        if (srcDay && dstDay) { snap('cb_' + day, dstDay.checked); dstDay.checked = srcDay.checked; }
+        if (srcDay && dstDay) { snap('cb_' + day, dstDay.checked); dstDay.checked = srcDay.checked || monHasHours; }
         // (b) copy arrive/depart
         FIELDS.forEach(function (f) { var src = document.getElementById('f_mon_' + f), dst = document.getElementById('f_' + day + '_' + f); if (src && dst) { snap('f_' + day + '_' + f, dst.value); dst.value = src.value; } });
         // clear this day's non-user-set meal checks, then re-derive from center slots
