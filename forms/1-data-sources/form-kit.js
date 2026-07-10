@@ -250,7 +250,10 @@
       var a = toMin((document.getElementById('f_' + day + '_' + pr[0]) || {}).value), d = toMin((document.getElementById('f_' + day + '_' + pr[1]) || {}).value);
       if (a != null && d != null && d > a) win.push([a, d]);
     });
-    if (!win.length) return;
+    // Full re-derive (NOT add-only): each non-user-set meal is SET to its overlap
+    // result — checked when it overlaps the in-care window, UNCHECKED otherwise —
+    // so changing the hours drops stale auto-checks (e.g. Supper falls off when the
+    // day now ends at 3:00pm). No valid window (win empty) ⇒ all non-user meals clear.
     Object.keys(slots).forEach(function (m) {
       var cb = document.getElementById('cb_' + day + '_' + m); if (!cb || cb.getAttribute('data-fk-userset')) return;
       var s = toMin(slots[m][0]), e = toMin(slots[m][1]);
@@ -259,7 +262,8 @@
       // Breakfast — the 8:00 child eats breakfast). Arrival side only (w[0] <= e);
       // departure side stays strict (s < w[1]). Strict «<» is a later config.
       var overlap = win.some(function (w) { return w[0] <= e && s < w[1]; });
-      if (overlap && !cb.checked) { cb.checked = true; tagAuto(cb); }
+      if (overlap) { cb.checked = true; tagAuto(cb); }
+      else { cb.checked = false; untagAuto(cb); }
     });
   }
   function tagAuto(cb) {
@@ -272,7 +276,21 @@
     var grid = $('[data-fk-week]'); if (!grid) return;
     // meal auto-derive on arrival/departure change; mark user overrides
     $$('[id^=cb_]').forEach(function (cb) { if (/^cb_[a-z]+_[a-z]+$/.test(cb.id)) cb.addEventListener('change', function () { cb.setAttribute('data-fk-userset', '1'); }); });
-    DAYS.forEach(function (day) { FIELDS.forEach(function (f) { var el = document.getElementById('f_' + day + '_' + f); if (el) el.addEventListener('change', function () { autoMeals(day); }); }); });
+    // F1 — changing ANY time field re-derives the WHOLE row. Policy: a time change
+    // RESETS that row's manual meal overrides (predictable — set overrides after the
+    // final time), then full re-derive drops stale checks (e.g. Supper at 3:00pm).
+    DAYS.forEach(function (day) { FIELDS.forEach(function (f) { var el = document.getElementById('f_' + day + '_' + f); if (el) el.addEventListener('change', function () {
+      MEALS.forEach(function (m) { var cb = document.getElementById('cb_' + day + '_' + m); if (cb) cb.removeAttribute('data-fk-userset'); });
+      autoMeals(day); refreshCounter();
+    }); }); });
+    // F2 — unchecking a day (out of care) CLEARS the row: hours + meals, so no phantom
+    // times/meals linger (or serialize). Checking a day leaves it for the user to fill.
+    DAYS.forEach(function (day) { var dcb = document.getElementById('cb_' + day); if (!dcb) return; dcb.addEventListener('change', function () {
+      if (dcb.checked) return;
+      FIELDS.forEach(function (f) { var el = document.getElementById('f_' + day + '_' + f); if (el) el.value = ''; });
+      MEALS.forEach(function (m) { var cb = document.getElementById('cb_' + day + '_' + m); if (cb) { cb.checked = false; cb.removeAttribute('data-fk-userset'); untagAuto(cb); } });
+      refreshCounter();
+    }); });
     // Re-derive every in-care day when the center changes (§4 depends on it).
     var ce = centerEl(); if (ce) ce.addEventListener('change', rederiveAll);
     // Smart-Monday chip
