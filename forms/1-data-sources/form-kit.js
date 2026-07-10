@@ -349,27 +349,57 @@
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   }
+  // F4 — one submission per filled form. _submitting blocks the double-click race;
+  // _submitted locks the form after success so repeated Submit / Enter can't create
+  // duplicate Inbox entries. Edits after submit = a NEW form (Start a new form).
+  var _submitting = false, _submitted = false;
+  function shortRef(v) { var s = (v && typeof v === 'object') ? (v.id || v.submissionId || v.ref || '') : v; s = String(s == null ? '' : s); return s ? s.slice(0, 8).toUpperCase() : ''; }
+  function lockForm(ref) {
+    _submitted = true;
+    $$('input,select,textarea,button').forEach(function (el) { if (!el.hasAttribute('data-fk-newform')) el.disabled = true; });
+    if ($('.fk-submitted-banner')) return;
+    var b = document.createElement('div'); b.className = 'fk-submitted-banner fk-print-hidden';
+    b.setAttribute('style', 'position:sticky;bottom:0;left:0;right:0;z-index:9999;background:#0a7d46;color:#fff;padding:12px 16px;font:600 14px/1.4 Arial,sans-serif;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -2px 12px rgba(0,0,0,.18)');
+    var txt = document.createElement('span'); txt.innerHTML = '✓ Submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. Need changes?';
+    var nf = document.createElement('button'); nf.type = 'button'; nf.setAttribute('data-fk-newform', '1'); nf.textContent = 'Start a new form';
+    nf.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
+    nf.addEventListener('click', newForm);
+    b.appendChild(txt); b.appendChild(nf);
+    document.body.appendChild(b);
+  }
+  function newForm() {
+    var b = $('.fk-submitted-banner'); if (b) b.remove();
+    $$('input,select,textarea,button').forEach(function (el) { el.disabled = false; });
+    _submitted = false;
+    if (CFG.reset) { try { CFG.reset(); } catch (e) {} } else { location.reload(); return; }
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
   async function submit() {
+    if (_submitting || _submitted) return;   // in-flight / already-submitted guard
     var missing = refreshCounter();
     if (missing.length) { var f = firstMissing(); if (f) { (f.scrollIntoView || function () {}).call(f, { behavior: 'smooth', block: 'center' }); if (f.focus) f.focus(); fieldMsg(f, true); } status('Please complete the highlighted fields', 'er'); return; }
     if (CFG.centerSelect && !centerUuid()) { status('⚠ Select a center first', 'er'); var c = centerEl(); if (c) c.focus(); return; }
     var data;
     try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status('Error: ' + e.message, 'er'); return; }
     if (!data) { status('Nothing to submit', 'er'); return; }
+    _submitting = true;
     status('Saving…', 'in');
     try {
+      var res;
       if (CFG.submit) {
         // Form supplies its own transport (e.g. a legacy dedicated-table insert)
         // — the kit still owns validation/UX, this only replaces the write.
-        await CFG.submit(data);
-      } else if (EMBED.active) { await EMBED.save(data.formData, data.signatures, data.signatureDate); }
+        res = await CFG.submit(data);
+      } else if (EMBED.active) { res = await EMBED.save(data.formData, data.signatures, data.signatureDate); }
       else {
-        await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online' });
+        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online' });
       }
       status('Submitted for center review', 'ok');
       savePacket();
+      lockForm(shortRef(res));           // read-only + banner; blocks re-submit
       if (CFG.onSuccess) CFG.onSuccess();
     } catch (e) { status('Error: ' + e.message, 'er'); if (window.console) console.error(e); }
+    finally { _submitting = false; }
   }
 
   // ── pa-embed handshake (generalised from v8) ─────────────────────────────────
