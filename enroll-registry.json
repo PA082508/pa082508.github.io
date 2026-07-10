@@ -245,14 +245,13 @@
       "kind": "document",
       "section": "dcy",
       "requiringOrg": "ODJFS/DCY",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01218_Basic_Infant_Rev-2025-07.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Basic%20Infant%202026%20DCY-01218.PDF"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01218_Basic_Infant_Rev-2025-07.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Basic%20Infant%202026%20DCY-01218.PDF",
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1."
+      "history": []
     },
     "dcy_01225": {
       "slug": "dcy_01225",
@@ -260,14 +259,13 @@
       "kind": "document",
       "section": "dcy",
       "requiringOrg": "ODJFS/DCY",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225_Routine_Trip_Rev-2025-06.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225%20Routine%20Trip.PDF"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225_Routine_Trip_Rev-2025-06.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225%20Routine%20Trip.PDF",
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1."
+      "history": []
     },
     "dcy_01226": {
       "slug": "dcy_01226",
@@ -275,14 +273,13 @@
       "kind": "document",
       "section": "dcy",
       "requiringOrg": "ODJFS/DCY",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01226_Field_Trip_Rev-2025-06.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01226%20field%20trip.PDF"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01226_Field_Trip_Rev-2025-06.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01226%20field%20trip.PDF",
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1."
+      "history": []
     },
     "center_parent_info": {
       "slug": "center_parent_info",
@@ -290,14 +287,13 @@
       "kind": "document",
       "section": "dcy",
       "requiringOrg": "ODJFS/DCY",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center_Parent_Information_Appendix_5101-2-12-07.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center%20Parent%20Information.docx"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center_Parent_Information_Appendix_5101-2-12-07.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center%20Parent%20Information.docx",
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1."
+      "history": []
     },
     "sutq_family_needs_survey": {
       "slug": "sutq_family_needs_survey",
@@ -305,14 +301,13 @@
       "kind": "document",
       "section": "sutq",
       "requiringOrg": "ODE/SUTQ",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Family_Needs_Survey_SUTQ.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Family_Needs_Survey.pdf"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Family_Needs_Survey_SUTQ.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Family_Needs_Survey.pdf",
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1."
+      "history": []
     },
     "child_release_authorization": {
       "slug": "child_release_authorization",
@@ -320,14 +315,13 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Child_Release_Authorization.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Child%20Release%20Authorization.docx"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Child_Release_Authorization.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Child%20Release%20Authorization.docx",
       "perInstance": false,
       "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1.",
       "futureFormKit": true
     },
     "parent_responsibilities": {
@@ -336,14 +330,13 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Parent_Responsibilities.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Parent%20Responsibilities.docx"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Parent_Responsibilities.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Parent%20Responsibilities.docx",
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1."
+      "history": []
     },
     "topical_product_consent": {
       "slug": "topical_product_consent",
@@ -351,14 +344,13 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Topical_Product_Consent_2025.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Topical%20Product%20Consent%20Form%202025.docx"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Topical_Product_Consent_2025.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Topical%20Product%20Consent%20Form%202025.docx",
       "perInstance": false,
       "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1.",
       "futureFormKit": true
     },
     "transition_into_program": {
@@ -367,14 +359,13 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Transition_Into_The_Program.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Transition%20into%20the%20program.docx"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Transition_Into_The_Program.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Transition%20into%20the%20program.docx",
       "perInstance": false,
       "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1.",
       "futureFormKit": true
     },
     "building_for_the_future": {
@@ -383,14 +374,13 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Building_For_The_Future.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Building%20For%20the%20Future.docx"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Building_For_The_Future.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Building%20For%20the%20Future.docx",
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1."
+      "history": []
     },
     "what_to_bring_infant": {
       "slug": "what_to_bring_infant",
@@ -398,14 +388,13 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/What_To_Bring_Infant.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant.doc"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/What_To_Bring_Infant.pdf",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant.doc",
       "perInstance": false,
-      "history": [],
-      "_dark": "current:null until the PDF is dropped at versions.v1 + smoke → flip current to v1."
+      "history": []
     }
   },
   "centers": {
