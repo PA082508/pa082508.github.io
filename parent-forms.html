@@ -38,7 +38,7 @@ footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:cente
   <h2>Enrollment Packet</h2>
   <p class="note">Required when your child joins Play Academy and renewed annually. Each form can be completed online (with electronic signature) or printed blank for pen-and-paper.</p>
 
-  <a class="card" href="./forms/1-data-sources/DCY_01234_v4.html">
+  <a class="card" href="./forms/1-data-sources/DCY_01234_v4.html" data-reg-key="dcy_01234">
     <div class="ic">&#128203;</div>
     <div>
       <h3>Child Enrollment &amp; Health Information (DCY 01234)</h3>
@@ -47,7 +47,7 @@ footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:cente
     </div>
   </a>
 
-  <a class="card" href="./forms/1-data-sources/CACFP_Enrollment_v9.html">
+  <a class="card" href="./forms/1-data-sources/CACFP_Enrollment_v9.html" data-reg-key="enroll">
     <div class="ic">&#127869;&#65039;</div>
     <div>
       <h3>CACFP Enrollment Form</h3>
@@ -56,7 +56,7 @@ footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:cente
     </div>
   </a>
 
-  <a class="card" href="./forms/1-data-sources/IEA_FY2026-27_v6.html">
+  <a class="card" href="./forms/1-data-sources/IEA_FY2026-27_v6.html" data-reg-key="iea">
     <div class="ic">&#128176;</div>
     <div>
       <h3>Income Eligibility Application — FY 2026-2027</h3>
@@ -68,7 +68,7 @@ footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:cente
   <h2>Nutrition &amp; Special Diet</h2>
   <p class="note">Use these when your child needs a meal accommodation.</p>
 
-  <a class="card" href="./forms/1-data-sources/special-diet-form.html">
+  <a class="card" href="./forms/1-data-sources/special-diet-form.html" data-reg-key="special_diet">
     <div class="ic">&#129367;</div>
     <div>
       <h3>Special Diet Statement</h3>
@@ -77,7 +77,7 @@ footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:cente
     </div>
   </a>
 
-  <a class="card" href="./forms/1-data-sources/fluid-milk-substitution.html">
+  <a class="card" href="./forms/1-data-sources/fluid-milk-substitution.html" data-reg-key="fluid_milk">
     <div class="ic">&#129371;</div>
     <div>
       <h3>Fluid Milk Substitution Request</h3>
@@ -86,7 +86,7 @@ footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:cente
     </div>
   </a>
 
-  <a class="card" href="./forms/1-data-sources/infant-meals-preference.html">
+  <a class="card" href="./forms/1-data-sources/infant-meals-preference.html" data-reg-key="infant_meals">
     <div class="ic">&#127868;</div>
     <div>
       <h3>Infant Meals Preference</h3>
@@ -99,11 +99,31 @@ footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:cente
 </main>
 <footer>Play Academy Inc. &middot; Child and Adult Care Food Program &middot; This institution is an equal opportunity provider.</footer>
 <script>
-/* Center passthrough: parent-forms.html?center=<slug> → carry ?center into every
-   form link so the family never picks a center ("формы не обезличены"). */
-(function(){var c=new URLSearchParams(location.search).get('center');if(!c)return;
-document.querySelectorAll('a.card[href*="1-data-sources"]').forEach(function(a){
-  var h=a.getAttribute('href');a.setAttribute('href',h+(h.indexOf('?')<0?'?':'&')+'center='+encodeURIComponent(c));});})();
+/* Registry-driven links + center passthrough.
+   1) Resolve each card's href from enroll-registry.json `forms[key].current` so the
+      storefront never drifts from the live version (fix-forever). Fallback: the
+      hardcoded href already in the card (kept current manually as a backstop).
+   2) Carry ?center=<slug> into every form link so the family never picks a center. */
+(function(){
+  var center=new URLSearchParams(location.search).get('center');
+  function addCenter(h){ return center ? h+(h.indexOf('?')<0?'?':'&')+'center='+encodeURIComponent(center) : h; }
+  function apply(reg){
+    document.querySelectorAll('a.card[data-reg-key]').forEach(function(a){
+      var key=a.getAttribute('data-reg-key'), h=a.getAttribute('href');
+      var f=reg&&reg.forms&&reg.forms[key];
+      if(f){ var url=(f.current&&f.versions&&f.versions[f.current])||f.fallbackUrl;
+             if(url){ h=url.indexOf('http')===0 ? url : './forms/1-data-sources/'+url.split('/').pop(); } }
+      a.setAttribute('href', addCenter(h));
+    });
+    // Any remaining form links (untagged) still get the center.
+    document.querySelectorAll('a.card[href*="1-data-sources"]:not([data-reg-key])').forEach(function(a){
+      a.setAttribute('href', addCenter(a.getAttribute('href')));
+    });
+  }
+  fetch('enroll-registry.json',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null;})
+    .then(function(reg){ apply(reg); })
+    .catch(function(){ apply(null); });   // offline / missing → hardcoded + center
+})();
 </script>
 </body>
 </html>

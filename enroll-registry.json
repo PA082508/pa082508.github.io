@@ -222,6 +222,23 @@
       "signer": "staff",
       "perInstance": false,
       "history": []
+    },
+    "parent_consent": {
+      "slug": "parent_consent",
+      "title": "Parent Consent for Electronic Signatures",
+      "requiringOrg": "Play Academy",
+      "current": null,
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v1.html",
+      "submissionType": "parent_consent",
+      "intakeMode": "online",
+      "signer": "parent",
+      "adoptsSignature": true,
+      "perInstance": false,
+      "history": [],
+      "_dark": "current:null until Nikolay's gate-smoke passes → flip current to v1. File is built + smoke-testable at versions.v1; not surfaced live (storefront/packet-live position) until flip."
     }
   },
   "centers": {
