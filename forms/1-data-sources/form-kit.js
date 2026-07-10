@@ -498,11 +498,30 @@
   var ACOMP = { child_name: 'name', parent_name: 'name', full_name: 'name', dob: 'bday', birthdate: 'bday', parent_birthdate: 'bday', street: 'street-address', address: 'street-address', city: 'address-level2', zip: 'postal-code', phone_day: 'tel', phone: 'tel', email: 'email', parent_email: 'email' };
   function initAutocomplete() { $$('[data-fk-field]').forEach(function (e) { var k = e.getAttribute('data-fk-field'); if (ACOMP[k] && !e.getAttribute('autocomplete')) e.setAttribute('autocomplete', ACOMP[k]); }); }
 
+  // ── Phone mask (packet standard §5.2): (XXX) XXX-XXXX ────────────────────────
+  // Auto-wires every type=tel input so display AND the value read into the
+  // payload are masked consistently — forms no longer inline oninput=fmtPhone.
+  function fmtPhone(el) {
+    var d = (el.value || '').replace(/\D/g, '').slice(0, 10);
+    el.value = d.length > 6 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6)
+             : d.length > 3 ? '(' + d.slice(0, 3) + ') ' + d.slice(3)
+             : d;
+  }
+  function initPhones() {
+    $$('input[type=tel]').forEach(function (el) {
+      if (el.getAttribute('data-fk-phone')) return;   // idempotent
+      el.setAttribute('data-fk-phone', '1');
+      el.setAttribute('inputmode', 'tel');
+      el.addEventListener('input', function () { fmtPhone(el); });
+      if (el.value) fmtPhone(el);                     // mask any pre-filled value
+    });
+  }
+
   function boot() {
     injectFavicon();
     $$('[data-formkit="signature"]').forEach(initSig);
     initConditionals(); initValidation(); initTooltips(); initChoices();
-    initWeek(); initBanner(); initAutofill(); initAutocomplete();
+    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones();
     var sub = $('[data-formkit="submit"]'); if (sub) sub.addEventListener('click', function (e) { e.preventDefault(); submit(); });
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // embed resolves its own center
   }
@@ -515,6 +534,7 @@
     savePacket: savePacket, applyPacket: applyPacket,
     centerUuid: centerUuid, centerCode: centerCode,
     refreshCounter: refreshCounter, applyConditionals: applyConditionals,
+    fmtPhone: fmtPhone,
     CENTERS: CENTERS, ORG: ORG,
     // Exposed so a form's CFG.submit override can POST to its own dedicated
     // table without re-inlining the anon key (UX-only retrofit path).
