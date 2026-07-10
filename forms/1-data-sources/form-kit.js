@@ -409,8 +409,9 @@
       }
       status('Submitted for center review', 'ok');
       savePacket();
-      lockForm(shortRef(res));           // read-only + banner; blocks re-submit
-      if (CFG.onSuccess) CFG.onSuccess();
+      var ref = shortRef(res);
+      lockForm(ref);                     // read-only + banner; blocks re-submit
+      if (CFG.onSuccess) CFG.onSuccess(ref);   // pass the Ref so a form's #done can echo it
     } catch (e) { status('Error: ' + e.message, 'er'); if (window.console) console.error(e); }
     finally { _submitting = false; }
   }

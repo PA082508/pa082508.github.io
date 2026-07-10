@@ -193,7 +193,9 @@ window.FORMKIT_CONFIG = {
     };
     return { formData:fd, signatures:{ employee_sig: FormKit.getSig('empSig') }, signatureDate: sigDate };
   },
-  onSuccess:function(){ var d=document.getElementById('done'); if(d){d.style.display='block'; setTimeout(function(){d.style.display='none'},6000)} staffReset(); }
+  // F4 standard: show the Ref; do NOT auto-reset — the kit locks the form and its
+  // "Start a new form" button (→ reset:staffReset) is the reset path.
+  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Submitted for office review' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
 };
 document.addEventListener('DOMContentLoaded',function(){
   var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];

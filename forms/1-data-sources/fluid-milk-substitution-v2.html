@@ -389,6 +389,9 @@
         body: JSON.stringify(row)
       });
       if (!r.ok) throw new Error(await r.text());
+      // NOTE: return=minimal → no id back → the kit's Ref is blank for this form.
+      // To print a Ref, anon needs SELECT on milk_substitutions (switch to
+      // return=representation) — needs a policy check first (see report).
     }
   };
 

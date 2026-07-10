@@ -161,7 +161,9 @@ window.FORMKIT_CONFIG = {
     };
     return { formData:fd, signatures:{ parent_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
   },
-  onSuccess:function(){ var d=document.getElementById('done'); if(d){d.style.display='block'; setTimeout(function(){d.style.display='none'},6000)} consentReset(); }
+  // F4 standard: show the Ref; do NOT auto-reset — the kit locks the form and its
+  // "Start a new form" button (→ reset:consentReset) is the reset path.
+  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Consent submitted' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
 };
 
 document.addEventListener('DOMContentLoaded',function(){
