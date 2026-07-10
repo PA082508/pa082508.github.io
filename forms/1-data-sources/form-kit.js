@@ -353,6 +353,12 @@
   // _submitted locks the form after success so repeated Submit / Enter can't create
   // duplicate Inbox entries. Edits after submit = a NEW form (Start a new form).
   var _submitting = false, _submitted = false;
+  // F4 part 2 — per-load idempotency token. A repeat of the same token (double-click,
+  // retry) makes submit_enrollment_form return the SAME submission (server dedup).
+  // A new form gets a fresh token (see newForm). Null on old browsers → server treats
+  // it as no-key (normal insert). Embed path writes via the host → host follow-up.
+  function newIdemp() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null; }
+  var IDEMP = newIdemp();
   function shortRef(v) { var s = (v && typeof v === 'object') ? (v.id || v.submissionId || v.ref || '') : v; s = String(s == null ? '' : s); return s ? s.slice(0, 8).toUpperCase() : ''; }
   function lockForm(ref) {
     _submitted = true;
@@ -371,6 +377,7 @@
     var b = $('.fk-submitted-banner'); if (b) b.remove();
     $$('input,select,textarea,button').forEach(function (el) { el.disabled = false; });
     _submitted = false;
+    IDEMP = newIdemp();   // fresh idempotency token for the new form
     if (CFG.reset) { try { CFG.reset(); } catch (e) {} } else { location.reload(); return; }
     try { window.scrollTo(0, 0); } catch (e) {}
   }
@@ -392,7 +399,7 @@
         res = await CFG.submit(data);
       } else if (EMBED.active) { res = await EMBED.save(data.formData, data.signatures, data.signatureDate); }
       else {
-        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online' });
+        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP });
       }
       status('Submitted for center review', 'ok');
       savePacket();
