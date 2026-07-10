@@ -50,18 +50,21 @@
     },
     "dcy_01234": {
       "slug": "dcy_01234",
-      "title": "DCY 01234 — Child Medical/Enrollment (Rev. 8/2025)",
+      "title": "DCY 01234 — Child Enrollment & Health (Rev. 7/2026)",
+      "kind": "document",
+      "section": "dcy",
       "requiringOrg": "ODJFS/DCY",
       "intakeMode": "paper_scan",
       "signer": "parent",
-      "current": "v4",
+      "current": "v2026pdf",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/DCY_01234.html",
-        "v4": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v4.html"
+        "v2026pdf": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v4.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF",
       "perInstance": false,
-      "history": [],
+      "history": [
+        { "at": "2026-07-10", "note": "Interim: repointed current to the official 2026 PDF (Rev. 7/2026); retired childcare-core-bound v4/v1 to _archive. Stage 2 replaces with a form-kit fillable." }
+      ],
       "triggersConditional": [
         "dcy_01236",
         "dcy_01217",

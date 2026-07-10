@@ -17,15 +17,14 @@ select,#cid{padding:5px 8px;border-radius:4px;border:1px solid #ccc;font-size:10
 #st.er{background:#f8d7da;color:#721c24;display:inline-block}
 #st.in{background:#cce5ff;color:#004085;display:inline-block}
 #exp{font-size:9pt;color:#FFD54F}
-select.need{outline:3px solid #E53935;outline-offset:1px}
 input[type=text]:focus,input[type=tel]:focus,input[type=email]:focus,input[type=date]:focus{background:rgba(200,230,255,0.95)!important}
 @media print{#tb{display:none}input{background:transparent!important;border:none!important;border-bottom:1px solid #333!important}}
 </style>
 </head>
 <body>
 <div id="tb">
-  <h1>CACFP Enrollment v4</h1>
-  <select id="ctr" onchange="ctrPick()"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
+  <h1>CACFP Enrollment v2</h1>
+  <select id="ctr"><option value="pearl">Pearl — Parma Heights</option><option value="alpha">Alpha — Highland Heights</option><option value="ridge">Ridge — Wickliffe</option></select>
   <input type="text" id="cid" placeholder="Child ID (PRL-001)">
   <button class="btn bs" onclick="load_()">&#8595; Load</button>
   <button class="btn bs" onclick="save_()">&#128190; Save</button>
@@ -132,21 +131,8 @@ input[type=text]:focus,input[type=tel]:focus,input[type=email]:focus,input[type=
   </div>
 </div>
 <script>
-const URL_="https://rkabxzqcikojcphwrkty.supabase.co",KEY_="sb_publishable_px0yZk-jUGwRlzEPiVjjXA_N6yYDSp9";
+const URL_="",KEY_="";/* retired: childcare-core credentials removed (Stage 1 interim) */
 const DAYS=['mon','tue','wed','thu','fri','sat','sun'],MEALS=['b','as','l','ps','su','es'];
-
-function ctrPick(){
-  const e=document.getElementById('ctr');
-  e.classList.remove('need');
-  if(e.value){const f=document.getElementById('f_center');if(f&&!f.value.trim())f.value=e.options[e.selectedIndex].text}
-}
-function needCenter(){
-  const e=document.getElementById('ctr');
-  if(e.value)return false;
-  e.classList.add('need');e.focus();
-  st('\u26a0 Select center first','er');
-  return true;
-}
 function st(m,t){const e=document.getElementById('st');e.textContent=m;e.className=t}
 function g(id){const e=document.getElementById(id);return e?e.value:''}
 function gc(id){const e=document.getElementById(id);return e&&e.checked}
@@ -164,9 +150,8 @@ async function api(path){const r=await fetch(URL_+path,{headers:{'apikey':KEY_,'
 async function api2(path,data,method='POST'){const r=await fetch(URL_+path,{method,headers:{'apikey':KEY_,'Authorization':'Bearer '+KEY_,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(data)});return r.json()}
 
 async function load_(){
-  if(needCenter())return;
   const cid=document.getElementById('cid').value.trim();
-  if(!cid){st('\u26a0 Load needs a Child ID from the center. Parents: just fill the form and press Save','er');document.getElementById('cid').focus();return}
+  if(!cid){st('Enter Child ID','er');return}
   st('Loading...','in');
   try{
     const[c]=await api(`/rest/v1/children?child_id=eq.${cid}&select=*`);
@@ -194,12 +179,8 @@ async function load_(){
 }
 
 async function save_(){
-  if(needCenter())return;
   const cid=document.getElementById('cid').value.trim();
-  if(!cid){
-    if(!g('f_child_name').trim()){st("\u26a0 Enter child's name on the form (or Child ID)",'er');return}
-    return saveNew_();
-  }
+  if(!cid){st('Enter Child ID','er');return}
   st('Saving...','in');
   try{
     const[c]=await api(`/rest/v1/children?child_id=eq.${cid}&select=child_id,center_id`);
@@ -219,30 +200,6 @@ async function save_(){
     if(sub)await api2(`/rest/v1/enrollment_submissions?id=eq.${sub.id}`,{form_data,signatures:sigs,signature_date:sigDate},'PATCH');
     else await api2('/rest/v1/enrollment_submissions',{child_id:cid,center_id:c.center_id,form_data,signatures:sigs,signature_date:sigDate,submission_type:'cacfp_enrollment',status:'pending'});
     calcExp();st('Saved!','ok');
-  }catch(e){st('Error: '+e.message,'er');console.error(e)}
-}
-
-
-async function saveNew_(){
-  st('Saving...','in');
-  try{
-    const ctr=document.getElementById('ctr').value;
-    const schedule={};
-    DAYS.forEach(d=>{schedule[d]={in_care:gc('cb_'+d),
-      arr1:g(`f_${d}_arr1`),dep1:g(`f_${d}_dep1`),arr2:g(`f_${d}_arr2`),dep2:g(`f_${d}_dep2`),
-      meals:Object.fromEntries(MEALS.map(m=>[m,gc(`cb_${d}_${m}`)]))}});
-    const sigDate=g('f_sig_date')||new Date().toISOString().split('T')[0];
-    const form_data={type:'cacfp_enrollment',pending_link:true,center_code:ctr,
-      center_name:g('f_center'),child_name:g('f_child_name'),
-      age:g('f_age'),birthdate:g('f_dob'),schedule,schedule_varies:gc('cb_varies'),
-      day_phone:g('f_phone'),mailing:{street:g('f_street'),city:g('f_city'),zip:g('f_zip')},
-      parent_birthdate:g('f_parent_dob'),parent_email:g('f_parent_email'),
-      expires_on:expDate(sigDate).toISOString().split('T')[0]};
-    const sigs={parent_sig:getSigData('f_parent_sig')};
-    await api2('/rest/v1/enrollment_submissions',{child_id:'NEW-'+Date.now(),
-      form_data,signatures:sigs,signature_date:sigDate,
-      submission_type:'cacfp_enrollment',status:'pending'});
-    calcExp();st('Saved! Submitted for center review.','ok');
   }catch(e){st('Error: '+e.message,'er');console.error(e)}
 }
 
