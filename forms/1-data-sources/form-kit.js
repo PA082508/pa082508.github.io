@@ -300,16 +300,19 @@
     var host = $('[data-fk-week-apply]'); if (!host) return;
     var chip = document.createElement('button'); chip.type = 'button'; chip.className = 'fk-chip fk-print-hidden'; chip.textContent = '↓ Apply Monday to Tue–Fri';
     var undo = null, snapshot = null;
+    // F5 — Apply is meaningful only when Monday has hours; an EMPTY Monday must never
+    // overwrite already-filled Tue–Fri. monHasHours gates both the click (no-op) and
+    // the chip's disabled state.
+    function monHasHours() { return FIELDS.some(function (f) { var e = document.getElementById('f_mon_' + f); return e && e.value; }); }
+    function syncApply() { var on = monHasHours(); chip.disabled = !on; chip.style.opacity = on ? '' : '.45'; chip.style.cursor = on ? '' : 'not-allowed'; chip.title = on ? '' : 'Fill Monday first'; }
     chip.addEventListener('click', function () {
+      if (!monHasHours()) { status('Fill Monday first — nothing to apply', 'er'); return; }   // never wipe filled days with an empty source
       snapshot = {};
       var snap = function (id, v) { if (!(id in snapshot)) snapshot[id] = v; };
-      // F3 — if Monday has any hours it IS in care, so Apply checks Tue–Fri days too
-      // (a filled copied row is never left out-of-care → no silent drop on serialize).
-      var monHasHours = FIELDS.some(function (f) { var e = document.getElementById('f_mon_' + f); return e && e.value; });
       COPY.forEach(function (day) {
-        // (a) copy Monday's in-care day checkbox (or force-check when Monday is filled)
+        // (a) Monday is filled ⇒ Tue–Fri are in care too (F3 — no silent out-of-care rows)
         var srcDay = document.getElementById('cb_mon'), dstDay = document.getElementById('cb_' + day);
-        if (srcDay && dstDay) { snap('cb_' + day, dstDay.checked); dstDay.checked = srcDay.checked || monHasHours; }
+        if (srcDay && dstDay) { snap('cb_' + day, dstDay.checked); dstDay.checked = true; }
         // (b) copy arrive/depart
         FIELDS.forEach(function (f) { var src = document.getElementById('f_mon_' + f), dst = document.getElementById('f_' + day + '_' + f); if (src && dst) { snap('f_' + day + '_' + f, dst.value); dst.value = src.value; } });
         // clear this day's non-user-set meal checks, then re-derive from center slots
@@ -321,6 +324,9 @@
       if (!undo) { undo = document.createElement('button'); undo.type = 'button'; undo.className = 'fk-chip fk-print-hidden'; undo.textContent = '↶ Undo'; undo.addEventListener('click', function () { if (!snapshot) return; Object.keys(snapshot).forEach(function (id) { var e = document.getElementById(id); if (!e) return; if (id.indexOf('cb_') === 0) { e.checked = snapshot[id]; untagAuto(e); } else e.value = snapshot[id]; }); snapshot = null; refreshCounter(); status('Undone', ''); }); host.appendChild(undo); }
     });
     host.appendChild(chip);
+    // Keep the chip disabled until Monday has hours (updates live as Monday is filled).
+    FIELDS.forEach(function (f) { var e = document.getElementById('f_mon_' + f); if (e) e.addEventListener('change', syncApply); });
+    syncApply();
   }
 
   // ── §8 Encouragement banner + progress ───────────────────────────────────────
