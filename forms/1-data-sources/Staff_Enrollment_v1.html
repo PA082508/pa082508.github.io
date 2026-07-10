@@ -115,10 +115,13 @@
     </div>
 
     <label class="f" style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:12px">
-      <input type="checkbox" id="is_cook" style="width:auto;margin:0"> I will prepare/handle food
+      <input type="checkbox" id="is_prepare_food" style="width:auto;margin:0"> I will PREPARE food (cooking / kitchen)
     </label>
-    <div data-show-when="is_cook:truthy" hidden style="padding-left:8px;border-left:3px solid var(--line);margin-top:8px">
-      <div class="note">Cert still in progress? Leave the date blank — it does <strong>not</strong> block onboarding; the office tracks it as pending and it catches up.</div>
+    <label class="f" style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:8px">
+      <input type="checkbox" id="is_handle_food" style="width:auto;margin:0"> I will HANDLE / SERVE food (e.g. serving meals — no cert needed)
+    </label>
+    <div data-show-when="is_prepare_food:truthy" hidden style="padding-left:8px;border-left:3px solid var(--line);margin-top:8px">
+      <div class="note">Food handler cert — for food PREPARERS only. Still in progress? Leave the date blank — it does <strong>not</strong> block onboarding; the office tracks it as pending and it catches up. (Selecting role <em>Cook</em> enables this automatically.)</div>
       <div class="row">
         <div><label class="f">Food handler cert — date</label><input type="date" id="food_handler_date" data-label="Food handler date"></div>
         <div><label class="f">Food handler scan</label><input type="file" id="food_handler_scan" accept="image/*,.pdf"></div>
@@ -168,7 +171,7 @@ function staffReset(){
 window.FORMKIT_CONFIG = {
   formType:'staff', version:'v1', centerSelect:'#ctr', reset:staffReset,
   collect:function(){
-    var driver=gc('is_driver'), cook=gc('is_cook'), wa=g('work_auth_type');
+    var driver=gc('is_driver'), prep=gc('is_prepare_food')||g('role')==='cook', handles=gc('is_handle_food'), wa=g('work_auth_type');
     var waTimed = (wa==='ead'||wa==='parole'||wa==='visa');
     var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
     var fd={
@@ -181,7 +184,8 @@ window.FORMKIT_CONFIG = {
         cpr_first_aid_date:g('cpr_date'), cpr_first_aid_scan_file:fileName('cpr_scan')
       },
       is_driver:driver, driver: driver ? { dl_class:g('dl_class'), dl_expiry:g('dl_expiry'), dl_scan_file:fileName('dl_scan') } : null,
-      is_cook:cook, cook: cook ? { food_handler_date:g('food_handler_date'), food_handler_scan_file:fileName('food_handler_scan'), food_handler_pending: !g('food_handler_date') } : null,
+      prepares_food:prep, cook: prep ? { food_handler_date:g('food_handler_date'), food_handler_scan_file:fileName('food_handler_scan'), food_handler_pending: !g('food_handler_date') } : null,
+      handles_food:handles,
       work_authorization:{ kind:wa, expiry: waTimed ? g('work_auth_expiry') : null, scan_file: waTimed ? fileName('work_auth_scan') : '' },
       // Scans are captured as filenames only here; document image upload is a
       // follow-up (RPC carries JSON). SSN/I-9/W-4 collected offline by the office.
@@ -195,6 +199,9 @@ document.addEventListener('DOMContentLoaded',function(){
   var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];
   // Standalone center pre-select via ?center= (embed mode is handled by the kit).
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
+  // Role Cook auto-enables the PREPARE-food block (food handler cert).
+  var roleEl=document.getElementById('role'), prepEl=document.getElementById('is_prepare_food');
+  if(roleEl&&prepEl) roleEl.addEventListener('change',function(){ if(roleEl.value==='cook'&&!prepEl.checked){ prepEl.checked=true; if(window.FormKit)FormKit.applyConditionals(); } });
 });
 </script>
 <script defer src="form-kit.js"></script>

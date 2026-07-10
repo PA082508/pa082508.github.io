@@ -8,16 +8,19 @@
   },
   "forms": {
     "enroll": {
-      "current": "v8",
+      "current": "v9",
       "versions": {
         "v7": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v7.html",
-        "v8": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v8.html"
+        "v8": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v8.html",
+        "v9": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v9.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v8.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v9.html",
       "submissionType": "cacfp_enrollment",
       "slug": "enroll",
       "title": "CACFP Enrollment",
-      "aliases": ["cacfp_enrollment"],
+      "aliases": [
+        "cacfp_enrollment"
+      ],
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "paper_scan",
       "signer": "parent",
@@ -26,15 +29,18 @@
       "history": []
     },
     "iea": {
-      "current": "v5",
+      "current": "v6",
       "versions": {
-        "v5": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v5.html"
+        "v5": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v5.html",
+        "v6": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v6.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v5.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v6.html",
       "submissionType": "iea",
       "slug": "iea",
       "title": "Income Eligibility Application (FY2026-27)",
-      "aliases": ["iea_fy2026_27"],
+      "aliases": [
+        "iea_fy2026_27"
+      ],
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "online",
       "signer": "parent",
@@ -56,7 +62,12 @@
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v4.html",
       "perInstance": false,
       "history": [],
-      "triggersConditional": ["dcy_01236", "dcy_01217", "fluid_milk", "special_diet"]
+      "triggersConditional": [
+        "dcy_01236",
+        "dcy_01217",
+        "fluid_milk",
+        "special_diet"
+      ]
     },
     "dcy_01236": {
       "slug": "dcy_01236",
@@ -65,9 +76,18 @@
       "intakeMode": "paper_scan",
       "signer": "physician",
       "submissionType": "medical",
-      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["allergy", "special health condition", "medical food"] },
+      "conditional": {
+        "triggeredBy": "dcy_01234",
+        "triggers": [
+          "allergy",
+          "special health condition",
+          "medical food"
+        ]
+      },
       "current": null,
-      "versions": { "v1": "PENDING" },
+      "versions": {
+        "v1": "PENDING"
+      },
       "fallbackUrl": null,
       "perInstance": false,
       "history": []
@@ -79,11 +99,18 @@
       "intakeMode": "paper_scan",
       "signer": "physician",
       "submissionType": "medical",
-      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["medication"] },
+      "conditional": {
+        "triggeredBy": "dcy_01234",
+        "triggers": [
+          "medication"
+        ]
+      },
       "perInstance": true,
       "expiryMonths": 12,
       "current": null,
-      "versions": { "v1": "PENDING" },
+      "versions": {
+        "v1": "PENDING"
+      },
       "fallbackUrl": null,
       "history": []
     },
@@ -97,7 +124,9 @@
       "expiryDays": 30,
       "perInstance": false,
       "current": null,
-      "versions": { "v1": "PENDING" },
+      "versions": {
+        "v1": "PENDING"
+      },
       "fallbackUrl": null,
       "history": []
     },
@@ -107,9 +136,16 @@
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "paper_scan",
       "signer": "physician",
-      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["special diet: exclude a food group"] },
+      "conditional": {
+        "triggeredBy": "dcy_01234",
+        "triggers": [
+          "special diet: exclude a food group"
+        ]
+      },
       "current": "v1",
-      "versions": { "v1": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html" },
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html"
+      },
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html",
       "perInstance": false,
       "history": []
@@ -120,9 +156,16 @@
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "online",
       "signer": "parent",
-      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["special diet: exclude fluid milk"] },
+      "conditional": {
+        "triggeredBy": "dcy_01234",
+        "triggers": [
+          "special diet: exclude fluid milk"
+        ]
+      },
       "current": "v1",
-      "versions": { "v1": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html" },
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html"
+      },
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html",
       "perInstance": false,
       "history": []
@@ -134,7 +177,9 @@
       "intakeMode": "online",
       "signer": "parent",
       "current": "v1",
-      "versions": { "v1": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html" },
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html"
+      },
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html",
       "perInstance": false,
       "history": []
@@ -145,12 +190,36 @@
       "requiringOrg": "Internal",
       "intakeMode": "online",
       "signer": "parent",
-      "conditional": { "triggeredBy": "dcy_01234", "triggers": ["packet: will you apply for free/reduced-price meals? = No"] },
-      "satisfies": ["iea"],
+      "conditional": {
+        "triggeredBy": "dcy_01234",
+        "triggers": [
+          "packet: will you apply for free/reduced-price meals? = No"
+        ]
+      },
+      "satisfies": [
+        "iea"
+      ],
       "note": "Alternative to IEA for the same income_eligibility child-record slot: packet asks 'Will you apply for free/reduced-price meals?' → Yes ⇒ iea, No ⇒ this waiver (parent-signed). Exactly one is always on file; satisfies:['iea'] marks the shared slot met.",
       "current": null,
-      "versions": { "v1": "PENDING" },
+      "versions": {
+        "v1": "PENDING"
+      },
       "fallbackUrl": null,
+      "perInstance": false,
+      "history": []
+    },
+    "staff": {
+      "slug": "staff",
+      "title": "Staff Enrollment",
+      "requiringOrg": "Play Academy",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Staff_Enrollment_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Staff_Enrollment_v1.html",
+      "submissionType": "staff",
+      "intakeMode": "online",
+      "signer": "staff",
       "perInstance": false,
       "history": []
     }
