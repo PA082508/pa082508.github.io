@@ -98,5 +98,12 @@ footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:cente
   <p class="note" style="margin-top:30px">Questions? Ask your center director — we are happy to help you complete any form.</p>
 </main>
 <footer>Play Academy Inc. &middot; Child and Adult Care Food Program &middot; This institution is an equal opportunity provider.</footer>
+<script>
+/* Center passthrough: parent-forms.html?center=<slug> → carry ?center into every
+   form link so the family never picks a center ("формы не обезличены"). */
+(function(){var c=new URLSearchParams(location.search).get('center');if(!c)return;
+document.querySelectorAll('a.card[href*="1-data-sources"]').forEach(function(a){
+  var h=a.getAttribute('href');a.setAttribute('href',h+(h.indexOf('?')<0?'?':'&')+'center='+encodeURIComponent(c));});})();
+</script>
 </body>
 </html>
