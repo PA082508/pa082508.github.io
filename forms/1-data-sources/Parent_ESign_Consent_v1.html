@@ -56,25 +56,33 @@
 <div class="wrap">
   <div data-formkit="banner" data-fk-banner-msg></div>
   <h1>Parent Consent for Electronic Signatures</h1>
-  <div class="sub">Play Academy, Inc. — please read, then sign to consent to electronic signatures on parent forms.</div>
+  <div class="sub"><span data-fk-org>Play Academy, Inc.</span> — please read, then sign to consent to electronic signatures on parent forms.</div>
   <div id="done">✓ Consent submitted</div>
 
   <fieldset>
     <legend>Consent</legend>
     <div class="body">
       <p>Dear Parents/Guardians,</p>
-      <p>At Play Academy, Inc., we are committed to making our enrollment and paperwork process as convenient and efficient as possible for our families. To simplify document completion, we will be transitioning to the use of electronic signatures (e-signatures) in some parent forms, like we have been doing with field trips forms for the past couple of weeks.</p>
+      <p>At <span data-fk-org>Play Academy, Inc.</span>, we are committed to making our enrollment and paperwork process as convenient and efficient as possible for our families. To simplify document completion, we will be transitioning to the use of electronic signatures (e-signatures) in some parent forms, like we have been doing with field trips forms for the past couple of weeks.</p>
       <p>Electronically signed parent forms, including enrollment documents and the CACFP Income Eligibility Application, are acceptable. Electronic signatures carry the same intent and authorization as handwritten signatures for these forms.</p>
       <p>By signing below, you acknowledge and agree that:</p>
       <ul>
         <li>You consent to receiving and completing applicable parent forms electronically.</li>
-        <li>You understand that your electronic signature will be considered your legal signature on documents provided by Play Academy, Inc.</li>
+        <li>You understand that your electronic signature will be considered your legal signature on documents provided by <span data-fk-org>Play Academy, Inc.</span></li>
         <li>You may request a paper copy of any document at any time if you prefer to complete forms by hand.</li>
       </ul>
       <p>If you have any questions regarding this process, please contact our office. We appreciate your cooperation as we continue to improve our services for our families.</p>
       <p>Thank you for your continued trust and support.</p>
-      <p>Sincerely,<br>Play Academy, Inc.</p>
+      <p>Sincerely,<br><span data-fk-org>Play Academy, Inc.</span></p>
     </div>
+  </fieldset>
+
+  <!-- EDITABLE MARKETING SLOT — admin edits registry `org.marketing_text` as DATA (no code deploy).
+       Empty text ⇒ this whole section stays hidden. Content is org-level promo (e.g. credits /
+       material incentives). STAGE-2: org.marketing_text moves to org settings. -->
+  <fieldset id="mkt_fs" data-fk-marketing hidden>
+    <legend>For our families</legend>
+    <div class="body" id="mkt_body"></div>
   </fieldset>
 
   <fieldset>
@@ -111,11 +119,31 @@
 function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
 var SIG_METHOD='draw';
 
-// Live ack line with the parent's name substituted.
+// Org display name — BRANDING (layer 2), depersonalized: default matches the approved copy,
+// then overwritten from registry `org.name` (interim config → org settings in Stage 2). The
+// legal wording is unchanged; only the org identity is a swappable token.
+var ORG_NAME='Play Academy, Inc.';
+
+// Live ack line with the parent's name + org name substituted.
 function refreshAck(){
   var n=g('parent_name')||'________';
   document.getElementById('ackline').innerHTML =
-    'I, <strong>'+n.replace(/</g,'&lt;')+'</strong>, give my consent for Play Academy, Inc. to provide enrollment and other required parent forms electronically and to accept my electronic signature on those documents.';
+    'I, <strong>'+n.replace(/</g,'&lt;')+'</strong>, give my consent for '+ORG_NAME.replace(/</g,'&lt;')+
+    ' to provide enrollment and other required parent forms electronically and to accept my electronic signature on those documents.';
+}
+
+// Branding + editable marketing, sourced from the registry `org` block (STAGE-2 SWAP POINT:
+// org settings later). Legal body untouched; org name fills [data-fk-org] tokens, and the
+// admin-editable marketing copy (org.marketing_text) fills the marketing slot (empty ⇒ hidden).
+function applyOrg(org){
+  if(!org) return;
+  if(org.name){
+    ORG_NAME=org.name;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fk-org]'),function(el){ el.textContent=org.name; });
+    refreshAck();
+  }
+  var txt=(org.marketing_text||'').trim();
+  if(txt){ document.getElementById('mkt_body').innerHTML=txt; document.getElementById('mkt_fs').hidden=false; }
 }
 
 // Render the typed name onto the signature canvas so capture stays kit-native
@@ -173,6 +201,11 @@ document.addEventListener('DOMContentLoaded',function(){
   refreshAck();
   // Standalone center pre-select via ?center= (embed mode is handled by the kit).
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
+  // Branding + marketing from the registry `org` block (graceful if unreachable).
+  fetch('../../enroll-registry.json',{cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){ if(reg&&reg.org) applyOrg(reg.org); })
+    .catch(function(){});
 });
 </script>
 <script defer src="form-kit.js"></script>

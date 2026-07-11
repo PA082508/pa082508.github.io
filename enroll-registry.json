@@ -63,13 +63,14 @@
       "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF",
       "perInstance": false,
       "history": [
-        { "at": "2026-07-10", "note": "Interim: repointed current to the official 2026 PDF (Rev. 7/2026); retired childcare-core-bound v4/v1 to _archive. Stage 2 replaces with a form-kit fillable." }
+        {
+          "at": "2026-07-10",
+          "note": "Interim: repointed current to the official 2026 PDF (Rev. 7/2026); retired childcare-core-bound v4/v1 to _archive. Stage 2 replaces with a form-kit fillable."
+        }
       ],
-      "triggersConditional": [
-        "dcy_01236",
-        "dcy_01217",
-        "fluid_milk",
-        "special_diet"
+      "raisesConditions": [
+        "medication",
+        "special_health_need"
       ]
     },
     "dcy_01236": {
@@ -79,21 +80,14 @@
       "intakeMode": "paper_scan",
       "signer": "physician",
       "submissionType": "medical",
-      "conditional": {
-        "triggeredBy": "dcy_01234",
-        "triggers": [
-          "allergy",
-          "special health condition",
-          "medical food"
-        ]
-      },
       "current": null,
       "versions": {
         "v1": "PENDING"
       },
       "fallbackUrl": null,
       "perInstance": false,
-      "history": []
+      "history": [],
+      "condition": "special_health_need"
     },
     "dcy_01217": {
       "slug": "dcy_01217",
@@ -102,12 +96,6 @@
       "intakeMode": "paper_scan",
       "signer": "physician",
       "submissionType": "medical",
-      "conditional": {
-        "triggeredBy": "dcy_01234",
-        "triggers": [
-          "medication"
-        ]
-      },
       "perInstance": true,
       "expiryMonths": 12,
       "current": null,
@@ -115,7 +103,8 @@
         "v1": "PENDING"
       },
       "fallbackUrl": null,
-      "history": []
+      "history": [],
+      "condition": "medication"
     },
     "dcy_01305": {
       "slug": "dcy_01305",
@@ -126,12 +115,17 @@
       "submissionType": "medical",
       "expiryDays": 30,
       "perInstance": false,
-      "current": null,
+      "current": "v2021pdf",
       "versions": {
-        "v1": "PENDING"
+        "v2021pdf": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01305_Child-Medical-Statement.PDF"
       },
-      "fallbackUrl": null,
-      "history": []
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01305_Child-Medical-Statement.PDF",
+      "history": [
+        {
+          "at": "2026-07-11",
+          "note": "Interim: current → official JFS 01305 PDF (Rev. 10/2021, physician-signed, paper). Parent prints and takes to physician. No HTML rebuild (wet signature)."
+        }
+      ]
     },
     "special_diet": {
       "slug": "special_diet",
@@ -139,19 +133,14 @@
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "paper_scan",
       "signer": "physician",
-      "conditional": {
-        "triggeredBy": "dcy_01234",
-        "triggers": [
-          "special diet: exclude a food group"
-        ]
-      },
       "current": "v1",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html"
       },
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html",
       "perInstance": false,
-      "history": []
+      "history": [],
+      "condition": "special_diet"
     },
     "fluid_milk": {
       "slug": "fluid_milk",
@@ -159,19 +148,14 @@
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "online",
       "signer": "parent",
-      "conditional": {
-        "triggeredBy": "dcy_01234",
-        "triggers": [
-          "special diet: exclude fluid milk"
-        ]
-      },
       "current": "v1",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html"
       },
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html",
       "perInstance": false,
-      "history": []
+      "history": [],
+      "condition": "special_diet"
     },
     "infant_meals": {
       "slug": "infant_meals",
@@ -185,7 +169,8 @@
       },
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html",
       "perInstance": false,
-      "history": []
+      "history": [],
+      "condition": "infant"
     },
     "usda_waiver": {
       "slug": "usda_waiver",
@@ -193,23 +178,22 @@
       "requiringOrg": "Internal",
       "intakeMode": "online",
       "signer": "parent",
-      "conditional": {
-        "triggeredBy": "dcy_01234",
-        "triggers": [
-          "packet: will you apply for free/reduced-price meals? = No"
-        ]
-      },
       "satisfies": [
         "iea"
       ],
       "note": "Alternative to IEA for the same income_eligibility child-record slot: packet asks 'Will you apply for free/reduced-price meals?' → Yes ⇒ iea, No ⇒ this waiver (parent-signed). Exactly one is always on file; satisfies:['iea'] marks the shared slot met.",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "PENDING"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v1.html"
       },
-      "fallbackUrl": null,
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v1.html",
       "perInstance": false,
-      "history": []
+      "history": [
+        {
+          "at": "2026-07-11",
+          "note": "Flipped current → existing USDA_Waiver_v1.html (income-decline waiver, IEA alternative FY2026-27). Moved from if_applicable/special_diet to mandatory pair after IEA."
+        }
+      ]
     },
     "staff": {
       "slug": "staff",
@@ -254,7 +238,8 @@
       },
       "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Basic%20Infant%202026%20DCY-01218.PDF",
       "perInstance": false,
-      "history": []
+      "history": [],
+      "condition": "infant"
     },
     "dcy_01225": {
       "slug": "dcy_01225",
@@ -354,7 +339,8 @@
       "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Topical%20Product%20Consent%20Form%202025.docx",
       "perInstance": false,
       "history": [],
-      "futureFormKit": true
+      "futureFormKit": true,
+      "condition": "optional"
     },
     "transition_into_program": {
       "slug": "transition_into_program",
@@ -370,6 +356,30 @@
       "perInstance": false,
       "history": [],
       "futureFormKit": true
+    },
+    "wic_information": {
+      "slug": "wic_information",
+      "title": "WIC Information",
+      "kind": "document",
+      "requiringOrg": "USDA FNS / Ohio WIC",
+      "intakeMode": "handout",
+      "signer": "none",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/WIC_Information_Flyer_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/WIC_Information_Flyer_v1.html",
+      "perInstance": false,
+      "history": [
+        {
+          "at": "2026-07-11",
+          "note": "Pending: obtain official USDA/Ohio CACFP WIC Information Flyer (EN+ES), customized with center point-of-contact per Ohio CACFP requirement. Place in forms/3-library/ + flip current."
+        },
+        {
+          "at": "2026-07-11",
+          "note": "Flipped current → built bilingual (EN+ES) WIC flyer from official Ohio ODH/USDA facts; per-center POC via ?center=; org name from org.name. Ohio CACFP \"documented distribution\" to be tracked by future issuance ledger."
+        }
+      ]
     },
     "building_for_the_future": {
       "slug": "building_for_the_future",
@@ -398,6 +408,181 @@
       "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant.doc",
       "perInstance": false,
       "history": []
+    }
+  },
+  "org": {
+    "_note": "STAGE-2 SWAP POINT — org-level branding. Interim values live here (editable as DATA, no code deploy); Stage 2 sources them from org settings (OrgContext). name = organization display name used in form headers/body tokens ([data-fk-org]); marketing_text = admin-editable promo copy (credits / material incentives) injected into the Parent Consent marketing slot — empty = nothing renders. Read by parent-facing forms via ../../enroll-registry.json.",
+    "name": "Play Academy, Inc.",
+    "marketing_text": ""
+  },
+  "conditions": {
+    "_note": "SINGLE SOURCE OF CONDITIONAL LOGIC — the one map. Read by: (a) packets.admission If-applicable grouping (a conditional form's group = forms[key].condition); (b) parent-forms.html + ParentPacketPage group headers & order (this key order); (c) Stage-2 in-form conditional hints (detectOn = the form whose answers raise it; detect = the answer signals; issue:'director' = handed out in person, rendered as a director line not a parent link). Do NOT encode conditions anywhere else in code or in a second map. Supersedes the per-form conditional.triggers used in Stage 1.",
+    "infant": {
+      "title": "If your child is under 1 year old",
+      "detectOn": "child_dob",
+      "detect": [
+        "child under 12 months"
+      ]
+    },
+    "special_diet": {
+      "title": "Special diet or milk substitution",
+      "detectOn": [
+        "enroll",
+        "packet"
+      ],
+      "detect": [
+        "special diet: exclude a food group",
+        "special diet: exclude fluid milk"
+      ]
+    },
+    "optional": {
+      "title": "Other (as needed)"
+    },
+    "medication": {
+      "title": "Medication given in care",
+      "detectOn": "dcy_01234",
+      "detect": [
+        "child needs medication in care"
+      ],
+      "issue": "director"
+    },
+    "special_health_need": {
+      "title": "Special health condition",
+      "detectOn": "dcy_01234",
+      "detect": [
+        "allergy",
+        "special health condition",
+        "medical food"
+      ],
+      "issue": "director"
+    }
+  },
+  "packets": {
+    "admission": {
+      "title": "Admission Packet",
+      "_note": "Ordered admission packet assembled from library sections. Composition is DATA — edit slots here, no code change. section: mandatory | if_applicable. A conditional slot's If-applicable group and its director-line rendering are DERIVED from forms[key].condition + the single conditions map (no per-slot condition here — one map only). Slot URL resolves via forms[key].current→versions[current] (interim/dark slots light up when flipped). Consumed by in-app ParentPacketPage + parent-forms.html. Keep identical in the app copy (public/enroll-registry.json) and the Pages copy (repo-root enroll-registry.json).",
+      "slots": [
+        {
+          "key": "parent_consent",
+          "section": "mandatory",
+          "label": "Parent Consent (E-Signature)",
+          "note": "Signed first — adopts your signature for the rest of the packet."
+        },
+        {
+          "key": "dcy_01234",
+          "section": "mandatory",
+          "label": "Child Enrollment & Health (DCY 01234)",
+          "note": "The State of Ohio enrollment record: contacts, health, authorizations. One per child."
+        },
+        {
+          "key": "enroll",
+          "section": "mandatory",
+          "label": "CACFP Enrollment",
+          "note": "Days, hours and meals your child receives in care. One per child, yearly."
+        },
+        {
+          "key": "iea",
+          "section": "mandatory",
+          "label": "Income Eligibility (IEA)",
+          "note": "Free / reduced-price meal eligibility. One per household, valid 12 months."
+        },
+        {
+          "key": "usda_waiver",
+          "section": "mandatory",
+          "label": "USDA Income Eligibility Waiver",
+          "note": "Sign and return ONLY if you are not applying for free/reduced-price meals — the alternative to the Income Eligibility Application above. Exactly one of the two is on file."
+        },
+        {
+          "key": "child_release_authorization",
+          "section": "mandatory",
+          "label": "Child Release Authorization",
+          "note": "Who may pick up your child, plus media consent."
+        },
+        {
+          "key": "parent_responsibilities",
+          "section": "mandatory",
+          "label": "Parent Responsibilities",
+          "note": "Program policies you acknowledge."
+        },
+        {
+          "key": "center_parent_info",
+          "section": "mandatory",
+          "label": "Center Parent Information",
+          "note": "Required information for parents at your center."
+        },
+        {
+          "key": "what_to_bring_infant",
+          "section": "mandatory",
+          "label": "What To Bring",
+          "note": "Checklist of items to bring for your child."
+        },
+        {
+          "key": "dcy_01305",
+          "section": "mandatory",
+          "label": "Child Medical Statement (JFS 01305)",
+          "note": "Completed and signed by your child's physician. Required for every enrolling child — print and take to the doctor's office."
+        },
+        {
+          "key": "building_for_the_future",
+          "section": "mandatory",
+          "label": "Building for the Future",
+          "note": "Keep — USDA CACFP family nutrition information."
+        },
+        {
+          "key": "transition_into_program",
+          "section": "mandatory",
+          "label": "Transition into the Program",
+          "note": "Complete and return."
+        },
+        {
+          "key": "wic_information",
+          "section": "mandatory",
+          "label": "WIC Information",
+          "note": "Keep — how to apply for WIC benefits."
+        },
+        {
+          "key": "dcy_01218",
+          "section": "if_applicable",
+          "label": "Basic Infant Care Plan (DCY 01218)",
+          "note": "For infants under one year of age."
+        },
+        {
+          "key": "infant_meals",
+          "section": "if_applicable",
+          "label": "Infant Meal Preference",
+          "note": "Who provides formula and when solids are introduced."
+        },
+        {
+          "key": "special_diet",
+          "section": "if_applicable",
+          "label": "Special Diet Statement",
+          "note": "Food accommodations; the medical section is completed by your provider."
+        },
+        {
+          "key": "fluid_milk",
+          "section": "if_applicable",
+          "label": "Fluid Milk Substitution",
+          "note": "Request a non-dairy beverage instead of fluid milk."
+        },
+        {
+          "key": "topical_product_consent",
+          "section": "if_applicable",
+          "label": "Topical Product Consent",
+          "note": "Sunscreen, ointments and similar topical products."
+        },
+        {
+          "key": "dcy_01217",
+          "section": "if_applicable",
+          "label": "Administration of Medication (DCY 01217)",
+          "note": "Your director provides this in person if your child needs medication."
+        },
+        {
+          "key": "dcy_01236",
+          "section": "if_applicable",
+          "label": "Care Plan for a Child with Special Needs (DCY 01236)",
+          "note": "Your director provides this in person if your child has special health needs."
+        }
+      ]
     }
   },
   "centers": {

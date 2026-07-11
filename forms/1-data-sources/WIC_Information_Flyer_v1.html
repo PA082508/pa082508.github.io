@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WIC Information — Play Academy</title>
+<style>
+:root{--green:#1b5e20;--soft:#e8f2ea;--ink:#1d2b20;--line:#d6e2d8;--muted:#4c5a4f;--gold:#b26a00}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f8f6;color:var(--ink)}
+header{background:var(--green);color:#fff;padding:22px 20px 18px;text-align:center}
+header h1{margin:0;font-size:22pt;letter-spacing:.3px}
+header .org{margin:6px 0 0;font-size:10.5pt;opacity:.92}
+main{max-width:820px;margin:0 auto;padding:20px 18px 48px}
+.lead{font-size:11.5pt;line-height:1.5;color:var(--ink);margin:6px 0 18px}
+.cols{display:flex;gap:22px;flex-wrap:wrap}
+.col{flex:1;min-width:300px}
+.lang{font-size:9pt;font-weight:bold;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);border-bottom:2px solid var(--line);padding-bottom:4px;margin:0 0 10px}
+h2{font-size:12.5pt;color:var(--green);margin:16px 0 4px}
+p{margin:0 0 9px;font-size:10.5pt;line-height:1.5;color:#233}
+ul{margin:0 0 9px;padding-left:18px}
+li{font-size:10.5pt;line-height:1.5;margin:2px 0}
+.apply{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
+.apply .big{font-size:14pt;font-weight:bold;color:var(--green);margin:2px 0}
+.poc{background:#fff;border:2px solid var(--green);border-radius:10px;padding:14px 16px;margin:20px 0 8px}
+.poc .t{font-size:9pt;font-weight:bold;text-transform:uppercase;letter-spacing:.07em;color:var(--gold);margin-bottom:4px}
+.poc .name{font-size:13pt;font-weight:bold;color:var(--green)}
+.poc .meta{font-size:10.5pt;color:var(--muted);margin-top:2px}
+.foot{font-size:8.5pt;color:#6b776e;text-align:center;padding:16px 0 0;border-top:1px solid var(--line);margin-top:20px}
+.toolbar{max-width:820px;margin:0 auto;padding:12px 18px 0;text-align:right}
+.toolbar button{font:inherit;font-size:10pt;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--green);cursor:pointer}
+@media print{ body{background:#fff} .toolbar{display:none} header{padding:12px 0 8px} .poc{page-break-inside:avoid} }
+</style>
+</head>
+<body>
+<header>
+  <h1>WIC Can Help Your Family</h1>
+  <!-- STAGE-2 SWAP POINT: org name from org settings (registry org.name), not hardcoded. -->
+  <div class="org"><span data-fk-org>Play Academy, Inc.</span> · Child and Adult Care Food Program</div>
+</header>
+
+<div class="toolbar"><button type="button" onclick="window.print()">🖨 Print</button></div>
+
+<main>
+  <p class="lead">As a CACFP institution, we share information about WIC with every family. WIC — the Special Supplemental Nutrition Program for Women, Infants, and Children — helps eligible families eat well and stay healthy, at no cost.</p>
+
+  <div class="cols">
+    <!-- ============ ENGLISH ============ -->
+    <div class="col">
+      <div class="lang">English</div>
+
+      <h2>What WIC offers</h2>
+      <ul>
+        <li>Healthy foods each month (fruits, vegetables, milk, eggs, whole grains, infant formula and baby food, and more)</li>
+        <li>Nutrition education and simple recipes</li>
+        <li>Breastfeeding support</li>
+        <li>Referrals to health care and community services</li>
+      </ul>
+
+      <h2>Who can get WIC</h2>
+      <p>A household member who is:</p>
+      <ul>
+        <li>Pregnant, or was pregnant in the last 6 months</li>
+        <li>Breastfeeding a baby under 1 year old</li>
+        <li>An infant or a child under age 5</li>
+      </ul>
+      <p>You must live in Ohio and have a household income at or below <strong>185% of the Federal Poverty Guidelines</strong>. You are <strong>automatically income-eligible</strong> if you receive Medicaid, Ohio Works First (TANF), or SNAP.</p>
+
+      <h2>How to apply</h2>
+      <div class="apply">
+        <p>Call to make an appointment at a WIC clinic near you:</p>
+        <div class="big">Help Me Grow: 1-800-755-GROW</div>
+        <p style="margin:0">(1-800-755-4769) · Ohio WIC: 614-644-8006 · OHWIC@odh.ohio.gov</p>
+      </div>
+      <p>Bring proof of identity, proof of your Ohio address, and proof of income. If you bring everything, you may be enrolled the same day.</p>
+    </div>
+
+    <!-- ============ ESPAÑOL ============ -->
+    <div class="col">
+      <div class="lang">Español</div>
+
+      <h2>Qué ofrece WIC</h2>
+      <ul>
+        <li>Alimentos saludables cada mes (frutas, verduras, leche, huevos, granos integrales, fórmula y comida para bebés, y más)</li>
+        <li>Educación sobre nutrición y recetas sencillas</li>
+        <li>Apoyo para la lactancia materna</li>
+        <li>Referencias a servicios de salud y comunitarios</li>
+      </ul>
+
+      <h2>Quién puede recibir WIC</h2>
+      <p>Un miembro del hogar que esté:</p>
+      <ul>
+        <li>Embarazada, o que estuvo embarazada en los últimos 6 meses</li>
+        <li>Amamantando a un bebé menor de 1 año</li>
+        <li>Un bebé o un niño menor de 5 años</li>
+      </ul>
+      <p>Debe vivir en Ohio y tener un ingreso familiar igual o inferior al <strong>185% de las Guías Federales de Pobreza</strong>. Usted es <strong>elegible por ingresos automáticamente</strong> si recibe Medicaid, Ohio Works First (TANF) o SNAP.</p>
+
+      <h2>Cómo solicitar</h2>
+      <div class="apply">
+        <p>Llame para hacer una cita en una clínica WIC cercana:</p>
+        <div class="big">Help Me Grow: 1-800-755-GROW</div>
+        <p style="margin:0">(1-800-755-4769) · Ohio WIC: 614-644-8006 · OHWIC@odh.ohio.gov</p>
+      </div>
+      <p>Traiga prueba de identidad, prueba de su domicilio en Ohio y prueba de ingresos. Si trae todo, es posible que se inscriba el mismo día.</p>
+    </div>
+  </div>
+
+  <!-- Per-center point of contact (Ohio CACFP requirement) — resolved from ?center=. -->
+  <div class="poc" id="poc" hidden>
+    <div class="t">Questions? Ask your center · ¿Preguntas? Consulte a su centro</div>
+    <div class="name" id="pocName"></div>
+    <div class="meta" id="pocMeta"></div>
+  </div>
+
+  <div class="foot">
+    In accordance with federal civil rights law, <span data-fk-org>Play Academy, Inc.</span> and the USDA are equal opportunity providers.<br>
+    De acuerdo con la ley federal de derechos civiles, <span data-fk-org>Play Academy, Inc.</span> y el USDA son proveedores que ofrecen igualdad de oportunidades.
+  </div>
+</main>
+
+<script>
+(function(){
+  'use strict';
+  // STAGE-2 SWAP POINT — center point-of-contact. Hardcoded now (mirrors form-kit CENTERS_INFO);
+  // Stage 2 sources per-center POC from org settings. Flyer carries the issuing center's contact
+  // via ?center= (packet from pearl → Pearl's contact), org-level fallback when absent.
+  var CENTERS_INFO = {
+    pearl: { name:'Play Academy Parma Heights', meta:'6285 Pearl Rd, Parma Heights, OH · 440-884-7529' },
+    alpha: { name:'Play Academy Mayfield Hills', meta:'201 Alpha Park, Highland Heights, OH · 440-460-0600' },
+    ridge: { name:'Play Academy Wickliffe',      meta:'28930 Ridge Rd, Wickliffe, OH · 440-520-0031' }
+  };
+  function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
+  var center=null; try{ center=new URLSearchParams(location.search).get('center'); }catch(_){}
+  var box=document.getElementById('poc');
+  if(center && CENTERS_INFO[center]){
+    document.getElementById('pocName').textContent=CENTERS_INFO[center].name;
+    document.getElementById('pocMeta').textContent=CENTERS_INFO[center].meta;
+    box.hidden=false;
+  }
+  // Org name token from the registry org block (graceful; keeps branding depersonalized).
+  fetch('../../enroll-registry.json',{cache:'no-cache'})
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(reg){
+      var name=reg&&reg.org&&reg.org.name;
+      if(name){ Array.prototype.forEach.call(document.querySelectorAll('[data-fk-org]'),function(el){ el.textContent=name; }); }
+      // If no ?center= but org POC desired, show a neutral org-level line.
+      if(box.hidden && name){ document.getElementById('pocName').textContent=name; document.getElementById('pocMeta').textContent='Ask your center for help with WIC.'; box.hidden=false; }
+    })
+    .catch(function(){});
+})();
+</script>
+</body>
+</html>

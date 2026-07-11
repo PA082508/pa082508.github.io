@@ -3,126 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Play Academy — Parent Forms</title>
+<title>Play Academy — Admission Packet</title>
 <style>
-:root{--green:#1b5e20;--soft:#e8f2ea;--ink:#1d2b20;--line:#d6e2d8}
+:root{--green:#1b5e20;--soft:#e8f2ea;--ink:#1d2b20;--line:#d6e2d8;--muted:#4c5a4f}
 *{box-sizing:border-box}
 body{margin:0;font-family:Georgia,'Times New Roman',serif;background:#f6f8f6;color:var(--ink)}
 header{background:var(--green);color:#fff;padding:34px 20px 26px;text-align:center}
+header .logo{max-height:56px;margin-bottom:10px}
 header h1{margin:0;font-size:26pt;letter-spacing:.5px}
 header p{margin:8px 0 0;font-family:Arial,sans-serif;font-size:11pt;opacity:.92}
-main{max-width:880px;margin:0 auto;padding:28px 18px 60px}
-h2{font-size:15pt;color:var(--green);border-bottom:2px solid var(--line);padding-bottom:6px;margin:34px 0 6px}
-.note{font-family:Arial,sans-serif;font-size:10pt;color:#4c5a4f;margin:0 0 16px}
-.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:12px 0;
+header .center{margin-top:10px;font-family:Arial,sans-serif;font-size:10.5pt;opacity:.95;
+  display:inline-block;border-top:1px solid rgba(255,255,255,.35);padding-top:8px}
+main{max-width:880px;margin:0 auto;padding:24px 18px 60px}
+.toolbar{display:flex;justify-content:flex-end;gap:10px;margin:0 0 6px}
+.toolbar button{font:inherit;font-family:Arial,sans-serif;font-size:10pt;padding:7px 14px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--green);cursor:pointer}
+.toolbar button:hover{background:var(--soft)}
+h2{font-size:15pt;color:var(--green);border-bottom:2px solid var(--line);padding-bottom:6px;margin:30px 0 4px}
+h3.grp{font-family:Arial,sans-serif;font-size:11pt;color:var(--ink);margin:18px 0 2px}
+.cond-cap{font-family:Arial,sans-serif;font-weight:normal;font-size:9pt;color:var(--muted);margin-left:6px}
+[data-cond-group].cond-hi{background:var(--soft);border-radius:10px;padding:4px 12px 10px;margin:0 -12px}
+[data-cond-group].cond-hi .cond-cap{color:var(--green);font-weight:bold}
+.note{font-family:Arial,sans-serif;font-size:10pt;color:var(--muted);margin:0 0 12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:10px 0;
   display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:inherit;
   box-shadow:0 1px 3px rgba(0,0,0,.05);transition:box-shadow .15s}
-.card:hover{box-shadow:0 3px 10px rgba(0,0,0,.12)}
-.card .ic{font-size:22pt;line-height:1}
-.card h3{margin:0 0 4px;font-size:12.5pt}
-.card p{margin:0;font-family:Arial,sans-serif;font-size:9.5pt;color:#4c5a4f;line-height:1.45}
-.badges{margin-top:7px}
+a.card:hover{box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.card.soon{opacity:.66;cursor:default}
+.card .num{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:2px solid var(--green);color:var(--green);
+  font-family:Arial,sans-serif;font-weight:bold;font-size:12pt;display:flex;align-items:center;justify-content:center}
+.card.done .num{background:var(--green);color:#fff}
+.card .ic{font-size:20pt;line-height:1.1}
+.card h4{margin:0 0 3px;font-size:12.5pt;font-weight:bold}
+.card p{margin:0;font-family:Arial,sans-serif;font-size:9.5pt;color:var(--muted);line-height:1.45}
+.badges{margin-top:6px}
 .b{display:inline-block;font-family:Arial,sans-serif;font-size:8pt;font-weight:bold;
-  padding:2px 9px;border-radius:10px;margin-right:6px}
+  padding:2px 9px;border-radius:10px;margin:3px 6px 0 0}
 .b.on{background:var(--soft);color:var(--green)}
 .b.pr{background:#eef0f3;color:#3c4858}
+.b.md{background:#fdeaea;color:#a12a2a}
+.b.soon{background:#f0ede3;color:#7a6a2e}
+.director{background:#fbf7ec;border:1px solid #e7dcc0;border-radius:10px;padding:12px 16px;margin:10px 0;
+  font-family:Arial,sans-serif;font-size:9.5pt;color:#6a5a2e;line-height:1.5}
+.director b{color:#4c421e}
+#err{font-family:Arial,sans-serif;font-size:10pt;color:#b00020;padding:20px;text-align:center}
 footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:center;padding:24px}
+@media print{
+  body{background:#fff}
+  header{padding:14px 0 10px}
+  .toolbar{display:none}
+  .card,.director{box-shadow:none;page-break-inside:avoid}
+  a.card{color:inherit}
+}
 </style>
 </head>
 <body>
 <header>
-  <h1>Play Academy</h1>
-  <p>Parent Forms &middot; Parma Heights &middot; Mayfield Hills &middot; Wickliffe</p>
+  <!-- STAGE-2 SWAP POINT: org name / logo / contacts come from org settings (OrgContext →
+       registry.org block), not hardcoded. For the Monday packet, branding is taken as-is. -->
+  <h1 id="orgName">Play Academy</h1>
+  <p id="orgTag">Admission Packet</p>
+  <div class="center" id="centerLine" hidden></div>
 </header>
 <main>
-  <h2>Enrollment Packet</h2>
-  <p class="note">Required when your child joins Play Academy and renewed annually. Each form can be completed online (with electronic signature) or printed blank for pen-and-paper.</p>
-
-  <a class="card" href="./forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF" data-reg-key="dcy_01234">
-    <div class="ic">&#128203;</div>
-    <div>
-      <h3>Child Enrollment &amp; Health Information (DCY 01234)</h3>
-      <p>The State of Ohio enrollment record: family and emergency contacts, health information, authorizations. One per child.</p>
-      <div class="badges"><span class="b on">Fill online</span><span class="b pr">Print</span></div>
-    </div>
-  </a>
-
-  <a class="card" href="./forms/1-data-sources/CACFP_Enrollment_v9.html" data-reg-key="enroll">
-    <div class="ic">&#127869;&#65039;</div>
-    <div>
-      <h3>CACFP Enrollment Form</h3>
-      <p>Food-program enrollment: the days, hours and meals your child normally receives in care. One per child, renewed each year.</p>
-      <div class="badges"><span class="b on">Fill online</span><span class="b pr">Print</span></div>
-    </div>
-  </a>
-
-  <a class="card" href="./forms/1-data-sources/IEA_FY2026-27_v6.html" data-reg-key="iea">
-    <div class="ic">&#128176;</div>
-    <div>
-      <h3>Income Eligibility Application — FY 2026-2027</h3>
-      <p>Determines free / reduced-price meal eligibility for the food program. One per household, valid 12 months.</p>
-      <div class="badges"><span class="b on">Fill online</span><span class="b pr">Print</span></div>
-    </div>
-  </a>
-
-  <h2>Nutrition &amp; Special Diet</h2>
-  <p class="note">Use these when your child needs a meal accommodation.</p>
-
-  <a class="card" href="./forms/1-data-sources/special-diet-form.html" data-reg-key="special_diet">
-    <div class="ic">&#129367;</div>
-    <div>
-      <h3>Special Diet Statement</h3>
-      <p>Medical statement for children requiring a special diet due to a disability or medical condition.</p>
-      <div class="badges"><span class="b on">Fill online</span><span class="b pr">Print</span></div>
-    </div>
-  </a>
-
-  <a class="card" href="./forms/1-data-sources/fluid-milk-substitution.html" data-reg-key="fluid_milk">
-    <div class="ic">&#129371;</div>
-    <div>
-      <h3>Fluid Milk Substitution Request</h3>
-      <p>Parent request for a non-dairy milk substitute (soy or other approved beverage).</p>
-      <div class="badges"><span class="b on">Fill online</span><span class="b pr">Print</span></div>
-    </div>
-  </a>
-
-  <a class="card" href="./forms/1-data-sources/infant-meals-preference.html" data-reg-key="infant_meals">
-    <div class="ic">&#127868;</div>
-    <div>
-      <h3>Infant Meals Preference</h3>
-      <p>Feeding preferences for infants: formula/breast milk choices and introduction of solid foods.</p>
-      <div class="badges"><span class="b on">Fill online</span><span class="b pr">Print</span></div>
-    </div>
-  </a>
-
-  <p class="note" style="margin-top:30px">Questions? Ask your center director — we are happy to help you complete any form.</p>
+  <div class="toolbar">
+    <button id="btnPrint" type="button">🖨 Print packet</button>
+    <button id="btnNew" type="button" title="Clear shared answers before starting a different child/family">Start new family</button>
+  </div>
+  <div id="packet"><p class="note">Loading your packet…</p></div>
+  <div id="err" hidden></div>
+  <p class="note" style="margin-top:26px">Questions? Ask your center director — we are happy to help you complete any form.</p>
 </main>
 <footer>Play Academy Inc. &middot; Child and Adult Care Food Program &middot; This institution is an equal opportunity provider.</footer>
+
 <script>
-/* Registry-driven links + center passthrough.
-   1) Resolve each card's href from enroll-registry.json `forms[key].current` so the
-      storefront never drifts from the live version (fix-forever). Fallback: the
-      hardcoded href already in the card (kept current manually as a backstop).
-   2) Carry ?center=<slug> into every form link so the family never picks a center. */
-(function(){
-  var center=new URLSearchParams(location.search).get('center');
-  function addCenter(h){ return center ? h+(h.indexOf('?')<0?'?':'&')+'center='+encodeURIComponent(center) : h; }
-  function apply(reg){
-    document.querySelectorAll('a.card[data-reg-key]').forEach(function(a){
-      var key=a.getAttribute('data-reg-key'), h=a.getAttribute('href');
-      var f=reg&&reg.forms&&reg.forms[key];
-      if(f){ var url=(f.current&&f.versions&&f.versions[f.current])||f.fallbackUrl;
-             if(url){ h=url.indexOf('http')===0 ? url : './forms/1-data-sources/'+url.split('/').pop(); } }
-      a.setAttribute('href', addCenter(h));
-    });
-    // Any remaining form links (untagged) still get the center.
-    document.querySelectorAll('a.card[href*="1-data-sources"]:not([data-reg-key])').forEach(function(a){
-      a.setAttribute('href', addCenter(a.getAttribute('href')));
-    });
+(function () {
+  'use strict';
+
+  // ── Registry source (root copy, kept in sync with the app). ────────────────
+  var REGISTRY_URL = './enroll-registry.json';
+
+  // ── STAGE-2 SWAP POINT — center display info. Hardcoded now (mirrors
+  //    form-kit.js CENTERS_INFO); Stage 2 pulls this from org settings so a
+  //    commercial client rebrands with one setting. ───────────────────────────
+  var CENTERS_INFO = {
+    pearl: { name: 'Play Academy Parma Heights', contact: '6285 Pearl Rd, Parma Heights · 440-884-7529' },
+    alpha: { name: 'Play Academy Mayfield Hills', contact: '201 Alpha Park, Highland Heights · 440-460-0600' },
+    ridge: { name: 'Play Academy Wickliffe',      contact: '28930 Ridge Rd, Wickliffe · 440-520-0031' }
+  };
+
+  // ── Presentation config ─────────────────────────────────────────────────────
+  // Condition group titles + order come from the registry `conditions` map (the ONE
+  // condition map). This file holds no condition vocabulary of its own.
+  var ICON = {
+    parent_consent:'✍️', dcy_01234:'📋', enroll:'🍽️', iea:'💰',
+    child_release_authorization:'🤝', parent_responsibilities:'📜', center_parent_info:'🏫',
+    what_to_bring_infant:'🎒', dcy_01218:'🍼', infant_meals:'🍼', special_diet:'🥗',
+    fluid_milk:'🥛', usda_waiver:'📝', topical_product_consent:'🧴'
+  };
+
+  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL = 90 * 60 * 1000, PROFILE_KEY = 'pa_packet_profile';
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
+  function qcenter(){ try { return new URLSearchParams(location.search).get('center'); } catch(_) { return null; } }
+
+  // Center-lock: the parent NEVER picks a center — it comes from the packet's ?center=.
+  var center = qcenter();
+  function addCenter(url){ if (!url || !center) return url; return url + (url.indexOf('?') < 0 ? '?' : '&') + 'center=' + encodeURIComponent(center); }
+
+  function renderCenterHeader(){
+    document.getElementById('orgTag').textContent = 'Admission Packet';
+    if (center && CENTERS_INFO[center]) {
+      var i = CENTERS_INFO[center];
+      var el = document.getElementById('centerLine');
+      el.hidden = false;
+      el.innerHTML = '<b>' + esc(i.name) + '</b><br>' + esc(i.contact);
+    }
+    // No/unknown center: still usable, but the forms will ask staff to select one.
   }
-  fetch('enroll-registry.json',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null;})
-    .then(function(reg){ apply(reg); })
-    .catch(function(){ apply(null); });   // offline / missing → hardcoded + center
+
+  // Live URL for a form slot (absolute https only; PENDING/dark → null).
+  function currentUrl(f){
+    if (!f || !f.current) return null;
+    var v = (f.versions || {})[f.current];
+    if (!v || v === 'PENDING' || !/^https?:/.test(v)) return null;
+    return v;
+  }
+  function doneMap(){
+    try { var o = JSON.parse(localStorage.getItem(PACKET_KEY)); if (!o || !o.ts || Date.now() - o.ts > PACKET_TTL) return {}; return o.done || {}; }
+    catch(_) { return {}; }
+  }
+
+  function badges(f, live){
+    var out = [];
+    if (f.intakeMode === 'online') out.push(['on','Fill online']);
+    else if (f.intakeMode === 'paper_scan') out.push(['on','Fill / print']);
+    if (f.signer === 'physician') out.push(['md','Provider-signed']);
+    if (f.expiryDays) out.push(['pr', f.expiryDays + '-day validity']);
+    else if (f.expiryMonths) out.push(['pr', f.expiryMonths + '-mo validity']);
+    if (!live) out.push(['soon','Coming soon']);
+    return out.map(function(b){ return '<span class="b ' + b[0] + '">' + esc(b[1]) + '</span>'; }).join('');
+  }
+
+  // One card. `num` = null → no number bubble (if-applicable). done from session-packet.
+  function card(slot, form, num, done){
+    var label = slot.label || (form && form.title) || slot.key;
+    var note  = slot.note  || (form && form.note)  || '';
+    var live  = !!currentUrl(form);
+    var url   = live ? addCenter(currentUrl(form)) : null;
+    var ic    = ICON[slot.key] || '📄';
+    var numHtml = (num != null)
+      ? '<div class="num">' + (done ? '✓' : num) + '</div>'
+      : '<div class="ic">' + ic + '</div>';
+    var inner =
+      numHtml +
+      '<div><h4>' + esc(label) + '</h4>' +
+      (note ? '<p>' + esc(note) + '</p>' : '') +
+      '<div class="badges">' + badges(form || {}, live) + '</div></div>';
+    if (url) return '<a class="card' + (done ? ' done' : '') + '" href="' + esc(url) + '" target="_blank" rel="noopener">' + inner + '</a>';
+    return '<div class="card soon" title="Not available online yet — your center can provide it">' + inner + '</div>';
+  }
+
+  function render(reg){
+    var pk = reg && reg.packets && reg.packets.admission;
+    var forms = (reg && reg.forms) || {};
+    if (!pk || !pk.slots) throw new Error('packets.admission missing from registry');
+    var done = doneMap();
+    var slots = pk.slots;
+    var html = '';
+
+    // ── Required ──────────────────────────────────────────────────────────────
+    var mandatory = slots.filter(function(s){ return s.section === 'mandatory'; });
+    html += '<h2>Required forms</h2>';
+    html += '<p class="note">Complete these when your child joins ' +
+            (center && CENTERS_INFO[center] ? esc(CENTERS_INFO[center].name) : 'Play Academy') +
+            ', and renew annually. Shared information fills in automatically after the first form.</p>';
+    mandatory.forEach(function(s, i){ html += card(s, forms[s.key], i + 1, !!done[s.key]); });
+
+    // ── If applicable — grouped by the ONE condition map (registry `conditions`).
+    //    A slot's group = forms[key].condition; a director line = that condition's
+    //    issue:'director'. No condition vocabulary lives in this file.
+    var conditions = reg.conditions || {};
+    function condOf(key){ var f = forms[key]; return f && f.condition; }
+    function isDirector(key){ var c = condOf(key); return !!(c && conditions[c] && conditions[c].issue === 'director'); }
+
+    var cond = slots.filter(function(s){ return s.section === 'if_applicable'; });
+    var linkable = cond.filter(function(s){ return !isDirector(s.key); });
+    var director = cond.filter(function(s){ return isDirector(s.key); });
+
+    if (linkable.length || director.length) {
+      html += '<h2>If applicable to your child</h2>';
+      html += '<p class="note">Only the forms that fit your situation — pick what applies.</p>';
+      // Group order = conditions map key order (skip _note and director-issued conditions).
+      Object.keys(conditions).forEach(function(cid){
+        if (cid === '_note' || (conditions[cid] && conditions[cid].issue === 'director')) return;
+        var inGroup = linkable.filter(function(s){ return condOf(s.key) === cid; });
+        if (!inGroup.length) return;
+        html += '<div data-cond-group="' + esc(cid) + '">';
+        html += '<h3 class="grp">' + esc(conditions[cid].title || cid) + ' <span class="cond-cap"></span></h3>';
+        inGroup.forEach(function(s){ html += card(s, forms[s.key], null, !!done[s.key]); });
+        html += '</div>';
+      });
+      if (director.length) {
+        html += '<div class="director"><b>Provided by your director in person, if needed:</b><br>' +
+          director.map(function(s){
+            var f = forms[s.key] || {};
+            return esc(s.label || f.title || s.key) + (s.note ? ' — ' + esc(s.note) : '');
+          }).join('<br>') +
+        '</div>';
+      }
+    }
+
+    document.getElementById('packet').innerHTML = html;
+    applyInfantDetect();
+  }
+
+  // Infant condition is detected by AGE from the session-packet DOB (data-fk-field="dob"),
+  // NOT by parent self-declaration. Before any DOB: infant group shown with a "under 12 months"
+  // caption. After DOB: <12mo → highlighted as applying; ≥12mo → hidden. Same signal Stage 2 uses.
+  function packetDOB(){
+    try { var o = JSON.parse(localStorage.getItem(PROFILE_KEY)); return (o && o.data && o.data.dob) || null; }
+    catch(_) { return null; }
+  }
+  function ageMonths(dob){
+    var t = Date.parse(dob); if (isNaN(t)) return null;
+    var b = new Date(t), n = new Date();
+    var m = (n.getFullYear()-b.getFullYear())*12 + (n.getMonth()-b.getMonth());
+    if (n.getDate() < b.getDate()) m--;
+    return m;
+  }
+  function applyInfantDetect(){
+    var grp = document.querySelector('[data-cond-group="infant"]'); if (!grp) return;
+    var cap = grp.querySelector('.cond-cap');
+    var dob = packetDOB(), am = dob ? ageMonths(dob) : null;
+    grp.style.display = ''; grp.classList.remove('cond-hi');
+    if (am == null) { if (cap) cap.textContent = 'for children under 12 months'; }
+    else if (am < 12) { grp.classList.add('cond-hi'); if (cap) cap.textContent = '✓ applies to your child'; }
+    else { grp.style.display = 'none'; }   // child ≥ 12 months → not shown
+  }
+
+  // ── Toolbar ──────────────────────────────────────────────────────────────────
+  document.getElementById('btnPrint').addEventListener('click', function(){ window.print(); });
+  document.getElementById('btnNew').addEventListener('click', function(){
+    try { localStorage.removeItem(PACKET_KEY); localStorage.removeItem(PROFILE_KEY); } catch(_) {}
+    location.reload();
+  });
+
+  // ── Boot ─────────────────────────────────────────────────────────────────────
+  renderCenterHeader();
+  fetch(REGISTRY_URL, { cache: 'no-cache' })
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(reg){ render(reg); })
+    .catch(function(e){
+      document.getElementById('packet').hidden = true;
+      var err = document.getElementById('err');
+      err.hidden = false;
+      err.textContent = 'Could not load your packet (' + e.message + '). Please refresh, or ask your center director for a printed copy.';
+    });
+  // Returning from a form (which may have written the DOB into the session-packet) → re-detect.
+  window.addEventListener('pageshow', applyInfantDetect);
 })();
 </script>
 </body>
