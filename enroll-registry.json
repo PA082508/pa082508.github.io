@@ -312,20 +312,24 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": "v1",
+      "current": "v2",
       "versions": {
         "v1": "https://pa082508.github.io/forms/3-library/our-documents/Child%20Release%20Authorization.docx",
         "v2": "https://pa082508.github.io/forms/1-data-sources/Child_Release_Authorization_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Child%20Release%20Authorization.docx",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Child_Release_Authorization_v2.html",
       "perInstance": false,
       "history": [
         {
           "at": "2026-07-12",
           "note": "Stage 2 (DARK): Child_Release_Authorization_v2.html — pure form-kit kit-form (no overlay), built from the our-documents source: pickup list (name + relation ×5) + comments + photo/video consent (Website/Facebook/Smart Care/Advertisement) + adoption-model signature (draw/type). form-speed DoD full (today-default date, session-packet autofill, prefill, center-lock, Ref, post-submit-lock). submission_type=child_release_authorization → children Inbox (no validator yet = advisory). current stays v1 (docx) for sverka → smoke → flip (each its own go)."
+        },
+        {
+          "at": "2026-07-12",
+          "note": "FLIP: current v1(docx) → v2 (Child_Release_Authorization_v2.html) after clean dark-smoke 5/5 (Ref 88CCF228: required-gate → adoption signature → submit → children Inbox pending → reject 'ra test'). fallbackUrl → v2; futureFormKit cleared (now a live form-kit form)."
         }
       ],
-      "futureFormKit": true
+      "futureFormKit": false
     },
     "parent_responsibilities": {
       "slug": "parent_responsibilities",
