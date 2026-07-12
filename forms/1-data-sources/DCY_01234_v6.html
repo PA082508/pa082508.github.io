@@ -119,7 +119,7 @@ var FIELDS = [
 
   // ── PAGE 2 ──────────────────────────────────────────────────────────────────
   {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name',r:1},
-  {id:'dob2',       p:2,t:'text',x:892,y:130,w:316,h:36,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1},
+  {id:'dob2',       p:2,t:'text',x:892,y:130,w:301,h:36,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1},
   {id:'development',p:2,t:'area',x:58,y:228,w:1150,h:22},
   {id:'na_dev',     p:2,t:'cb',  x:62,y:270},
   {id:'accommod',   p:2,t:'area',x:58,y:322,w:1150,h:38},
@@ -133,16 +133,16 @@ var FIELDS = [
   {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
 
   {id:'parent_sig',    p:2,t:'sig', x:58,y:1015,w:780,h:56,r:1,label:'Parent signature'},
-  {id:'parent_sig_dt', p:2,t:'text',x:902,y:1020,w:316,h:34,r:1,ph:'MM/DD/YYYY',date:1},
+  {id:'parent_sig_dt', p:2,t:'text',x:902,y:1020,w:291,h:34,r:1,ph:'MM/DD/YYYY',date:1},
   {id:'program_sig',   p:2,t:'sig', x:58,y:1178,w:780,h:52,label:'Program administrator signature',staff:1},
-  {id:'program_sig_dt',p:2,t:'text',x:902,y:1183,w:316,h:34,ph:'MM/DD/YYYY',date:1},
+  {id:'program_sig_dt',p:2,t:'text',x:902,y:1183,w:291,h:34,ph:'MM/DD/YYYY',date:1},
 
-  {id:'pg_init_1',p:2,t:'text',x:58,y:1268,w:255,h:26},{id:'pg_rev_1',p:2,t:'text',x:335,y:1268,w:242,h:26,date:1},
-  {id:'adm_init_1',p:2,t:'text',x:572,y:1268,w:290,h:26},{id:'adm_rev_1',p:2,t:'text',x:885,y:1268,w:336,h:26,date:1},
-  {id:'pg_init_2',p:2,t:'text',x:58,y:1348,w:255,h:26},{id:'pg_rev_2',p:2,t:'text',x:335,y:1348,w:242,h:26,date:1},
-  {id:'adm_init_2',p:2,t:'text',x:572,y:1348,w:290,h:26},{id:'adm_rev_2',p:2,t:'text',x:885,y:1348,w:336,h:26,date:1},
-  {id:'pg_init_3',p:2,t:'text',x:58,y:1428,w:255,h:26},{id:'pg_rev_3',p:2,t:'text',x:335,y:1428,w:242,h:26,date:1},
-  {id:'adm_init_3',p:2,t:'text',x:572,y:1428,w:290,h:26},{id:'adm_rev_3',p:2,t:'text',x:885,y:1428,w:336,h:26,date:1},
+  {id:'pg_init_1',p:2,t:'text',x:58,y:1268,w:255,h:26},{id:'pg_rev_1',p:2,t:'text',x:335,y:1268,w:228,h:26,date:1},
+  {id:'adm_init_1',p:2,t:'text',x:572,y:1268,w:290,h:26},{id:'adm_rev_1',p:2,t:'text',x:885,y:1268,w:308,h:26,date:1},
+  {id:'pg_init_2',p:2,t:'text',x:58,y:1348,w:255,h:26},{id:'pg_rev_2',p:2,t:'text',x:335,y:1348,w:228,h:26,date:1},
+  {id:'adm_init_2',p:2,t:'text',x:572,y:1348,w:290,h:26},{id:'adm_rev_2',p:2,t:'text',x:885,y:1348,w:308,h:26,date:1},
+  {id:'pg_init_3',p:2,t:'text',x:58,y:1428,w:255,h:26},{id:'pg_rev_3',p:2,t:'text',x:335,y:1428,w:228,h:26,date:1},
+  {id:'adm_init_3',p:2,t:'text',x:572,y:1428,w:290,h:26},{id:'adm_rev_3',p:2,t:'text',x:885,y:1428,w:308,h:26,date:1},
 ];
 
 function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkbox'?(e.checked?'Yes':''):(e.value||'').trim()):''}
@@ -247,7 +247,7 @@ function dcyReset(){
 
 // ── form-kit integration: reuse submit / status / counter / signature capture. ──
 window.FORMKIT_CONFIG = {
-  formType:'dcy_01234', version:'v6', centerSelect:'#ctr', reset:dcyReset,
+  formType:'dcy_01234', version:'v6', title:'Child Enrollment & Health (DCY 01234)', reset:dcyReset,
   collect:function(){
     var fd={ type:'dcy_01234', dcy_form:'01234', dcy_version:'v6', center_code:FormKit.centerCode() };
     FIELDS.forEach(function(f){ if(f.t!=='sig') fd[f.id]=g(f.id); });

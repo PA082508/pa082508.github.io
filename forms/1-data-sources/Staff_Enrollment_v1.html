@@ -169,7 +169,7 @@ function staffReset(){
   if(window.FormKit){FormKit.clearSig('empSig');FormKit.applyConditionals();FormKit.refreshCounter();FormKit.status('Cleared','')}
 }
 window.FORMKIT_CONFIG = {
-  formType:'staff', version:'v1', centerSelect:'#ctr', reset:staffReset,
+  formType:'staff', version:'v1', title:'Staff Enrollment', reset:staffReset,
   collect:function(){
     var driver=gc('is_driver'), prep=gc('is_prepare_food')||g('role')==='cook', handles=gc('is_handle_food'), wa=g('work_auth_type');
     var waTimed = (wa==='ead'||wa==='parole'||wa==='visa');

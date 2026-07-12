@@ -41,7 +41,7 @@
   var CENTER_MEALS = { pearl: CM, alpha: CM, ridge: CM };
   var MEALS = ['b', 'as', 'l', 'ps', 'su', 'es'];
   // Shared brand assets (drop pa-logo.png 603×203 + pa-icon-144.png into this dir).
-  var LOGO_URL = 'pa-logo.png', FAVICON_URL = 'pa-icon-144.png';
+  var LOGO_URL = 'pa-icon-192.png', FAVICON_URL = 'pa-icon-144.png';
   var centerResolved = false; // true once embed/?center/kiosk resolves a center
 
   var CFG = window.FORMKIT_CONFIG || {};
@@ -56,9 +56,9 @@
     if (e) { e.textContent = msg; e.className = kind || ''; }
   }
 
-  // ── Center select → center UUID ──────────────────────────────────────────────
-  function centerEl() { return CFG.centerSelect ? $(CFG.centerSelect) : null; }
-  function centerCode() { var e = centerEl(); return e ? e.value : (CFG.centerCode || ''); }
+  // ── Center resolution (NO visible picker — ?center= / kiosk / embed only) ────
+  var _center = '', _onCenter = [];   // _onCenter: run once the center resolves (no live picker)
+  function centerCode() { return _center || CFG.centerCode || ''; }
   function centerUuid() { return CENTERS[centerCode()] || null; }
 
   // ── Signature pads (auto-init every [data-formkit="signature"]) ──────────────
@@ -294,8 +294,8 @@
       MEALS.forEach(function (m) { var cb = document.getElementById('cb_' + day + '_' + m); if (cb) { cb.checked = false; cb.removeAttribute('data-fk-userset'); untagAuto(cb); } });
       refreshCounter();
     }); });
-    // Re-derive every in-care day when the center changes (§4 depends on it).
-    var ce = centerEl(); if (ce) ce.addEventListener('change', rederiveAll);
+    // Re-derive every in-care day once the center resolves (§4 depends on it; no live picker).
+    _onCenter.push(rederiveAll);
     // Smart-Monday chip
     var host = $('[data-fk-week-apply]'); if (!host) return;
     var chip = document.createElement('button'); chip.type = 'button'; chip.className = 'fk-chip fk-print-hidden'; chip.textContent = '↓ Apply Monday to Tue–Fri';
@@ -391,7 +391,7 @@
     if (_submitting || _submitted) return;   // in-flight / already-submitted guard
     var missing = refreshCounter();
     if (missing.length) { var f = firstMissing(); if (f) { (f.scrollIntoView || function () {}).call(f, { behavior: 'smooth', block: 'center' }); if (f.focus) f.focus(); fieldMsg(f, true); } status('Please complete the highlighted fields', 'er'); return; }
-    if (CFG.centerSelect && !centerUuid()) { status('⚠ Select a center first', 'er'); var c = centerEl(); if (c) c.focus(); return; }
+    if (!centerUuid()) { status("⚠ Please open this form from your center's packet link or QR", 'er'); return; }
     var data;
     try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status('Error: ' + e.message, 'er'); return; }
     if (!data) { status('Nothing to submit', 'er'); return; }
@@ -486,9 +486,9 @@
   }
   function setResolvedCenter(code) {
     if (!code || !CENTERS[code]) return;
-    centerResolved = true;
-    var e = centerEl(); if (e) { e.value = code; e.dispatchEvent(new Event('change', { bubbles: true })); e.style.display = 'none'; } // parent never sees "Select center"
-    renderCenterHeader(code);
+    centerResolved = true; _center = code;
+    refreshToolbarCenter();   // brand-header chip + enable Submit
+    _onCenter.forEach(function (fn) { try { fn(); } catch (_) {} });
   }
   function resolveCenter() {
     // Priority: embed (handled in EMBED.boot) → ?center= → kiosk device → staff <select> fallback.
@@ -540,7 +540,7 @@
     if (document.getElementById('fk-cal-css')) return;
     var s = document.createElement('style'); s.id = 'fk-cal-css';
     s.textContent =
-      '.fk-cal-ico{position:absolute;width:20px;height:20px;padding:0;border:none;background:transparent;cursor:pointer;font-size:14px;line-height:1;opacity:.65;z-index:6}'
+      '.fk-cal-ico{position:absolute;width:18px;height:18px;padding:0;border:none;background:transparent;cursor:pointer;font-size:13px;line-height:1;opacity:.65;z-index:6}'
       + '.fk-cal-ico:hover{opacity:1}'
       + '.fk-cal{position:absolute;z-index:9999;width:236px;background:#fff;border:1px solid #cfe0d5;border-radius:10px;box-shadow:0 10px 30px rgba(15,76,53,.28);padding:8px;font-family:Arial,Helvetica,sans-serif;user-select:none}'
       + '.fk-cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}'
@@ -619,11 +619,95 @@
       ico.setAttribute('tabindex', '-1'); ico.setAttribute('aria-label', 'Open calendar');
       ico.addEventListener('click', function (ev) { ev.stopPropagation(); if (_calField === el && _calEl) { closeCal(); } else { openCal(el); } });
       // overlay fields are absolutely positioned inside their .page → drop the icon
-      // at the field's right edge in the same offset parent.
-      ico.style.left = (el.offsetLeft + el.offsetWidth - 22) + 'px';
-      ico.style.top = (el.offsetTop + Math.max(0, (el.offsetHeight - 20) / 2)) + 'px';
+      // FLUSH INSIDE the field's right edge (never widens the field's footprint).
+      ico.style.left = (el.offsetLeft + el.offsetWidth - 19) + 'px';
+      ico.style.top = (el.offsetTop + Math.max(0, (el.offsetHeight - 18) / 2)) + 'px';
       (el.parentNode || document.body).appendChild(ico);
     });
+  }
+
+  // ── Unified FormToolbar — one brand toolbar for every form. Replaces whatever
+  //    toolbar markup a form ships with (so the old two epochs + the visible
+  //    center <select> all disappear). Order: brand header (logo · org · center
+  //    chip) then the action row: [name] · Submit(filled) · Print(ghost) ·
+  //    Clear(ghost-danger) · Expires(config only) · counter(pill) · special. ────
+  var _tbSubmit = null, _tbBanner = null;
+  function tbCss() {
+    if (document.getElementById('fk-tb-css')) return;
+    var s = document.createElement('style'); s.id = 'fk-tb-css';
+    s.textContent =
+      '.fk-toolbar{position:sticky;top:0;z-index:40;font-family:Arial,Helvetica,sans-serif;box-shadow:0 1px 0 rgba(15,76,53,.08)}'
+      + '.fk-tb-brand{display:flex;align-items:center;gap:9px;background:#0f4c35;color:#fff;padding:7px 14px}'
+      + '.fk-tb-logo{width:22px;height:22px;border-radius:5px;background:#fff;object-fit:contain;flex:0 0 auto}'
+      + '.fk-tb-word{font-weight:700;font-size:13.5px;letter-spacing:.01em}'
+      + '.fk-tb-center{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.16);border-radius:20px;padding:4px 11px}'
+      + '.fk-tb-row{display:flex;flex-wrap:wrap;align-items:center;gap:9px;background:#fff;padding:9px 14px;border-top:1px solid #e2e8e2}'
+      + '.fk-tb-name{font-weight:700;font-size:14px;color:#12241b;margin-right:4px}'
+      + '.fk-tb-b{font:inherit;font-size:12.5px;font-weight:700;border-radius:8px;padding:8px 15px;cursor:pointer;border:1.5px solid transparent;display:inline-flex;align-items:center;gap:6px}'
+      + '.fk-tb-submit{background:#0f4c35;color:#fff}'
+      + '.fk-tb-submit:disabled{opacity:.5;cursor:not-allowed}'
+      + '.fk-tb-ghost{background:#fff;color:#0f4c35;border-color:#0f4c35}'
+      + '.fk-tb-danger{background:#fff;color:#b3402e;border-color:#b3402e}'
+      + '.fk-tb-exp{font-size:11.5px;color:#6b7280;display:inline-flex;align-items:center;gap:5px;margin-left:2px}'
+      + '.fk-tb-spacer{flex:1}'
+      + '.fk-tb-special{font:inherit;font-size:12px;font-weight:600;border-radius:8px;padding:7px 12px;background:#eef3ef;color:#0f4c35;border:1px solid #dcebe2;cursor:pointer}'
+      + '.fk-tb-status{font-size:12.5px;font-weight:600}.fk-tb-status.ok{color:#0f4c35}.fk-tb-status.er{color:#b91c1c}.fk-tb-status.in{color:#6b7280}'
+      + '.fk-tb-banner{display:flex;align-items:center;gap:9px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:600;padding:10px 14px;border-top:1px solid #e2e8e2}'
+      + '@media print{.fk-toolbar{display:none!important}}';
+    document.head.appendChild(s);
+  }
+  function tbBtn(cls, txt) { var b = document.createElement('button'); b.type = 'button'; b.className = cls; b.innerHTML = txt; return b; }
+  function refreshToolbarCenter() {
+    var chip = $('[data-formkit="center-chip"]');
+    var code = centerCode(), info = CENTERS_INFO[code], has = !!centerUuid();
+    if (chip) { if (info) { chip.textContent = '📍 ' + info.name.replace(/^Play Academy\s+/, ''); chip.style.display = ''; } else { chip.style.display = 'none'; } }
+    if (_tbBanner) _tbBanner.style.display = has ? 'none' : '';
+    if (_tbSubmit) _tbSubmit.disabled = !has;
+  }
+  function initToolbar() {
+    var tb = $('[data-formkit="toolbar"]') || $('.toolbar') || document.getElementById('tb');
+    if (!tb) { tb = document.createElement('div'); document.body.insertBefore(tb, document.body.firstChild); }
+    tbCss();
+    // title fallback: config → an <h1> already in the bar → document.title
+    var h1 = tb.querySelector('h1');
+    var title = CFG.title || (h1 && h1.textContent.trim()) || document.title || '';
+    // PRESERVE controls some forms pack into their bar (v9/IEA: dynamic #exp, the
+    // required counter, and the smart-week hosts that own the Apply-Monday chip).
+    var keepExp = tb.querySelector('#exp');
+    var keepCounter = tb.querySelector('[data-formkit="counter"]');
+    var keepWeek = $$('[data-fk-week],[data-fk-week-apply],[data-fk-meals]', tb);
+    // Strip ONLY the old toolbar bits — DIRECT-child <select>/<button>/<h1> and the
+    // old status span — so nested things (e.g. the Apply-Monday chip) survive.
+    Array.prototype.slice.call(tb.children).forEach(function (e) {
+      if (/^(SELECT|BUTTON|H1)$/.test(e.tagName)) { tb.removeChild(e); return; }
+      if (e.id === 'st' && e !== keepCounter) tb.removeChild(e);
+    });
+    tb.classList.add('fk-toolbar');
+    var brand = document.createElement('div'); brand.className = 'fk-tb-brand';
+    brand.innerHTML = '<img class="fk-tb-logo" src="' + LOGO_URL + '" alt="" onerror="this.style.display=\'none\'">'
+      + '<span class="fk-tb-word" data-fk-org>' + (CFG.orgName || 'Play Academy') + '</span>'
+      + '<span class="fk-tb-center" data-formkit="center-chip" style="display:none"></span>';
+    var row = document.createElement('div'); row.className = 'fk-tb-row';
+    var name = document.createElement('span'); name.className = 'fk-tb-name'; name.textContent = title;
+    var bSubmit = tbBtn('fk-tb-b fk-tb-submit', '✔ Submit'); bSubmit.setAttribute('data-formkit', 'submit');
+    var bPrint = tbBtn('fk-tb-b fk-tb-ghost', '🖨 Print'); bPrint.addEventListener('click', function () { window.print(); });
+    var bClear = tbBtn('fk-tb-b fk-tb-danger', '✕ Clear'); bClear.addEventListener('click', function () { if (CFG.reset) CFG.reset(); });
+    row.appendChild(name); row.appendChild(bSubmit); row.appendChild(bPrint); row.appendChild(bClear);
+    // expiry: prefer the form's own dynamic #exp, else a static config slot
+    if (keepExp) { keepExp.classList.add('fk-tb-exp'); row.appendChild(keepExp); }
+    else if (CFG.expiry) { var exp = document.createElement('span'); exp.className = 'fk-tb-exp'; exp.textContent = '⏳ Renew in ' + CFG.expiry; row.appendChild(exp); }
+    // required counter: reuse the form's own, else create one
+    if (keepCounter) { keepCounter.classList.add('fk-print-hidden'); row.appendChild(keepCounter); }
+    else { var cnt = document.createElement('span'); cnt.className = 'fk-counter fk-print-hidden'; cnt.setAttribute('data-formkit', 'counter'); row.appendChild(cnt); }
+    var sp = document.createElement('span'); sp.className = 'fk-tb-spacer'; row.appendChild(sp);
+    keepWeek.forEach(function (w) { row.appendChild(w); });   // Apply-Monday chip host, etc.
+    (CFG.special || []).forEach(function (b) { var el = tbBtn('fk-tb-special', b.label); if (b.onClick) el.addEventListener('click', b.onClick); row.appendChild(el); });
+    var st = document.createElement('span'); st.id = 'st'; st.className = 'fk-tb-status'; st.setAttribute('data-formkit', 'status'); row.appendChild(st);
+    _tbBanner = document.createElement('div'); _tbBanner.className = 'fk-tb-banner fk-print-hidden';
+    _tbBanner.textContent = "⚠ Please open this form from your center's packet link or QR.";
+    tb.insertBefore(row, tb.firstChild); tb.insertBefore(brand, row); tb.appendChild(_tbBanner);
+    _tbSubmit = bSubmit;
+    refreshToolbarCenter(); refreshCounter();
   }
 
   function boot() {
@@ -631,8 +715,9 @@
     $$('[data-formkit="signature"]').forEach(initSig);
     initConditionals(); initValidation(); initTooltips(); initChoices();
     initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates();
+    if (EMBED.active) EMBED.boot(); else resolveCenter();  // resolve center (embed does its own)
+    initToolbar();                                         // unified toolbar — brand + center chip / banner
     var sub = $('[data-formkit="submit"]'); if (sub) sub.addEventListener('click', function (e) { e.preventDefault(); submit(); });
-    if (EMBED.active) EMBED.boot(); else resolveCenter();  // embed resolves its own center
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 

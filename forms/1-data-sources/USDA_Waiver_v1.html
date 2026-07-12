@@ -181,7 +181,7 @@ function gc(id){var e=document.getElementById(id);return e&&e.checked}
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function resetForm(){var c=document.getElementById('childName');if(c)c.value='';var p=document.getElementById('parentName');if(p)p.value='';var a=document.getElementById('attest');if(a)a.checked=false;if(window.FormKit)FormKit.clearSig('sigPad');var sd=document.getElementById('signedDate');if(sd)sd.value=todayISO();if(window.FormKit){FormKit.status('Form cleared','');FormKit.refreshCounter();}}
 window.FORMKIT_CONFIG={
-  formType:'usda_waiver',version:'v1',centerSelect:'#ctr',reset:resetForm,
+  formType:'usda_waiver',version:'v1',title:'USDA Income Eligibility Waiver',reset:resetForm,
   collect:function(){
     var ctr=document.getElementById('ctr');
     var sigDate=g('signedDate')||todayISO();

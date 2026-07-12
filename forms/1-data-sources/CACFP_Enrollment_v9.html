@@ -154,7 +154,7 @@ function ctrPick(){var e=document.getElementById('ctr');if(!e)return;e.classList
 function clear_(){document.querySelectorAll('[id^=f_]').forEach(function(e){if(e.tagName!=='CANVAS')e.value=''});document.querySelectorAll('[id^=cb_]').forEach(function(e){e.checked=false});if(window.FormKit)FormKit.clearSig('f_parent_sig');var x=document.getElementById('exp');if(x)x.textContent='';if(window.FormKit)FormKit.status('Cleared','')}
 function PA_APPLY(fd){var S=function(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v},C=function(id,v){var e=document.getElementById(id);if(e)e.checked=!!v};S('f_center',fd.center_name);S('f_child_name',fd.child_name);S('f_dob',fd.birthdate);if(fd.birthdate)calcAge();S('f_phone',fd.day_phone);if(fd.mailing){S('f_street',fd.mailing.street);S('f_city',fd.mailing.city);S('f_zip',fd.mailing.zip)}S('f_parent_dob',fd.parent_birthdate);S('f_parent_email',fd.parent_email);C('cb_varies',fd.schedule_varies);if(fd.schedule)DAYS.forEach(function(d){var x=fd.schedule[d];if(!x)return;C('cb_'+d,x.in_care);S('f_'+d+'_arr1',x.arr1);S('f_'+d+'_dep1',x.dep1);S('f_'+d+'_arr2',x.arr2);S('f_'+d+'_dep2',x.dep2);if(x.meals)MEALS.forEach(function(m){C('cb_'+d+'_'+m,x.meals[m])})})}
 window.FORMKIT_CONFIG={
-  formType:'cacfp_enrollment',version:'v9',centerSelect:'#ctr',reset:clear_,applyPrefill:PA_APPLY,
+  formType:'cacfp_enrollment',version:'v9',title:'CACFP Enrollment',expiry:'12 mo',reset:clear_,applyPrefill:PA_APPLY,
   collect:function(){
     /* Out-of-care days (day box unchecked) serialize with EMPTY hours + all-false
        meals — no phantom times/meals reach the payload / DB / checkmark export. */

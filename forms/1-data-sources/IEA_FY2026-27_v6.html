@@ -477,7 +477,7 @@ function PA_APPLY(fd){
 
 /* ═══ FORMKIT_CONFIG — shared transport/embed/signatures live in form-kit.js ═══ */
 window.FORMKIT_CONFIG={
-  formType:'iea',version:'v5',centerSelect:'#ctr',reset:clear_,applyPrefill:PA_APPLY,
+  formType:'iea',version:'v5',title:'Income Eligibility Application (FY2026-27)',expiry:'12 mo',reset:clear_,applyPrefill:PA_APPLY,
   collect:function(){
     var kids=[1,2,3,4].map(function(k){return {name:gv('kid'+k+'_name'),age:gv('kid'+k+'_age'),
       dob:gv('kid'+k+'_dob'),foster:gcb('kid'+k+'_foster'),case_no:gv('kid'+k+'_case')};})
