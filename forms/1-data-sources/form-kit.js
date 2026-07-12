@@ -626,6 +626,78 @@
     });
   }
 
+  // ── Address helper (provider-agnostic, KEYLESS): zip→city/state autofill +
+  //    street suggestions. FAIL-OPEN — any network hiccup just leaves manual entry
+  //    working. Opt-in: put [data-fk-address] on the street field; link the others
+  //    via data-fk-addr-city/state/zip (element id) or the kit falls back to
+  //    [data-fk-field=city|zip]. State ALWAYS comes from the geocoder. Provider is
+  //    swappable via the GEO adapter (Census + zippopotam today; Places later). ──
+  var GEO = {
+    zip: function (z) {   // zip → {city,state} (zippopotam, keyless, CORS-ok)
+      return fetch('https://api.zippopotam.us/us/' + z).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { var p = d && d.places && d.places[0]; return p ? { city: p['place name'], state: p['state abbreviation'] } : null; })
+        .catch(function () { return null; });
+    },
+    suggest: function (q) {   // free-text → [{label,street,city,state,zip}] (US Census onelineaddress)
+      var u = 'https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?benchmark=Public_AR_Current&format=json&address=' + encodeURIComponent(q);
+      return fetch(u).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+        var m = (d && d.result && d.result.addressMatches) || [];
+        return m.slice(0, 5).map(function (a) { var c = a.addressComponents || {};
+          var street = [c.fromAddress, c.streetName, c.suffixType].filter(Boolean).join(' ') || (a.matchedAddress || '').split(',')[0];
+          return { label: a.matchedAddress || street, street: street, city: c.city || '', state: c.state || '', zip: c.zip || '' };
+        });
+      }).catch(function () { return []; });
+    }
+  };
+  function _addrLinked(el, kind) {
+    var id = el.getAttribute('data-fk-addr-' + kind);
+    if (id) return document.getElementById(id.replace(/^#/, ''));
+    return $('[data-fk-field="' + kind + '"]');
+  }
+  function _setIfEmpty(el, v) { if (el && v && !(el.value || '').trim()) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); } }
+  function addrCss() {
+    if (document.getElementById('fk-addr-css')) return;
+    var s = document.createElement('style'); s.id = 'fk-addr-css';
+    s.textContent = '.fk-addr-list{position:absolute;z-index:9999;background:#fff;border:1px solid #cfe0d5;border-radius:8px;box-shadow:0 8px 24px rgba(15,76,53,.2);padding:4px;max-width:380px;font-family:Arial,Helvetica,sans-serif}'
+      + '.fk-addr-item{display:block;width:100%;text-align:left;border:none;background:transparent;padding:7px 9px;font-size:12.5px;color:#233;cursor:pointer;border-radius:6px}'
+      + '.fk-addr-item:hover{background:#eef3ef}@media print{.fk-addr-list{display:none!important}}';
+    document.head.appendChild(s);
+  }
+  function initAddress() {
+    var streets = $$('[data-fk-address]'); if (!streets.length) return;
+    addrCss();
+    streets.forEach(function (st) {
+      if (st.getAttribute('data-fk-addrwired')) return; st.setAttribute('data-fk-addrwired', '1');
+      var cityEl = _addrLinked(st, 'city'), stateEl = _addrLinked(st, 'state'), zipEl = _addrLinked(st, 'zip');
+      if (zipEl) zipEl.addEventListener('blur', function () {
+        var z = (zipEl.value || '').replace(/\D/g, '').slice(0, 5); if (z.length !== 5) return;
+        GEO.zip(z).then(function (r) { if (!r) return; _setIfEmpty(cityEl, r.city); _setIfEmpty(stateEl, r.state); });
+      });
+      var box = null;
+      function closeAddr() { if (box) { box.parentNode && box.parentNode.removeChild(box); box = null; } }
+      var run = debounce(function () {
+        var q = (st.value || '').trim(); if (q.length < 5) { closeAddr(); return; }
+        GEO.suggest(q).then(function (list) {
+          closeAddr(); if (!list.length) return;
+          box = document.createElement('div'); box.className = 'fk-addr-list';
+          list.forEach(function (a) {
+            var it = document.createElement('button'); it.type = 'button'; it.className = 'fk-addr-item'; it.textContent = a.label;
+            it.addEventListener('mousedown', function (e) { e.preventDefault();
+              if (a.street) { st.value = a.street; st.dispatchEvent(new Event('input', { bubbles: true })); }
+              _setIfEmpty(cityEl, a.city); _setIfEmpty(stateEl, a.state); _setIfEmpty(zipEl, a.zip); closeAddr();
+            });
+            box.appendChild(it);
+          });
+          document.body.appendChild(box);
+          var r = st.getBoundingClientRect();
+          box.style.left = (r.left + window.scrollX) + 'px'; box.style.top = (r.bottom + window.scrollY + 2) + 'px'; box.style.minWidth = r.width + 'px';
+        });
+      }, 350);
+      st.addEventListener('input', run);
+      st.addEventListener('blur', function () { setTimeout(closeAddr, 200); });
+    });
+  }
+
   // ── Unified FormToolbar — one brand toolbar for every form. Replaces whatever
   //    toolbar markup a form ships with (so the old two epochs + the visible
   //    center <select> all disappear). Order: brand header (logo · org · center
@@ -714,7 +786,7 @@
     injectFavicon();
     $$('[data-formkit="signature"]').forEach(initSig);
     initConditionals(); initValidation(); initTooltips(); initChoices();
-    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates();
+    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates(); initAddress();
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // resolve center (embed does its own)
     initToolbar();                                         // unified toolbar — brand + center chip / banner
     var sub = $('[data-formkit="submit"]'); if (sub) sub.addEventListener('click', function (e) { e.preventDefault(); submit(); });

@@ -73,7 +73,7 @@ var FIELDS = [
   {id:'child_name', p:1,t:'text',x:58,y:255,w:560,h:34,fk:'child_name',r:1},
   {id:'dob',        p:1,t:'text',x:652,y:255,w:258,h:34,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1},
   {id:'first_day',  p:1,t:'text',x:938,y:255,w:270,h:34,r:1,ph:'MM/DD/YYYY',date:1},
-  {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1},
+  {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1,addr:1},
   {id:'city',       p:1,t:'text',x:58,y:410,w:575,h:32,fk:'city',r:1},
   {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1,ac:'address-level1'},
   {id:'zip',        p:1,t:'text',x:948,y:410,w:248,h:32,fk:'zip',r:1},
@@ -180,6 +180,7 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       if(f.tel) el.setAttribute('autocomplete','tel');   // form-kit initPhones masks type=tel
       if(f.ac)  el.setAttribute('autocomplete',f.ac);
       if(f.date) el.setAttribute('data-fk-date','1');    // form-kit initDates: MM/DD/YYYY mask + popup calendar
+      if(f.addr){ el.setAttribute('data-fk-address','1'); el.setAttribute('data-fk-addr-state','f_state'); } // initAddress: city/zip via fk, state explicit
     }
     el.id='f_'+f.id;
     if(f.fk) el.setAttribute('data-fk-field',f.fk);
