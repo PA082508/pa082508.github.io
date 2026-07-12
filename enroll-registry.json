@@ -56,12 +56,12 @@
       "requiringOrg": "ODJFS/DCY",
       "intakeMode": "paper_scan",
       "signer": "parent",
-      "current": "v2026pdf",
+      "current": "v6",
       "versions": {
         "v2026pdf": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF",
         "v6": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v6.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v6.html",
       "perInstance": false,
       "history": [
         {
@@ -71,6 +71,10 @@
         {
           "at": "2026-07-11",
           "note": "Stage 2 first-pass: DCY_01234_v6.html — OVERLAY fillable on official Rev 7/2026 backgrounds (2pp, 1275x1650); form-kit harness + collect + parent/program signatures + attestation-gate. DARK (current stays on interim PDF) — for 1:1 sverka → smoke → flip."
+        },
+        {
+          "at": "2026-07-12",
+          "note": "FLIP: current → v6 after 4 calibrations (cal#4 commit 4f72d97, per-item seat by background) + clean dark-smoke 5/5 (Ref 9F755F4F: required→parent-lock→program-lock, submit→inbox pending, reject 'dcy test'; role-gate enforced by RESTRICTIVE staff_only RLS). fallbackUrl → v6."
         }
       ],
       "raisesConditions": [
