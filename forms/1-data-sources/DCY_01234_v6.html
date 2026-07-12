@@ -75,39 +75,39 @@ var FIELDS = [
   {id:'first_day',  p:1,t:'text',x:938,y:255,w:270,h:34,r:1,ph:'MM/DD/YYYY'},
   {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1},
   {id:'city',       p:1,t:'text',x:58,y:410,w:575,h:32,fk:'city',r:1},
-  {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1},
+  {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1,ac:'address-level1'},
   {id:'zip',        p:1,t:'text',x:948,y:410,w:248,h:32,fk:'zip',r:1},
 
   {id:'p1_name',    p:1,t:'text',x:58,y:485,w:560,h:32,fk:'parent_name',r:1},
-  {id:'p1_phone',   p:1,t:'text',x:652,y:485,w:556,h:32,r:1},
+  {id:'p1_phone',   p:1,t:'text',x:652,y:485,w:556,h:32,r:1,tel:1},
   {id:'p1_same',    p:1,t:'cb',  x:219,y:521},
   {id:'p1_address', p:1,t:'text',x:58,y:566,w:560,h:26},
   {id:'p1_city',    p:1,t:'text',x:658,y:558,w:295,h:28},
-  {id:'p1_state',   p:1,t:'text',x:965,y:558,w:88,h:28},
+  {id:'p1_state',   p:1,t:'text',x:965,y:558,w:88,h:28,ac:'address-level1'},
   {id:'p1_zip',     p:1,t:'text',x:1094,y:558,w:106,h:28},
   {id:'p1_email',   p:1,t:'text',x:58,y:630,w:575,h:28,fk:'parent_email'},
-  {id:'p1_cell',    p:1,t:'text',x:658,y:630,w:550,h:28},
+  {id:'p1_cell',    p:1,t:'text',x:658,y:630,w:550,h:28,tel:1},
   {id:'p1_work',    p:1,t:'text',x:58,y:705,w:575,h:28},
-  {id:'p1_work_ph', p:1,t:'text',x:658,y:705,w:550,h:28},
+  {id:'p1_work_ph', p:1,t:'text',x:658,y:705,w:550,h:28,tel:1},
 
   {id:'p2_na',      p:1,t:'cb',  x:60,y:787},
   {id:'p2_name',    p:1,t:'text',x:180,y:777,w:438,h:32},
-  {id:'p2_phone',   p:1,t:'text',x:652,y:777,w:556,h:32},
+  {id:'p2_phone',   p:1,t:'text',x:652,y:777,w:556,h:32,tel:1},
   {id:'p2_same',    p:1,t:'cb',  x:212,y:817},
   {id:'p2_address', p:1,t:'text',x:58,y:860,w:560,h:26},
   {id:'p2_city',    p:1,t:'text',x:658,y:852,w:295,h:28},
-  {id:'p2_state',   p:1,t:'text',x:965,y:852,w:88,h:28},
+  {id:'p2_state',   p:1,t:'text',x:965,y:852,w:88,h:28,ac:'address-level1'},
   {id:'p2_zip',     p:1,t:'text',x:1094,y:852,w:106,h:28},
   {id:'p2_email',   p:1,t:'text',x:58,y:924,w:575,h:28},
-  {id:'p2_cell',    p:1,t:'text',x:658,y:924,w:550,h:28},
+  {id:'p2_cell',    p:1,t:'text',x:658,y:924,w:550,h:28,tel:1},
   {id:'p2_work',    p:1,t:'text',x:58,y:999,w:575,h:28},
-  {id:'p2_work_ph', p:1,t:'text',x:658,y:999,w:550,h:28},
+  {id:'p2_work_ph', p:1,t:'text',x:658,y:999,w:550,h:28,tel:1},
 
   {id:'ec1_name',   p:1,t:'text',x:58,y:1084,w:560,h:22,r:1},
   {id:'ec2_na',     p:1,t:'cb',  x:661,y:1091},
   {id:'ec2_name',   p:1,t:'text',x:812,y:1090,w:396,h:20},
-  {id:'ec1_phone',  p:1,t:'text',x:58,y:1140,w:560,h:20,r:1},
-  {id:'ec2_phone',  p:1,t:'text',x:658,y:1140,w:550,h:20},
+  {id:'ec1_phone',  p:1,t:'text',x:58,y:1140,w:560,h:20,r:1,tel:1},
+  {id:'ec2_phone',  p:1,t:'text',x:658,y:1140,w:550,h:20,tel:1},
   {id:'ec1_other',  p:1,t:'text',x:322,y:1190,w:316,h:22},
   {id:'ec2_other',  p:1,t:'text',x:922,y:1190,w:300,h:22},
   {id:'ec1_rel_y',  p:1,t:'cb',  x:60,y:1274},
@@ -174,9 +174,11 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       lock.textContent = f.staff ? 'Program review — after the parent signs' : 'Complete the required fields first';
       host.appendChild(lock);
     } else {
-      el=document.createElement('input'); el.type='text'; el.className='f';
+      el=document.createElement('input'); el.type=f.tel?'tel':'text'; el.className='f';
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
       if(f.ph) el.placeholder=f.ph;
+      if(f.tel) el.setAttribute('autocomplete','tel');   // form-kit initPhones masks type=tel
+      if(f.ac)  el.setAttribute('autocomplete',f.ac);
     }
     el.id='f_'+f.id;
     if(f.fk) el.setAttribute('data-fk-field',f.fk);
@@ -185,6 +187,34 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
     if(f.t==='text'||f.t==='area') el.addEventListener('input',gate);
     if(f.t==='cb') el.addEventListener('change',gate);
   });
+  gate();
+})();
+
+// ── Speed-standard additions (additive JS, packet kit standard): today-default on
+//    the parent sign date + "Same as Child's" auto-copies the child address into a
+//    parent block on both Parent #1 and Parent #2. Phone masking + autocomplete +
+//    session-packet autofill/prefill come from form-kit (type=tel / data-fk-field). ──
+(function extras(){
+  var pd=document.getElementById('f_parent_sig_dt');
+  if(pd && !pd.value){ var t=new Date();
+    pd.value=('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
+
+  function wireSame(cbId, pfx){
+    var cb=document.getElementById('f_'+cbId); if(!cb) return;
+    var map=[['address',pfx+'_address'],['city',pfx+'_city'],['state',pfx+'_state'],['zip',pfx+'_zip']];
+    cb.addEventListener('change',function(){
+      map.forEach(function(pair){
+        var src=document.getElementById('f_'+pair[0]), dst=document.getElementById('f_'+pair[1]);
+        if(!dst) return;
+        dst.value = cb.checked ? (src?src.value:'') : '';
+        dst.readOnly = cb.checked;
+        dst.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      gate();
+    });
+  }
+  wireSame('p1_same','p1');
+  wireSame('p2_same','p2');
   gate();
 })();
 
