@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DCY 01234 — Child Enrollment (Rev. 7/2026) · fillable</title>
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  /* ===================================================================
+     DCY 01234 (Rev. 7/2026) — OVERLAY fillable.
+     Inputs are absolutely positioned over the official ODCY background
+     scans (1275×1650 @150dpi, letter). Print must be indistinguishable
+     from the official form → the scan IS the layout; we only add fields.
+     Coordinates are a FIRST PASS for Nikolay's 1:1 sverka — tune FIELDS[].
+     =================================================================== */
+  :root{ --line:#0066cc; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#5a6b60;font-family:Arial,Helvetica,sans-serif}
+  .toolbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #dbe4dd;
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 16px}
+  .toolbar .btn{font:inherit;font-size:13px;font-weight:700;border:none;border-radius:8px;padding:9px 16px;cursor:pointer}
+  .btn.p{background:#0f4c35;color:#fff}.btn.g{background:#eef2ef;color:#0f4c35;border:1px solid #cfe0d5}
+  #st{font-size:13px;font-weight:600}
+  .doc{padding:20px 0 60px}
+  .page{position:relative;width:1275px;height:1650px;margin:0 auto 20px;background:#fff no-repeat;
+    background-size:1275px 1650px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+  .page.p1{background-image:url("DCY01234_2026_page-1.png")}
+  .page.p2{background-image:url("DCY01234_2026_page-2.png")}
+  .f{position:absolute;font-family:Arial,sans-serif;font-size:15px;color:#111;
+    background:rgba(255,253,150,0.55);border:none;border-bottom:1.5px solid var(--line);
+    padding:1px 4px;outline:none}
+  .f:focus{background:rgba(255,246,120,0.8)}
+  textarea.f{background:rgba(255,253,150,0.4);border:1px dashed var(--line);resize:none;line-height:1.35;padding:3px 5px}
+  .cb{position:absolute;width:18px;height:18px;accent-color:#0f4c35;cursor:pointer}
+  .sig{position:absolute;background:rgba(210,235,255,0.35);border:1.5px dashed #0f4c35;border-radius:4px;cursor:crosshair;display:block}
+  .siglock{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
+    background:rgba(90,107,96,.9);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:4px;z-index:5}
+  .sigclear{position:absolute;font-size:10px;padding:2px 6px;background:#c0392b;color:#fff;border:none;border-radius:4px;cursor:pointer;z-index:6}
+  @media print{
+    body{background:#fff}.toolbar{display:none}
+    .doc{padding:0}.page{box-shadow:none;margin:0}
+    .f,textarea.f{background:transparent;border:none}
+    .siglock{display:none}.sigclear{display:none}.sig{background:transparent;border:none}
+    @page{size:8.5in 11in;margin:0}
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <select id="ctr">
+    <option value="">— Select center —</option>
+    <option value="pearl">Play Academy Parma Heights</option>
+    <option value="alpha">Play Academy Mayfield Hills</option>
+    <option value="ridge">Play Academy Wickliffe</option>
+  </select>
+  <button class="btn p" data-formkit="submit">✔ Submit</button>
+  <button class="btn g" onclick="window.print()">🖨 Print</button>
+  <button class="btn g" onclick="dcyReset()">✕ Clear</button>
+  <span id="st" data-formkit="status"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="doc">
+  <div class="page p1" id="page1"></div>
+  <div class="page p2" id="page2"></div>
+</div>
+
+<script>
+/* ── Field map (FIRST PASS coordinates on 1275×1650). Tune x/y/w/h during sverka. ──
+   t: 'text'|'area'|'cb'|'sig'  · p: page 1|2 · r: required · fk: session-packet key   */
+var FIELDS = [
+  // ── PAGE 1 ──────────────────────────────────────────────────────────────────
+  {id:'child_name', p:1,t:'text',x:58,y:255,w:560,h:34,fk:'child_name',r:1},
+  {id:'dob',        p:1,t:'text',x:652,y:255,w:258,h:34,fk:'dob',r:1,ph:'MM/DD/YYYY'},
+  {id:'first_day',  p:1,t:'text',x:938,y:255,w:270,h:34,r:1,ph:'MM/DD/YYYY'},
+  {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1},
+  {id:'city',       p:1,t:'text',x:58,y:410,w:575,h:32,fk:'city',r:1},
+  {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1},
+  {id:'zip',        p:1,t:'text',x:948,y:410,w:248,h:32,fk:'zip',r:1},
+
+  {id:'p1_name',    p:1,t:'text',x:58,y:485,w:560,h:32,fk:'parent_name',r:1},
+  {id:'p1_phone',   p:1,t:'text',x:652,y:485,w:556,h:32,r:1},
+  {id:'p1_same',    p:1,t:'cb',  x:224,y:528},
+  {id:'p1_address', p:1,t:'text',x:58,y:566,w:560,h:26},
+  {id:'p1_city',    p:1,t:'text',x:658,y:558,w:295,h:28},
+  {id:'p1_state',   p:1,t:'text',x:965,y:558,w:88,h:28},
+  {id:'p1_zip',     p:1,t:'text',x:1072,y:558,w:130,h:28},
+  {id:'p1_email',   p:1,t:'text',x:58,y:630,w:575,h:28,fk:'parent_email'},
+  {id:'p1_cell',    p:1,t:'text',x:658,y:630,w:550,h:28},
+  {id:'p1_work',    p:1,t:'text',x:58,y:705,w:575,h:28},
+  {id:'p1_work_ph', p:1,t:'text',x:658,y:705,w:550,h:28},
+
+  {id:'p2_na',      p:1,t:'cb',  x:62,y:790},
+  {id:'p2_name',    p:1,t:'text',x:180,y:777,w:438,h:32},
+  {id:'p2_phone',   p:1,t:'text',x:652,y:777,w:556,h:32},
+  {id:'p2_same',    p:1,t:'cb',  x:224,y:823},
+  {id:'p2_address', p:1,t:'text',x:58,y:860,w:560,h:26},
+  {id:'p2_city',    p:1,t:'text',x:658,y:852,w:295,h:28},
+  {id:'p2_state',   p:1,t:'text',x:965,y:852,w:88,h:28},
+  {id:'p2_zip',     p:1,t:'text',x:1072,y:852,w:130,h:28},
+  {id:'p2_email',   p:1,t:'text',x:58,y:924,w:575,h:28},
+  {id:'p2_cell',    p:1,t:'text',x:658,y:924,w:550,h:28},
+  {id:'p2_work',    p:1,t:'text',x:58,y:999,w:575,h:28},
+  {id:'p2_work_ph', p:1,t:'text',x:658,y:999,w:550,h:28},
+
+  {id:'ec1_name',   p:1,t:'text',x:58,y:1075,w:560,h:30,r:1},
+  {id:'ec2_na',     p:1,t:'cb',  x:676,y:1086},
+  {id:'ec2_name',   p:1,t:'text',x:812,y:1078,w:396,h:28},
+  {id:'ec1_phone',  p:1,t:'text',x:58,y:1128,w:560,h:26,r:1},
+  {id:'ec2_phone',  p:1,t:'text',x:658,y:1128,w:550,h:26},
+  {id:'ec1_other',  p:1,t:'text',x:58,y:1188,w:560,h:26},
+  {id:'ec2_other',  p:1,t:'text',x:658,y:1188,w:550,h:26},
+  {id:'ec1_rel_y',  p:1,t:'cb',  x:62,y:1277},
+  {id:'ec1_rel_n',  p:1,t:'cb',  x:62,y:1307},
+  {id:'ec2_rel_y',  p:1,t:'cb',  x:668,y:1277},
+  {id:'ec2_rel_n',  p:1,t:'cb',  x:668,y:1307},
+  {id:'health_y',   p:1,t:'cb',  x:62,y:1389},
+  {id:'health_n',   p:1,t:'cb',  x:62,y:1422},
+
+  // ── PAGE 2 ──────────────────────────────────────────────────────────────────
+  {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name',r:1},
+  {id:'dob2',       p:2,t:'text',x:892,y:130,w:316,h:36,fk:'dob',r:1,ph:'MM/DD/YYYY'},
+  {id:'development',p:2,t:'area',x:58,y:228,w:1150,h:52},
+  {id:'na_dev',     p:2,t:'cb',  x:66,y:262},
+  {id:'accommod',   p:2,t:'area',x:58,y:322,w:1150,h:48},
+  {id:'na_acc',     p:2,t:'cb',  x:66,y:372},
+  {id:'svc_y',      p:2,t:'cb',  x:66,y:455},
+  {id:'svc_n',      p:2,t:'cb',  x:66,y:487},
+  {id:'svc_provider',p:2,t:'text',x:58,y:560,w:1150,h:26},
+  {id:'na_svc',     p:2,t:'cb',  x:66,y:582},
+  {id:'trans_yes',  p:2,t:'cb',  x:66,y:655},
+  {id:'trans_no',   p:2,t:'cb',  x:66,y:760},
+  {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
+
+  {id:'parent_sig',    p:2,t:'sig', x:58,y:1015,w:780,h:56,r:1,label:'Parent signature'},
+  {id:'parent_sig_dt', p:2,t:'text',x:892,y:1020,w:316,h:34,r:1,ph:'MM/DD/YYYY'},
+  {id:'program_sig',   p:2,t:'sig', x:58,y:1178,w:780,h:52,label:'Program administrator signature',staff:1},
+  {id:'program_sig_dt',p:2,t:'text',x:892,y:1183,w:316,h:34,ph:'MM/DD/YYYY'},
+
+  {id:'pg_init_1',p:2,t:'text',x:58,y:1268,w:255,h:26},{id:'pg_rev_1',p:2,t:'text',x:322,y:1268,w:242,h:26},
+  {id:'adm_init_1',p:2,t:'text',x:572,y:1268,w:290,h:26},{id:'adm_rev_1',p:2,t:'text',x:872,y:1268,w:336,h:26},
+  {id:'pg_init_2',p:2,t:'text',x:58,y:1348,w:255,h:26},{id:'pg_rev_2',p:2,t:'text',x:322,y:1348,w:242,h:26},
+  {id:'adm_init_2',p:2,t:'text',x:572,y:1348,w:290,h:26},{id:'adm_rev_2',p:2,t:'text',x:872,y:1348,w:336,h:26},
+  {id:'pg_init_3',p:2,t:'text',x:58,y:1428,w:255,h:26},{id:'pg_rev_3',p:2,t:'text',x:322,y:1428,w:242,h:26},
+  {id:'adm_init_3',p:2,t:'text',x:572,y:1428,w:290,h:26},{id:'adm_rev_3',p:2,t:'text',x:872,y:1428,w:336,h:26},
+];
+
+function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkbox'?(e.checked?'Yes':''):(e.value||'').trim()):''}
+
+// ── Render fields over the page scans ─────────────────────────────────────────
+(function render(){
+  var pg = {1:document.getElementById('page1'), 2:document.getElementById('page2')};
+  FIELDS.forEach(function(f){
+    var host = pg[f.p], el;
+    if(f.t==='cb'){
+      el=document.createElement('input'); el.type='checkbox'; el.className='cb';
+      el.style.left=f.x+'px'; el.style.top=f.y+'px';
+    } else if(f.t==='area'){
+      el=document.createElement('textarea'); el.className='f';
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+    } else if(f.t==='sig'){
+      el=document.createElement('canvas'); el.className='sig'; el.width=f.w; el.height=f.h;
+      el.setAttribute('data-formkit','signature');
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      if(f.r){el.setAttribute('data-required','');el.setAttribute('data-label',f.label||f.id);}
+      // clear button
+      var cb=document.createElement('button');cb.type='button';cb.className='sigclear';cb.textContent='✕';
+      cb.style.left=(f.x+f.w-22)+'px';cb.style.top=(f.y+2)+'px';
+      cb.onclick=function(){FormKit.clearSig(el);gate();};
+      host.appendChild(cb);
+      // lock overlay (attestation-gate)
+      var lock=document.createElement('div');lock.className='siglock';lock.id='lock_'+f.id;
+      lock.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      lock.textContent = f.staff ? 'Program review — after the parent signs' : 'Complete the required fields first';
+      host.appendChild(lock);
+    } else {
+      el=document.createElement('input'); el.type='text'; el.className='f';
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      if(f.ph) el.placeholder=f.ph;
+    }
+    el.id='f_'+f.id;
+    if(f.fk) el.setAttribute('data-fk-field',f.fk);
+    if(f.r && f.t!=='sig'){ el.setAttribute('data-required',''); el.setAttribute('data-label',f.id); }
+    host.appendChild(el);
+    if(f.t==='text'||f.t==='area') el.addEventListener('input',gate);
+    if(f.t==='cb') el.addEventListener('change',gate);
+  });
+  gate();
+})();
+
+// ── Attestation-gate: signatures unlock only after the required gate closes; the
+//    Program acknowledgement (staff) unlocks only after the parent has signed. ──
+function requiredFilled(){
+  return FIELDS.filter(function(f){return f.r && f.t!=='sig';})
+    .every(function(f){ return g(f.id)!==''; });
+}
+function hasInk(id){ var c=document.getElementById('f_'+id); return c && window.FormKit && FormKit.getSig && !!FormKit.getSig(c); }
+function gate(){
+  var reqOk = requiredFilled();
+  var pLock=document.getElementById('lock_parent_sig'); if(pLock) pLock.style.display = reqOk ? 'none':'flex';
+  var parentSigned = hasInk('parent_sig');
+  var gLock=document.getElementById('lock_program_sig'); if(gLock) gLock.style.display = (reqOk && parentSigned) ? 'none':'flex';
+}
+document.addEventListener('mouseup', function(){ setTimeout(gate,50); });
+document.addEventListener('touchend', function(){ setTimeout(gate,50); });
+
+function dcyReset(){
+  FIELDS.forEach(function(f){
+    var e=document.getElementById('f_'+f.id); if(!e)return;
+    if(f.t==='sig') FormKit.clearSig(e);
+    else if(f.t==='cb') e.checked=false;
+    else e.value='';
+  });
+  gate(); if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter();FormKit.status&&FormKit.status('Cleared','')}
+}
+
+// ── form-kit integration: reuse submit / status / counter / signature capture. ──
+window.FORMKIT_CONFIG = {
+  formType:'dcy_01234', version:'v6', centerSelect:'#ctr', reset:dcyReset,
+  collect:function(){
+    var fd={ type:'dcy_01234', dcy_form:'01234', dcy_version:'v6', center_code:FormKit.centerCode() };
+    FIELDS.forEach(function(f){ if(f.t!=='sig') fd[f.id]=g(f.id); });
+    return {
+      formData:fd,
+      signatures:{ parent_sig:FormKit.getSig('f_parent_sig'), program_sig:FormKit.getSig('f_program_sig') },
+      signatureDate: g('parent_sig_dt') || ''
+    };
+  },
+  onSuccess:function(ref){ FormKit.status && FormKit.status('✓ Submitted'+(ref?(' — Ref '+ref):''),'ok'); }
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+  try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
+});
+</script>
+<script defer src="form-kit.js"></script>
+</body>
+</html>

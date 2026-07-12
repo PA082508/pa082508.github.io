@@ -58,7 +58,8 @@
       "signer": "parent",
       "current": "v2026pdf",
       "versions": {
-        "v2026pdf": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF"
+        "v2026pdf": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF",
+        "v6": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v6.html"
       },
       "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF",
       "perInstance": false,
@@ -66,6 +67,10 @@
         {
           "at": "2026-07-10",
           "note": "Interim: repointed current to the official 2026 PDF (Rev. 7/2026); retired childcare-core-bound v4/v1 to _archive. Stage 2 replaces with a form-kit fillable."
+        },
+        {
+          "at": "2026-07-11",
+          "note": "Stage 2 first-pass: DCY_01234_v6.html — OVERLAY fillable on official Rev 7/2026 backgrounds (2pp, 1275x1650); form-kit harness + collect + parent/program signatures + attestation-gate. DARK (current stays on interim PDF) — for 1:1 sverka → smoke → flip."
         }
       ],
       "raisesConditions": [
