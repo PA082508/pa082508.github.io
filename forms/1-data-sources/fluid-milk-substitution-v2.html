@@ -383,16 +383,15 @@
         parent_signature_img: FormKit.getSig('sigPad'),
         signed_date:          g('signedDate') || null
       };
-      var r = await fetch(FormKit.supa.url + '/rest/v1/milk_substitutions', {
+      // SECURITY DEFINER door (RLS has no anon policy on the table) — validates center by slug.
+      var r = await fetch(FormKit.supa.url + '/rest/v1/rpc/submit_public_form', {
         method: 'POST',
         headers: Object.assign({ Prefer:'return=representation' }, FormKit.supa.headers),
-        body: JSON.stringify(row)
+        body: JSON.stringify({ p_form:'fluid_milk', p_center_slug: FormKit.centerCode(),
+          p_data: row, p_idempotency_key: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null })
       });
       if (!r.ok) throw new Error(await r.text());
-      // anon has SELECT on milk_substitutions → return the inserted id so the kit
-      // prints a Ref (F4 standard), same as the enrollment-RPC forms.
-      var j = await r.json();
-      return (j && j[0]) || null;
+      return await r.json();   // uuid → Ref (F4 standard)
     }
   };
 

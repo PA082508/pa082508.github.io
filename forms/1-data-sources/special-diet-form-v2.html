@@ -409,12 +409,15 @@
     submit: async function (data) {
       var row = data.formData;                                 // flat row = original columns
       row.authority_signature_img = FormKit.getSig('sigPad');  // same signature column as original
-      var r = await fetch(FormKit.supa.url + '/rest/v1/special_diet_forms', {
+      // SECURITY DEFINER door (RLS has no anon policy on the table) — validates center by slug.
+      var r = await fetch(FormKit.supa.url + '/rest/v1/rpc/submit_public_form', {
         method: 'POST',
-        headers: Object.assign({ Prefer: 'return=minimal' }, FormKit.supa.headers),
-        body: JSON.stringify(row)
+        headers: Object.assign({ Prefer: 'return=representation' }, FormKit.supa.headers),
+        body: JSON.stringify({ p_form: 'special_diet', p_center_slug: FormKit.centerCode(),
+          p_data: row, p_idempotency_key: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null })
       });
       if (!r.ok) throw new Error(await r.text());
+      return await r.json();   // uuid → Ref (F4 standard)
     }
   };
 
