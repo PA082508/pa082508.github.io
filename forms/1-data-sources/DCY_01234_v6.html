@@ -216,8 +216,23 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       gate();
     });
   }
+  // Parent #2 "Not Applicable" → disable + clear the whole P2 block (incl. unchecking
+  // Same as Child's and wiping any copied address), so N/A can't coexist with data.
+  function wireNA(){
+    var na=document.getElementById('f_p2_na'); if(!na) return;
+    var ids=['p2_name','p2_phone','p2_same','p2_address','p2_city','p2_state','p2_zip','p2_email','p2_cell','p2_work','p2_work_ph'];
+    na.addEventListener('change',function(){
+      var off=na.checked;
+      ids.forEach(function(id){ var e=document.getElementById('f_'+id); if(!e) return;
+        if(off){ if(e.type==='checkbox') e.checked=false; else { e.value=''; e.readOnly=false; } e.disabled=true; e.style.opacity='0.4'; }
+        else { e.disabled=false; e.style.opacity=''; }
+      });
+      gate();
+    });
+  }
   wireSame('p1_same','p1');
   wireSame('p2_same','p2');
+  wireNA();
   gate();
 })();
 

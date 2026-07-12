@@ -62,7 +62,12 @@
     <label class="f">Email *</label>
     <input type="email" id="email" autocomplete="email" data-required data-label="Email">
     <label class="f">Home address *</label>
-    <input type="text" id="address" autocomplete="street-address" data-required data-label="Home address" placeholder="Street, City, State ZIP">
+    <input type="text" id="street" data-fk-field="street" data-fk-address data-fk-addr-state="state" autocomplete="street-address" data-required data-label="Street" placeholder="Street, Apt">
+    <div class="row" style="grid-template-columns:1fr 90px 120px;margin-top:8px">
+      <div><label class="f" style="margin-top:0">City *</label><input type="text" id="city" data-fk-field="city" autocomplete="address-level2" data-required data-label="City"></div>
+      <div><label class="f" style="margin-top:0">State *</label><input type="text" id="state" autocomplete="address-level1" maxlength="2" data-required data-label="State" style="width:80px"></div>
+      <div><label class="f" style="margin-top:0">ZIP *</label><input type="text" id="zip" data-fk-field="zip" inputmode="numeric" autocomplete="postal-code" data-required data-label="ZIP"></div>
+    </div>
     <div class="row">
       <div><label class="f">Emergency contact — name *</label><input type="text" id="ec_name" autocomplete="name" data-required data-label="Emergency contact name"></div>
       <div><label class="f">Emergency contact — phone *</label><input type="tel" id="ec_phone" autocomplete="tel" data-required data-label="Emergency contact phone"></div>
@@ -176,7 +181,9 @@ window.FORMKIT_CONFIG = {
     var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
     var fd={
       type:'staff', center_code:FormKit.centerCode(),
-      full_name:g('full_name'), dob:g('dob'), phone:g('phone'), email:g('email'), address:g('address'),
+      full_name:g('full_name'), dob:g('dob'), phone:g('phone'), email:g('email'),
+      street:g('street'), city:g('city'), state:g('state'), zip:g('zip'),
+      address:[g('street'),g('city'),[g('state'),g('zip')].filter(Boolean).join(' ')].filter(Boolean).join(', '),
       emergency_contact:{ name:g('ec_name'), phone:g('ec_phone') },
       role:g('role'), desired_start_date:g('start_date'),
       compliance:{

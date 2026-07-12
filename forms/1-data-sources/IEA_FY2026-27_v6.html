@@ -210,8 +210,8 @@ information. I understand that CACFP officials may verify the information. I und
       <td>Work Phone Number:<br><input type="tel" id="p4_workphone" autocomplete="tel-work" oninput="fmtPhone(this)" onblur="saveProfile()"></td>
     </tr>
     <tr class="lblrow">
-      <td>Street / Apt:<br><input type="text" id="p4_street" data-fk-field="street" autocomplete="address-line1" onblur="saveProfile()"></td>
-      <td>City / State / Zip:<br><input type="text" id="p4_csz" autocomplete="address-level2" onblur="saveProfile()"></td>
+      <td>Street / Apt:<br><input type="text" id="p4_street" data-fk-field="street" data-fk-address data-fk-addr-state="p4_state" autocomplete="address-line1" onblur="saveProfile()"></td>
+      <td>City / State / Zip:<br><input type="text" id="p4_city" data-fk-field="city" autocomplete="address-level2" placeholder="City" onblur="saveProfile()" style="width:46%"> <input type="text" id="p4_state" autocomplete="address-level1" placeholder="ST" maxlength="2" onblur="saveProfile()" style="width:80px"> <input type="text" id="p4_zip" data-fk-field="zip" autocomplete="postal-code" inputmode="numeric" placeholder="ZIP" onblur="saveProfile()" style="width:24%"></td>
       <td>County:<br><input type="text" id="p4_county" list="dl_county" onblur="saveProfile()"></td>
     </tr>
   </table>
@@ -458,7 +458,7 @@ function PA_APPLY(fd){
     ['ssn1','ssn2','ssn3','ssn4'].forEach((id,i)=>S(id,s4[i]));
     C('no_ssn',fd.adult.no_ssn);
     S('p4_dayphone',fd.adult.day_phone);S('p4_workphone',fd.adult.work_phone);
-    S('p4_street',fd.adult.street);S('p4_csz',fd.adult.city_state_zip);
+    S('p4_street',fd.adult.street);S('p4_city',fd.adult.city);S('p4_state',fd.adult.state);S('p4_zip',fd.adult.zip);
     S('p4_county',fd.adult.county)}
   if(fd.ethnicity){C('eth_h',fd.ethnicity.hispanic);C('eth_n',fd.ethnicity.not_hispanic)}
   if(fd.race){C('race_ai',fd.race.ai);C('race_as',fd.race.asian);C('race_bl',fd.race.black);
@@ -493,7 +493,7 @@ window.FORMKIT_CONFIG={
       adult:{print_name:gv('p4_name'),date:gv('p4_date'),
         ssn_last4:['ssn1','ssn2','ssn3','ssn4'].map(gv).join(''),no_ssn:gcb('no_ssn'),
         day_phone:gv('p4_dayphone'),work_phone:gv('p4_workphone'),
-        street:gv('p4_street'),city_state_zip:gv('p4_csz'),county:gv('p4_county')},
+        street:gv('p4_street'),city:gv('p4_city'),state:gv('p4_state'),zip:gv('p4_zip'),city_state_zip:[gv('p4_city'),[gv('p4_state'),gv('p4_zip')].filter(Boolean).join(' ')].filter(Boolean).join(', '),county:gv('p4_county')},
       ethnicity:{hispanic:gcb('eth_h'),not_hispanic:gcb('eth_n')},
       race:{ai:gcb('race_ai'),asian:gcb('race_as'),black:gcb('race_bl'),
         pacific:gcb('race_nh'),white:gcb('race_wh'),other:gcb('race_ot')},
