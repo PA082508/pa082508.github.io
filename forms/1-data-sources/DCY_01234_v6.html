@@ -31,7 +31,7 @@
     padding:1px 4px;outline:none}
   .f:focus{background:rgba(255,246,120,0.8)}
   textarea.f{background:rgba(255,253,150,0.4);border:1px dashed var(--line);resize:none;line-height:1.35;padding:3px 5px}
-  .cb{position:absolute;width:20px;height:20px;accent-color:#0f4c35;cursor:pointer}
+  .cb{position:absolute;width:18px;height:18px;accent-color:#0f4c35;cursor:pointer}
   .sig{position:absolute;background:rgba(210,235,255,0.35);border:1.5px dashed #0f4c35;border-radius:4px;cursor:crosshair;display:block}
   .siglock{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
     background:rgba(90,107,96,.9);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:4px;z-index:5}
@@ -76,46 +76,46 @@ var FIELDS = [
   {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1},
   {id:'city',       p:1,t:'text',x:58,y:410,w:575,h:32,fk:'city',r:1},
   {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1},
-  {id:'zip',        p:1,t:'text',x:938,y:410,w:270,h:32,fk:'zip',r:1},
+  {id:'zip',        p:1,t:'text',x:948,y:410,w:248,h:32,fk:'zip',r:1},
 
   {id:'p1_name',    p:1,t:'text',x:58,y:485,w:560,h:32,fk:'parent_name',r:1},
   {id:'p1_phone',   p:1,t:'text',x:652,y:485,w:556,h:32,r:1},
-  {id:'p1_same',    p:1,t:'cb',  x:243,y:531},
-  {id:'p1_address', p:1,t:'text',x:58,y:558,w:560,h:28},
+  {id:'p1_same',    p:1,t:'cb',  x:224,y:528},
+  {id:'p1_address', p:1,t:'text',x:58,y:566,w:560,h:26},
   {id:'p1_city',    p:1,t:'text',x:658,y:558,w:295,h:28},
   {id:'p1_state',   p:1,t:'text',x:965,y:558,w:88,h:28},
-  {id:'p1_zip',     p:1,t:'text',x:1065,y:558,w:143,h:28},
+  {id:'p1_zip',     p:1,t:'text',x:1072,y:558,w:130,h:28},
   {id:'p1_email',   p:1,t:'text',x:58,y:630,w:575,h:28,fk:'parent_email'},
   {id:'p1_cell',    p:1,t:'text',x:658,y:630,w:550,h:28},
   {id:'p1_work',    p:1,t:'text',x:58,y:705,w:575,h:28},
   {id:'p1_work_ph', p:1,t:'text',x:658,y:705,w:550,h:28},
 
-  {id:'p2_na',      p:1,t:'cb',  x:66,y:792},
+  {id:'p2_na',      p:1,t:'cb',  x:62,y:790},
   {id:'p2_name',    p:1,t:'text',x:180,y:777,w:438,h:32},
   {id:'p2_phone',   p:1,t:'text',x:652,y:777,w:556,h:32},
-  {id:'p2_same',    p:1,t:'cb',  x:243,y:826},
-  {id:'p2_address', p:1,t:'text',x:58,y:852,w:560,h:28},
+  {id:'p2_same',    p:1,t:'cb',  x:224,y:823},
+  {id:'p2_address', p:1,t:'text',x:58,y:860,w:560,h:26},
   {id:'p2_city',    p:1,t:'text',x:658,y:852,w:295,h:28},
   {id:'p2_state',   p:1,t:'text',x:965,y:852,w:88,h:28},
-  {id:'p2_zip',     p:1,t:'text',x:1065,y:852,w:143,h:28},
+  {id:'p2_zip',     p:1,t:'text',x:1072,y:852,w:130,h:28},
   {id:'p2_email',   p:1,t:'text',x:58,y:924,w:575,h:28},
   {id:'p2_cell',    p:1,t:'text',x:658,y:924,w:550,h:28},
   {id:'p2_work',    p:1,t:'text',x:58,y:999,w:575,h:28},
   {id:'p2_work_ph', p:1,t:'text',x:658,y:999,w:550,h:28},
 
   {id:'ec1_name',   p:1,t:'text',x:58,y:1075,w:560,h:30,r:1},
-  {id:'ec2_na',     p:1,t:'cb',  x:668,y:1088},
+  {id:'ec2_na',     p:1,t:'cb',  x:676,y:1086},
   {id:'ec2_name',   p:1,t:'text',x:812,y:1078,w:396,h:28},
   {id:'ec1_phone',  p:1,t:'text',x:58,y:1128,w:560,h:26,r:1},
   {id:'ec2_phone',  p:1,t:'text',x:658,y:1128,w:550,h:26},
   {id:'ec1_other',  p:1,t:'text',x:58,y:1188,w:560,h:26},
   {id:'ec2_other',  p:1,t:'text',x:658,y:1188,w:550,h:26},
-  {id:'ec1_rel_y',  p:1,t:'cb',  x:66,y:1283},
-  {id:'ec1_rel_n',  p:1,t:'cb',  x:66,y:1313},
-  {id:'ec2_rel_y',  p:1,t:'cb',  x:662,y:1283},
-  {id:'ec2_rel_n',  p:1,t:'cb',  x:662,y:1313},
-  {id:'health_y',   p:1,t:'cb',  x:66,y:1400},
-  {id:'health_n',   p:1,t:'cb',  x:66,y:1432},
+  {id:'ec1_rel_y',  p:1,t:'cb',  x:62,y:1277},
+  {id:'ec1_rel_n',  p:1,t:'cb',  x:62,y:1307},
+  {id:'ec2_rel_y',  p:1,t:'cb',  x:668,y:1277},
+  {id:'ec2_rel_n',  p:1,t:'cb',  x:668,y:1307},
+  {id:'health_y',   p:1,t:'cb',  x:62,y:1389},
+  {id:'health_n',   p:1,t:'cb',  x:62,y:1422},
 
   // ── PAGE 2 ──────────────────────────────────────────────────────────────────
   {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name',r:1},
