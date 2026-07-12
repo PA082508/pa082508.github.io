@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Child Release Authorization — Play Academy</title>
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  :root { --green:#0f4c35; --line:#c0d8c0; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#1a2e1a; background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px; }
+  .toolbar { position: sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  h1 { font-size: 22px; color: var(--green); margin: 14px 0 2px; }
+  .sub { color:#6b7280; font-size:13px; margin-bottom:14px; }
+  fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 16px; background:#fff; }
+  legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px; }
+  label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
+  input[type=text], input[type=date], textarea {
+    width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
+  textarea { resize:vertical; min-height:56px; line-height:1.5; }
+  .body { font-size:13.5px; line-height:1.62; color:#233; }
+  .body p { margin:0 0 11px; }
+  /* pickup rows: name (wide) + relation (narrow) */
+  .prow { display:grid; grid-template-columns: 1fr 240px; gap:12px; align-items:end; margin-top:10px; }
+  .prow .idx { display:none; }
+  @media (max-width:560px){ .prow { grid-template-columns:1fr; gap:6px; } }
+  /* media consent checkboxes */
+  .media { display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; margin-top:10px; }
+  .media label { display:flex; align-items:center; gap:9px; font-size:14px; color:#233; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:9px; padding:9px 12px; cursor:pointer; }
+  .media input { width:18px; height:18px; accent-color:var(--green); cursor:pointer; }
+  @media (max-width:560px){ .media { grid-template-columns:1fr; } }
+  .ack { font-size:13.5px; line-height:1.6; color:#1a2e1a; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 14px; margin-top:10px; }
+  .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  /* Signature: drawn (canvas) OR typed (adopted-capture) */
+  .sigtabs { display:flex; gap:6px; margin-top:6px; }
+  .sigtab { padding:6px 14px; border:1.5px solid var(--line); border-radius:8px; background:#fff; font-size:13px; font-weight:600; color:#374151; cursor:pointer; font-family:inherit; }
+  .sigtab.on { background:var(--green); color:#fff; border-color:var(--green); }
+  .sigbox { position:relative; margin-top:8px; }
+  canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
+  .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+  #typed_sig { font-family:'Segoe Script','Brush Script MT',cursive; font-size:26px; color:#111; }
+  #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
+  #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:560px){ .row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <select id="ctr">
+    <option value="">— Select center —</option>
+    <option value="pearl">Play Academy Parma Heights</option>
+    <option value="alpha">Play Academy Mayfield Hills</option>
+    <option value="ridge">Play Academy Wickliffe</option>
+  </select>
+  <button class="btn bs" data-formkit="submit">✔ Submit</button>
+  <button class="btn br" onclick="raReset()">✕ Clear</button>
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+  <span id="st"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="wrap">
+  <div data-formkit="banner" data-fk-banner-msg></div>
+  <h1>Child Release Authorization</h1>
+  <div class="sub"><span data-fk-org>Play Academy, Inc.</span> — who may pick up your child, plus photo/video consent.</div>
+  <div id="done">✓ Submitted</div>
+
+  <fieldset>
+    <legend>Who may pick up my child</legend>
+    <label class="f">Child's Name *</label>
+    <input type="text" id="child_name" data-fk-field="child_name" autocomplete="name" data-required data-label="Child's name">
+    <div class="body" style="margin-top:12px">
+      <p>The following people have my permission to pick up my child from <span data-fk-org>Play Academy, Inc.</span> I understand they will be asked to show ID before we release the child to them, if we do not know who they are.</p>
+    </div>
+
+    <div class="prow">
+      <div><label class="f">Authorized person #1 — Name *</label>
+        <input type="text" id="pu1_name" autocomplete="name" data-required data-label="Authorized person #1 name"></div>
+      <div><label class="f">Relation to child</label>
+        <input type="text" id="pu1_rel"></div>
+    </div>
+    <div class="prow">
+      <div><label class="f">Authorized person #2 — Name</label>
+        <input type="text" id="pu2_name" autocomplete="name"></div>
+      <div><label class="f">Relation to child</label>
+        <input type="text" id="pu2_rel"></div>
+    </div>
+    <div class="prow">
+      <div><label class="f">Authorized person #3 — Name</label>
+        <input type="text" id="pu3_name" autocomplete="name"></div>
+      <div><label class="f">Relation to child</label>
+        <input type="text" id="pu3_rel"></div>
+    </div>
+    <div class="prow">
+      <div><label class="f">Authorized person #4 — Name</label>
+        <input type="text" id="pu4_name" autocomplete="name"></div>
+      <div><label class="f">Relation to child</label>
+        <input type="text" id="pu4_rel"></div>
+    </div>
+    <div class="prow">
+      <div><label class="f">Authorized person #5 — Name</label>
+        <input type="text" id="pu5_name" autocomplete="name"></div>
+      <div><label class="f">Relation to child</label>
+        <input type="text" id="pu5_rel"></div>
+    </div>
+
+    <label class="f" style="margin-top:14px">Comments</label>
+    <textarea id="comments" placeholder="Anything the office should know about pick-up (optional)"></textarea>
+  </fieldset>
+
+  <fieldset>
+    <legend>Photo / video consent</legend>
+    <div class="ack" id="mediaAck"></div>
+    <div class="body" style="margin-top:12px">
+      <p>I give <span data-fk-org>Play Academy, Inc.</span> permission to photograph or video record my child within the center and to use the images. Check the ones your child may participate in:</p>
+    </div>
+    <div class="media">
+      <label><input type="checkbox" id="m_website"> Website</label>
+      <label><input type="checkbox" id="m_facebook"> Facebook</label>
+      <label><input type="checkbox" id="m_smartcare"> Smart Care</label>
+      <label><input type="checkbox" id="m_ad"> Advertisement</label>
+    </div>
+    <div class="note">Leaving all boxes unchecked means you do not consent to photo/video use in any of these.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Sign</legend>
+    <div class="row">
+      <div><label class="f">Printed Name of Parent/Guardian *</label>
+        <input type="text" id="parent_name" data-fk-field="parent_name" autocomplete="name" data-required data-label="Parent/guardian name"></div>
+      <div><label class="f">Date *</label>
+        <input type="date" id="signed_date" data-required data-label="Date"></div>
+    </div>
+
+    <label class="f">Signature *</label>
+    <div class="sigtabs">
+      <button type="button" class="sigtab on" id="tab_draw" onclick="sigMode('draw')">✍️ Draw</button>
+      <button type="button" class="sigtab" id="tab_type" onclick="sigMode('type')">⌨️ Type</button>
+    </div>
+    <div class="sigbox" id="draw_box">
+      <canvas id="sig" width="700" height="90" data-formkit="signature" data-required data-label="Signature"></canvas>
+      <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
+    </div>
+    <div id="type_box" style="display:none">
+      <input type="text" id="typed_sig" placeholder="Type your full name as your signature" autocomplete="off">
+    </div>
+    <div class="note">Your electronic signature has the same legal effect as a handwritten one. You may request a paper copy at any time.</div>
+  </fieldset>
+</div>
+
+<script>
+/* Child Release Authorization v2 — form-specific config; shared behaviour = form-kit.js */
+function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
+function ck(id){var e=document.getElementById(id);return !!(e&&e.checked)}
+var SIG_METHOD='draw';
+var ORG_NAME='Play Academy, Inc.';
+
+// Live "photograph my child <name>" line.
+function refreshAck(){
+  var n=g('child_name')||'________';
+  document.getElementById('mediaAck').innerHTML =
+    'I am the parent and/or legal guardian of <strong>'+n.replace(/</g,'&lt;')+'</strong>.';
+}
+
+function applyOrg(org){
+  if(!org) return;
+  if(org.name){
+    ORG_NAME=org.name;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fk-org]'),function(el){ el.textContent=org.name; });
+  }
+}
+
+// adopted-capture: typed name rendered onto the canvas so the stored signature is always an image.
+function renderTyped(){
+  var c=document.getElementById('sig'); var ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  var t=g('typed_sig'); if(!t)return;
+  ctx.fillStyle='#111'; ctx.textBaseline='middle';
+  ctx.font='38px "Segoe Script","Brush Script MT",cursive';
+  ctx.fillText(t, 14, c.height/2);
+  c.dispatchEvent(new Event('fk:ink',{bubbles:true}));
+}
+function sigMode(m){
+  SIG_METHOD=m;
+  document.getElementById('tab_draw').classList.toggle('on', m==='draw');
+  document.getElementById('tab_type').classList.toggle('on', m==='type');
+  document.getElementById('draw_box').style.display = m==='draw' ? '' : 'none';
+  document.getElementById('type_box').style.display = m==='type' ? '' : 'none';
+  FormKit.clearSig('sig');
+  if(m==='type') renderTyped();
+}
+
+// Collect the up-to-5 authorized pickup people (only rows with a name).
+function pickupList(){
+  var out=[];
+  for(var i=1;i<=5;i++){
+    var nm=g('pu'+i+'_name'); if(!nm) continue;
+    out.push({ name:nm, relation:g('pu'+i+'_rel') });
+  }
+  return out;
+}
+
+function raReset(){
+  ['child_name','pu1_name','pu1_rel','pu2_name','pu2_rel','pu3_name','pu3_rel',
+   'pu4_name','pu4_rel','pu5_name','pu5_rel','comments','parent_name','typed_sig']
+    .forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  ['m_website','m_facebook','m_smartcare','m_ad'].forEach(function(id){var e=document.getElementById(id); if(e)e.checked=false;});
+  FormKit.clearSig('sig'); sigMode('draw'); refreshAck();
+  var sd=document.getElementById('signed_date'); if(sd) sd.value=new Date().toISOString().split('T')[0];
+  if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
+}
+
+window.FORMKIT_CONFIG = {
+  formType:'child_release_authorization', version:'v2', centerSelect:'#ctr', reset:raReset,
+  collect:function(){
+    if(SIG_METHOD==='type') renderTyped();
+    var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
+    var fd={
+      type:'child_release_authorization', center_code:FormKit.centerCode(),
+      doc_title:'Child Release Authorization', doc_version:'v2',
+      child_name:g('child_name'),
+      pickup:pickupList(),
+      comments:g('comments'),
+      media_consent:{ website:ck('m_website'), facebook:ck('m_facebook'), smart_care:ck('m_smartcare'), advertisement:ck('m_ad') },
+      parent_name:g('parent_name'),
+      signature_method: SIG_METHOD==='type' ? 'typed' : 'drawn',
+      signature_typed_value: SIG_METHOD==='type' ? g('typed_sig') : ''
+    };
+    return { formData:fd, signatures:{ parent_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
+  },
+  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Submitted' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];
+  var cn=document.getElementById('child_name'); if(cn) cn.addEventListener('input', refreshAck);
+  var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
+  refreshAck();
+  try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
+  fetch('../../enroll-registry.json',{cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){ if(reg&&reg.org) applyOrg(reg.org); })
+    .catch(function(){});
+});
+</script>
+<script defer src="form-kit.js"></script>
+</body>
+</html>
