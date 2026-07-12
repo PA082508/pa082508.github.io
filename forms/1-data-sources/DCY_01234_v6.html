@@ -110,12 +110,12 @@ var FIELDS = [
   {id:'ec2_phone',  p:1,t:'text',x:658,y:1140,w:550,h:20,tel:1},
   {id:'ec1_other',  p:1,t:'text',x:322,y:1190,w:316,h:22},
   {id:'ec2_other',  p:1,t:'text',x:922,y:1190,w:300,h:22},
-  {id:'ec1_rel_y',  p:1,t:'cb',  x:60,y:1274},
-  {id:'ec1_rel_n',  p:1,t:'cb',  x:60,y:1297},
-  {id:'ec2_rel_y',  p:1,t:'cb',  x:661,y:1274},
-  {id:'ec2_rel_n',  p:1,t:'cb',  x:661,y:1297},
-  {id:'health_y',   p:1,t:'cb',  x:60,y:1433},
-  {id:'health_n',   p:1,t:'cb',  x:60,y:1456},
+  {id:'ec1_rel_y',  p:1,t:'cb',  x:60,y:1274,excl:'ec1_rel'},
+  {id:'ec1_rel_n',  p:1,t:'cb',  x:60,y:1297,excl:'ec1_rel'},
+  {id:'ec2_rel_y',  p:1,t:'cb',  x:661,y:1274,excl:'ec2_rel'},
+  {id:'ec2_rel_n',  p:1,t:'cb',  x:661,y:1297,excl:'ec2_rel'},
+  {id:'health_y',   p:1,t:'cb',  x:60,y:1433,excl:'health'},
+  {id:'health_n',   p:1,t:'cb',  x:60,y:1456,excl:'health'},
 
   // ── PAGE 2 ──────────────────────────────────────────────────────────────────
   {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name',r:1},
@@ -124,12 +124,12 @@ var FIELDS = [
   {id:'na_dev',     p:2,t:'cb',  x:62,y:270},
   {id:'accommod',   p:2,t:'area',x:58,y:322,w:1150,h:38},
   {id:'na_acc',     p:2,t:'cb',  x:62,y:372},
-  {id:'svc_y',      p:2,t:'cb',  x:64,y:452},
-  {id:'svc_n',      p:2,t:'cb',  x:62,y:478},
+  {id:'svc_y',      p:2,t:'cb',  x:64,y:452,excl:'svc'},
+  {id:'svc_n',      p:2,t:'cb',  x:62,y:478,excl:'svc'},
   {id:'svc_provider',p:2,t:'text',x:58,y:558,w:1150,h:16},
   {id:'na_svc',     p:2,t:'cb',  x:62,y:581},
-  {id:'trans_yes',  p:2,t:'cb',  x:62,y:646},
-  {id:'trans_no',   p:2,t:'cb',  x:62,y:751},
+  {id:'trans_yes',  p:2,t:'cb',  x:62,y:646,excl:'transport'},
+  {id:'trans_no',   p:2,t:'cb',  x:62,y:751,excl:'transport'},
   {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
 
   {id:'parent_sig',    p:2,t:'sig', x:58,y:1015,w:780,h:56,r:1,label:'Parent signature'},
@@ -155,6 +155,7 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
     if(f.t==='cb'){
       el=document.createElement('input'); el.type='checkbox'; el.className='cb';
       el.style.left=f.x+'px'; el.style.top=f.y+'px';
+      if(f.excl) el.setAttribute('data-fk-exclusive',f.excl);   // form-kit initExclusive: Yes/No & has/hasn't pairs
     } else if(f.t==='area'){
       el=document.createElement('textarea'); el.className='f';
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';

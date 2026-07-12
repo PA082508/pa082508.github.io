@@ -163,6 +163,9 @@
       if (el.classList) el.classList.remove('fk-invalid');
     }
   }
+  function markEmpties() {   // ALWAYS-ON red underline on empty required (not only after blur/Submit)
+    requiredEls().forEach(function (e) { if (e.tagName === 'CANVAS' || !e.classList) return; e.classList.toggle('fk-invalid', !isFilled(e)); });
+  }
   function refreshCounter() {
     var missing = requiredEls().filter(function (e) { return !isFilled(e); });
     var c = $('[data-formkit="counter"]');
@@ -170,9 +173,16 @@
       c.textContent = missing.length ? (missing.length + ' required field' + (missing.length === 1 ? '' : 's') + ' remaining') : 'All required fields complete ✓';
       c.setAttribute('data-done', missing.length ? '0' : '1');
     }
+    markEmpties();
     return missing;
   }
   function firstMissing() { var m = requiredEls().filter(function (e) { return !isFilled(e); }); return m[0] || null; }
+  function gotoFirstMissing() {   // click the counter / a signature-lock → jump to the first empty required
+    var f = firstMissing(); if (!f) return;
+    try { f.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    if (f.focus) try { f.focus(); } catch (_) {}
+    fieldMsg(f, true);
+  }
   function initValidation() {
     if (!$$('[data-required]').length) return;
     $$('[data-required]').forEach(function (el) {
@@ -182,6 +192,20 @@
       el.addEventListener('fk:ink', mark);
     });
     refreshCounter();
+  }
+
+  // ── Exclusive checkbox groups: data-fk-exclusive="group" — checking one clears
+  //    the rest of its group (e.g. Yes/No pairs, "has / does not have"). ─────────
+  function initExclusive() {
+    $$('[data-fk-exclusive]').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        if (cb.checked) {
+          var g = cb.getAttribute('data-fk-exclusive');
+          $$('[data-fk-exclusive="' + g + '"]').forEach(function (o) { if (o !== cb && o.checked) o.checked = false; });
+        }
+        refreshCounter();
+      });
+    });
   }
 
   // ── §6 Tooltips ──────────────────────────────────────────────────────────────
@@ -786,10 +810,13 @@
     injectFavicon();
     $$('[data-formkit="signature"]').forEach(initSig);
     initConditionals(); initValidation(); initTooltips(); initChoices();
-    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates(); initAddress();
+    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates(); initAddress(); initExclusive();
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // resolve center (embed does its own)
     initToolbar();                                         // unified toolbar — brand + center chip / banner
     var sub = $('[data-formkit="submit"]'); if (sub) sub.addEventListener('click', function (e) { e.preventDefault(); submit(); });
+    // click the required-counter or a signature-lock → scroll to the first empty required
+    var cc = $('[data-formkit="counter"]'); if (cc) { cc.style.cursor = 'pointer'; cc.title = 'Go to the first required field'; cc.addEventListener('click', gotoFirstMissing); }
+    $$('.siglock,[data-fk-goto]').forEach(function (l) { l.style.cursor = 'pointer'; l.addEventListener('click', gotoFirstMissing); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
