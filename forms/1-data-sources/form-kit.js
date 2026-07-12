@@ -518,11 +518,119 @@
     });
   }
 
+  // ── Date helper (OVERLAY forms only): MM/DD/YYYY input mask + a light popup
+  //    calendar. Opt-in via [data-fk-date]. The picked date is written back into
+  //    the SAME text field — the print layer stays plain text, so pixel-perfect
+  //    print is untouched. Non-overlay forms keep native <input type=date>. ──────
+  function pad2(n) { return ('0' + n).slice(-2); }
+  function fmtDateInput(el) {
+    var d = (el.value || '').replace(/\D/g, '').slice(0, 8);
+    el.value = d.length > 4 ? d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4)
+             : d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+  }
+  function parseMDY(v) {
+    var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((v || '').trim()); if (!m) return null;
+    var mo = +m[1] - 1, da = +m[2], yr = +m[3], dt = new Date(yr, mo, da);
+    return (dt.getMonth() === mo && dt.getDate() === da) ? dt : null;
+  }
+  function fmtMDY(dt) { return pad2(dt.getMonth() + 1) + '/' + pad2(dt.getDate()) + '/' + dt.getFullYear(); }
+  var CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var _calEl = null, _calField = null, _calView = null, _calWired = false;
+  function calCss() {
+    if (document.getElementById('fk-cal-css')) return;
+    var s = document.createElement('style'); s.id = 'fk-cal-css';
+    s.textContent =
+      '.fk-cal-ico{position:absolute;width:20px;height:20px;padding:0;border:none;background:transparent;cursor:pointer;font-size:14px;line-height:1;opacity:.65;z-index:6}'
+      + '.fk-cal-ico:hover{opacity:1}'
+      + '.fk-cal{position:absolute;z-index:9999;width:236px;background:#fff;border:1px solid #cfe0d5;border-radius:10px;box-shadow:0 10px 30px rgba(15,76,53,.28);padding:8px;font-family:Arial,Helvetica,sans-serif;user-select:none}'
+      + '.fk-cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}'
+      + '.fk-cal-title{font-weight:700;color:#0f4c35;font-size:13px}'
+      + '.fk-cal-nav{border:none;background:#eef3ef;color:#0f4c35;width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:15px;line-height:1}'
+      + '.fk-cal-nav:hover{background:#dcebe2}'
+      + '.fk-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}'
+      + '.fk-cal-dow-c{text-align:center;font-size:10px;font-weight:700;color:#9aa;padding:2px 0}'
+      + '.fk-cal-day{border:none;background:transparent;border-radius:6px;height:28px;cursor:pointer;font-size:12.5px;color:#233}'
+      + '.fk-cal-day:hover{background:#eef3ef}'
+      + '.fk-cal-today{outline:1.5px solid #0f4c35;outline-offset:-1.5px;font-weight:700}'
+      + '.fk-cal-sel{background:#0f4c35;color:#fff}.fk-cal-sel:hover{background:#0f4c35}'
+      + '@media print{.fk-cal,.fk-cal-ico{display:none!important}}';
+    document.head.appendChild(s);
+  }
+  function closeCal() { if (_calEl) { _calEl.parentNode && _calEl.parentNode.removeChild(_calEl); _calEl = null; _calField = null; } }
+  function renderCal(sel) {
+    var y = _calView.getFullYear(), m = _calView.getMonth();
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
+    var h = '<div class="fk-cal-hd"><button type="button" class="fk-cal-nav" data-nav="-1">‹</button>'
+      + '<span class="fk-cal-title">' + CAL_MONTHS[m] + ' ' + y + '</span>'
+      + '<button type="button" class="fk-cal-nav" data-nav="1">›</button></div>'
+      + '<div class="fk-cal-grid">' + ['S','M','T','W','T','F','S'].map(function (d) { return '<span class="fk-cal-dow-c">' + d + '</span>'; }).join('') + '</div>'
+      + '<div class="fk-cal-grid">';
+    for (var i = 0; i < first; i++) h += '<span></span>';
+    for (var d = 1; d <= days; d++) {
+      var dt = new Date(y, m, d); dt.setHours(0, 0, 0, 0);
+      var c = 'fk-cal-day';
+      if (+dt === +today) c += ' fk-cal-today';
+      if (sel && sel.getFullYear() === y && sel.getMonth() === m && sel.getDate() === d) c += ' fk-cal-sel';
+      h += '<button type="button" class="' + c + '" data-day="' + d + '">' + d + '</button>';
+    }
+    _calEl.innerHTML = h + '</div>';
+  }
+  function openCal(field) {
+    closeCal(); _calField = field;
+    var sel = parseMDY(field.value), t = new Date();
+    _calView = sel ? new Date(sel.getFullYear(), sel.getMonth(), 1) : new Date(t.getFullYear(), t.getMonth(), 1);
+    _calEl = document.createElement('div'); _calEl.className = 'fk-cal'; renderCal(sel);
+    document.body.appendChild(_calEl);
+    var r = field.getBoundingClientRect(), cw = 236;
+    var left = r.left + window.scrollX, top = r.bottom + window.scrollY + 4;
+    var maxL = window.scrollX + document.documentElement.clientWidth - cw - 8;
+    if (left > maxL) left = maxL;
+    _calEl.style.left = Math.max(8, left) + 'px'; _calEl.style.top = top + 'px';
+  }
+  function wireCalOnce() {
+    if (_calWired) return; _calWired = true;
+    document.addEventListener('click', function (e) {
+      if (_calEl && _calEl.contains(e.target)) {
+        var nav = e.target.getAttribute('data-nav');
+        if (nav) { _calView.setMonth(_calView.getMonth() + (+nav)); renderCal(parseMDY(_calField.value)); return; }
+        var day = e.target.getAttribute('data-day');
+        if (day) { var dt = new Date(_calView.getFullYear(), _calView.getMonth(), +day);
+          _calField.value = fmtMDY(dt); _calField.dispatchEvent(new Event('input', { bubbles: true })); closeCal(); }
+        return;
+      }
+      if (_calEl && !(e.target.classList && e.target.classList.contains('fk-cal-ico'))) closeCal();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCal(); });
+    window.addEventListener('scroll', function () { closeCal(); }, true);
+  }
+  function initDates() {
+    var fields = $$('[data-fk-date]'); if (!fields.length) return;
+    calCss(); wireCalOnce();
+    fields.forEach(function (el) {
+      if (el.getAttribute('data-fk-datewired')) return;   // idempotent
+      el.setAttribute('data-fk-datewired', '1');
+      el.setAttribute('inputmode', 'numeric');
+      if (!el.placeholder) el.placeholder = 'MM/DD/YYYY';
+      el.addEventListener('input', function () { fmtDateInput(el); });
+      if (el.value) fmtDateInput(el);
+      var ico = document.createElement('button');
+      ico.type = 'button'; ico.className = 'fk-cal-ico fk-print-hidden'; ico.textContent = '📅';
+      ico.setAttribute('tabindex', '-1'); ico.setAttribute('aria-label', 'Open calendar');
+      ico.addEventListener('click', function (ev) { ev.stopPropagation(); if (_calField === el && _calEl) { closeCal(); } else { openCal(el); } });
+      // overlay fields are absolutely positioned inside their .page → drop the icon
+      // at the field's right edge in the same offset parent.
+      ico.style.left = (el.offsetLeft + el.offsetWidth - 22) + 'px';
+      ico.style.top = (el.offsetTop + Math.max(0, (el.offsetHeight - 20) / 2)) + 'px';
+      (el.parentNode || document.body).appendChild(ico);
+    });
+  }
+
   function boot() {
     injectFavicon();
     $$('[data-formkit="signature"]').forEach(initSig);
     initConditionals(); initValidation(); initTooltips(); initChoices();
-    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones();
+    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates();
     var sub = $('[data-formkit="submit"]'); if (sub) sub.addEventListener('click', function (e) { e.preventDefault(); submit(); });
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // embed resolves its own center
   }
