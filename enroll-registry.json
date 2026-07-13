@@ -385,14 +385,20 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Transition%20into%20the%20program.docx"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Transition%20into%20the%20program.docx",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/transition-into-program-v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Transition%20into%20the%20program.docx",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/transition-into-program-v2.html",
       "perInstance": false,
-      "history": [],
-      "futureFormKit": true
+      "history": [
+        {
+          "at": "2026-07-13",
+          "note": "FLIP: current v1 (docx) → v2 (transition-into-program-v2.html) — pure form-kit kit-form built from the our-documents .docx (DARK commit 40409e4). Parent fills online (Student name+Classroom, start-date full time, Family input, adoption Parent signature); center side (Next steps transition plan + Director/Program Signature) completed by the director at children-Inbox review, shown to parent as a read-only staff section. Submits via submit_enrollment_form (p_submission_type=transition_into_program, p_source=online, server dedup) → enrollment_submissions pending → children Inbox, advisory (no validator yet). Clean dark-smoke: submit → pending row org/center=pearl, form_data+parent_sig intact → idem repeat = same Ref → cleanup 1/1. fallbackUrl → v2; futureFormKit cleared."
+        }
+      ],
+      "futureFormKit": false
     },
     "wic_information": {
       "slug": "wic_information",
