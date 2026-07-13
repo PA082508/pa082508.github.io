@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transition into the Program — Play Academy</title>
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  :root { --green:#0f4c35; --line:#c0d8c0; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#1a2e1a; background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px; }
+  .toolbar { position: sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  h1 { font-size: 22px; color: var(--green); margin: 14px 0 2px; }
+  .sub { color:#6b7280; font-size:13px; margin-bottom:14px; }
+  fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 16px; background:#fff; }
+  legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px; }
+  label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
+  input[type=text], input[type=date], textarea {
+    width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
+  textarea { resize:vertical; min-height:56px; line-height:1.5; }
+  .body { font-size:13.5px; line-height:1.62; color:#233; }
+  .body p { margin:0 0 11px; }
+  .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  /* center-side section — visibly not a parent field */
+  .staff { background:#f6f7f9; border:1.5px dashed #cbd5cf; }
+  .staff legend { color:#64748b; }
+  .staff .body { color:#64748b; }
+  /* Signature: drawn (canvas) OR typed (adopted-capture) */
+  .sigtabs { display:flex; gap:6px; margin-top:6px; }
+  .sigtab { padding:6px 14px; border:1.5px solid var(--line); border-radius:8px; background:#fff; font-size:13px; font-weight:600; color:#374151; cursor:pointer; font-family:inherit; }
+  .sigtab.on { background:var(--green); color:#fff; border-color:var(--green); }
+  .sigbox { position:relative; margin-top:8px; }
+  canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
+  .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+  #typed_sig { font-family:'Segoe Script','Brush Script MT',cursive; font-size:26px; color:#111; }
+  #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
+  #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:560px){ .row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <select id="ctr">
+    <option value="">— Select center —</option>
+    <option value="pearl">Play Academy Parma Heights</option>
+    <option value="alpha">Play Academy Mayfield Hills</option>
+    <option value="ridge">Play Academy Wickliffe</option>
+  </select>
+  <button class="btn bs" data-formkit="submit">✔ Submit</button>
+  <button class="btn br" onclick="trReset()">✕ Clear</button>
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+  <span id="st"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="wrap">
+  <div data-formkit="banner" data-fk-banner-msg></div>
+  <h1>Transition into the Program</h1>
+  <div class="sub"><span data-fk-org>Play Academy, Inc.</span> — help us support your child as they start a new setting.</div>
+  <div id="done">✓ Submitted</div>
+
+  <fieldset>
+    <legend>Child</legend>
+    <div class="row">
+      <div><label class="f">Student Name *</label>
+        <input type="text" id="child_name" data-fk-field="child_name" autocomplete="name" data-required data-label="Student name"></div>
+      <div><label class="f">Classroom *</label>
+        <input type="text" id="classroom" data-required data-label="Classroom"></div>
+    </div>
+    <div class="body" style="margin-top:12px">
+      <p>We understand that transitions can be difficult for children and families. We at <span data-fk-org>Play Academy, Inc.</span> would like your input on how to support your child(ren) as they prepare for a new setting.</p>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Your input</legend>
+    <label class="f">When would you like your child to start attending <span data-fk-org>Play Academy, Inc.</span> full time? *</label>
+    <input type="date" id="start_date_full_time" data-required data-label="Start date (full time)">
+
+    <label class="f" style="margin-top:14px">Family input</label>
+    <textarea id="family_input" placeholder="How can we best support your child through this transition? (optional)"></textarea>
+
+    <div class="note">We recommend increasing time slowly during the first week, so the child can adjust to the new environment easily.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Sign</legend>
+    <div class="row">
+      <div><label class="f">Printed Name of Parent/Guardian *</label>
+        <input type="text" id="parent_name" data-fk-field="parent_name" autocomplete="name" data-required data-label="Parent/guardian name"></div>
+      <div><label class="f">Date *</label>
+        <input type="date" id="signed_date" data-required data-label="Date"></div>
+    </div>
+
+    <label class="f">Parent Signature *</label>
+    <div class="sigtabs">
+      <button type="button" class="sigtab on" id="tab_draw" onclick="sigMode('draw')">✍️ Draw</button>
+      <button type="button" class="sigtab" id="tab_type" onclick="sigMode('type')">⌨️ Type</button>
+    </div>
+    <div class="sigbox" id="draw_box">
+      <canvas id="sig" width="700" height="90" data-formkit="signature" data-required data-label="Signature"></canvas>
+      <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
+    </div>
+    <div id="type_box" style="display:none">
+      <input type="text" id="typed_sig" placeholder="Type your full name as your signature" autocomplete="off">
+    </div>
+    <div class="note">Your electronic signature has the same legal effect as a handwritten one. You may request a paper copy at any time.</div>
+  </fieldset>
+
+  <fieldset class="staff">
+    <legend>Completed by Play Academy staff</legend>
+    <div class="body">
+      <p><strong>Next steps</strong> (transition plan) and the <strong>Director/Program Signature</strong> are added by <span data-fk-org>Play Academy, Inc.</span>'s director when they review your submission — you do not fill these in.</p>
+    </div>
+    <div class="note">This section is for the center's records and is not part of your submission.</div>
+  </fieldset>
+</div>
+
+<script>
+/* Transition into the Program v2 — form-specific config; shared behaviour = form-kit.js */
+function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
+var SIG_METHOD='draw';
+var ORG_NAME='Play Academy, Inc.';
+
+function applyOrg(org){
+  if(!org) return;
+  if(org.name){
+    ORG_NAME=org.name;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fk-org]'),function(el){ el.textContent=org.name; });
+  }
+}
+
+// adopted-capture: typed name rendered onto the canvas so the stored signature is always an image.
+function renderTyped(){
+  var c=document.getElementById('sig'); var ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  var t=g('typed_sig'); if(!t)return;
+  ctx.fillStyle='#111'; ctx.textBaseline='middle';
+  ctx.font='38px "Segoe Script","Brush Script MT",cursive';
+  ctx.fillText(t, 14, c.height/2);
+  c.dispatchEvent(new Event('fk:ink',{bubbles:true}));
+}
+function sigMode(m){
+  SIG_METHOD=m;
+  document.getElementById('tab_draw').classList.toggle('on', m==='draw');
+  document.getElementById('tab_type').classList.toggle('on', m==='type');
+  document.getElementById('draw_box').style.display = m==='draw' ? '' : 'none';
+  document.getElementById('type_box').style.display = m==='type' ? '' : 'none';
+  FormKit.clearSig('sig');
+  if(m==='type') renderTyped();
+}
+
+function trReset(){
+  ['child_name','classroom','start_date_full_time','family_input','parent_name','typed_sig']
+    .forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  FormKit.clearSig('sig'); sigMode('draw');
+  var sd=document.getElementById('signed_date'); if(sd) sd.value=new Date().toISOString().split('T')[0];
+  if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
+}
+
+window.FORMKIT_CONFIG = {
+  formType:'transition_into_program', version:'v2', centerSelect:'#ctr', reset:trReset,
+  collect:function(){
+    if(SIG_METHOD==='type') renderTyped();
+    var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
+    var fd={
+      type:'transition_into_program', center_code:FormKit.centerCode(),
+      doc_title:'Transition into the Program', doc_version:'v2',
+      child_name:g('child_name'),
+      classroom:g('classroom'),
+      start_date_full_time:g('start_date_full_time'),
+      family_input:g('family_input'),
+      parent_name:g('parent_name'),
+      signature_method: SIG_METHOD==='type' ? 'typed' : 'drawn',
+      signature_typed_value: SIG_METHOD==='type' ? g('typed_sig') : ''
+    };
+    return { formData:fd, signatures:{ parent_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
+  },
+  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Submitted' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];
+  var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
+  try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
+  fetch('../../enroll-registry.json',{cache:'no-cache'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){ if(reg&&reg.org) applyOrg(reg.org); })
+    .catch(function(){});
+});
+</script>
+<script defer src="form-kit.js"></script>
+</body>
+</html>
