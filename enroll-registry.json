@@ -142,13 +142,19 @@
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "paper_scan",
       "signer": "physician",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/special-diet-form-v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/special-diet-form.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/special-diet-form-v2.html",
       "perInstance": false,
-      "history": [],
+      "history": [
+        {
+          "at": "2026-07-13",
+          "note": "FLIP: current v1 → v2 (special-diet-form-v2.html) after clean RPC re-smoke via submit_public_form (SECURITY DEFINER door through RLS; direct anon insert into special_diet_forms was 42501, tables are {authenticated}-only). Smoke: submit → row with org_id resolved from center slug → repeat same idempotency_key = same id → cleanup 1/1. Migration 20260713_submit_public_form_rpc.sql applied; read-backs 4/4 green (prosecdef, anon+auth execute, 3 idem-indexes, org_id on milk_substitutions). Form posts to /rpc/submit_public_form (commit 8b25434). intakeMode stays paper_scan (metadata unchanged)."
+        }
+      ],
       "condition": "special_diet"
     },
     "fluid_milk": {
@@ -157,13 +163,19 @@
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "online",
       "signer": "parent",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution-v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/fluid-milk-substitution-v2.html",
       "perInstance": false,
-      "history": [],
+      "history": [
+        {
+          "at": "2026-07-13",
+          "note": "FLIP: current v1 → v2 (fluid-milk-substitution-v2.html) after clean RPC re-smoke via submit_public_form (SECURITY DEFINER door through RLS; direct anon insert into milk_substitutions was 42501). Smoke: submit → row with org_id resolved from center slug → repeat same idempotency_key = same id → cleanup 1/1. Bonus: RPC surfaces the parent_choice CHECK (center_provided|parent_provided_compliant|parent_provided_noncompliant) as 23514, not a silent swallow. Migration 20260713_submit_public_form_rpc.sql applied; read-backs 4/4 green. Form posts to /rpc/submit_public_form (commit 8b25434)."
+        }
+      ],
       "condition": "special_diet"
     },
     "infant_meals": {
@@ -172,13 +184,19 @@
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "online",
       "signer": "parent",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference-v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/infant-meals-preference-v2.html",
       "perInstance": false,
-      "history": [],
+      "history": [
+        {
+          "at": "2026-07-13",
+          "note": "FLIP: current v1 → v2 (infant-meals-preference-v2.html) after clean RPC re-smoke via submit_public_form (SECURITY DEFINER door through RLS; direct anon insert into infant_meal_preferences was 42501). Smoke: submit → row with org_id resolved from center slug → repeat same idempotency_key = same id → cleanup 1/1. CHECK gates verified valid (formula_choice / solid_food_choice enums). Migration 20260713_submit_public_form_rpc.sql applied; read-backs 4/4 green. Form posts to /rpc/submit_public_form (commit 8b25434)."
+        }
+      ],
       "condition": "infant"
     },
     "usda_waiver": {
