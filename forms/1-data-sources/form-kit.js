@@ -77,7 +77,13 @@
     canvas.addEventListener('touchmove', mv, { passive: false });
     canvas.addEventListener('touchend', up);
   }
-  function hasInk(c) { if (!c) return false; var d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; return d.some(function (v, i) { return i % 4 === 3 && v > 0; }); }
+  // Min-ink threshold: a genuine signature covers hundreds of pixels; an
+  // accidental tap/dot covers <10. Require SIG_MIN_INK inked (alpha>0) pixels
+  // before a canvas counts as "signed" — kit-wide, so getSig() and the
+  // required-counter both reject a near-empty pad. Tunable.
+  var SIG_MIN_INK = 40;
+  function inkCount(c) { if (!c) return 0; var d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, n = 0; for (var i = 3; i < d.length; i += 4) { if (d[i] > 0) { n++; if (n >= SIG_MIN_INK) return n; } } return n; }
+  function hasInk(c) { return inkCount(c) >= SIG_MIN_INK; }
   function getSig(idOrEl) { var c = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl; return hasInk(c) ? c.toDataURL('image/png') : null; }
   function clearSig(idOrEl) { var c = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl; if (c) c.getContext('2d').clearRect(0, 0, c.width, c.height); }
 
@@ -498,7 +504,24 @@
         ro.observe(document.documentElement);
         send({ type: 'resize', height: document.documentElement.scrollHeight });
       } catch (e) {
-        document.body.innerHTML = '<div style="font-family:Arial;padding:48px;text-align:center;color:#555;font-size:13pt">This form must be opened from the Play Academy application.</div>';
+        // Graceful fallback — the embed handshake failed (registry unreachable,
+        // parent origin not allow-listed, or missing host/registry params).
+        // Don't trap the family on a dead-end message: drop out of embed mode so
+        // the form works standalone here, and offer to reopen it in a real tab.
+        document.documentElement.classList.remove('pa-embed');
+        st.active = false;
+        var center = q.get('center'); if (center) setResolvedCenter(center); else try { resolveCenter(); } catch (_) {}
+        var bar = document.createElement('div'); bar.className = 'fk-print-hidden';
+        bar.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#8a6d00;color:#fff;padding:10px 16px;font:600 13px/1.4 Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap');
+        var msg = document.createElement('span'); msg.textContent = "This form couldn't load inside the app — you can complete it here, or open it in your browser.";
+        var open = document.createElement('button'); open.type = 'button'; open.textContent = 'Open in browser';
+        open.setAttribute('style', 'background:#fff;color:#8a6d00;border:none;border-radius:6px;padding:6px 14px;font:700 12px Arial,sans-serif;cursor:pointer');
+        open.addEventListener('click', function () {
+          var u = new URL(location.href);['embed', 'host', 'registry'].forEach(function (k) { u.searchParams.delete(k); });
+          try { if (!window.open(u.toString(), '_blank')) location.href = u.toString(); } catch (_) { location.href = u.toString(); }
+        });
+        bar.appendChild(msg); bar.appendChild(open);
+        if (document.body) document.body.insertBefore(bar, document.body.firstChild);
       }
     };
     return st;
@@ -832,6 +855,14 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
+  // ── Local-timezone date helpers (kit-wide) ───────────────────────────────────
+  // NEVER use new Date().toISOString().split('T')[0] for a signature/"today"
+  // value — toISOString() is UTC, so an evening submit east of the date line
+  // (or any positive-offset tz) rolls to tomorrow. These format the LOCAL
+  // calendar date, matching what the parent sees on the form.
+  function isoDate(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function todayISO() { return isoDate(new Date()); }
+
   // ── Public API (forms may call these directly) ───────────────────────────────
   window.FormKit = {
     submit: submit, status: status,
@@ -839,7 +870,7 @@
     savePacket: savePacket, applyPacket: applyPacket,
     centerUuid: centerUuid, centerCode: centerCode,
     refreshCounter: refreshCounter, applyConditionals: applyConditionals,
-    fmtPhone: fmtPhone,
+    fmtPhone: fmtPhone, todayISO: todayISO, isoDate: isoDate,
     CENTERS: CENTERS, ORG: ORG,
     // Exposed so a form's CFG.submit override can POST to its own dedicated
     // table without re-inlining the anon key (UX-only retrofit path).
