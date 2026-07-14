@@ -261,12 +261,14 @@
       "requiringOrg": "ODJFS/DCY",
       "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Basic%20Infant%202026%20DCY-01218.PDF"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Basic%20Infant%202026%20DCY-01218.PDF",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/DCY_01218_v2.html"
       },
       "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Basic%20Infant%202026%20DCY-01218.PDF",
       "perInstance": false,
       "history": [],
-      "condition": "infant"
+      "condition": "infant",
+      "_dark": "v2 = kit-path fillable (form-kit), DARK — current stays v1 (PDF) until Nikolay сверка + smoke + flip go. submission_type=basic_infant_care_plan → children Inbox (advisory)."
     },
     "dcy_01225": {
       "slug": "dcy_01225",
