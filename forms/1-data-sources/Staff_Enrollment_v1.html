@@ -178,7 +178,7 @@ window.FORMKIT_CONFIG = {
   collect:function(){
     var driver=gc('is_driver'), prep=gc('is_prepare_food')||g('role')==='cook', handles=gc('is_handle_food'), wa=g('work_auth_type');
     var waTimed = (wa==='ead'||wa==='parole'||wa==='visa');
-    var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
+    var sigDate=g('signed_date')||FormKit.todayISO();
     var fd={
       type:'staff', center_code:FormKit.centerCode(),
       full_name:g('full_name'), dob:g('dob'), phone:g('phone'), email:g('email'),
@@ -205,7 +205,7 @@ window.FORMKIT_CONFIG = {
   onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Submitted for office review' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
 };
 document.addEventListener('DOMContentLoaded',function(){
-  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];
+  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=FormKit.todayISO();
   // Standalone center pre-select via ?center= (embed mode is handled by the kit).
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
   // Role Cook auto-enables the PREPARE-food block (food handler cert).

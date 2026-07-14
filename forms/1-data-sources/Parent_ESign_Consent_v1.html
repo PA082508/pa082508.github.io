@@ -170,7 +170,7 @@ function sigMode(m){
 function consentReset(){
   ['parent_name','child_names','typed_sig'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
   FormKit.clearSig('sig'); sigMode('draw'); refreshAck();
-  var sd=document.getElementById('signed_date'); if(sd) sd.value=new Date().toISOString().split('T')[0];
+  var sd=document.getElementById('signed_date'); if(sd) sd.value=FormKit.todayISO();
   if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
 }
 
@@ -178,7 +178,7 @@ window.FORMKIT_CONFIG = {
   formType:'parent_consent', version:'v1', centerSelect:'#ctr', reset:consentReset,
   collect:function(){
     if(SIG_METHOD==='type') renderTyped();               // ensure the canvas holds the typed sig
-    var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
+    var sigDate=g('signed_date')||FormKit.todayISO();
     var fd={
       type:'parent_consent', center_code:FormKit.centerCode(),
       consent_title:'Parent Consent for Electronic Signatures', consent_version:'v1',
@@ -195,7 +195,7 @@ window.FORMKIT_CONFIG = {
 };
 
 document.addEventListener('DOMContentLoaded',function(){
-  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];
+  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=FormKit.todayISO();
   var pn=document.getElementById('parent_name'); if(pn) pn.addEventListener('input', refreshAck);
   var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
   refreshAck();

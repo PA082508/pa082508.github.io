@@ -132,7 +132,7 @@ input[type=text]:focus,input[type=tel]:focus,input[type=email]:focus,input[type=
     <input type="text" id="f_street" data-fk-field="street" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:276.9px;top:1081.5px;width:380.6px;height:52.5px;">
     <input type="text" id="f_city" data-fk-field="city" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:725.4px;top:1090.8px;width:209.0px;height:44.6px;">
     <input type="text" id="f_zip" data-fk-field="zip" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:1022.7px;top:1092.3px;width:184.4px;height:43.1px;">
-    <input type="date" id="f_parent_dob"  style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:290.4px;top:1142.7px;width:267.9px;height:40.4px;">
+    <input type="date" id="f_parent_dob" data-fk-field="parent_birthdate" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:290.4px;top:1142.7px;width:267.9px;height:40.4px;">
     <input type="email" id="f_parent_email" data-fk-field="parent_email" autocomplete="email" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:755.4px;top:1142.7px;width:450.2px;height:37.7px;">
   </div>
 </div>
@@ -147,7 +147,7 @@ var DAYS=['mon','tue','wed','thu','fri','sat','sun'],MEALS=['b','as','l','ps','s
 function g(id){var e=document.getElementById(id);return e?e.value:''}
 function gc(id){var e=document.getElementById(id);return e&&e.checked}
 function expDate(sig){var d=new Date(sig);return new Date(d.getFullYear()+1,d.getMonth()+1,0)}
-function calcExp(){var sd=g('f_sig_date'),x=document.getElementById('exp');if(!x)return;x.textContent=sd?'Expires: '+expDate(sd).toISOString().split('T')[0]:''}
+function calcExp(){var sd=g('f_sig_date'),x=document.getElementById('exp');if(!x)return;x.textContent=sd?'Expires: '+FormKit.isoDate(expDate(sd)):''}
 function calcAge(){var d=g('f_dob');if(!d)return;var b=new Date(d),n=new Date(),a=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate())){a--;m+=12}if(n.getDate()<b.getDate())m--;var e=document.getElementById('f_age');if(!e)return;e.value=a<0?'':(a===0?Math.max(m,0)+' mo':a)}
 function fmtPhone(e){var d=e.value.replace(/\D/g,'').slice(0,10);e.value=d.length>6?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):d.length>3?'('+d.slice(0,3)+') '+d.slice(3):d}
 function ctrPick(){var e=document.getElementById('ctr');if(!e)return;e.classList.remove('need');if(e.value){var f=document.getElementById('f_center');if(f&&!f.value.trim())f.value=e.options[e.selectedIndex].text}if(window.FormKit)FormKit.savePacket()}
@@ -159,12 +159,12 @@ window.FORMKIT_CONFIG={
     /* Out-of-care days (day box unchecked) serialize with EMPTY hours + all-false
        meals — no phantom times/meals reach the payload / DB / checkmark export. */
     var schedule={};DAYS.forEach(function(d){var ic=gc('cb_'+d);var meals={};MEALS.forEach(function(m){meals[m]=ic&&gc('cb_'+d+'_'+m)});schedule[d]={in_care:ic,arr1:ic?g('f_'+d+'_arr1'):'',dep1:ic?g('f_'+d+'_dep1'):'',arr2:ic?g('f_'+d+'_arr2'):'',dep2:ic?g('f_'+d+'_dep2'):'',meals:meals}});
-    var sigDate=g('f_sig_date')||new Date().toISOString().split('T')[0];
-    return {formData:{type:'cacfp_enrollment',center_code:FormKit.centerCode(),center_name:g('f_center'),child_name:g('f_child_name'),age:g('f_age'),birthdate:g('f_dob'),schedule:schedule,schedule_varies:gc('cb_varies'),day_phone:g('f_phone'),mailing:{street:g('f_street'),city:g('f_city'),zip:g('f_zip')},parent_birthdate:g('f_parent_dob'),parent_email:g('f_parent_email'),expires_on:expDate(sigDate).toISOString().split('T')[0]},signatures:{parent_sig:FormKit.getSig('f_parent_sig')},signatureDate:sigDate};
+    var sigDate=g('f_sig_date')||FormKit.todayISO();
+    return {formData:{type:'cacfp_enrollment',center_code:FormKit.centerCode(),center_name:g('f_center'),child_name:g('f_child_name'),age:g('f_age'),birthdate:g('f_dob'),schedule:schedule,schedule_varies:gc('cb_varies'),day_phone:g('f_phone'),mailing:{street:g('f_street'),city:g('f_city'),zip:g('f_zip')},parent_birthdate:g('f_parent_dob'),parent_email:g('f_parent_email'),expires_on:FormKit.isoDate(expDate(sigDate))},signatures:{parent_sig:FormKit.getSig('f_parent_sig')},signatureDate:sigDate};
   },
   onSuccess:function(){calcExp();var dn=document.getElementById('done');if(dn){dn.style.display='block';setTimeout(function(){dn.style.display='none'},6000)}}
 };
-document.addEventListener('DOMContentLoaded',function(){var sd=document.getElementById('f_sig_date');if(sd&&!sd.value){sd.value=new Date().toISOString().split('T')[0];calcExp()}try{var r=JSON.parse(localStorage.getItem('pa_packet_profile'));if(r&&Date.now()-r.ts<5400000&&r.data.center_code){var c=document.getElementById('ctr');if(c&&!c.value){c.value=r.data.center_code;ctrPick()}}}catch(_){}});
+document.addEventListener('DOMContentLoaded',function(){var sd=document.getElementById('f_sig_date');if(sd&&!sd.value){sd.value=FormKit.todayISO();calcExp()}try{var r=JSON.parse(localStorage.getItem('pa_packet_profile'));if(r&&Date.now()-r.ts<5400000&&r.data.center_code){var c=document.getElementById('ctr');if(c&&!c.value){c.value=r.data.center_code;ctrPick()}}}catch(_){}});
 </script>
 <script defer src="form-kit.js"></script>
 </body>

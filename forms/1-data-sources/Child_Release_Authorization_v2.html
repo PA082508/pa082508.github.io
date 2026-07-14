@@ -210,7 +210,7 @@ function raReset(){
     .forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
   ['m_website','m_facebook','m_smartcare','m_ad'].forEach(function(id){var e=document.getElementById(id); if(e)e.checked=false;});
   FormKit.clearSig('sig'); sigMode('draw'); refreshAck();
-  var sd=document.getElementById('signed_date'); if(sd) sd.value=new Date().toISOString().split('T')[0];
+  var sd=document.getElementById('signed_date'); if(sd) sd.value=FormKit.todayISO();
   if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
 }
 
@@ -218,7 +218,7 @@ window.FORMKIT_CONFIG = {
   formType:'child_release_authorization', version:'v2', centerSelect:'#ctr', reset:raReset,
   collect:function(){
     if(SIG_METHOD==='type') renderTyped();
-    var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
+    var sigDate=g('signed_date')||FormKit.todayISO();
     var fd={
       type:'child_release_authorization', center_code:FormKit.centerCode(),
       doc_title:'Child Release Authorization', doc_version:'v2',
@@ -236,7 +236,7 @@ window.FORMKIT_CONFIG = {
 };
 
 document.addEventListener('DOMContentLoaded',function(){
-  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];
+  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=FormKit.todayISO();
   var cn=document.getElementById('child_name'); if(cn) cn.addEventListener('input', refreshAck);
   var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
   refreshAck();

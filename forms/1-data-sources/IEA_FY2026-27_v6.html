@@ -426,7 +426,7 @@ function kidAge(k){
 }
 // ── Signature/certification dates default to today; restore center from packet ──
 document.addEventListener('DOMContentLoaded',()=>{
-  const today=new Date().toISOString().split('T')[0];
+  const today=FormKit.todayISO();
   const pd=document.getElementById('p4_date');if(pd&&!pd.value)pd.value=today;
   const sc=document.getElementById('sp_certdate');if(sc&&!sc.value){sc.value=today;calcDates()}
   try{const r=JSON.parse(localStorage.getItem('pa_packet_profile'));

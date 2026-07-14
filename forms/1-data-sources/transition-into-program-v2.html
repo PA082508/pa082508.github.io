@@ -158,7 +158,7 @@ function trReset(){
   ['child_name','classroom','start_date_full_time','family_input','parent_name','typed_sig']
     .forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
   FormKit.clearSig('sig'); sigMode('draw');
-  var sd=document.getElementById('signed_date'); if(sd) sd.value=new Date().toISOString().split('T')[0];
+  var sd=document.getElementById('signed_date'); if(sd) sd.value=FormKit.todayISO();
   if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
 }
 
@@ -166,7 +166,7 @@ window.FORMKIT_CONFIG = {
   formType:'transition_into_program', version:'v2', centerSelect:'#ctr', reset:trReset,
   collect:function(){
     if(SIG_METHOD==='type') renderTyped();
-    var sigDate=g('signed_date')||new Date().toISOString().split('T')[0];
+    var sigDate=g('signed_date')||FormKit.todayISO();
     var fd={
       type:'transition_into_program', center_code:FormKit.centerCode(),
       doc_title:'Transition into the Program', doc_version:'v2',
@@ -184,7 +184,7 @@ window.FORMKIT_CONFIG = {
 };
 
 document.addEventListener('DOMContentLoaded',function(){
-  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=new Date().toISOString().split('T')[0];
+  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=FormKit.todayISO();
   var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
   fetch('../../enroll-registry.json',{cache:'no-cache'})
