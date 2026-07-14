@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DCY 01218 — Basic Infant Information for Child Care</title>
+<style>
+  /* ============================================================
+     DCY 01218 (Rev. 7/2025) — Basic Infant Information for Child Care
+     Kit-path fillable (internal center document; not a state filing).
+     v2 DARK · 2026-07-14 · form-kit.js owns validation/UX/submit.
+     ============================================================ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color: #000; background: #e8e8e8; }
+
+  .sheet { width: 8.5in; min-height: 11in; margin: 16px auto; padding: 0.45in 0.5in; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); display: flex; flex-direction: column; }
+
+  /* Form identity line (DoD#1 — inspector-recognisable paper-on-demand) */
+  .idline { text-align: center; font-size: 9.5pt; color: #333; letter-spacing: .02em; }
+  .form-title { text-align: center; font-size: 16pt; font-weight: bold; text-transform: uppercase; margin: 2px 0 10px; }
+  p.intro { font-size: 10pt; line-height: 1.32; margin-bottom: 12px; font-style: italic; }
+
+  table { border-collapse: collapse; width: 100%; }
+  .blk { margin-bottom: 14px; }
+  .blk td { border: 1px solid #000; padding: 4px 8px; vertical-align: top; font-size: 11pt; line-height: 1.3; }
+  .bar td { background: #000; color: #fff; font-weight: bold; padding: 3px 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lbl { font-weight: bold; }
+  .hint { font-style: italic; font-size: 9pt; color: #444; display: block; margin-top: 2px; }
+
+  input.fill { border: none; outline: none; font: inherit; background: transparent; padding: 1px 4px; }
+  input.fill:focus, textarea:focus, input.date-fill:focus { background: #eef4ff; }
+  input.fill:disabled { background: repeating-linear-gradient(45deg,#f4f4f4,#f4f4f4 4px,#eee 4px,#eee 8px); }
+  td.tall { height: 0.7in; }
+  textarea { width: 100%; min-height: 0.5in; border: none; outline: none; font: inherit; resize: vertical; background: transparent; display: block; margin-top: 2px; }
+  input.date-fill { font: inherit; font-weight: normal; border: none; outline: none; background: transparent; width: 160px; padding: 1px 4px; }
+
+  .opts { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 4px; }
+  .opts label { display: inline-flex; align-items: center; gap: 6px; font-weight: normal; }
+  .opts input[type="checkbox"] { width: 16px; height: 16px; }
+
+  /* Sleep-position waiver (DCY-01235) — data-driven from registry.conditions */
+  .waiver { margin-top: 8px; background: #fef3c7; border: 1px solid #f0c862; border-radius: 6px; padding: 8px 12px; font-size: 10pt; color: #7a5a00; line-height: 1.4; }
+  .waiver a { color: #0f4c35; font-weight: bold; margin-left: 6px; }
+
+  /* Signatures */
+  .sig-wrap { display: flex; align-items: flex-end; gap: 8px; }
+  canvas.sig { flex: 1; height: 46px; cursor: crosshair; touch-action: none; background: transparent; border-bottom: 1px solid #666; }
+  .sig-clear { font-size: 10px; padding: 2px 7px; border: 1px solid #999; border-radius: 3px; background: #fff; cursor: pointer; }
+  .pending-tag { font-size: 8.5pt; font-weight: bold; color: #92400e; background: #fef3c7; border: 1px solid #f0c862; border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: middle; }
+
+  .footer { margin-top: auto; padding-top: 8px; font-size: 9pt; color: #555; display: flex; justify-content: space-between; }
+
+  /* Toolbar */
+  .toolbar { max-width: 8.5in; margin: 14px auto 0; font-family: Arial, sans-serif; font-size: 13px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar button { font: inherit; padding: 6px 14px; border: 1px solid #888; border-radius: 4px; background: #fff; cursor: pointer; }
+  .toolbar button.primary { background: #0f4c35; color: #fff; border-color: #0f4c35; }
+  .toolbar button.blue { background: #1a56a0; color: #fff; border-color: #1a56a0; }
+  #status { color: #666; }
+  #status.ok { color: #0f4c35; font-weight: bold; }
+  #status.er { color: #b00020; font-weight: bold; }
+  #status.in { color: #1a56a0; font-weight: bold; }
+
+  /* Print — paper-on-demand, keep to 1–2 pages */
+  @page { size: letter portrait; margin: 0.4in 0.5in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar, .sig-clear, .fk-print-hidden { display: none !important; }
+    .sheet { width: auto; min-height: 10in; margin: 0; padding: 0; box-shadow: none; }
+    input.fill:focus, textarea:focus, input.date-fill:focus { background: transparent; }
+    .waiver { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    input.date-fill::-webkit-calendar-picker-indicator { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="primary" data-formkit="submit">Submit</button>
+  <button id="btnReset">Reset</button>
+  <button id="btnNewFamily">New family</button>
+  <button id="btnPrint" class="blue">Print / Save PDF</button>
+  <span id="status" data-formkit="status"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div id="pkbanner" class="fk-autofill fk-print-hidden" data-formkit="autofill-banner" style="display:none">
+  &#128190; <b>Info from a previous form found</b> (<span data-fk-autofill-who></span>)
+  <button type="button" class="fk-apply" style="padding:3px 10px;margin-left:8px">Fill known fields</button>
+  <button type="button" class="fk-dismiss" style="padding:3px 10px">Dismiss</button>
+</div>
+
+<div class="sheet">
+  <div class="idline">Ohio Department of Children and Youth · DCY 01218 (Rev. 7/2025)</div>
+  <div class="form-title">Basic Infant Information for Child Care</div>
+  <p class="intro">This information should be completed by the parents prior to the child's first day, and updated periodically as the infant's needs change.</p>
+
+  <!-- Child -->
+  <table class="blk">
+    <tr class="bar"><td colspan="2">Child</td></tr>
+    <tr>
+      <td style="width:60%"><span class="lbl">Child's Name</span>
+        <input type="text" class="fill" id="childName" autocomplete="name" data-required data-label="Child's Name" data-fk-field="child_name" style="width:60%"></td>
+      <td><span class="lbl">Nickname</span>
+        <input type="text" class="fill" id="nickname" style="width:60%"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Child's Date of Birth</span>
+        <input type="date" class="date-fill" id="dob" autocomplete="bday" data-fk-field="dob"></td>
+      <td><span class="lbl">Siblings</span>
+        <input type="text" class="fill" id="siblings" style="width:70%"></td>
+    </tr>
+  </table>
+
+  <!-- Feeding -->
+  <table class="blk">
+    <tr class="bar"><td>Feeding</td></tr>
+    <tr><td>
+      <span class="lbl">What are you feeding your infant?</span> <span class="hint">Check all that apply.</span>
+      <div class="opts">
+        <label><input type="checkbox" id="feedFormula"> Formula (include brand):
+          <input type="text" class="fill" id="formulaBrand" placeholder="brand" disabled style="width:180px;border-bottom:1px solid #aaa"></label>
+        <label><input type="checkbox" id="feedBreast"> Breast milk</label>
+      </div>
+    </td></tr>
+    <tr><td><span class="lbl">Formula preparation</span> <span class="hint">If center/provider is to prepare.</span>
+      <input type="text" class="fill" id="formulaPrep" style="width:70%"></td></tr>
+    <tr><td>
+      <span class="lbl">Amount for each feeding</span>
+      <input type="text" class="fill" id="feedAmount" style="width:26%">
+      &nbsp;&nbsp;<span class="lbl">Frequency of feedings</span>
+      <input type="text" class="fill" id="feedFrequency" style="width:26%"></td></tr>
+    <tr><td>
+      <span class="lbl">My infant likes a bottle warmed:</span> <span class="hint">Check one.</span>
+      <div class="opts">
+        <label><input type="checkbox" data-fk-exclusive="warm" id="warmRoom" value="room_temp"> Room temp</label>
+        <label><input type="checkbox" data-fk-exclusive="warm" id="warmWarm" value="warm"> Warm</label>
+        <label><input type="checkbox" data-fk-exclusive="warm" id="warmVery" value="very_warm_not_hot"> Very warm / NOT HOT</label>
+      </div>
+    </td></tr>
+    <tr><td><span class="lbl">Juice</span> <span class="hint">Type, amount, when?</span>
+      <input type="text" class="fill" id="juice" style="width:72%"></td></tr>
+    <tr><td>
+      <span class="lbl">Does child use a cup yet?</span>
+      <div class="opts">
+        <label><input type="checkbox" data-fk-exclusive="cup" id="cupNo" value="no"> No</label>
+        <label><input type="checkbox" data-fk-exclusive="cup" id="cupYes" value="yes"> Yes</label>
+      </div>
+    </td></tr>
+    <tr><td class="tall"><span class="lbl">Solid foods</span> <span class="hint">Baby food, brand, types, amounts, frequency. *You must have written permission from your child's physician if your child is under 4 months and given solid foods.</span>
+      <textarea id="solidFoods"></textarea></td></tr>
+    <tr><td><span class="lbl">Are foods served room temperature or warmed?</span>
+      <input type="text" class="fill" id="foodTemp" style="width:52%"></td></tr>
+    <tr><td class="tall"><span class="lbl">Table food</span> <span class="hint">Types, amounts, frequency, special instructions.</span>
+      <textarea id="tableFood"></textarea></td></tr>
+  </table>
+
+  <!-- Comfort & sleep -->
+  <table class="blk">
+    <tr class="bar"><td>Comfort &amp; Sleep</td></tr>
+    <tr><td><span class="lbl">Security items</span> <span class="hint">Pacifier, blankies, etc.</span>
+      <input type="text" class="fill" id="securityItems" style="width:70%"></td></tr>
+    <tr><td><span class="lbl">Nap schedule</span>
+      <input type="text" class="fill" id="napSchedule" style="width:75%"></td></tr>
+    <tr><td><span class="lbl">Hints for getting baby to sleep</span>
+      <input type="text" class="fill" id="sleepHints" style="width:65%"></td></tr>
+    <tr><td>
+      <span class="lbl">Sleeping Position</span> <span class="hint">Check one.</span>
+      <div class="opts">
+        <label><input type="checkbox" data-fk-exclusive="sleep" id="sleepBack" value="back"> Back</label>
+        <label><input type="checkbox" data-fk-exclusive="sleep" id="sleepSide" value="side"> Side*</label>
+        <label><input type="checkbox" data-fk-exclusive="sleep" id="sleepTummy" value="tummy"> Tummy*</label>
+      </div>
+      <div id="sleepWaiver" class="waiver fk-print-hidden" style="display:none">
+        &#9888; <span data-waiver-msg>A DCY 01235 Sleep Position Waiver, signed by your child's physician, is required before your baby may sleep on their side or tummy.</span>
+        <a data-waiver-link target="_blank" rel="noreferrer" style="display:none">Get DCY 01235 &rarr;</a>
+        Please contact the center/provider.
+      </div>
+    </td></tr>
+  </table>
+
+  <!-- Other -->
+  <table class="blk">
+    <tr class="bar"><td>Other</td></tr>
+    <tr><td class="tall"><span class="lbl">Special Precautions</span>
+      <textarea id="specialPrecautions"></textarea></td></tr>
+    <tr><td class="tall"><span class="lbl">Any additional information about your child that would be helpful or you would like staff to know</span>
+      <textarea id="additionalInfo"></textarea></td></tr>
+  </table>
+
+  <!-- Signatures -->
+  <table class="blk">
+    <tr class="bar"><td colspan="2">Signatures</td></tr>
+    <tr>
+      <td style="width:66%"><span class="lbl">Parent Signature</span>
+        <div class="sig-wrap">
+          <canvas class="sig" id="sigParent" width="520" height="46" data-formkit="signature" data-required data-label="Parent Signature"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('sigParent')">Clear</button>
+        </div></td>
+      <td><span class="lbl">Date</span>
+        <input type="date" class="date-fill" id="parentDate" data-required data-label="Parent signature date"></td>
+    </tr>
+    <tr>
+      <td><span class="lbl">Primary Caregiver Signature</span> <span class="pending-tag">optional now</span>
+        <span class="hint">May be signed later at the center — leaving it blank will not block submission.</span>
+        <div class="sig-wrap">
+          <canvas class="sig" id="sigCaregiver" width="520" height="46" data-formkit="signature" data-label="Primary Caregiver Signature"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('sigCaregiver')">Clear</button>
+        </div></td>
+      <td><span class="lbl">Date</span>
+        <input type="date" class="date-fill" id="caregiverDate"></td>
+    </tr>
+    <tr>
+      <td colspan="2"><span class="lbl">Date form last updated</span>
+        <input type="date" class="date-fill" id="lastUpdated"></td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <span>Ohio Department of Children and Youth</span>
+    <span>DCY 01218 (Rev. 7/2025)</span>
+  </div>
+</div>
+
+<link rel="stylesheet" href="form-kit.css">
+<script>
+/* DCY 01218 — form-specific config only; shared behaviour = form-kit.js */
+(function () {
+  'use strict';
+  function el(id) { return document.getElementById(id); }
+  function val(id) { var e = el(id); return e ? (e.value || '').trim() : ''; }
+  function raw(id) { var e = el(id); return e ? e.value : ''; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function exclusiveVal(group) { var c = document.querySelector('[data-fk-exclusive="' + group + '"]:checked'); return c ? c.value : null; }
+
+  function clearForm() {
+    document.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(function (e) { e.value = ''; });
+    document.querySelectorAll('input[type="checkbox"]').forEach(function (e) { e.checked = false; });
+    if (window.FormKit) { FormKit.clearSig('sigParent'); FormKit.clearSig('sigCaregiver'); }
+    setFormulaBrand();
+    setDefaults();
+    refreshSleepWaiver();
+    if (window.FormKit) { FormKit.refreshCounter(); FormKit.status('Form cleared', ''); }
+  }
+  function setDefaults() { ['parentDate', 'lastUpdated'].forEach(function (id) { var e = el(id); if (e && !e.value) e.value = todayISO(); }); }
+
+  /* Formula → brand field (DoD#4, pattern P2 N/A: enable when checked, disable+clear when not) */
+  function setFormulaBrand() {
+    var on = el('feedFormula').checked, b = el('formulaBrand');
+    b.disabled = !on; if (!on) b.value = '';
+  }
+
+  /* Sleep-position waiver (DCY 01235) — single source of truth = registry.conditions.
+     Asset may not exist yet; if the registry later carries a live 01235 URL the banner
+     auto-links, otherwise it shows the director-issue advisory. No code change needed. */
+  function refreshSleepWaiver() {
+    var need = (el('sleepSide').checked) || (el('sleepTummy').checked);
+    el('sleepWaiver').style.display = need ? '' : 'none';
+  }
+
+  window.FORMKIT_CONFIG = {
+    formType: 'basic_infant_care_plan', version: 'v2', title: 'Basic Infant Information for Child Care',
+    reset: clearForm,
+    collect: function () {
+      var parentSig = window.FormKit ? FormKit.getSig('sigParent') : null;
+      var caregiverSig = window.FormKit ? FormKit.getSig('sigCaregiver') : null;
+      var parentDate = raw('parentDate') || todayISO();
+      var formData = {
+        child_name:            val('childName'),
+        nickname:              val('nickname'),
+        dob:                   raw('dob') || null,
+        siblings:              val('siblings'),
+        feeding: { formula: el('feedFormula').checked, formula_brand: val('formulaBrand'), breast_milk: el('feedBreast').checked },
+        formula_preparation:   val('formulaPrep'),
+        amount_per_feeding:    val('feedAmount'),
+        feeding_frequency:     val('feedFrequency'),
+        bottle_warmed:         exclusiveVal('warm'),
+        juice:                 val('juice'),
+        uses_cup:              exclusiveVal('cup'),
+        solid_foods:           val('solidFoods'),
+        foods_temp:            val('foodTemp'),
+        table_food:            val('tableFood'),
+        security_items:        val('securityItems'),
+        nap_schedule:          val('napSchedule'),
+        sleep_hints:           val('sleepHints'),
+        sleep_position:        exclusiveVal('sleep'),
+        special_precautions:   val('specialPrecautions'),
+        additional_info:       val('additionalInfo'),
+        parent_signature_date: raw('parentDate') || null,
+        caregiver_signature_date: raw('caregiverDate') || null,
+        last_updated:          raw('lastUpdated') || null,
+        // Pending-doc rule: caregiver signature can't be obtained at home — flag, don't block.
+        pending_caregiver_signature: !caregiverSig
+      };
+      return {
+        formData: formData,
+        signatures: { parent_signature_img: parentSig, caregiver_signature_img: caregiverSig },
+        signatureDate: parentDate
+      };
+    }
+    // No custom submit → default channel: submit_enrollment_form,
+    // p_submission_type = 'basic_infant_care_plan' → children Inbox (advisory).
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    setDefaults();
+    el('feedFormula').addEventListener('change', setFormulaBrand);
+    ['sleepBack', 'sleepSide', 'sleepTummy'].forEach(function (id) { el(id).addEventListener('change', refreshSleepWaiver); });
+    refreshSleepWaiver();
+
+    // Enrich the waiver banner from the single registry.conditions map (non-blocking).
+    fetch('../../enroll-registry.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (reg) {
+        if (!reg) return;
+        var c = reg.conditions && reg.conditions.sleep_position_waiver; if (!c) return;
+        var banner = el('sleepWaiver');
+        var msgEl = banner.querySelector('[data-waiver-msg]'); if (msgEl && c.note) msgEl.textContent = c.note;
+        var wf = c.waiverForm && reg.forms && reg.forms[c.waiverForm];
+        var url = wf && wf.versions && wf.current && wf.versions[wf.current];
+        var linkEl = banner.querySelector('[data-waiver-link]');
+        if (linkEl && url) {
+          var cc = window.FormKit ? FormKit.centerCode() : '';
+          linkEl.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + (cc ? 'center=' + encodeURIComponent(cc) : '');
+          linkEl.style.display = '';
+        }
+      }).catch(function () {});
+
+    var r = el('btnReset'); if (r) r.addEventListener('click', clearForm);
+    var nf = el('btnNewFamily'); if (nf) nf.addEventListener('click', function () {
+      try { localStorage.removeItem('pa_packet_profile'); } catch (_) {}
+      clearForm();
+      if (window.FormKit) FormKit.status('Shared data cleared — ready for a new family', '');
+    });
+    var p = el('btnPrint'); if (p) p.addEventListener('click', function () { window.print(); });
+  });
+})();
+</script>
+<script defer src="form-kit.js"></script>
+</body>
+</html>
