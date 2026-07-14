@@ -340,11 +340,11 @@
       "history": [
         {
           "at": "2026-07-12",
-          "note": "Stage 2 (DARK): Child_Release_Authorization_v2.html — pure form-kit kit-form (no overlay), built from the our-documents source: pickup list (name + relation ×5) + comments + photo/video consent (Website/Facebook/Smart Care/Advertisement) + adoption-model signature (draw/type). form-speed DoD full (today-default date, session-packet autofill, prefill, center-lock, Ref, post-submit-lock). submission_type=child_release_authorization → children Inbox (no validator yet = advisory). current stays v1 (docx) for sverka → smoke → flip (each its own go)."
+          "note": "Stage 2 (DARK): Child_Release_Authorization_v2.html — pure form-kit kit-form (no overlay); pickup list ×5 + comments + photo/video consent + adoption signature; form-speed DoD full; submission_type=child_release_authorization → children Inbox."
         },
         {
           "at": "2026-07-12",
-          "note": "FLIP: current v1(docx) → v2 (Child_Release_Authorization_v2.html) after clean dark-smoke 5/5 (Ref 88CCF228: required-gate → adoption signature → submit → children Inbox pending → reject 'ra test'). fallbackUrl → v2; futureFormKit cleared (now a live form-kit form)."
+          "note": "FLIP: current v1(docx) → v2 after clean dark-smoke 5/5 (Ref 88CCF228). fallbackUrl → v2; futureFormKit cleared (now a live form-kit form)."
         }
       ],
       "futureFormKit": false
@@ -625,6 +625,50 @@
           "label": "Care Plan for a Child with Special Needs (DCY 01236)",
           "note": "Your director provides this in person if your child has special health needs."
         }
+      ]
+    },
+    "starter": {
+      "title": "Starter — new family",
+      "mode": "anonymous",
+      "_note": "First-introduction packet (QR / kiosk). Consent first; start_form pending (VISIBLE in the director screen as 'coming soon', HIDDEN on the parent storefront); DCY 01305 handed over in person.",
+      "slots": [
+        { "key": "parent_consent", "section": "mandatory", "label": "Parent Consent (E-Signature)", "note": "Signed first — adopts your signature for the rest of the packet." },
+        { "key": "start_form", "section": "mandatory", "pending": true, "label": "Registration Start Form", "note": "Coming soon." },
+        { "key": "dcy_01305", "section": "mandatory", "handout": true, "label": "Child Medical Statement (JFS 01305)", "note": "Physician-signed — printed and handed to you in person." }
+      ]
+    },
+    "toddler_preschool": {
+      "title": "Toddler / Preschool",
+      "mode": "addressed",
+      "slots": [
+        { "key": "parent_consent", "section": "mandatory", "label": "Parent Consent (E-Signature)", "note": "Signed first — adopts your signature for the rest of the packet." },
+        { "key": "dcy_01234", "section": "mandatory", "label": "Child Enrollment & Health (DCY 01234)", "note": "The State of Ohio enrollment record: contacts, health, authorizations." },
+        { "key": "enroll", "section": "mandatory", "label": "CACFP Enrollment", "note": "Days, hours and meals your child receives in care." },
+        { "key": "iea", "section": "mandatory", "group": "income", "label": "Income Eligibility (IEA)", "note": "Free / reduced-price meal eligibility. One per household." },
+        { "key": "usda_waiver", "section": "mandatory", "group": "income", "label": "USDA Income Eligibility Waiver", "note": "The alternative to the IEA — exactly one of the two is on file." },
+        { "key": "child_release_authorization", "section": "mandatory", "label": "Child Release Authorization", "note": "Who may pick up your child, plus media consent." },
+        { "key": "transition_into_program", "section": "mandatory", "label": "Transition into the Program", "note": "Help us support your child's first weeks in a new setting." },
+        { "key": "special_diet", "section": "if_applicable", "label": "Special Diet Statement", "note": "Food accommodations; the medical section is completed by your provider." },
+        { "key": "fluid_milk", "section": "if_applicable", "label": "Fluid Milk Substitution", "note": "Request a non-dairy beverage instead of fluid milk." },
+        { "key": "dcy_01305", "section": "if_applicable", "handout": true, "label": "Child Medical Statement (JFS 01305)", "note": "Physician-signed — add if the family came in past the starter set." }
+      ]
+    },
+    "infant": {
+      "title": "Infants",
+      "mode": "addressed",
+      "slots": [
+        { "key": "parent_consent", "section": "mandatory", "label": "Parent Consent (E-Signature)", "note": "Signed first — adopts your signature for the rest of the packet." },
+        { "key": "dcy_01234", "section": "mandatory", "label": "Child Enrollment & Health (DCY 01234)", "note": "The State of Ohio enrollment record: contacts, health, authorizations." },
+        { "key": "enroll", "section": "mandatory", "label": "CACFP Enrollment", "note": "Days, hours and meals your child receives in care." },
+        { "key": "iea", "section": "mandatory", "group": "income", "label": "Income Eligibility (IEA)", "note": "Free / reduced-price meal eligibility. One per household." },
+        { "key": "usda_waiver", "section": "mandatory", "group": "income", "label": "USDA Income Eligibility Waiver", "note": "The alternative to the IEA — exactly one of the two is on file." },
+        { "key": "child_release_authorization", "section": "mandatory", "label": "Child Release Authorization", "note": "Who may pick up your child, plus media consent." },
+        { "key": "dcy_01218", "section": "mandatory", "label": "Basic Infant Care Plan (DCY 01218)", "note": "For infants under one year of age." },
+        { "key": "infant_meals", "section": "mandatory", "label": "Infant Meal Preference", "note": "Who provides formula and when solids are introduced." },
+        { "key": "what_to_bring_infant", "section": "mandatory", "label": "What To Bring (Infant)", "note": "Checklist of items to bring for your infant." },
+        { "key": "special_diet", "section": "if_applicable", "label": "Special Diet Statement", "note": "Food accommodations; the medical section is completed by your provider." },
+        { "key": "fluid_milk", "section": "if_applicable", "label": "Fluid Milk Substitution", "note": "Request a non-dairy beverage instead of fluid milk." },
+        { "key": "dcy_01305", "section": "if_applicable", "handout": true, "label": "Child Medical Statement (JFS 01305)", "note": "Physician-signed — add if needed." }
       ]
     }
   },
