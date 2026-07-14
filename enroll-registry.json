@@ -261,16 +261,20 @@
       "kind": "document",
       "section": "dcy",
       "requiringOrg": "ODJFS/DCY",
-      "current": "v1",
+      "current": "v2",
       "versions": {
         "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Basic%20Infant%202026%20DCY-01218.PDF",
         "v2": "https://pa082508.github.io/forms/1-data-sources/DCY_01218_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Basic%20Infant%202026%20DCY-01218.PDF",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01218_v2.html",
       "perInstance": false,
-      "history": [],
-      "condition": "infant",
-      "_dark": "v2 = kit-path fillable (form-kit), DARK — current stays v1 (PDF) until Nikolay сверка + smoke + flip go. submission_type=basic_infant_care_plan → children Inbox (advisory)."
+      "history": [
+        {
+          "at": "2026-07-14",
+          "note": "FLIP v1(PDF)→v2 (DCY_01218_v2.html form-kit fillable): watchdog (15th form) + parent-sig adopt slot (sigParent; sigCaregiver=staff excluded) + ?v=2. submission_type=basic_infant_care_plan → children Inbox (advisory). ASSEMBLED on dark/dcy-01218-v2, HELD — deploy on Nikolay live-dark-URL 'ок'."
+        }
+      ],
+      "condition": "infant"
     },
     "dcy_01225": {
       "slug": "dcy_01225",
@@ -487,6 +491,17 @@
       "detect": [
         "child under 12 months"
       ]
+    },
+    "sleep_position_waiver": {
+      "title": "Non-back sleep position (side or tummy)",
+      "detectOn": "sleep_position",
+      "detect": [
+        "sleep position: side",
+        "sleep position: tummy"
+      ],
+      "issue": "director",
+      "waiverForm": "dcy_01235",
+      "note": "A DCY 01235 Sleep Position Waiver, signed by your child's physician, is required before your baby may sleep on their side or tummy. Please contact the center/provider."
     },
     "special_diet": {
       "title": "Special diet or milk substitution",
