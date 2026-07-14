@@ -2,265 +2,185 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Play Academy — Admission Packet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enrollment Packet — Play Academy</title>
 <style>
-:root{--green:#1b5e20;--soft:#e8f2ea;--ink:#1d2b20;--line:#d6e2d8;--muted:#4c5a4f}
-*{box-sizing:border-box}
-body{margin:0;font-family:Georgia,'Times New Roman',serif;background:#f6f8f6;color:var(--ink)}
-header{background:var(--green);color:#fff;padding:34px 20px 26px;text-align:center}
-header .logo{max-height:56px;margin-bottom:10px}
-header h1{margin:0;font-size:26pt;letter-spacing:.5px}
-header p{margin:8px 0 0;font-family:Arial,sans-serif;font-size:11pt;opacity:.92}
-header .center{margin-top:10px;font-family:Arial,sans-serif;font-size:10.5pt;opacity:.95;
-  display:inline-block;border-top:1px solid rgba(255,255,255,.35);padding-top:8px}
-main{max-width:880px;margin:0 auto;padding:24px 18px 60px}
-.toolbar{display:flex;justify-content:flex-end;gap:10px;margin:0 0 6px}
-.toolbar button{font:inherit;font-family:Arial,sans-serif;font-size:10pt;padding:7px 14px;border:1px solid var(--line);
-  border-radius:8px;background:#fff;color:var(--green);cursor:pointer}
-.toolbar button:hover{background:var(--soft)}
-h2{font-size:15pt;color:var(--green);border-bottom:2px solid var(--line);padding-bottom:6px;margin:30px 0 4px}
-h3.grp{font-family:Arial,sans-serif;font-size:11pt;color:var(--ink);margin:18px 0 2px}
-.cond-cap{font-family:Arial,sans-serif;font-weight:normal;font-size:9pt;color:var(--muted);margin-left:6px}
-[data-cond-group].cond-hi{background:var(--soft);border-radius:10px;padding:4px 12px 10px;margin:0 -12px}
-[data-cond-group].cond-hi .cond-cap{color:var(--green);font-weight:bold}
-.note{font-family:Arial,sans-serif;font-size:10pt;color:var(--muted);margin:0 0 12px}
-.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:10px 0;
-  display:flex;gap:14px;align-items:flex-start;text-decoration:none;color:inherit;
-  box-shadow:0 1px 3px rgba(0,0,0,.05);transition:box-shadow .15s}
-a.card:hover{box-shadow:0 3px 10px rgba(0,0,0,.12)}
-.card.soon{opacity:.66;cursor:default}
-.card .num{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:2px solid var(--green);color:var(--green);
-  font-family:Arial,sans-serif;font-weight:bold;font-size:12pt;display:flex;align-items:center;justify-content:center}
-.card.done .num{background:var(--green);color:#fff}
-.card .ic{font-size:20pt;line-height:1.1}
-.card h4{margin:0 0 3px;font-size:12.5pt;font-weight:bold}
-.card p{margin:0;font-family:Arial,sans-serif;font-size:9.5pt;color:var(--muted);line-height:1.45}
-.badges{margin-top:6px}
-.b{display:inline-block;font-family:Arial,sans-serif;font-size:8pt;font-weight:bold;
-  padding:2px 9px;border-radius:10px;margin:3px 6px 0 0}
-.b.on{background:var(--soft);color:var(--green)}
-.b.pr{background:#eef0f3;color:#3c4858}
-.b.md{background:#fdeaea;color:#a12a2a}
-.b.soon{background:#f0ede3;color:#7a6a2e}
-.director{background:#fbf7ec;border:1px solid #e7dcc0;border-radius:10px;padding:12px 16px;margin:10px 0;
-  font-family:Arial,sans-serif;font-size:9.5pt;color:#6a5a2e;line-height:1.5}
-.director b{color:#4c421e}
-#err{font-family:Arial,sans-serif;font-size:10pt;color:#b00020;padding:20px;text-align:center}
-footer{font-family:Arial,sans-serif;font-size:9pt;color:#6b776e;text-align:center;padding:24px}
-@media print{
-  body{background:#fff}
-  header{padding:14px 0 10px}
-  .toolbar{display:none}
-  .card,.director{box-shadow:none;page-break-inside:avoid}
-  a.card{color:inherit}
-}
+  /* ============================================================
+     Parent enrollment packet — registry-driven storefront
+     v2 · 2026-07-13 · reads ?center=&set=&only= from enroll-registry.json
+     Typography standard: large form names, green accent, QR per form.
+     ============================================================ */
+  :root { --green:#0f4c35; --green2:#1a5c3f; --mint:#f0f7f4; --mint-b:#d1fae5; --ink:#14251b; --muted:#5f6b64; --line:#e3e9e4; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #f4f6f4; color: var(--ink); padding: 22px 14px 60px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 620px; margin: 0 auto; }
+  .head { text-align: center; margin-bottom: 22px; }
+  .k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green2); }
+  h1 { font-size: 27px; font-weight: 800; letter-spacing: -.01em; margin: 6px 0 4px; text-wrap: balance; }
+  .sub { color: var(--muted); font-size: 13.5px; line-height: 1.5; max-width: 44ch; margin: 0 auto; }
+
+  .card { display: flex; align-items: center; gap: 15px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 13px; }
+  .num { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--green); color: var(--green); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .card.done .num { border-color: var(--green); background: var(--green); color: #fff; }
+  .info { flex: 1; min-width: 0; }
+  .info .t { font-weight: 700; font-size: 20px; letter-spacing: -.01em; line-height: 1.2; }
+  .info .d { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .right { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+  .miniqr { width: 46px; height: 46px; border: 1.5px solid var(--mint-b); border-radius: 9px; padding: 3px; background: #fff; cursor: pointer; display: block; }
+  .miniqr canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  .open { font-size: 15px; font-weight: 800; color: #fff; background: var(--green); border: none; border-radius: 11px; padding: 11px 20px; text-decoration: none; display: inline-block; cursor: pointer; }
+  .card.done .open { background: #fff; color: var(--green); border: 1.5px solid var(--green); }
+
+  .card.handout { background: var(--mint); border-color: var(--mint-b); }
+  .card.handout .num { border-color: var(--green2); color: var(--green2); }
+  .handout-tag { font-size: 12px; font-weight: 700; color: var(--green2); background: #fff; border: 1px solid var(--mint-b); border-radius: 999px; padding: 6px 12px; }
+
+  .hint { background: var(--mint); border: 1px solid var(--mint-b); border-radius: 10px; font-size: 12.5px; color: var(--green2); padding: 11px 14px; line-height: 1.5; margin: 18px 0 14px; }
+  .actions { text-align: center; }
+  .actions button { font: inherit; font-size: 13px; padding: 8px 16px; border: 1.5px solid var(--mint-b); border-radius: 8px; background: #fff; color: var(--green2); cursor: pointer; font-weight: 600; }
+  #cleared { color: var(--green); font-size: 13px; font-weight: 700; margin-top: 8px; display: none; }
+  #msg { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 10px; line-height: 1.5; }
+
+  /* full QR popup */
+  .ov { position: fixed; inset: 0; background: rgba(10,20,15,.55); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+  .ov.on { display: flex; }
+  .pop { background: #fff; border-radius: 18px; padding: 22px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 24px 70px rgba(0,0,0,.3); }
+  .pop h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .pop .u { font-size: 11px; color: var(--muted); word-break: break-all; margin: 4px 0 14px; font-family: ui-monospace, Menlo, monospace; }
+  .pop canvas { width: 240px; height: 240px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 10px; }
+  .pop .x { margin-top: 16px; font-size: 14px; font-weight: 700; color: #fff; background: var(--green); border: none; border-radius: 10px; padding: 10px 22px; cursor: pointer; }
 </style>
 </head>
 <body>
-<header>
-  <!-- STAGE-2 SWAP POINT: org name / logo / contacts come from org settings (OrgContext →
-       registry.org block), not hardcoded. For the Monday packet, branding is taken as-is. -->
-  <h1 id="orgName">Play Academy</h1>
-  <p id="orgTag">Admission Packet</p>
-  <div class="center" id="centerLine" hidden></div>
-</header>
-<main>
-  <div class="toolbar">
-    <button id="btnPrint" type="button">🖨 Print packet</button>
-    <button id="btnNew" type="button" title="Clear shared answers before starting a different child/family">Start new family</button>
+<div class="wrap">
+  <div class="head">
+    <div class="k" id="ctrLabel">Play Academy · Enrollment packet</div>
+    <h1 id="setTitle">Enrollment packet</h1>
+    <div class="sub" id="setSub">Complete the forms below. Start with Consent — the rest reuse your signature.</div>
   </div>
-  <div id="packet"><p class="note">Loading your packet…</p></div>
-  <div id="err" hidden></div>
-  <p class="note" style="margin-top:26px">Questions? Ask your center director — we are happy to help you complete any form.</p>
-</main>
-<footer>Play Academy Inc. &middot; Child and Adult Care Food Program &middot; This institution is an equal opportunity provider.</footer>
+  <div id="list"></div>
+  <div id="msg" style="display:none"></div>
 
+  <div class="hint" id="hint">
+    Your information stays on this device only and clears automatically after 90 minutes.
+    Doing forms for another child? Tap &ldquo;Start new family&rdquo; first.
+  </div>
+  <div class="actions">
+    <button id="btnNewFamily">Start new family</button>
+    <div id="cleared">&#10003; Shared data cleared</div>
+  </div>
+</div>
+
+<div class="ov" id="ov">
+  <div class="pop">
+    <h3 id="popTitle">Scan to open</h3>
+    <div class="u" id="popUrl"></div>
+    <canvas id="popCanvas" width="240" height="240"></canvas>
+    <br><button class="x" id="popClose">Close</button>
+  </div>
+</div>
+
+<script src="qrcodegen.js"></script>
 <script>
 (function () {
   'use strict';
+  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 90 * 60 * 1000;
+  var CENTER_NAMES = { ridge: 'Wickliffe', pearl: 'Parma Heights', alpha: 'Mayfield Hills' };
+  var SET_TITLES = { starter: 'Welcome — enrollment packet', toddler_preschool: 'Enrollment packet', infant: 'Infant enrollment packet', admission: 'Admission packet' };
 
-  // ── Registry source (root copy, kept in sync with the app). ────────────────
-  var REGISTRY_URL = './enroll-registry.json';
+  var qs = new URLSearchParams(location.search);
+  var center = (qs.get('center') || '').toLowerCase();
+  var setName = (qs.get('set') || 'starter').toLowerCase();
+  var only = (qs.get('only') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
 
-  // ── STAGE-2 SWAP POINT — center display info. Hardcoded now (mirrors
-  //    form-kit.js CENTERS_INFO); Stage 2 pulls this from org settings so a
-  //    commercial client rebrands with one setting. ───────────────────────────
-  var CENTERS_INFO = {
-    pearl: { name: 'Play Academy Parma Heights', contact: '6285 Pearl Rd, Parma Heights · 440-884-7529' },
-    alpha: { name: 'Play Academy Mayfield Hills', contact: '201 Alpha Park, Highland Heights · 440-460-0600' },
-    ridge: { name: 'Play Academy Wickliffe',      contact: '28930 Ridge Rd, Wickliffe · 440-520-0031' }
-  };
+  function show(el, on) { el.style.display = on ? '' : 'none'; }
+  function fail(text) { document.getElementById('list').innerHTML = ''; show(document.getElementById('hint'), false); document.querySelector('.actions').style.display = 'none'; var m = document.getElementById('msg'); m.textContent = text; show(m, true); }
 
-  // ── Presentation config ─────────────────────────────────────────────────────
-  // Condition group titles + order come from the registry `conditions` map (the ONE
-  // condition map). This file holds no condition vocabulary of its own.
-  var ICON = {
-    parent_consent:'✍️', dcy_01234:'📋', enroll:'🍽️', iea:'💰',
-    child_release_authorization:'🤝', parent_responsibilities:'📜', center_parent_info:'🏫',
-    what_to_bring_infant:'🎒', dcy_01218:'🍼', infant_meals:'🍼', special_diet:'🥗',
-    fluid_milk:'🥛', usda_waiver:'📝', topical_product_consent:'🧴'
-  };
+  // ---- session "done" tracking (per form key) ----
+  function packetLoad() { try { var raw = localStorage.getItem(PACKET_KEY); if (!raw) return null; var o = JSON.parse(raw); if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) { localStorage.removeItem(PACKET_KEY); return null; } return o; } catch (e) { return null; } }
+  function refreshDone() { var done = (packetLoad() || {}).done || {}; Array.prototype.forEach.call(document.querySelectorAll('.card[data-key]'), function (c) { var k = c.dataset.key, d = !!done[k]; c.classList.toggle('done', d); var num = c.querySelector('.num'); if (num) num.innerHTML = d ? '&#10003;' : c.dataset.n; var o = c.querySelector('.open'); if (o) o.textContent = d ? 'Done ✓' : 'Open'; }); }
 
-  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL = 90 * 60 * 1000, PROFILE_KEY = 'pa_packet_profile';
-  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
-  function qcenter(){ try { return new URLSearchParams(location.search).get('center'); } catch(_) { return null; } }
-
-  // Center-lock: the parent NEVER picks a center — it comes from the packet's ?center=.
-  var center = qcenter();
-  function addCenter(url){ if (!url || !center) return url; return url + (url.indexOf('?') < 0 ? '?' : '&') + 'center=' + encodeURIComponent(center); }
-
-  function renderCenterHeader(){
-    document.getElementById('orgTag').textContent = 'Admission Packet';
-    if (center && CENTERS_INFO[center]) {
-      var i = CENTERS_INFO[center];
-      var el = document.getElementById('centerLine');
-      el.hidden = false;
-      el.innerHTML = '<b>' + esc(i.name) + '</b><br>' + esc(i.contact);
-    }
-    // No/unknown center: still usable, but the forms will ask staff to select one.
+  // ---- QR (vendored qrcodegen, no external calls) ----
+  function drawQR(canvas, text, px) {
+    if (!window.qrcodegen) return;
+    var qr = qrcodegen.QrCode.encodeText(text, qrcodegen.QrCode.Ecc.MEDIUM);
+    var n = qr.size, border = 1, scale = Math.max(1, Math.floor(px / (n + border * 2))), dim = (n + border * 2) * scale;
+    canvas.width = dim; canvas.height = dim;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, dim, dim);
+    ctx.fillStyle = '#0f4c35';
+    for (var y = 0; y < n; y++) for (var x = 0; x < n; x++) if (qr.getModule(x, y)) ctx.fillRect((x + border) * scale, (y + border) * scale, scale, scale);
   }
+  var ov = document.getElementById('ov');
+  function openQR(title, url) { document.getElementById('popTitle').textContent = title; document.getElementById('popUrl').textContent = url; drawQR(document.getElementById('popCanvas'), url, 240); ov.classList.add('on'); }
+  document.getElementById('popClose').addEventListener('click', function () { ov.classList.remove('on'); });
+  ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('on'); });
 
-  // Live URL for a form slot (absolute https only; PENDING/dark → null).
-  function currentUrl(f){
-    if (!f || !f.current) return null;
-    var v = (f.versions || {})[f.current];
-    if (!v || v === 'PENDING' || !/^https?:/.test(v)) return null;
-    return v;
-  }
-  function doneMap(){
-    try { var o = JSON.parse(localStorage.getItem(PACKET_KEY)); if (!o || !o.ts || Date.now() - o.ts > PACKET_TTL) return {}; return o.done || {}; }
-    catch(_) { return {}; }
-  }
+  function scoped(url) { if (!url) return url; return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'center=' + encodeURIComponent(center); }
 
-  function badges(f, live){
-    var out = [];
-    if (f.intakeMode === 'online') out.push(['on','Fill online']);
-    else if (f.intakeMode === 'paper_scan') out.push(['on','Fill / print']);
-    if (f.signer === 'physician') out.push(['md','Provider-signed']);
-    if (f.expiryDays) out.push(['pr', f.expiryDays + '-day validity']);
-    else if (f.expiryMonths) out.push(['pr', f.expiryMonths + '-mo validity']);
-    if (!live) out.push(['soon','Coming soon']);
-    return out.map(function(b){ return '<span class="b ' + b[0] + '">' + esc(b[1]) + '</span>'; }).join('');
-  }
+  fetch('enroll-registry.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (reg) {
+      if (!reg) return fail('Could not load the form list. Please try again.');
+      if (!center || !(reg.centers && reg.centers[center])) return fail('Please open this packet from your center’s link or QR code.');
+      var pk = reg.packets && reg.packets[setName];
+      if (!pk) return fail('This packet is not available. Please ask your center for a current link.');
 
-  // One card. `num` = null → no number bubble (if-applicable). done from session-packet.
-  function card(slot, form, num, done){
-    var label = slot.label || (form && form.title) || slot.key;
-    var note  = slot.note  || (form && form.note)  || '';
-    var live  = !!currentUrl(form);
-    var url   = live ? addCenter(currentUrl(form)) : null;
-    var ic    = ICON[slot.key] || '📄';
-    var numHtml = (num != null)
-      ? '<div class="num">' + (done ? '✓' : num) + '</div>'
-      : '<div class="ic">' + ic + '</div>';
-    var inner =
-      numHtml +
-      '<div><h4>' + esc(label) + '</h4>' +
-      (note ? '<p>' + esc(note) + '</p>' : '') +
-      '<div class="badges">' + badges(form || {}, live) + '</div></div>';
-    if (url) return '<a class="card' + (done ? ' done' : '') + '" href="' + esc(url) + '" target="_blank" rel="noopener">' + inner + '</a>';
-    return '<div class="card soon" title="Not available online yet — your center can provide it">' + inner + '</div>';
-  }
+      var cName = 'Play Academy ' + (CENTER_NAMES[center] || center);
+      document.getElementById('ctrLabel').textContent = cName + ' · Enrollment';
+      document.getElementById('setTitle').textContent = SET_TITLES[setName] || pk.title || 'Enrollment packet';
 
-  function render(reg){
-    var pk = reg && reg.packets && reg.packets.admission;
-    var forms = (reg && reg.forms) || {};
-    if (!pk || !pk.slots) throw new Error('packets.admission missing from registry');
-    var done = doneMap();
-    var slots = pk.slots;
-    var html = '';
+      // composition: director-selected (only=) OR the set default (mandatory, non-pending)
+      var slots = pk.slots.filter(function (s) { return !s.pending; }); // parents never see unbuilt slots
+      if (only.length) slots = slots.filter(function (s) { return only.indexOf(s.key) >= 0; });
+      else slots = slots.filter(function (s) { return s.section !== 'if_applicable'; });
+      if (!slots.length) return fail('This packet has no forms to show yet.');
+      try { console.debug('[packet]', setName, '· center', center, '· only', only, '· forms', slots.map(function (s) { return s.key; })); } catch (e) {}
 
-    // ── Required ──────────────────────────────────────────────────────────────
-    var mandatory = slots.filter(function(s){ return s.section === 'mandatory'; });
-    html += '<h2>Required forms</h2>';
-    html += '<p class="note">Complete these when your child joins ' +
-            (center && CENTERS_INFO[center] ? esc(CENTERS_INFO[center].name) : 'Play Academy') +
-            ', and renew annually. Shared information fills in automatically after the first form.</p>';
-    mandatory.forEach(function(s, i){ html += card(s, forms[s.key], i + 1, !!done[s.key]); });
-
-    // ── If applicable — grouped by the ONE condition map (registry `conditions`).
-    //    A slot's group = forms[key].condition; a director line = that condition's
-    //    issue:'director'. No condition vocabulary lives in this file.
-    var conditions = reg.conditions || {};
-    function condOf(key){ var f = forms[key]; return f && f.condition; }
-    function isDirector(key){ var c = condOf(key); return !!(c && conditions[c] && conditions[c].issue === 'director'); }
-
-    var cond = slots.filter(function(s){ return s.section === 'if_applicable'; });
-    var linkable = cond.filter(function(s){ return !isDirector(s.key); });
-    var director = cond.filter(function(s){ return isDirector(s.key); });
-
-    if (linkable.length || director.length) {
-      html += '<h2>If applicable to your child</h2>';
-      html += '<p class="note">Only the forms that fit your situation — pick what applies.</p>';
-      // Group order = conditions map key order (skip _note and director-issued conditions).
-      Object.keys(conditions).forEach(function(cid){
-        if (cid === '_note' || (conditions[cid] && conditions[cid].issue === 'director')) return;
-        var inGroup = linkable.filter(function(s){ return condOf(s.key) === cid; });
-        if (!inGroup.length) return;
-        html += '<div data-cond-group="' + esc(cid) + '">';
-        html += '<h3 class="grp">' + esc(conditions[cid].title || cid) + ' <span class="cond-cap"></span></h3>';
-        inGroup.forEach(function(s){ html += card(s, forms[s.key], null, !!done[s.key]); });
-        html += '</div>';
+      var list = document.getElementById('list'), n = 0;
+      slots.forEach(function (s) {
+        var form = reg.forms[s.key] || {};
+        var label = s.label || form.title || s.key;
+        var note = s.note || '';
+        var card = document.createElement('div');
+        if (s.handout) {
+          card.className = 'card handout';
+          card.innerHTML = '<div class="num">⊕</div><div class="info"><div class="t"></div><div class="d"></div></div><div class="right"><span class="handout-tag">Given in person</span></div>';
+          card.querySelector('.t').textContent = label;
+          card.querySelector('.d').textContent = note || 'Your center will give you this to complete with your doctor.';
+          list.appendChild(card);
+          return;
+        }
+        n++;
+        var url = (form.versions && form.current && form.versions[form.current]) || form.fallbackUrl || null;
+        var link = scoped(url);
+        card.className = 'card'; card.dataset.key = s.key; card.dataset.n = String(n);
+        card.innerHTML = '<div class="num">' + n + '</div>'
+          + '<div class="info"><div class="t"></div><div class="d"></div></div>'
+          + '<div class="right"><span class="miniqr" title="Scan / share this form"><canvas></canvas></span>'
+          + (link ? '<a class="open" target="_blank" rel="noreferrer">Open</a>' : '') + '</div>';
+        card.querySelector('.t').textContent = label;
+        card.querySelector('.d').textContent = note;
+        if (link) { card.querySelector('.open').href = link; }
+        list.appendChild(card);
+        if (link) {
+          drawQR(card.querySelector('.miniqr canvas'), link, 46);
+          card.querySelector('.miniqr').addEventListener('click', function () { openQR(label, link); });
+        } else { card.querySelector('.miniqr').style.display = 'none'; }
       });
-      if (director.length) {
-        html += '<div class="director"><b>Provided by your director in person, if needed:</b><br>' +
-          director.map(function(s){
-            var f = forms[s.key] || {};
-            return esc(s.label || f.title || s.key) + (s.note ? ' — ' + esc(s.note) : '');
-          }).join('<br>') +
-        '</div>';
-      }
-    }
 
-    document.getElementById('packet').innerHTML = html;
-    applyInfantDetect();
-  }
+      refreshDone();
+      window.addEventListener('focus', refreshDone);
+      window.addEventListener('pageshow', refreshDone);
+    })
+    .catch(function () { fail('Could not load the form list. Please try again.'); });
 
-  // Infant condition is detected by AGE from the session-packet DOB (data-fk-field="dob"),
-  // NOT by parent self-declaration. Before any DOB: infant group shown with a "under 12 months"
-  // caption. After DOB: <12mo → highlighted as applying; ≥12mo → hidden. Same signal Stage 2 uses.
-  function packetDOB(){
-    try { var o = JSON.parse(localStorage.getItem(PROFILE_KEY)); return (o && o.data && o.data.dob) || null; }
-    catch(_) { return null; }
-  }
-  function ageMonths(dob){
-    var t = Date.parse(dob); if (isNaN(t)) return null;
-    var b = new Date(t), n = new Date();
-    var m = (n.getFullYear()-b.getFullYear())*12 + (n.getMonth()-b.getMonth());
-    if (n.getDate() < b.getDate()) m--;
-    return m;
-  }
-  function applyInfantDetect(){
-    var grp = document.querySelector('[data-cond-group="infant"]'); if (!grp) return;
-    var cap = grp.querySelector('.cond-cap');
-    var dob = packetDOB(), am = dob ? ageMonths(dob) : null;
-    grp.style.display = ''; grp.classList.remove('cond-hi');
-    if (am == null) { if (cap) cap.textContent = 'for children under 12 months'; }
-    else if (am < 12) { grp.classList.add('cond-hi'); if (cap) cap.textContent = '✓ applies to your child'; }
-    else { grp.style.display = 'none'; }   // child ≥ 12 months → not shown
-  }
-
-  // ── Toolbar ──────────────────────────────────────────────────────────────────
-  document.getElementById('btnPrint').addEventListener('click', function(){ window.print(); });
-  document.getElementById('btnNew').addEventListener('click', function(){
-    try { localStorage.removeItem(PACKET_KEY); localStorage.removeItem(PROFILE_KEY); } catch(_) {}
-    location.reload();
+  document.getElementById('btnNewFamily').addEventListener('click', function () {
+    try { localStorage.removeItem(PACKET_KEY); } catch (e) {}
+    refreshDone();
+    var c = document.getElementById('cleared'); c.style.display = 'block';
+    setTimeout(function () { c.style.display = 'none'; }, 2500);
   });
-
-  // ── Boot ─────────────────────────────────────────────────────────────────────
-  renderCenterHeader();
-  fetch(REGISTRY_URL, { cache: 'no-cache' })
-    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function(reg){ render(reg); })
-    .catch(function(e){
-      document.getElementById('packet').hidden = true;
-      var err = document.getElementById('err');
-      err.hidden = false;
-      err.textContent = 'Could not load your packet (' + e.message + '). Please refresh, or ask your center director for a printed copy.';
-    });
-  // Returning from a form (which may have written the DOB into the session-packet) → re-detect.
-  window.addEventListener('pageshow', applyInfantDetect);
 })();
 </script>
 </body>

@@ -100,10 +100,15 @@
   }
   function initAutofill() {
     fkFields().forEach(function (e) { e.addEventListener('blur', savePacket); });
-    var banner = $('[data-formkit="autofill-banner"]'); if (!banner) return;
     var r = pkLoad();
+    var anyEmpty = !!r && fkFields().some(function (e) { var k = e.getAttribute('data-fk-field'); return r.data[k] && !(e.value || '').trim(); });
+    // Standalone packet flow: auto-fill empty identity fields from the previous form
+    // in the packet, so a family types their child/parent name once (Consent, first,
+    // writes both). Was previously gated behind an opt-in banner most forms lack, so
+    // the chain never fired. The embed path has its own inject-prefill channel — skip.
+    if (!EMBED.active && anyEmpty) { applyPacket(); anyEmpty = false; }
+    var banner = $('[data-formkit="autofill-banner"]'); if (!banner) return;
     var has = r && (r.data.child_name || r.data.parent_name || r.data.street || r.data.phone_day);
-    var anyEmpty = fkFields().some(function (e) { var k = e.getAttribute('data-fk-field'); return r && r.data[k] && !(e.value || '').trim(); });
     if (!has || !anyEmpty) { banner.style.display = 'none'; return; }
     var who = (r.data.child_name || 'your previous answers');
     var whoEl = banner.querySelector('[data-fk-autofill-who]'); if (whoEl) whoEl.textContent = who;
@@ -172,6 +177,13 @@
     if (c) {
       c.textContent = missing.length ? (missing.length + ' required field' + (missing.length === 1 ? '' : 's') + ' remaining') : 'All required fields complete ✓';
       c.setAttribute('data-done', missing.length ? '0' : '1');
+    }
+    // Once nothing is missing, retract the "complete the highlighted fields" submit
+    // error so it can't contradict the "All required fields complete ✓" counter.
+    // Scoped to that exact message — never clears center/save/other errors.
+    if (!missing.length) {
+      var st = $('[data-formkit="status"]') || document.getElementById('st');
+      if (st && st.className === 'er' && /highlighted fields/i.test(st.textContent || '')) { st.textContent = ''; st.className = ''; }
     }
     markEmpties();
     return missing;

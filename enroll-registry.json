@@ -444,11 +444,12 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant.doc"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant.doc",
+        "v2": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant.doc",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant_v2.html",
       "perInstance": false,
       "history": []
     }
