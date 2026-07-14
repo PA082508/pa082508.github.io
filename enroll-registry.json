@@ -209,11 +209,12 @@
         "iea"
       ],
       "note": "Alternative to IEA for the same income_eligibility child-record slot: packet asks 'Will you apply for free/reduced-price meals?' → Yes ⇒ iea, No ⇒ this waiver (parent-signed). Exactly one is always on file; satisfies:['iea'] marks the shared slot met.",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v1.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v1.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v1.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v2.html",
       "perInstance": false,
       "history": [
         {
@@ -241,11 +242,12 @@
       "slug": "parent_consent",
       "title": "Parent Consent for Electronic Signatures",
       "requiringOrg": "Play Academy",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v1.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v1.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v1.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v2.html",
       "submissionType": "parent_consent",
       "intakeMode": "online",
       "signer": "parent",
