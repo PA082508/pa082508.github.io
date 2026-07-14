@@ -3,180 +3,184 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CACFP Parent Forms — Play Academy</title>
+<title>Enrollment Packet — Play Academy</title>
 <style>
   /* ============================================================
-     CACFP Parent Form Packet — index / progress page
-     v1.0 · 2026-06-11
+     Parent enrollment packet — registry-driven storefront
+     v2 · 2026-07-13 · reads ?center=&set=&only= from enroll-registry.json
+     Typography standard: large form names, green accent, QR per form.
      ============================================================ */
+  :root { --green:#0f4c35; --green2:#1a5c3f; --mint:#f0f7f4; --mint-b:#d1fae5; --ink:#14251b; --muted:#5f6b64; --line:#e3e9e4; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: #f0f2f5;
-    color: #1a1a1a;
-    padding: 20px 14px;
-  }
-  .wrap { max-width: 560px; margin: 0 auto; }
-  h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
-  .sub { text-align: center; color: #555; font-size: 13px; margin-bottom: 18px; line-height: 1.4; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #f4f6f4; color: var(--ink); padding: 22px 14px 60px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 620px; margin: 0 auto; }
+  .head { text-align: center; margin-bottom: 22px; }
+  .k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green2); }
+  h1 { font-size: 27px; font-weight: 800; letter-spacing: -.01em; margin: 6px 0 4px; text-wrap: balance; }
+  .sub { color: var(--muted); font-size: 13.5px; line-height: 1.5; max-width: 44ch; margin: 0 auto; }
 
-  .card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: #fff;
-    border: 1px solid #d8dbe0;
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 12px;
-    text-decoration: none;
-    color: inherit;
-    transition: box-shadow .15s;
-  }
-  .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.12); }
-  .num {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    border: 2px solid #1a56a0;
-    color: #1a56a0;
-    font-weight: bold;
-    font-size: 15px;
-    display: flex; align-items: center; justify-content: center;
-    flex: 0 0 auto;
-  }
-  .card.done .num {
-    border-color: #1a7a3a;
-    background: #1a7a3a;
-    color: #fff;
-  }
-  .info { flex: 1; }
-  .info .t { font-weight: bold; font-size: 15px; }
-  .info .d { font-size: 12.5px; color: #666; margin-top: 2px; line-height: 1.35; }
-  .badge {
-    font-size: 12px;
-    font-weight: bold;
-    color: #1a7a3a;
-    flex: 0 0 auto;
-  }
-  .card:not(.done) .badge { color: #1a56a0; }
+  .card { display: flex; align-items: center; gap: 15px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 13px; }
+  .num { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--green); color: var(--green); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .card.done .num { border-color: var(--green); background: var(--green); color: #fff; }
+  .info { flex: 1; min-width: 0; }
+  .info .t { font-weight: 700; font-size: 20px; letter-spacing: -.01em; line-height: 1.2; }
+  .info .d { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .right { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+  .miniqr { width: 46px; height: 46px; border: 1.5px solid var(--mint-b); border-radius: 9px; padding: 3px; background: #fff; cursor: pointer; display: block; }
+  .miniqr canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  .open { font-size: 15px; font-weight: 800; color: #fff; background: var(--green); border: none; border-radius: 11px; padding: 11px 20px; text-decoration: none; display: inline-block; cursor: pointer; }
+  .card.done .open { background: #fff; color: var(--green); border: 1.5px solid var(--green); }
 
-  .hint {
-    background: #eef4ff;
-    border: 1px solid #c4d4ee;
-    border-radius: 8px;
-    font-size: 12.5px;
-    color: #2a4a7a;
-    padding: 10px 12px;
-    line-height: 1.45;
-    margin: 18px 0 14px;
-  }
+  .card.handout { background: var(--mint); border-color: var(--mint-b); }
+  .card.handout .num { border-color: var(--green2); color: var(--green2); }
+  .handout-tag { font-size: 12px; font-weight: 700; color: var(--green2); background: #fff; border: 1px solid var(--mint-b); border-radius: 999px; padding: 6px 12px; }
 
+  .hint { background: var(--mint); border: 1px solid var(--mint-b); border-radius: 10px; font-size: 12.5px; color: var(--green2); padding: 11px 14px; line-height: 1.5; margin: 18px 0 14px; }
   .actions { text-align: center; }
-  .actions button {
-    font: inherit;
-    font-size: 13px;
-    padding: 8px 16px;
-    border: 1px solid #888;
-    border-radius: 6px;
-    background: #fff;
-    cursor: pointer;
-  }
-  #cleared { color: #1a7a3a; font-size: 13px; font-weight: bold; margin-top: 8px; display: none; }
+  .actions button { font: inherit; font-size: 13px; padding: 8px 16px; border: 1.5px solid var(--mint-b); border-radius: 8px; background: #fff; color: var(--green2); cursor: pointer; font-weight: 600; }
+  #cleared { color: var(--green); font-size: 13px; font-weight: 700; margin-top: 8px; display: none; }
+  #msg { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 10px; line-height: 1.5; }
+
+  /* full QR popup */
+  .ov { position: fixed; inset: 0; background: rgba(10,20,15,.55); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+  .ov.on { display: flex; }
+  .pop { background: #fff; border-radius: 18px; padding: 22px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 24px 70px rgba(0,0,0,.3); }
+  .pop h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .pop .u { font-size: 11px; color: var(--muted); word-break: break-all; margin: 4px 0 14px; font-family: ui-monospace, Menlo, monospace; }
+  .pop canvas { width: 240px; height: 240px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 10px; }
+  .pop .x { margin-top: 16px; font-size: 14px; font-weight: 700; color: #fff; background: var(--green); border: none; border-radius: 10px; padding: 10px 22px; cursor: pointer; }
 </style>
 </head>
 <body>
 <div class="wrap">
-
-  <h1>CACFP Parent Forms</h1>
-  <div class="sub">Play Academy Child Care Center<br>
-    Please complete the forms that apply to your child. Shared information
-    fills in automatically after the first form.</div>
-
-  <a class="card" href="./special-diet-form.html" data-form="special_diet">
-    <div class="num">1</div>
-    <div class="info">
-      <div class="t">Special Diet Form</div>
-      <div class="d">Contact information + food accommodations. The medical section is completed by your child&rsquo;s health care provider.</div>
-    </div>
-    <div class="badge"></div>
-  </a>
-
-  <a class="card" href="./fluid-milk-substitution.html" data-form="milk_substitution">
-    <div class="num">2</div>
-    <div class="info">
-      <div class="t">Fluid Milk Substitution</div>
-      <div class="d">Request a non-dairy beverage instead of fluid milk.</div>
-    </div>
-    <div class="badge"></div>
-  </a>
-
-  <a class="card" href="./infant-meals-preference.html" data-form="infant_meals">
-    <div class="num">3</div>
-    <div class="info">
-      <div class="t">Infant Meals &mdash; Parent Preference Letter</div>
-      <div class="d">For infants under one year of age: who provides formula and solid foods.</div>
-    </div>
-    <div class="badge"></div>
-  </a>
-
-  <div class="hint">
-    Your information stays on this device only and is cleared automatically
-    after 90 minutes. Filling out forms for another child or family? Tap
-    &ldquo;Start new family&rdquo; below first.
+  <div class="head">
+    <div class="k" id="ctrLabel">Play Academy · Enrollment packet</div>
+    <h1 id="setTitle">Enrollment packet</h1>
+    <div class="sub" id="setSub">Complete the forms below. Start with Consent — the rest reuse your signature.</div>
   </div>
+  <div id="list"></div>
+  <div id="msg" style="display:none"></div>
 
+  <div class="hint" id="hint">
+    Your information stays on this device only and clears automatically after 90 minutes.
+    Doing forms for another child? Tap &ldquo;Start new family&rdquo; first.
+  </div>
   <div class="actions">
     <button id="btnNewFamily">Start new family</button>
     <div id="cleared">&#10003; Shared data cleared</div>
   </div>
-
 </div>
 
+<div class="ov" id="ov">
+  <div class="pop">
+    <h3 id="popTitle">Scan to open</h3>
+    <div class="u" id="popUrl"></div>
+    <canvas id="popCanvas" width="240" height="240"></canvas>
+    <br><button class="x" id="popClose">Close</button>
+  </div>
+</div>
+
+<script src="qrcodegen.js"></script>
 <script>
 (function () {
   'use strict';
-  const PACKET_KEY = 'cacfp_packet_v1';
-  const PACKET_TTL_MS = 90 * 60 * 1000;
+  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 90 * 60 * 1000;
+  var CENTER_NAMES = { ridge: 'Wickliffe', pearl: 'Parma Heights', alpha: 'Mayfield Hills' };
+  var SET_TITLES = { starter: 'Welcome — enrollment packet', toddler_preschool: 'Enrollment packet', infant: 'Infant enrollment packet', admission: 'Admission packet' };
 
-  function packetLoad() {
-    try {
-      const raw = localStorage.getItem(PACKET_KEY);
-      if (!raw) return null;
-      const o = JSON.parse(raw);
-      if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) {
-        localStorage.removeItem(PACKET_KEY);
-        return null;
-      }
-      return o;
-    } catch (e) { return null; }
+  var qs = new URLSearchParams(location.search);
+  var center = (qs.get('center') || '').toLowerCase();
+  var setName = (qs.get('set') || 'starter').toLowerCase();
+  var only = (qs.get('only') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+
+  function show(el, on) { el.style.display = on ? '' : 'none'; }
+  function fail(text) { document.getElementById('list').innerHTML = ''; show(document.getElementById('hint'), false); document.querySelector('.actions').style.display = 'none'; var m = document.getElementById('msg'); m.textContent = text; show(m, true); }
+
+  // ---- session "done" tracking (per form key) ----
+  function packetLoad() { try { var raw = localStorage.getItem(PACKET_KEY); if (!raw) return null; var o = JSON.parse(raw); if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) { localStorage.removeItem(PACKET_KEY); return null; } return o; } catch (e) { return null; } }
+  function refreshDone() { var done = (packetLoad() || {}).done || {}; Array.prototype.forEach.call(document.querySelectorAll('.card[data-key]'), function (c) { var k = c.dataset.key, d = !!done[k]; c.classList.toggle('done', d); var num = c.querySelector('.num'); if (num) num.innerHTML = d ? '&#10003;' : c.dataset.n; var o = c.querySelector('.open'); if (o) o.textContent = d ? 'Done ✓' : 'Open'; }); }
+
+  // ---- QR (vendored qrcodegen, no external calls) ----
+  function drawQR(canvas, text, px) {
+    if (!window.qrcodegen) return;
+    var qr = qrcodegen.QrCode.encodeText(text, qrcodegen.QrCode.Ecc.MEDIUM);
+    var n = qr.size, border = 1, scale = Math.max(1, Math.floor(px / (n + border * 2))), dim = (n + border * 2) * scale;
+    canvas.width = dim; canvas.height = dim;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, dim, dim);
+    ctx.fillStyle = '#0f4c35';
+    for (var y = 0; y < n; y++) for (var x = 0; x < n; x++) if (qr.getModule(x, y)) ctx.fillRect((x + border) * scale, (y + border) * scale, scale, scale);
   }
+  var ov = document.getElementById('ov');
+  function openQR(title, url) { document.getElementById('popTitle').textContent = title; document.getElementById('popUrl').textContent = url; drawQR(document.getElementById('popCanvas'), url, 240); ov.classList.add('on'); }
+  document.getElementById('popClose').addEventListener('click', function () { ov.classList.remove('on'); });
+  ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('on'); });
 
-  /* keep the original numbers for not-done cards */
-  document.querySelectorAll('.card').forEach((card, i) => {
-    card.dataset.n = String(i + 1);
-  });
-  function refreshSafe() {
-    const o = packetLoad();
-    const done = (o && o.done) || {};
-    document.querySelectorAll('.card').forEach(card => {
-      const isDone = !!done[card.dataset.form];
-      card.classList.toggle('done', isDone);
-      card.querySelector('.num').innerHTML = isDone ? '&#10003;' : card.dataset.n;
-      card.querySelector('.badge').textContent = isDone ? 'Completed' : 'Fill out';
-    });
-  }
+  function scoped(url) { if (!url) return url; return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'center=' + encodeURIComponent(center); }
 
-  document.getElementById('btnNewFamily').addEventListener('click', () => {
+  fetch('../../enroll-registry.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (reg) {
+      if (!reg) return fail('Could not load the form list. Please try again.');
+      if (!center || !(reg.centers && reg.centers[center])) return fail('Please open this packet from your center’s link or QR code.');
+      var pk = reg.packets && reg.packets[setName];
+      if (!pk) return fail('This packet is not available. Please ask your center for a current link.');
+
+      var cName = 'Play Academy ' + (CENTER_NAMES[center] || center);
+      document.getElementById('ctrLabel').textContent = cName + ' · Enrollment';
+      document.getElementById('setTitle').textContent = SET_TITLES[setName] || pk.title || 'Enrollment packet';
+
+      // composition: director-selected (only=) OR the set default (mandatory, non-pending)
+      var slots = pk.slots.filter(function (s) { return !s.pending; }); // parents never see unbuilt slots
+      if (only.length) slots = slots.filter(function (s) { return only.indexOf(s.key) >= 0; });
+      else slots = slots.filter(function (s) { return s.section !== 'if_applicable'; });
+      if (!slots.length) return fail('This packet has no forms to show yet.');
+      try { console.debug('[packet]', setName, '· center', center, '· only', only, '· forms', slots.map(function (s) { return s.key; })); } catch (e) {}
+
+      var list = document.getElementById('list'), n = 0;
+      slots.forEach(function (s) {
+        var form = reg.forms[s.key] || {};
+        var label = s.label || form.title || s.key;
+        var note = s.note || '';
+        var card = document.createElement('div');
+        if (s.handout) {
+          card.className = 'card handout';
+          card.innerHTML = '<div class="num">⊕</div><div class="info"><div class="t"></div><div class="d"></div></div><div class="right"><span class="handout-tag">Given in person</span></div>';
+          card.querySelector('.t').textContent = label;
+          card.querySelector('.d').textContent = note || 'Your center will give you this to complete with your doctor.';
+          list.appendChild(card);
+          return;
+        }
+        n++;
+        var url = (form.versions && form.current && form.versions[form.current]) || form.fallbackUrl || null;
+        var link = scoped(url);
+        card.className = 'card'; card.dataset.key = s.key; card.dataset.n = String(n);
+        card.innerHTML = '<div class="num">' + n + '</div>'
+          + '<div class="info"><div class="t"></div><div class="d"></div></div>'
+          + '<div class="right"><span class="miniqr" title="Scan / share this form"><canvas></canvas></span>'
+          + (link ? '<a class="open" target="_blank" rel="noreferrer">Open</a>' : '') + '</div>';
+        card.querySelector('.t').textContent = label;
+        card.querySelector('.d').textContent = note;
+        if (link) { card.querySelector('.open').href = link; }
+        list.appendChild(card);
+        if (link) {
+          drawQR(card.querySelector('.miniqr canvas'), link, 46);
+          card.querySelector('.miniqr').addEventListener('click', function () { openQR(label, link); });
+        } else { card.querySelector('.miniqr').style.display = 'none'; }
+      });
+
+      refreshDone();
+      window.addEventListener('focus', refreshDone);
+      window.addEventListener('pageshow', refreshDone);
+    })
+    .catch(function () { fail('Could not load the form list. Please try again.'); });
+
+  document.getElementById('btnNewFamily').addEventListener('click', function () {
     try { localStorage.removeItem(PACKET_KEY); } catch (e) {}
-    refreshSafe();
-    const c = document.getElementById('cleared');
-    c.style.display = 'block';
-    setTimeout(() => { c.style.display = 'none'; }, 2500);
+    refreshDone();
+    var c = document.getElementById('cleared'); c.style.display = 'block';
+    setTimeout(function () { c.style.display = 'none'; }, 2500);
   });
-
-  refreshSafe();
-  window.addEventListener('focus', refreshSafe);
-  window.addEventListener('pageshow', refreshSafe);
 })();
 </script>
 </body>
