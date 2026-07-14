@@ -98,6 +98,19 @@
     if (centerCode()) r.data.center_code = centerCode();
     pkWrite(r.data);
   }
+  // ZAKAZ 11 — storefront progress: if opened from a packet card (?k=<slot>), mark that
+  // slot done in the shared same-origin store the storefront reads (cacfp_packet_v1). On
+  // return, the storefront's refreshDone() shows a ✓. Distinct from the pa_packet_profile
+  // prefill store above. Keep/pending cards never carry ?k, so they never get a ✓.
+  function markSlotDone() {
+    try {
+      var k = new URLSearchParams(location.search).get('k'); if (!k) return;
+      var SK = 'cacfp_packet_v1', o;
+      try { o = JSON.parse(localStorage.getItem(SK)) || {}; } catch (_) { o = {}; }
+      o.ts = Date.now(); o.done = o.done || {}; o.done[k] = true;
+      localStorage.setItem(SK, JSON.stringify(o));
+    } catch (_) {}
+  }
   function applyPacket() {
     var r = pkLoad(); if (!r) return;
     fkFields().forEach(function (e) { var k = e.getAttribute('data-fk-field'); if (k && !(e.value || '').trim() && r.data[k]) { e.value = r.data[k]; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); } });
@@ -451,6 +464,7 @@
       }
       status('Submitted for center review', 'ok');
       savePacket();
+      markSlotDone();
       var ref = shortRef(res);
       lockForm(ref);                     // read-only + banner; blocks re-submit
       if (CFG.onSuccess) CFG.onSuccess(ref);   // pass the Ref so a form's #done can echo it

@@ -49,6 +49,16 @@
   .pop .u { font-size: 11px; color: var(--muted); word-break: break-all; margin: 4px 0 14px; font-family: ui-monospace, Menlo, monospace; }
   .pop canvas { width: 240px; height: 240px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 10px; }
   .pop .x { margin-top: 16px; font-size: 14px; font-weight: 700; color: #fff; background: var(--green); border: none; border-radius: 10px; padding: 10px 22px; cursor: pointer; }
+
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;margin:3px 0 2px;}
+  .card .badge.keepb{background:#eaf5ef;color:#0f4c35;border:1px solid #cdeadd;}
+  .card .badge.fs{background:#eef3ff;color:#1e3a8a;border:1px solid #d5e0fb;}
+  .btnrow{display:flex;gap:8px;margin-top:9px;}
+  .btn{font-size:13px;font-weight:800;text-decoration:none;padding:7px 15px;border-radius:9px;cursor:pointer;display:inline-block;}
+  .btn.dl{background:var(--green);color:#fff;}
+  .btn.pr{background:#fff;color:var(--green);border:1.5px solid var(--green);}
+  .card.keep{background:#fbfdfc;}
+  .num.keepdot{border-style:dashed;}
 </style>
 </head>
 <body>
@@ -131,7 +141,7 @@
       document.getElementById('setTitle').textContent = SET_TITLES[setName] || pk.title || 'Enrollment packet';
 
       // composition: director-selected (only=) OR the set default (mandatory, non-pending)
-      var slots = pk.slots.filter(function (s) { return !s.pending; }); // parents never see unbuilt slots
+      var slots = pk.slots.slice(); // ZAKAZ 11: keep/pending render as their own cards
       if (only.length) slots = slots.filter(function (s) { return only.indexOf(s.key) >= 0; });
       else slots = slots.filter(function (s) { return s.section !== 'if_applicable'; });
       if (!slots.length) return fail('This packet has no forms to show yet.');
@@ -142,21 +152,45 @@
         var form = reg.forms[s.key] || {};
         var label = s.label || form.title || s.key;
         var note = s.note || '';
+        function onlyLink(slug){ return 'https://pa082508.github.io/parent-forms.html?center=' + encodeURIComponent(center) + '&only=' + encodeURIComponent(slug); }
+        function withK(u, slug){ return u + (u.indexOf('?') >= 0 ? '&' : '?') + 'k=' + encodeURIComponent(slug); }
+        var kind = form.kind || (s.keep ? 'keep' : (s.pending || s.handout ? 'director' : 'signature'));
+        var url = (form.versions && form.current && form.versions[form.current]) || form.fallbackUrl || null;
+        if (url === 'PENDING') url = null;
         var card = document.createElement('div');
-        if (s.handout) {
-          card.className = 'card handout';
-          card.innerHTML = '<div class="num">⊕</div><div class="info"><div class="t"></div><div class="d"></div></div><div class="right"><span class="handout-tag">Given in person</span></div>';
+        // KEEP — download or print, no signature; QR = storefront only= (never a file URL)
+        if (kind === 'keep' && url) {
+          var fileLink = scoped(url), qrLink = onlyLink(s.key);
+          card.className = 'card keep';
+          card.innerHTML = '<div class="num keepdot">&#9670;</div>'
+            + '<div class="info"><div class="t"></div><span class="badge keepb">Keep for your records</span><div class="d"></div>'
+            + '<div class="btnrow"><a class="btn dl" download>Download</a><a class="btn pr" target="_blank" rel="noreferrer">Print</a></div></div>'
+            + '<div class="right"><span class="miniqr" title="Scan to open"><canvas></canvas></span></div>';
           card.querySelector('.t').textContent = label;
-          card.querySelector('.d').textContent = note || 'Your center will give you this to complete with your doctor.';
+          card.querySelector('.d').textContent = note || 'No signature needed — save or print for your information.';
+          card.querySelector('.dl').href = fileLink; card.querySelector('.pr').href = fileLink;
+          list.appendChild(card);
+          drawQR(card.querySelector('.miniqr canvas'), qrLink, 46);
+          card.querySelector('.miniqr').addEventListener('click', function(){ openQR(label, qrLink); });
+          return;
+        }
+        // DIRECTOR / pending / keep-awaiting-file — no online action
+        if (kind === 'director' || kind === 'keep' || s.pending || s.handout) {
+          card.className = 'card handout';
+          var tag = s.tag || (s.handout ? 'Given in person' : 'Director provides');
+          card.innerHTML = '<div class="num">&oplus;</div><div class="info"><div class="t"></div><div class="d"></div></div><div class="right"><span class="handout-tag"></span></div>';
+          card.querySelector('.t').textContent = label;
+          card.querySelector('.d').textContent = note || 'Your center will share this — nothing to do online yet.';
+          card.querySelector('.handout-tag').textContent = tag;
           list.appendChild(card);
           return;
         }
+        // FILL & SIGN — numbered signature form; link carries &k=<slot> so form-kit marks it done on submit
         n++;
-        var url = (form.versions && form.current && form.versions[form.current]) || form.fallbackUrl || null;
-        var link = scoped(url);
+        var link = url ? withK(scoped(url), s.key) : null;
         card.className = 'card'; card.dataset.key = s.key; card.dataset.n = String(n);
         card.innerHTML = '<div class="num">' + n + '</div>'
-          + '<div class="info"><div class="t"></div><div class="d"></div></div>'
+          + '<div class="info"><div class="t"></div><span class="badge fs">Fill &amp; sign</span><div class="d"></div></div>'
           + '<div class="right"><span class="miniqr" title="Scan / share this form"><canvas></canvas></span>'
           + (link ? '<a class="open" target="_blank" rel="noreferrer">Open</a>' : '') + '</div>';
         card.querySelector('.t').textContent = label;

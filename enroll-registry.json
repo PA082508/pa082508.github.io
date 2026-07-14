@@ -407,31 +407,18 @@
     "wic_information": {
       "slug": "wic_information",
       "title": "WIC Information",
-      "kind": "document",
-      "requiringOrg": "USDA FNS / Ohio WIC",
-      "intakeMode": "handout",
-      "signer": "none",
-      "current": "v1",
+      "requiringOrg": "ODH · HEA 4460-4466",
+      "kind": "keep",
+      "current": null,
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/WIC_Information_Flyer_v1.html"
+        "v1": "PENDING"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/WIC_Information_Flyer_v1.html",
-      "perInstance": false,
-      "history": [
-        {
-          "at": "2026-07-11",
-          "note": "Pending: obtain official USDA/Ohio CACFP WIC Information Flyer (EN+ES), customized with center point-of-contact per Ohio CACFP requirement. Place in forms/3-library/ + flip current."
-        },
-        {
-          "at": "2026-07-11",
-          "note": "Flipped current → built bilingual (EN+ES) WIC flyer from official Ohio ODH/USDA facts; per-center POC via ?center=; org name from org.name. Ohio CACFP \"documented distribution\" to be tracked by future issuance ledger."
-        }
-      ]
+      "note": "Awaiting ODH WIC Application & Addendum (HEA 4460-4466)."
     },
     "building_for_the_future": {
       "slug": "building_for_the_future",
       "title": "Building For the Future",
-      "kind": "document",
+      "kind": "keep",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
       "current": "v1",
@@ -456,6 +443,35 @@
       "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/WhatToBringInfant_v2.html",
       "perInstance": false,
       "history": []
+    },
+    "center_parent_information": {
+      "slug": "center_parent_information",
+      "title": "Center Parent Information",
+      "requiringOrg": "Ohio DCY · Appendix 5101:2-12-07",
+      "kind": "keep",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center_Parent_Information_v1.pdf"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center_Parent_Information_v1.pdf"
+    },
+    "start_form": {
+      "slug": "start_form",
+      "title": "Registration Start Form",
+      "kind": "director",
+      "current": null,
+      "versions": {
+        "v1": "PENDING"
+      }
+    },
+    "parents_book": {
+      "slug": "parents_book",
+      "title": "Parents Book",
+      "kind": "director",
+      "current": null,
+      "versions": {
+        "v1": "PENDING"
+      }
     }
   },
   "org": {
@@ -637,43 +653,250 @@
       "mode": "anonymous",
       "_note": "First-introduction packet (QR / kiosk). Consent first; start_form pending (VISIBLE in the director screen as 'coming soon', HIDDEN on the parent storefront); DCY 01305 handed over in person.",
       "slots": [
-        { "key": "parent_consent", "section": "mandatory", "label": "Parent Consent (E-Signature)", "note": "Signed first — adopts your signature for the rest of the packet." },
-        { "key": "start_form", "section": "mandatory", "pending": true, "label": "Registration Start Form", "note": "Coming soon." },
-        { "key": "dcy_01305", "section": "mandatory", "handout": true, "label": "Child Medical Statement (JFS 01305)", "note": "Physician-signed — printed and handed to you in person." }
+        {
+          "key": "parent_consent",
+          "section": "mandatory",
+          "label": "Parent Consent (E-Signature)",
+          "note": "Signed first — adopts your signature for the rest of the packet."
+        },
+        {
+          "key": "start_form",
+          "section": "mandatory",
+          "pending": true,
+          "label": "Registration Start Form",
+          "note": "Coming soon."
+        },
+        {
+          "key": "dcy_01305",
+          "section": "mandatory",
+          "handout": true,
+          "label": "Child Medical Statement (JFS 01305)",
+          "note": "Physician-signed — printed and handed to you in person."
+        }
       ]
     },
     "toddler_preschool": {
       "title": "Toddler / Preschool",
       "mode": "addressed",
       "slots": [
-        { "key": "parent_consent", "section": "mandatory", "label": "Parent Consent (E-Signature)", "note": "Signed first — adopts your signature for the rest of the packet." },
-        { "key": "dcy_01234", "section": "mandatory", "label": "Child Enrollment & Health (DCY 01234)", "note": "The State of Ohio enrollment record: contacts, health, authorizations." },
-        { "key": "enroll", "section": "mandatory", "label": "CACFP Enrollment", "note": "Days, hours and meals your child receives in care." },
-        { "key": "iea", "section": "mandatory", "group": "income", "label": "Income Eligibility (IEA)", "note": "Free / reduced-price meal eligibility. One per household." },
-        { "key": "usda_waiver", "section": "mandatory", "group": "income", "label": "USDA Income Eligibility Waiver", "note": "The alternative to the IEA — exactly one of the two is on file." },
-        { "key": "child_release_authorization", "section": "mandatory", "label": "Child Release Authorization", "note": "Who may pick up your child, plus media consent." },
-        { "key": "transition_into_program", "section": "mandatory", "label": "Transition into the Program", "note": "Help us support your child's first weeks in a new setting." },
-        { "key": "special_diet", "section": "if_applicable", "label": "Special Diet Statement", "note": "Food accommodations; the medical section is completed by your provider." },
-        { "key": "fluid_milk", "section": "if_applicable", "label": "Fluid Milk Substitution", "note": "Request a non-dairy beverage instead of fluid milk." },
-        { "key": "dcy_01305", "section": "if_applicable", "handout": true, "label": "Child Medical Statement (JFS 01305)", "note": "Physician-signed — add if the family came in past the starter set." }
+        {
+          "key": "parent_consent",
+          "section": "mandatory",
+          "label": "Parent Consent (E-Signature)",
+          "note": "Signed first — adopts your signature for the rest of the packet."
+        },
+        {
+          "key": "dcy_01234",
+          "section": "mandatory",
+          "label": "Child Enrollment & Health (DCY 01234)",
+          "note": "The State of Ohio enrollment record: contacts, health, authorizations."
+        },
+        {
+          "key": "enroll",
+          "section": "mandatory",
+          "label": "CACFP Enrollment",
+          "note": "Days, hours and meals your child receives in care."
+        },
+        {
+          "key": "iea",
+          "section": "mandatory",
+          "group": "income",
+          "label": "Income Eligibility (IEA)",
+          "note": "Free / reduced-price meal eligibility. One per household."
+        },
+        {
+          "key": "usda_waiver",
+          "section": "mandatory",
+          "group": "income",
+          "label": "USDA Income Eligibility Waiver",
+          "note": "The alternative to the IEA — exactly one of the two is on file."
+        },
+        {
+          "key": "child_release_authorization",
+          "section": "mandatory",
+          "label": "Child Release Authorization",
+          "note": "Who may pick up your child, plus media consent."
+        },
+        {
+          "key": "transition_into_program",
+          "section": "mandatory",
+          "label": "Transition into the Program",
+          "note": "Help us support your child's first weeks in a new setting."
+        },
+        {
+          "key": "special_diet",
+          "section": "if_applicable",
+          "label": "Special Diet Statement",
+          "note": "Food accommodations; the medical section is completed by your provider."
+        },
+        {
+          "key": "fluid_milk",
+          "section": "if_applicable",
+          "label": "Fluid Milk Substitution",
+          "note": "Request a non-dairy beverage instead of fluid milk."
+        },
+        {
+          "key": "dcy_01305",
+          "section": "if_applicable",
+          "handout": true,
+          "label": "Child Medical Statement (JFS 01305)",
+          "note": "Physician-signed — add if the family came in past the starter set."
+        },
+        {
+          "key": "center_parent_information",
+          "section": "mandatory",
+          "keep": true,
+          "label": "Center Parent Information",
+          "note": "Ohio parent rights & center policies (Appendix 5101:2-12-07)."
+        },
+        {
+          "key": "building_for_the_future",
+          "section": "mandatory",
+          "keep": true,
+          "label": "Building For the Future"
+        },
+        {
+          "key": "wic_information",
+          "section": "mandatory",
+          "keep": true,
+          "label": "WIC Information",
+          "tag": "Coming soon",
+          "note": "Awaiting the ODH WIC application (HEA 4460-4466)."
+        },
+        {
+          "key": "start_form",
+          "section": "mandatory",
+          "pending": true,
+          "label": "Registration Start Form",
+          "tag": "Director provides",
+          "note": "Your director will start this with you — awaiting file."
+        },
+        {
+          "key": "parents_book",
+          "section": "mandatory",
+          "pending": true,
+          "label": "Parents Book",
+          "tag": "Coming soon",
+          "note": "Awaiting source — coming soon."
+        }
       ]
     },
     "infant": {
       "title": "Infants",
       "mode": "addressed",
       "slots": [
-        { "key": "parent_consent", "section": "mandatory", "label": "Parent Consent (E-Signature)", "note": "Signed first — adopts your signature for the rest of the packet." },
-        { "key": "dcy_01234", "section": "mandatory", "label": "Child Enrollment & Health (DCY 01234)", "note": "The State of Ohio enrollment record: contacts, health, authorizations." },
-        { "key": "enroll", "section": "mandatory", "label": "CACFP Enrollment", "note": "Days, hours and meals your child receives in care." },
-        { "key": "iea", "section": "mandatory", "group": "income", "label": "Income Eligibility (IEA)", "note": "Free / reduced-price meal eligibility. One per household." },
-        { "key": "usda_waiver", "section": "mandatory", "group": "income", "label": "USDA Income Eligibility Waiver", "note": "The alternative to the IEA — exactly one of the two is on file." },
-        { "key": "child_release_authorization", "section": "mandatory", "label": "Child Release Authorization", "note": "Who may pick up your child, plus media consent." },
-        { "key": "dcy_01218", "section": "mandatory", "label": "Basic Infant Care Plan (DCY 01218)", "note": "For infants under one year of age." },
-        { "key": "infant_meals", "section": "mandatory", "label": "Infant Meal Preference", "note": "Who provides formula and when solids are introduced." },
-        { "key": "what_to_bring_infant", "section": "mandatory", "label": "What To Bring (Infant)", "note": "Checklist of items to bring for your infant." },
-        { "key": "special_diet", "section": "if_applicable", "label": "Special Diet Statement", "note": "Food accommodations; the medical section is completed by your provider." },
-        { "key": "fluid_milk", "section": "if_applicable", "label": "Fluid Milk Substitution", "note": "Request a non-dairy beverage instead of fluid milk." },
-        { "key": "dcy_01305", "section": "if_applicable", "handout": true, "label": "Child Medical Statement (JFS 01305)", "note": "Physician-signed — add if needed." }
+        {
+          "key": "parent_consent",
+          "section": "mandatory",
+          "label": "Parent Consent (E-Signature)",
+          "note": "Signed first — adopts your signature for the rest of the packet."
+        },
+        {
+          "key": "dcy_01234",
+          "section": "mandatory",
+          "label": "Child Enrollment & Health (DCY 01234)",
+          "note": "The State of Ohio enrollment record: contacts, health, authorizations."
+        },
+        {
+          "key": "enroll",
+          "section": "mandatory",
+          "label": "CACFP Enrollment",
+          "note": "Days, hours and meals your child receives in care."
+        },
+        {
+          "key": "iea",
+          "section": "mandatory",
+          "group": "income",
+          "label": "Income Eligibility (IEA)",
+          "note": "Free / reduced-price meal eligibility. One per household."
+        },
+        {
+          "key": "usda_waiver",
+          "section": "mandatory",
+          "group": "income",
+          "label": "USDA Income Eligibility Waiver",
+          "note": "The alternative to the IEA — exactly one of the two is on file."
+        },
+        {
+          "key": "child_release_authorization",
+          "section": "mandatory",
+          "label": "Child Release Authorization",
+          "note": "Who may pick up your child, plus media consent."
+        },
+        {
+          "key": "dcy_01218",
+          "section": "mandatory",
+          "label": "Basic Infant Care Plan (DCY 01218)",
+          "note": "For infants under one year of age."
+        },
+        {
+          "key": "infant_meals",
+          "section": "mandatory",
+          "label": "Infant Meal Preference",
+          "note": "Who provides formula and when solids are introduced."
+        },
+        {
+          "key": "what_to_bring_infant",
+          "section": "mandatory",
+          "label": "What To Bring (Infant)",
+          "note": "Checklist of items to bring for your infant."
+        },
+        {
+          "key": "special_diet",
+          "section": "if_applicable",
+          "label": "Special Diet Statement",
+          "note": "Food accommodations; the medical section is completed by your provider."
+        },
+        {
+          "key": "fluid_milk",
+          "section": "if_applicable",
+          "label": "Fluid Milk Substitution",
+          "note": "Request a non-dairy beverage instead of fluid milk."
+        },
+        {
+          "key": "dcy_01305",
+          "section": "if_applicable",
+          "handout": true,
+          "label": "Child Medical Statement (JFS 01305)",
+          "note": "Physician-signed — add if needed."
+        },
+        {
+          "key": "center_parent_information",
+          "section": "mandatory",
+          "keep": true,
+          "label": "Center Parent Information",
+          "note": "Ohio parent rights & center policies (Appendix 5101:2-12-07)."
+        },
+        {
+          "key": "building_for_the_future",
+          "section": "mandatory",
+          "keep": true,
+          "label": "Building For the Future"
+        },
+        {
+          "key": "wic_information",
+          "section": "mandatory",
+          "keep": true,
+          "label": "WIC Information",
+          "tag": "Coming soon",
+          "note": "Awaiting the ODH WIC application (HEA 4460-4466)."
+        },
+        {
+          "key": "start_form",
+          "section": "mandatory",
+          "pending": true,
+          "label": "Registration Start Form",
+          "tag": "Director provides",
+          "note": "Your director will start this with you — awaiting file."
+        },
+        {
+          "key": "parents_book",
+          "section": "mandatory",
+          "pending": true,
+          "label": "Parents Book",
+          "tag": "Coming soon",
+          "note": "Awaiting source — coming soon."
+        }
       ]
     }
   },
