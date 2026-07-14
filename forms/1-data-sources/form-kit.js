@@ -111,6 +111,73 @@
       localStorage.setItem(SK, JSON.stringify(o));
     } catch (_) {}
   }
+
+  // ── Signature adoption (v1 — session-packet, no DB; ZAKAZ 9) ─────────────────
+  // Consent MINTS a sample (its pad holds the drawn OR typed signature). Later
+  // parent forms carrying data-fk-adopt show a "Внести подпись" button that stamps
+  // that sample onto their pad — no redraw. Sample sits beside pa_packet_profile
+  // with the same 90-min TTL; nothing is sent to a server (v1). Fallback = draw/type
+  // as before when the session has no sample. v1.5 (addressed packets) will source
+  // the sample from get_prefill by token — never from a bare ?center=.
+  var SIG_SAMPLE_KEY = 'pa_sig_sample';
+  function sigSampleSave(png, name, method) {
+    try { if (png) localStorage.setItem(SIG_SAMPLE_KEY, JSON.stringify({ ts: Date.now(), png: png, name: name || '', method: method || 'draw' })); } catch (_) {}
+  }
+  function sigSampleLoad() {
+    try { var r = JSON.parse(localStorage.getItem(SIG_SAMPLE_KEY)); if (!r || !r.png || Date.now() - r.ts > PK_TTL) return null; return r; } catch (_) { return null; }
+  }
+  function applySample(canvas, sample) {
+    if (!canvas || !sample || !sample.png) return;
+    var ctx = canvas.getContext('2d'), img = new Image();
+    img.onload = function () {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var s = Math.min(canvas.width / img.width, canvas.height / img.height, 1);
+      var w = img.width * s, h = img.height * s;
+      ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
+      canvas.dispatchEvent(new Event('fk:ink', { bubbles: true }));
+      refreshCounter();
+    };
+    img.src = sample.png;
+  }
+  function initAdopt(canvas) {
+    if (!canvas || canvas.__fkAdopt || !canvas.hasAttribute('data-fk-adopt')) return;
+    canvas.__fkAdopt = true;
+    var sample = sigSampleLoad(); if (!sample) return;            // no sample → plain draw/type
+    var parent = canvas.parentNode;
+    if (parent.querySelector('.fk-adopt')) return;
+    var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fk-adopt fk-print-hidden';
+    btn.textContent = '✍️ Внести подпись';
+    btn.addEventListener('click', function () { applySample(canvas, sample); });
+    // Overlay forms (canvas in an absolutely-positioned box, e.g. v9): a compact button
+    // pinned to the pad's top-left, so it never disturbs the seated overlay geometry.
+    // Flow forms: an inline bar with a hint above the pad.
+    var overlay = false;
+    try { overlay = getComputedStyle(parent).position === 'absolute' || getComputedStyle(canvas).position === 'absolute'; } catch (_) {}
+    if (overlay) {
+      // Pin the button just above THIS pad using the canvas's own offset within its
+      // positioned ancestor — works whether each pad has its own wrapper (v9) or all
+      // pads share one host (dcy_01234). Sibling pads without data-fk-adopt get nothing.
+      var op = canvas.offsetParent || parent;
+      btn.setAttribute('style', 'position:absolute;left:' + canvas.offsetLeft + 'px;top:' + Math.max(0, canvas.offsetTop - 16) + 'px;z-index:30;font:700 10px Arial,sans-serif;padding:2px 8px;border-radius:6px;border:none;background:#0f4c35;color:#fff;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3)');
+      op.appendChild(btn);
+    } else {
+      var bar = document.createElement('div'); bar.className = 'fk-adopt fk-print-hidden';
+      bar.setAttribute('style', 'margin:0 0 6px;display:flex;gap:9px;align-items:center;flex-wrap:wrap');
+      btn.setAttribute('style', 'font:700 12.5px Arial,sans-serif;padding:7px 14px;border-radius:8px;border:none;background:#0f4c35;color:#fff;cursor:pointer');
+      var hint = document.createElement('span'); hint.textContent = 'from your consent — or sign below';
+      hint.setAttribute('style', 'font-size:11px;color:#5f6b64');
+      bar.appendChild(btn); bar.appendChild(hint);
+      parent.insertBefore(bar, canvas);
+    }
+  }
+  function mintSignature() {
+    try {
+      var c = $('[data-fk-mint]'); if (!c || c.tagName !== 'CANVAS') return;
+      var png = getSig(c); if (!png) return;
+      var nm = ($('#parent_name') || $('#f_parent_name') || {}).value || '';
+      sigSampleSave(png, nm, 'draw');
+    } catch (_) {}
+  }
   function applyPacket() {
     var r = pkLoad(); if (!r) return;
     fkFields().forEach(function (e) { var k = e.getAttribute('data-fk-field'); if (k && !(e.value || '').trim() && r.data[k]) { e.value = r.data[k]; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); } });
@@ -465,6 +532,7 @@
       status('Submitted for center review', 'ok');
       savePacket();
       markSlotDone();
+      mintSignature();
       var ref = shortRef(res);
       lockForm(ref);                     // read-only + banner; blocks re-submit
       if (CFG.onSuccess) CFG.onSuccess(ref);   // pass the Ref so a form's #done can echo it
@@ -857,7 +925,7 @@
 
   function boot() {
     injectFavicon();
-    $$('[data-formkit="signature"]').forEach(initSig);
+    $$('[data-formkit="signature"]').forEach(function (c) { initSig(c); initAdopt(c); });
     initConditionals(); initValidation(); initTooltips(); initChoices();
     initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates(); initAddress(); initExclusive();
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // resolve center (embed does its own)

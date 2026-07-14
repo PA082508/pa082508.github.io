@@ -162,6 +162,7 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
     } else if(f.t==='sig'){
       el=document.createElement('canvas'); el.className='sig'; el.width=f.w; el.height=f.h;
       el.setAttribute('data-formkit','signature');
+      if(!f.staff) el.setAttribute('data-fk-adopt','');   // ZAKAZ 9: parent sig adopts the consent sample; program (staff) sig does not
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
       if(f.r){el.setAttribute('data-required','');el.setAttribute('data-label',f.label||f.id);}
       // clear button
