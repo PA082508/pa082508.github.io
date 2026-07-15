@@ -616,6 +616,39 @@
     var l = document.createElement('link'); l.rel = 'icon'; l.setAttribute('data-fk', '1'); l.setAttribute('sizes', '144x144'); l.href = FAVICON_URL; document.head.appendChild(l);
     var a = document.createElement('link'); a.rel = 'apple-touch-icon'; a.href = FAVICON_URL; document.head.appendChild(a);
   }
+  // ── FINDING #6 — center pickers are FORBIDDEN on every form ──────────────────
+  // The center is authoritative from ?center= / kiosk / embed ONLY. A parent must
+  // never be able to file a form against the wrong center (claim-integrity risk).
+  // initToolbar's strip only reached DIRECT children of the toolbar div, so a
+  // picker parked elsewhere in the page (USDA's `.center-pick` block) stayed live.
+  // This sweeps the whole document, unconditionally, before anything reads it.
+  function isCenterPicker(s) {
+    if (s.id === 'ctr') return true;
+    return Array.prototype.some.call(s.options || [], function (o) { return /select\s+center/i.test(o.text || ''); });
+  }
+  function stripCenterPickers() {
+    $$('select').filter(isCenterPicker).forEach(function (s) {
+      // take the labelled wrapper when it exists only to host the picker,
+      // else the select alone — never a container holding other fields.
+      var host = s.closest('.center-pick') || (s.closest('label') && !s.closest('label').querySelector('input,textarea') ? s.closest('label') : null);
+      var kill = host && host.querySelectorAll('select').length === 1 ? host : s;
+      var box = kill.closest('.center-pick');
+      if (box && box.querySelectorAll('select,input,textarea').length === 1) kill = box;
+      if (kill.parentNode) kill.parentNode.removeChild(kill);
+    });
+    $$('.center-pick').forEach(function (b) { if (!b.querySelector('input,textarea,select') && b.parentNode) b.parentNode.removeChild(b); });
+  }
+  // The picker used to double as the source of the printed "Center" field
+  // (ctrPick copied its option text into #f_center / #p1_center). With the picker
+  // stripped that field silently went EMPTY on enroll v9 + IEA v6 — restore it
+  // from the resolved center, which is more reliable than a parent's dropdown.
+  function centerName() { var i = CENTERS_INFO[centerCode()]; return i ? i.name : ''; }
+  function fillCenterFields() {
+    var nm = centerName(); if (!nm) return;
+    $$('[data-fk-center-name],#f_center,#p1_center').forEach(function (e) {
+      if (!(e.value || '').trim()) { e.value = nm; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+  }
   function renderCenterHeader(code) {
     var info = CENTERS_INFO[code]; if (!info) return;
     var box = $('[data-formkit="center-header"]');
@@ -629,13 +662,16 @@
     if (!code || !CENTERS[code]) return;
     centerResolved = true; _center = code;
     refreshToolbarCenter();   // brand-header chip + enable Submit
+    fillCenterFields();       // #6 — restore the printed Center name the picker used to supply
     _onCenter.forEach(function (fn) { try { fn(); } catch (_) {} });
   }
   function resolveCenter() {
     // Priority: embed (handled in EMBED.boot) → ?center= → kiosk device → staff <select> fallback.
     try { var c = new URLSearchParams(location.search).get('center'); if (c && CENTERS[c]) { setResolvedCenter(c); return; } } catch (_) {}
     if (window.PA_KIOSK && window.PA_KIOSK.center && CENTERS[window.PA_KIOSK.center]) { setResolvedCenter(window.PA_KIOSK.center); return; }
-    // unresolved → visible center <select> stays (staff / fallback).
+    // #6 — unresolved is a DEAD END by design: no picker fallback. Submit stays
+    // disabled behind the "open this from your center's link or QR" banner. A
+    // wrong-center filing is worse than a re-opened link.
   }
   var ACOMP = { child_name: 'name', parent_name: 'name', full_name: 'name', dob: 'bday', birthdate: 'bday', parent_birthdate: 'bday', street: 'street-address', address: 'street-address', city: 'address-level2', zip: 'postal-code', phone_day: 'tel', phone: 'tel', email: 'email', parent_email: 'email' };
   function initAutocomplete() { $$('[data-fk-field]').forEach(function (e) { var k = e.getAttribute('data-fk-field'); if (ACOMP[k] && !e.getAttribute('autocomplete')) e.setAttribute('autocomplete', ACOMP[k]); }); }
@@ -856,14 +892,19 @@
       + '.fk-tb-center{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.16);border-radius:20px;padding:4px 11px}'
       + '.fk-tb-row{display:flex;flex-wrap:wrap;align-items:center;gap:9px;background:#fff;padding:9px 14px;border-top:1px solid #e2e8e2}'
       + '.fk-tb-name{font-weight:700;font-size:14px;color:#12241b;margin-right:4px}'
-      + '.fk-tb-b{font:inherit;font-size:12.5px;font-weight:700;border-radius:8px;padding:8px 15px;cursor:pointer;border:1.5px solid transparent;display:inline-flex;align-items:center;gap:6px}'
-      + '.fk-tb-submit{background:#0f4c35;color:#fff}'
-      + '.fk-tb-submit:disabled{opacity:.5;cursor:not-allowed}'
-      + '.fk-tb-ghost{background:#fff;color:#0f4c35;border-color:#0f4c35}'
-      + '.fk-tb-danger{background:#fff;color:#b3402e;border-color:#b3402e}'
+      // SPECIFICITY: the kit reuses the form's own toolbar div, so a form rule like
+      // `.toolbar button{background:#fff}` (0,1,1) outranks a bare `.fk-tb-submit`
+      // (0,1,0) and repaints Submit white-on-white — present, enabled, invisible.
+      // Every button rule below is scoped `.fk-toolbar button.<cls>` (0,2,1) so it
+      // outranks any `.toolbar button` a form ships. NEVER weaken these selectors.
+      + '.fk-toolbar button.fk-tb-b{font:inherit;font-size:12.5px;font-weight:700;border-radius:8px;padding:8px 15px;cursor:pointer;border:1.5px solid transparent;display:inline-flex;align-items:center;gap:6px}'
+      + '.fk-toolbar button.fk-tb-submit{background:#0f4c35;color:#fff;border-color:#0f4c35}'
+      + '.fk-toolbar button.fk-tb-submit:disabled{opacity:.5;cursor:not-allowed}'
+      + '.fk-toolbar button.fk-tb-ghost{background:#fff;color:#0f4c35;border-color:#0f4c35}'
+      + '.fk-toolbar button.fk-tb-danger{background:#fff;color:#b3402e;border-color:#b3402e}'
       + '.fk-tb-exp{font-size:11.5px;color:#6b7280;display:inline-flex;align-items:center;gap:5px;margin-left:2px}'
       + '.fk-tb-spacer{flex:1}'
-      + '.fk-tb-special{font:inherit;font-size:12px;font-weight:600;border-radius:8px;padding:7px 12px;background:#eef3ef;color:#0f4c35;border:1px solid #dcebe2;cursor:pointer}'
+      + '.fk-toolbar button.fk-tb-special{font:inherit;font-size:12px;font-weight:600;border-radius:8px;padding:7px 12px;background:#eef3ef;color:#0f4c35;border:1px solid #dcebe2;cursor:pointer}'
       + '.fk-tb-status{font-size:12.5px;font-weight:600}.fk-tb-status.ok{color:#0f4c35}.fk-tb-status.er{color:#b91c1c}.fk-tb-status.in{color:#6b7280}'
       + '.fk-tb-banner{display:flex;align-items:center;gap:9px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:600;padding:10px 14px;border-top:1px solid #e2e8e2}'
       + '@media print{.fk-toolbar{display:none!important}}';
@@ -925,6 +966,7 @@
 
   function boot() {
     injectFavicon();
+    stripCenterPickers();   // #6 — before anything can read or show a picker
     $$('[data-formkit="signature"]').forEach(function (c) { initSig(c); initAdopt(c); });
     initConditionals(); initValidation(); initTooltips(); initChoices();
     initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates(); initAddress(); initExclusive();
@@ -950,7 +992,7 @@
     submit: submit, status: status,
     getSig: getSig, clearSig: clearSig, initSig: initSig,
     savePacket: savePacket, applyPacket: applyPacket,
-    centerUuid: centerUuid, centerCode: centerCode,
+    centerUuid: centerUuid, centerCode: centerCode, centerName: centerName,
     refreshCounter: refreshCounter, applyConditionals: applyConditionals,
     fmtPhone: fmtPhone, todayISO: todayISO, isoDate: isoDate,
     CENTERS: CENTERS, ORG: ORG,
