@@ -34,6 +34,35 @@
   .sec h2{font-size:14px;color:var(--green);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--green);padding-bottom:2px;margin:0 0 8px}
   table.sched{border-collapse:collapse;margin:4px 0}
   table.sched td{padding:3px 10px;font-size:13.5px}
+  /* The schedule pairs days into two columns (Mon+Thu on one row) — a paper layout,
+     747px wide. On a phone that pushed the WHOLE page sideways by 357px, so every
+     field shifted under the thumb. Wide content scrolls inside its own box; the page
+     body never does. Paper and desktop are untouched. */
+  .schedwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  @media print{ .schedwrap{overflow:visible} }
+  /* Phone. This is a letterhead: .page reserves 88px of padding, the header is a
+     3-column grid with a 250px logo, and fields carry inline pixel widths (240/320px).
+     On a 390px screen that overflowed the page by 357px — a parent filling this on
+     their phone had every field sliding under their thumb. Narrow screens only;
+     paper, desktop and the print rules above are untouched. */
+  @media (max-width: 640px){
+    .page{padding:18px 14px;margin:8px auto;border-left:none;border-right:none}
+    .hdr{grid-template-columns:1fr;text-align:left;gap:6px}
+    .hdr .right{text-align:left}
+    .logo{width:170px;height:60px}
+    /* max-width beats an inline width without needing !important */
+    input[type=text],input[type=date],input[type=time],input[type=email],input[type=tel]{max-width:100%}
+    /* The real width floor: labels are nowrap for the paper layout, so a long one
+       ("Registration fee (nonrefundable) — $75") could not break and pinned the row
+       at 598px no matter how narrow the screen got. Let them wrap, and let the
+       label/input pair wrap under itself. */
+    .f{flex-wrap:wrap;min-width:0}
+    .f label{white-space:normal}
+    /* min-width:0 — a flex item defaults to min-width:auto and refuses to shrink below
+       its content, which is how a 320px-wide input survived max-width:100%. */
+    .f input[type=text],.f input[type=date],.f input[type=email],.f input[type=tel]{flex:1 1 140px;min-width:0}
+    .row,.row>*{min-width:0}
+  }
   .cb{display:inline-flex;align-items:center;gap:5px;font-size:13px;margin-right:14px}
   .cb input{width:15px;height:15px}
   /* Referral box */
@@ -118,6 +147,7 @@
   <!-- SCHEDULE -->
   <div class="sec">
     <h2>Planned Schedule of Attendance</h2>
+    <div class="schedwrap">
     <table class="sched">
       <tr><td>Monday</td><td>from <input type="time" id="mon_from" name="mon_from"></td><td>to <input type="time" id="mon_to" name="mon_to"></td>
           <td style="padding-left:30px">Thursday</td><td>from <input type="time" id="thu_from" name="thu_from"></td><td>to <input type="time" id="thu_to" name="thu_to"></td></tr>
@@ -125,6 +155,7 @@
           <td style="padding-left:30px">Friday</td><td>from <input type="time" id="fri_from" name="fri_from"></td><td>to <input type="time" id="fri_to" name="fri_to"></td></tr>
       <tr><td>Wednesday</td><td>from <input type="time" id="wed_from" name="wed_from"></td><td>to <input type="time" id="wed_to" name="wed_to"></td><td colspan="3"></td></tr>
     </table>
+    </div>
   </div>
 
   <!-- REFERRAL -->
