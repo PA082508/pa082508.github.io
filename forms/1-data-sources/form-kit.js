@@ -116,7 +116,7 @@
 
   // ── Signature adoption (v1 — session-packet, no DB; ZAKAZ 9) ─────────────────
   // Consent MINTS a sample (its pad holds the drawn OR typed signature). Later
-  // parent forms carrying data-fk-adopt show a "Внести подпись" button that stamps
+  // parent forms carrying data-fk-adopt show a "Use my signature" button that stamps
   // that sample onto their pad — no redraw. Sample sits beside pa_packet_profile
   // with the same 90-min TTL; nothing is sent to a server (v1). Fallback = draw/type
   // as before when the session has no sample. v1.5 (addressed packets) will source
@@ -172,7 +172,10 @@
     var parent = canvas.parentNode;
     if (parent.querySelector('.fk-adopt')) return;
     var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fk-adopt fk-print-hidden';
-    btn.textContent = '✍️ Внести подпись';
+    // Families and staff read English. The label was Russian — it leaked from the spec
+    // conversation into the product and shipped: every packet form after the Consent
+    // showed an Ohio parent a button they cannot read.
+    btn.textContent = '✍️ Use my signature';
     btn.addEventListener('click', function () { applySample(canvas, sample); });
     // Overlay forms (canvas in an absolutely-positioned box, e.g. v9): a compact button
     // pinned to the pad's top-left, so it never disturbs the seated overlay geometry.
