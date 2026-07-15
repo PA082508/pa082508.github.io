@@ -205,12 +205,21 @@
     if (!sel) return '';
     try { var e = $(sel); return e ? (e.value || '').trim() : ''; } catch (_) { return ''; }
   }
-  function mintSignature() {
+  // How the ink was made. The form already reports it in collect() —
+  // 'typed' when the signer typed their name, 'drawn' when they drew it. Minting
+  // hardcoded 'draw', so a typed signature was stamped into the sample as drawn and
+  // every later adoption inherited that false record.
+  function mintMethod(data) {
+    var m = data && data.formData && data.formData.signature_method;
+    return m === 'typed' ? 'typed' : 'draw';
+  }
+  function mintSignature(data) {
     try {
+      var method = mintMethod(data);
       $$('[data-fk-mint]').forEach(function (c) {
         if (c.tagName !== 'CANVAS') return;
         var png = getSig(c); if (!png) return;
-        sigSampleSave(sigScope(c, 'data-fk-mint'), png, mintNameFor(c), 'draw');
+        sigSampleSave(sigScope(c, 'data-fk-mint'), png, mintNameFor(c), method);
       });
     } catch (_) {}
   }
@@ -568,7 +577,7 @@
       status('Submitted for center review', 'ok');
       savePacket();
       markSlotDone();
-      mintSignature();
+      mintSignature(data);
       var ref = shortRef(res);
       lockForm(ref);                     // read-only + banner; blocks re-submit
       if (CFG.onSuccess) CFG.onSuccess(ref);   // pass the Ref so a form's #done can echo it
