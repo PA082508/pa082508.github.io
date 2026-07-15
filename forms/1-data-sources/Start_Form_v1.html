@@ -70,11 +70,11 @@
        форма универсальная, каждый садик выдаёт её за свою: центр фиксируется здесь
        сотрудником (или настройкой киоск-устройства), суммы fee вписываются ДО передачи родителю. -->
   <div class="center-tabs" id="setup" style="flex-wrap:wrap;align-items:center;background:#fffbe6;border:1px dashed #b8a24a;border-radius:8px;padding:10px 12px">
-    <span style="font-size:12.5px;font-weight:bold;color:#7a6a1e;width:100%">OFFICE SETUP — staff only, before handing to the parent (the center comes from the packet link/QR):</span>
+    <span style="width:100%;display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#7a6a1e;background:#fff3c4;border:1px solid #b8a24a;border-radius:999px;padding:2px 8px;white-space:nowrap">Office use only — completed by the center</span><span style="font-size:12.5px;font-weight:bold;color:#7a6a1e">Not for the parent to fill. The center comes from the packet link/QR.</span></span>
     <span style="font-size:13px;margin-left:14px">Registration fee $</span>
-    <input type="text" id="setup-regfee" value="75.00" style="width:60px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <input type="text" id="setup-regfee" data-fk-field="reg_fee" value="75.00" style="width:60px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
     <span style="font-size:13px;margin-left:10px">Weekly tuition $</span>
-    <input type="text" id="setup-tuition" value="" placeholder="0.00" style="width:70px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <input type="text" id="setup-tuition" data-fk-field="weekly_tuition" value="" placeholder="0.00" style="width:70px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
   </div>
 
   <div class="hdr">
@@ -167,7 +167,7 @@
     money order, automatic withdrawal, or credit card. To avoid late fees, we recommend automatic withdrawal (checking account),
     which is free of charge.
     <br><br>
-    I, <input type="text" id="payer_name" name="payer_name" data-fk-field="parent_name" data-required data-label="Name of the person responsible for fees" style="border:none;border-bottom:1px solid #333;width:280px">, am responsible for paying
+    I, <input type="text" id="payer_name" name="payer_name" data-fk-field="payer_name" autocomplete="name" data-required data-label="Name of the person responsible for fees" style="border:none;border-bottom:1px solid #333;width:280px">, am responsible for paying
     Play Academy the above fees for my child/ren on an agreed basis. <b>Tuition fees are not subject to pro-ration for illness,
     holidays, or emergency closure of the center. Payment is due even if your child is not here for the week.</b>
     <br><br>
