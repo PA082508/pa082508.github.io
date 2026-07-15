@@ -484,12 +484,42 @@
     },
     "parents_book": {
       "slug": "parents_book",
-      "title": "Parents Book",
-      "kind": "director",
-      "current": null,
+      "title": "Parent Handbook",
+      "kind": "keep",
+      "current": "v1",
       "versions": {
-        "v1": "PENDING"
-      }
+        "v1": {
+          "pearl": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_pearl_v1.pdf",
+          "alpha": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_alpha_v1.pdf",
+          "ridge": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_ridge_v1.pdf"
+        }
+      },
+      "note": "Keep-for-your-records booklet, 43pp, effective 1/1/2025. Built per center from the Parma/Pearl source (PH25handbookP.pdf): running header, page-5 contact block (address / licence / phone) and the ADMINISTRATOR line are the centre's own; every other page is byte-identical. APPROVED BY: Tatiana Kogan is org-wide and untouched, as are EFFECTIVE DATE / POLICY NO. Licences: pearl 300629, alpha 307982 (6-digit legacy scheme), ridge 2190020475 (10-digit scheme, confirmed off the wall by the owner 2026-07-15). Alpha/Ridge fax + e-mail are not held anywhere, so those lines are dropped rather than carrying Pearl's.",
+      "history": [
+        {
+          "at": "2026-07-15",
+          "note": "v1 per-center build on owner's «ок пара» + attribution ruling: POLICY COUNCIL (Cinthya Patsko, Carmen Santiago) → ADMINISTRATOR: <centre head> ×26; Carmen Santiago removed throughout; name spelling corrected per owner (Cynthia, not the source booklet's Cinthya)."
+        }
+      ]
+    },
+    "parents_book_ack": {
+      "slug": "parents_book_ack",
+      "title": "Parent Handbook Receipt",
+      "kind": "signature",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Parents_Book_Ack_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parents_Book_Ack_v1.html",
+      "intakeMode": "online|kiosk",
+      "signer": "parent",
+      "note": "Mini fill-and-sign receipt for the Parent Handbook. Body is VERBATIM from the handbook's own signature page (p.43) — the handbook makes enrolment contingent on a \"signed Parent Handbook receipt\", so the receipt carries its words, not a paraphrase. Signature 1 required (adopts the parent shelf sample); signature 2 optional with the P2 N/A pattern. Channel submit_enrollment_form, submission_type=parents_book_ack.",
+      "history": [
+        {
+          "at": "2026-07-15",
+          "note": "v1 — verbatim ack text confirmed by owner over the shorter paraphrase."
+        }
+      ]
     }
   },
   "org": {
@@ -798,12 +828,17 @@
           "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
+          "key": "parents_book_ack",
+          "section": "mandatory",
+          "label": "Parent Handbook Receipt",
+          "note": "Sign that you received the handbook. Read it first — the Download card is right below."
+        },
+        {
           "key": "parents_book",
           "section": "mandatory",
-          "pending": true,
-          "label": "Parents Book",
-          "tag": "Coming soon",
-          "note": "Awaiting source — coming soon."
+          "keep": true,
+          "label": "Parent Handbook",
+          "note": "Your center’s handbook — download or print and keep it."
         }
       ]
     },
@@ -914,12 +949,17 @@
           "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
+          "key": "parents_book_ack",
+          "section": "mandatory",
+          "label": "Parent Handbook Receipt",
+          "note": "Sign that you received the handbook. Read it first — the Download card is right below."
+        },
+        {
           "key": "parents_book",
           "section": "mandatory",
-          "pending": true,
-          "label": "Parents Book",
-          "tag": "Coming soon",
-          "note": "Awaiting source — coming soon."
+          "keep": true,
+          "label": "Parent Handbook",
+          "note": "Your center’s handbook — download or print and keep it."
         }
       ]
     }

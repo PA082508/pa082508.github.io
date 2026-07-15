@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parent Handbook Receipt — Play Academy</title>
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  :root { --green:#0f4c35; --line:#c0d8c0; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#1a2e1a; background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px; }
+  .toolbar { position: sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  h1 { font-size: 22px; color: var(--green); margin: 14px 0 2px; }
+  .sub { color:#6b7280; font-size:13px; margin-bottom:14px; }
+  fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 16px; background:#fff; }
+  legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px; }
+  label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
+  input[type=text], input[type=date] {
+    width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
+  input:disabled { background:#f3f4f6; color:#9ca3af; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .ack { font-size:13.5px; line-height:1.68; color:#1a2e1a; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 14px; }
+  .ack p { margin:0 0 11px; } .ack p:last-child { margin-bottom:0; }
+  .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  .sigtabs { display:flex; gap:6px; margin-top:6px; }
+  .sigtab { padding:6px 14px; border:1.5px solid var(--line); border-radius:8px; background:#fff; font-size:13px; font-weight:600; color:#374151; cursor:pointer; font-family:inherit; }
+  .sigtab.on { background:var(--green); color:#fff; border-color:var(--green); }
+  .sigbox { position:relative; margin-top:8px; }
+  canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
+  .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+  #typed_sig, #typed_sig2 { font-family:'Segoe Script','Brush Script MT',cursive; font-size:26px; color:#111; }
+  .na { display:flex; align-items:center; gap:8px; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
+  .na input { width:18px; height:18px; }
+  .p2wrap.off { opacity:.45; }
+  #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
+  #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button class="btn bs" data-formkit="submit">✔ Submit</button>
+  <button class="btn br" onclick="ackReset()">✕ Clear</button>
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+  <span id="st"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="wrap">
+  <div data-formkit="banner" data-fk-banner-msg></div>
+  <h1>Parent Handbook Receipt</h1>
+  <div class="sub">Please read the Parent Handbook first — the Download card sits next to this form in your packet — then sign below.</div>
+  <div id="done">✓ Receipt submitted</div>
+
+  <fieldset>
+    <legend>Who is signing</legend>
+    <div class="row">
+      <div><label class="f">Parent / guardian name *</label>
+        <input type="text" id="parent_name" data-fk-field="parent_name" autocomplete="name" data-required data-label="Parent/guardian name"></div>
+      <div><label class="f">Child's name *</label>
+        <input type="text" id="child_name" data-fk-field="child_name" data-required data-label="Child's name"></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Acknowledgment</legend>
+    <!-- VERBATIM from the Parent Handbook's own signature page (p.43). The handbook makes
+         enrollment contingent on a "signed Parent Handbook receipt", so the receipt must
+         carry the handbook's own words — not a paraphrase. Do not reword. -->
+    <div class="ack">
+      <p>I/We <strong id="e_parent">________</strong>, the parent(s)/legal guardian(s) of
+         <strong id="e_child">________</strong>, acknowledge that I/We have received a copy of
+         Play Academy’s Parent Handbook and have been allowed to read the manual and ask
+         questions about and understand the policies.  Furthermore, I/We agree to abide by the
+         guidelines outlined in the manual.</p>
+      <p>I/We understand that the policies described in the Parent Handbook are not
+         conditions of enrollment, and the language does not create a contract
+         between Play Academy and the parents.  Play Academy reserves the right
+         to alter, amend, or otherwise modify these guidelines, in its sole discretion,
+         without prior notice.</p>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Signature</legend>
+    <div class="row">
+      <div><label class="f">Print Name *</label>
+        <input type="text" id="print_name" data-required data-label="Print name"></div>
+      <div><label class="f">Date *</label>
+        <input type="date" id="signed_date" data-required data-label="Date"></div>
+    </div>
+    <label class="f">Signature *</label>
+    <div class="sigtabs">
+      <button type="button" class="sigtab on" id="tab_draw" onclick="sigMode('draw')">✍️ Draw</button>
+      <button type="button" class="sigtab" id="tab_type" onclick="sigMode('type')">⌨️ Type</button>
+    </div>
+    <div class="sigbox" id="draw_box">
+      <canvas id="sig" data-fk-adopt data-fk-mint data-fk-mint-name="#parent_name" width="700" height="90" data-formkit="signature" data-required data-label="Signature"></canvas>
+      <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
+    </div>
+    <div id="type_box" style="display:none">
+      <input type="text" id="typed_sig" placeholder="Type your full name as your signature" autocomplete="off">
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Second parent / guardian <span style="font-weight:400;color:#6b7280">(optional)</span></legend>
+    <!-- The handbook's signature page carries two signature blocks. P2 N/A pattern
+         (as DCY 01218): enable when unchecked, disable + clear when checked. -->
+    <label class="na"><input type="checkbox" id="p2_na" onchange="syncP2()"> N/A — one parent / guardian only</label>
+    <div class="p2wrap" id="p2wrap">
+      <div class="row">
+        <div><label class="f">Print Name</label>
+          <input type="text" id="print_name2" data-label="Second print name"></div>
+        <div><label class="f">Date</label>
+          <input type="date" id="signed_date2" data-label="Second date"></div>
+      </div>
+      <label class="f">Signature</label>
+      <div class="sigtabs">
+        <button type="button" class="sigtab on" id="tab_draw2" onclick="sigMode2('draw')">✍️ Draw</button>
+        <button type="button" class="sigtab" id="tab_type2" onclick="sigMode2('type')">⌨️ Type</button>
+      </div>
+      <div class="sigbox" id="draw_box2">
+        <canvas id="sig2" width="700" height="90" data-formkit="signature" data-label="Second signature"></canvas>
+        <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig2')">✕</button>
+      </div>
+      <div id="type_box2" style="display:none">
+        <input type="text" id="typed_sig2" placeholder="Type full name as signature" autocomplete="off">
+      </div>
+    </div>
+    <div class="note">A second signature is optional — tick N/A if there is only one parent or guardian.</div>
+  </fieldset>
+</div>
+
+<script>
+/* Parent Handbook Receipt (parents_book_ack) v1 — form-specific config; shared behaviour = form-kit.js.
+   The acknowledgment body is VERBATIM from the handbook's signature page: the handbook makes
+   enrollment contingent on a "signed Parent Handbook receipt", so a paraphrase would collect a
+   signature on weaker words than the document itself requires. */
+function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
+var SIG_METHOD='draw', SIG_METHOD2='draw';
+
+function refreshEcho(){
+  document.getElementById('e_parent').textContent = g('parent_name') || '________';
+  document.getElementById('e_child').textContent  = g('child_name')  || '________';
+}
+function renderTypedInto(canvasId, srcId){
+  var c=document.getElementById(canvasId), ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  var t=g(srcId); if(!t) return;
+  ctx.fillStyle='#111'; ctx.textBaseline='middle';
+  ctx.font='38px "Segoe Script","Brush Script MT",cursive';
+  ctx.fillText(t, 14, c.height/2);
+  c.dispatchEvent(new Event('fk:ink',{bubbles:true}));
+}
+function sigMode(m){
+  SIG_METHOD=m;
+  document.getElementById('tab_draw').classList.toggle('on', m==='draw');
+  document.getElementById('tab_type').classList.toggle('on', m==='type');
+  document.getElementById('draw_box').style.display = m==='draw' ? '' : 'none';
+  document.getElementById('type_box').style.display = m==='type' ? '' : 'none';
+  FormKit.clearSig('sig');
+  if(m==='type') renderTypedInto('sig','typed_sig');
+}
+function sigMode2(m){
+  SIG_METHOD2=m;
+  document.getElementById('tab_draw2').classList.toggle('on', m==='draw');
+  document.getElementById('tab_type2').classList.toggle('on', m==='type');
+  document.getElementById('draw_box2').style.display = m==='draw' ? '' : 'none';
+  document.getElementById('type_box2').style.display = m==='type' ? '' : 'none';
+  FormKit.clearSig('sig2');
+  if(m==='type') renderTypedInto('sig2','typed_sig2');
+}
+/* P2 N/A — enable when unchecked, disable + clear when checked (pattern from DCY 01218),
+   so "N/A" can never coexist with a second signature. */
+function syncP2(){
+  var off=document.getElementById('p2_na').checked;
+  document.getElementById('p2wrap').classList.toggle('off', off);
+  ['print_name2','signed_date2','typed_sig2'].forEach(function(id){
+    var e=document.getElementById(id); if(!e) return;
+    e.disabled=off; if(off) e.value='';
+  });
+  ['tab_draw2','tab_type2'].forEach(function(id){ var b=document.getElementById(id); if(b) b.disabled=off; });
+  var c=document.getElementById('sig2'); if(c){ c.style.pointerEvents = off ? 'none' : ''; if(off) FormKit.clearSig('sig2'); }
+}
+function ackReset(){
+  ['parent_name','child_name','print_name','typed_sig','print_name2','typed_sig2'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  var na=document.getElementById('p2_na'); if(na) na.checked=false;
+  FormKit.clearSig('sig'); FormKit.clearSig('sig2');
+  sigMode('draw'); sigMode2('draw'); syncP2(); refreshEcho();
+  ['signed_date'].forEach(function(id){var e=document.getElementById(id); if(e) e.value=FormKit.todayISO();});
+  if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
+}
+window.FORMKIT_CONFIG = {
+  formType:'parents_book_ack', version:'v1', reset:ackReset,
+  collect:function(){
+    if(SIG_METHOD==='type') renderTypedInto('sig','typed_sig');
+    if(SIG_METHOD2==='type') renderTypedInto('sig2','typed_sig2');
+    var na=document.getElementById('p2_na').checked;
+    var fd={
+      type:'parents_book_ack', center_code:FormKit.centerCode(),
+      document_title:'Parent Handbook', document_version:'v1',
+      ack_text_source:'handbook signature page (verbatim)',
+      parent_name:g('parent_name'), child_name:g('child_name'),
+      print_name:g('print_name'),
+      signature_method: SIG_METHOD==='type' ? 'typed' : 'drawn',
+      signature_typed_value: SIG_METHOD==='type' ? g('typed_sig') : '',
+      second_parent_na: na,
+      print_name2: na ? '' : g('print_name2'),
+      signed_date2: na ? '' : g('signed_date2'),
+      signature2_method: na ? '' : (SIG_METHOD2==='type' ? 'typed' : 'drawn')
+    };
+    var sigs={ parent_sig: FormKit.getSig('sig') };
+    if(!na){ var s2=FormKit.getSig('sig2'); if(s2) sigs.parent2_sig=s2; }
+    return { formData:fd, signatures:sigs, signatureDate: g('signed_date')||FormKit.todayISO() };
+  },
+  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML='✓ Receipt submitted'+(ref?' — Ref <strong>'+ref+'</strong>':''); d.style.display='block'; } }
+};
+document.addEventListener('DOMContentLoaded',function(){
+  var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=FormKit.todayISO();
+  ['parent_name','child_name'].forEach(function(id){ var e=document.getElementById(id); if(e) e.addEventListener('input', refreshEcho); });
+  var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', function(){ renderTypedInto('sig','typed_sig'); });
+  var ts2=document.getElementById('typed_sig2'); if(ts2) ts2.addEventListener('input', function(){ renderTypedInto('sig2','typed_sig2'); });
+  refreshEcho(); syncP2();
+});
+</script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, survives a form-kit.js load failure. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=6"></script>
+</body>
+</html>
