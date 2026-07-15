@@ -271,7 +271,7 @@
       "history": [
         {
           "at": "2026-07-14",
-          "note": "FLIP v1(PDF)→v2 (DCY_01218_v2.html form-kit fillable): watchdog (15th form) + parent-sig adopt slot (sigParent; sigCaregiver=staff excluded) + ?v=2. submission_type=basic_infant_care_plan → children Inbox (advisory). ASSEMBLED on dark/dcy-01218-v2, HELD — deploy on Nikolay live-dark-URL 'ок'."
+          "note": "FLIP v1(PDF)→v2 (DCY_01218_v2.html form-kit fillable): watchdog (15th form) + parent-sig adopt slot (sigParent; sigCaregiver=staff excluded) + kit ?v=4 (#5 toolbar specificity + #6 center pickers). submission_type=basic_infant_care_plan → children Inbox (advisory). Flipped on Nikolay's live '01218 ок'; re-run clean on ?v=4 (Submit visible contrast 193.6, 0 center pickers, adopt stamps sigParent, watchdog silent, 0 exceptions). sleep_position_waiver detector live: Side/Tummy → banner from reg.conditions; the waiver LINK stays hidden until dcy_01235 is published (note tells the parent to contact the center, so nothing misleads)."
         }
       ],
       "condition": "infant"
