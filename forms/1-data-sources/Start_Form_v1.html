@@ -61,10 +61,24 @@
        nobody advertises — a parent would submit a schedule missing two days, and the
        centre would read that as "does not attend". Stack all five instead. */
     .schedwrap{overflow-x:visible}
-    table.sched,table.sched tbody,table.sched tr{display:block}
-    table.sched td{display:inline-flex;align-items:center;gap:4px;padding:2px 4px}
-    table.sched td:nth-child(1),table.sched td:nth-child(4){display:block;font-weight:600;margin-top:8px;padding-left:0 !important}
+    /* Stacking alone put the week out of order — the rows pair Mon+Thu, Tue+Fri, so a
+       vertical read came out Mon · Thu · Tue · Fri · Wed and a parent would type
+       Thursday's hours onto Tuesday's line. tr:display:contents lifts every cell into
+       one column flex, then `order` restores Mon→Fri. Cells sharing an order value keep
+       their DOM order, so each day keeps its own from/to. */
+    table.sched{display:flex;flex-direction:column;gap:0}
+    table.sched tbody{display:contents}
+    table.sched tr{display:contents}
+    table.sched td{display:flex;align-items:center;gap:6px;padding:1px 0}
+    table.sched tr:nth-child(1) td:nth-child(-n+3){order:1}
+    table.sched tr:nth-child(2) td:nth-child(-n+3){order:2}
+    table.sched tr:nth-child(3) td{order:3}
+    table.sched tr:nth-child(1) td:nth-child(n+4){order:4}
+    table.sched tr:nth-child(2) td:nth-child(n+4){order:5}
+    /* the day name opens each block */
+    table.sched td:nth-child(1),table.sched td:nth-child(4){font-weight:700;margin-top:9px;padding-left:0 !important}
     table.sched td:empty{display:none}
+    table.sched input[type=time]{flex:1 1 auto;min-width:0}
     .f{flex-wrap:wrap;min-width:0}
     .f label{white-space:normal}
     /* min-width:0 — a flex item defaults to min-width:auto and refuses to shrink below
