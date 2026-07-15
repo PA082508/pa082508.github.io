@@ -138,13 +138,31 @@
 
       var cName = 'Play Academy ' + (CENTER_NAMES[center] || center);
       document.getElementById('ctrLabel').textContent = cName + ' · Enrollment';
-      document.getElementById('setTitle').textContent = SET_TITLES[setName] || pk.title || 'Enrollment packet';
 
       // composition: director-selected (only=) OR the set default (mandatory, non-pending)
-      var slots = pk.slots.slice(); // ZAKAZ 11: keep/pending render as their own cards
-      if (only.length) slots = slots.filter(function (s) { return only.indexOf(s.key) >= 0; });
-      else slots = slots.filter(function (s) { return s.section !== 'if_applicable'; });
+      var slots;
+      if (only.length) {
+        // only= names FORMS, not a packet — a QR/Library link says "this form", and the
+        // scanner has no idea which set it lives in. Resolving inside one set made
+        // only= work for the 2 keys that happen to sit in `starter` and hand every
+        // other form an EMPTY packet (a Library QR for dcy_01218 did exactly that).
+        // So: take the slot definition from ANY packet that declares it (keeps label /
+        // note / keep+handout flags), else synthesise a bare slot from forms{}.
+        var pool = {};
+        Object.keys(reg.packets || {}).forEach(function (p) {
+          (reg.packets[p].slots || []).forEach(function (sl) { if (sl && sl.key && !pool[sl.key]) pool[sl.key] = sl; });
+        });
+        slots = only.map(function (k) { return pool[k] || ((reg.forms && reg.forms[k]) ? { key: k } : null); }).filter(Boolean);
+      } else {
+        slots = pk.slots.slice()   // ZAKAZ 11: keep/pending render as their own cards
+          .filter(function (s) { return s.section !== 'if_applicable'; });
+      }
       if (!slots.length) return fail('This packet has no forms to show yet.');
+      // Title: a single-form only= link is not a "packet" — name the form instead.
+      document.getElementById('setTitle').textContent =
+        (only.length === 1 && slots.length === 1
+          ? (slots[0].label || (reg.forms[slots[0].key] || {}).title || 'Your form')
+          : (only.length ? 'Your forms' : (SET_TITLES[setName] || pk.title || 'Enrollment packet')));
       try { console.debug('[packet]', setName, '· center', center, '· only', only, '· forms', slots.map(function (s) { return s.key; })); } catch (e) {}
 
       var list = document.getElementById('list'), n = 0;
