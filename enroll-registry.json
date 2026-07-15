@@ -467,11 +467,20 @@
     "start_form": {
       "slug": "start_form",
       "title": "Registration Start Form",
-      "kind": "director",
-      "current": null,
+      "kind": "signature",
+      "current": "v1",
       "versions": {
-        "v1": "PENDING"
-      }
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html",
+      "intakeMode": "online|kiosk",
+      "signer": "parent",
+      "history": [
+        {
+          "at": "2026-07-15",
+          "note": "FLIP → v1 on Nikolay's «поля ок». Mockup taken into the kit (2ee96b7/48e90bb): centre tabs removed (finding #6), Ridge-hardcoded header replaced by ?center= with blank honest degradation, logo → shared pa-logo.png (161KB→24KB). 9 required; OFFICE SETUP badged, never required, director-prefilled via session packet. Channel submit_enrollment_form, submission_type=start_form. OPEN (not blockers): Alpha e-mail unconfirmed, pearl/alpha fax empty."
+        }
+      ]
     },
     "parents_book": {
       "slug": "parents_book",
@@ -682,9 +691,8 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "pending": true,
           "label": "Registration Start Form",
-          "note": "Coming soon."
+          "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid."
         },
         {
           "key": "dcy_01305",
@@ -786,10 +794,8 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "pending": true,
           "label": "Registration Start Form",
-          "tag": "Director provides",
-          "note": "Your director will start this with you — awaiting file."
+          "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
           "key": "parents_book",
@@ -904,10 +910,8 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "pending": true,
           "label": "Registration Start Form",
-          "tag": "Director provides",
-          "note": "Your director will start this with you — awaiting file."
+          "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
           "key": "parents_book",
