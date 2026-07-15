@@ -156,7 +156,7 @@
     <legend>5 · Signature</legend>
     <label class="f">Employee signature *</label>
     <div class="sigbox">
-      <canvas id="empSig" width="700" height="90" data-formkit="signature" data-required data-label="Employee signature"></canvas>
+      <canvas id="empSig" data-fk-adopt="staff" width="700" height="90" data-formkit="signature" data-required data-label="Employee signature"></canvas>
       <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('empSig')">✕</button>
     </div>
     <label class="f">Date *</label>
@@ -237,6 +237,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=6"></script>
+<script defer src="form-kit.js?v=7"></script>
 </body>
 </html>

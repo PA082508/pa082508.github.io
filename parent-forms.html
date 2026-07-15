@@ -96,7 +96,13 @@
   'use strict';
   var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 90 * 60 * 1000;
   var CENTER_NAMES = { ridge: 'Wickliffe', pearl: 'Parma Heights', alpha: 'Mayfield Hills' };
-  var SET_TITLES = { starter: 'Welcome — enrollment packet', toddler_preschool: 'Enrollment packet', infant: 'Infant enrollment packet', admission: 'Admission packet' };
+  var SET_TITLES = { starter: 'Welcome — enrollment packet', toddler_preschool: 'Enrollment packet', infant: 'Infant enrollment packet', admission: 'Admission packet', staff: 'Welcome to the team' };
+  // Audience branding: the packet declares audience:'staff' and the page stops talking
+  // about enrolling a child. Absent = parent, so every existing packet is unchanged.
+  var AUDIENCE_COPY = {
+    staff: { crumb: 'Staff onboarding', sub: 'Complete the forms below. Start with the Consent — the rest reuses your signature.' },
+    parent: { crumb: 'Enrollment', sub: 'Complete the forms below. Start with Consent — the rest reuse your signature.' }
+  };
 
   var qs = new URLSearchParams(location.search);
   var center = (qs.get('center') || '').toLowerCase();
@@ -162,7 +168,9 @@
       if (!pk) return fail('This packet is not available. Please ask your center for a current link.');
 
       var cName = 'Play Academy ' + (CENTER_NAMES[center] || center);
-      document.getElementById('ctrLabel').textContent = cName + ' · Enrollment';
+      var aud = AUDIENCE_COPY[pk.audience] || AUDIENCE_COPY.parent;
+      document.getElementById('ctrLabel').textContent = cName + ' · ' + aud.crumb;
+      document.getElementById('setSub').textContent = aud.sub;
 
       // composition: director-selected (only=) OR the set default (mandatory, non-pending)
       var slots;

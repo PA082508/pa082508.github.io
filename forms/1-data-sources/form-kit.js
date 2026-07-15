@@ -503,7 +503,10 @@
     var n = q.get('formn') || (CFG.packet && CFG.packet.n), m = q.get('formm') || (CFG.packet && CFG.packet.m);
     b.classList.add('fk-banner', 'fk-print-hidden');
     var msg = b.querySelector('[data-fk-banner-msg]') || b;
-    msg.textContent = '✨ Enrolling is faster than it looks';
+    // The form may declare its own line — a staff form must not tell an employee
+    // that "enrolling" is quick. Bare attribute (no value) keeps the parent default.
+    var own = (msg.getAttribute && (msg.getAttribute('data-fk-banner-msg') || '').trim()) || (CFG.bannerMsg || '').trim();
+    msg.textContent = own || '✨ Enrolling is faster than it looks';
     if (n && m) { var chip = document.createElement('span'); chip.className = 'fk-progress'; chip.textContent = 'Form ' + n + ' of ' + m; b.appendChild(chip); }
   }
 
