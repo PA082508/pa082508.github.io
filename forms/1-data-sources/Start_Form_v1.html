@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Play Academy — Registration &amp; Fee Agreement</title>
+<!-- FORM REGISTRY: slug=start_form · version=v1 · Rev. 07/2026 · requiringOrg=Internal · signer=parent · intakeMode=online|kiosk -->
+<style>
+  :root{ --green:#1e4d36; --green-soft:#eaf3ec; --line:#333; --accent:#b31b4e; }
+  *{box-sizing:border-box}
+  body{font-family:Georgia,'Times New Roman',serif;color:#111;margin:0;background:#f4f4f0}
+  .page{max-width:820px;margin:14px auto;background:#fff;padding:34px 44px;border:1px solid #ccc}
+  /* Center selector (screen-only) */
+  .center-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .center-tabs button{padding:8px 18px;border:1px solid var(--green);background:#fff;color:var(--green);cursor:pointer;font-family:inherit;font-size:14px;border-radius:6px}
+  .center-tabs button.active{background:var(--green);color:#fff}
+  /* Header */
+  .hdr{display:grid;grid-template-columns:1fr 260px 1fr;align-items:center;gap:10px;border-bottom:3px double var(--green);padding-bottom:10px}
+  .hdr .left{font-size:13px}
+  .hdr .left .org{font-weight:bold;font-size:16px;color:var(--green)}
+  .hdr .right{font-size:13px;text-align:right}
+  .logo{width:250px;height:90px;display:flex;align-items:center;justify-content:center}
+  .logo img{max-width:100%;max-height:100%}
+  h1{font-family:'Copperplate','Trajan Pro',Georgia,serif;letter-spacing:3px;text-align:center;color:var(--green);font-size:22px;margin:14px 0 4px}
+  .subtitle{text-align:center;font-size:12px;color:#555;margin-bottom:14px}
+  /* Fields */
+  .row{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-end;margin:8px 0}
+  .f{display:flex;align-items:flex-end;gap:6px}
+  .f label{font-size:13.5px;white-space:nowrap}
+  .f input[type=text],.f input[type=date],.f input[type=email],.f input[type=tel],.f input[type=time]{
+    border:none;border-bottom:1px solid var(--line);font-family:inherit;font-size:14px;padding:2px 4px;background:transparent;min-width:60px}
+  .wide{flex:1}
+  .sec{margin-top:16px}
+  .sec h2{font-size:14px;color:var(--green);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--green);padding-bottom:2px;margin:0 0 8px}
+  table.sched{border-collapse:collapse;margin:4px 0}
+  table.sched td{padding:3px 10px;font-size:13.5px}
+  .cb{display:inline-flex;align-items:center;gap:5px;font-size:13px;margin-right:14px}
+  .cb input{width:15px;height:15px}
+  /* Referral box */
+  .referral{border:2px solid var(--accent);border-radius:10px;background:#fdf2f6;padding:12px 16px;margin:16px 0}
+  .referral h3{margin:0 0 6px;color:var(--accent);font-size:15px}
+  .referral .promise{font-style:italic;font-size:12.5px;color:#7a1338;margin-top:6px}
+  .referral .others{margin-top:8px;font-size:12.5px;color:#444}
+  /* Fee box */
+  .feebox{border:1.5px solid var(--green);border-radius:8px;padding:12px 16px;margin:10px 0;background:var(--green-soft)}
+  .terms{font-size:12.5px;line-height:1.55;margin:10px 0}
+  .terms b{color:#000}
+  /* Signatures */
+  .sigrow{display:flex;gap:40px;margin-top:26px}
+  .sig{flex:1}
+  .sig .line{border-bottom:1px solid var(--line);height:34px}
+  .sigpad{border-bottom:1px solid var(--line);width:100%;height:70px;touch-action:none;cursor:crosshair}
+  .sigclear{font-size:10.5px;border:1px solid #bbb;background:#fff;border-radius:4px;cursor:pointer;color:#a33;margin-left:8px}
+  @media print{.sigclear{display:none}}
+  .sig .cap{font-size:12.5px;margin-top:3px}
+  .sig .esign{font-size:10.5px;color:#777}
+  /* Office use */
+  .office{border:1px dashed #888;padding:10px 14px;margin-top:18px;background:#fafafa;font-size:13px}
+  .office h3{margin:0 0 6px;font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:#555}
+  footer{margin-top:20px;font-size:10.5px;color:#666;display:flex;justify-content:space-between;border-top:1px solid #ddd;padding-top:6px}
+  .print-btn{position:fixed;right:18px;top:18px;background:var(--green);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:14px;cursor:pointer}
+  @media print{.center-tabs,.print-btn{display:none} body{background:#fff} .page{border:none;margin:0;max-width:100%}}
+</style>
+</head>
+<body>
+<div data-formkit="toolbar"></div>
+<div class="page">
+
+  <!-- OFFICE SETUP: служебная панель (скрыта при печати). Родитель ЦЕНТР НЕ ВЫБИРАЕТ —
+       форма универсальная, каждый садик выдаёт её за свою: центр фиксируется здесь
+       сотрудником (или настройкой киоск-устройства), суммы fee вписываются ДО передачи родителю. -->
+  <div class="center-tabs" id="setup" style="flex-wrap:wrap;align-items:center;background:#fffbe6;border:1px dashed #b8a24a;border-radius:8px;padding:10px 12px">
+    <span style="font-size:12.5px;font-weight:bold;color:#7a6a1e;width:100%">OFFICE SETUP — staff only, before handing to the parent (the center comes from the packet link/QR):</span>
+    <span style="font-size:13px;margin-left:14px">Registration fee $</span>
+    <input type="text" id="setup-regfee" value="75.00" style="width:60px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <span style="font-size:13px;margin-left:10px">Weekly tuition $</span>
+    <input type="text" id="setup-tuition" value="" placeholder="0.00" style="width:70px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+  </div>
+
+  <div class="hdr">
+    <div class="left">
+            <div><a href="https://www.playacademyusa.com">www.playacademyusa.com</a></div>
+      <div id="c-addr1"></div>
+      <div id="c-addr2"></div>
+    </div>
+    <div class="logo"><img src="pa-logo.png" alt="Play Academy" onerror="this.style.display='none'"><!-- лого из БД (asset cacfp-receipt) --></div>
+    <div class="right">
+      <div id="c-phone"></div>
+      <div id="c-fax"></div>
+      <div id="c-emaillbl" style="display:none">E-mail:</div>
+      <div id="c-email"></div>
+    </div>
+  </div>
+
+  <h1>Registration &amp; Fee Agreement</h1>
+  <div class="subtitle">This form starts your child's enrollment. Registration is confirmed when the registration fee is paid.</div>
+
+  <!-- CHILDREN -->
+  <div class="sec">
+    <h2>Child / Children</h2>
+    <div class="row">
+      <div class="f wide"><label>Child's Name</label><input type="text" id="child1_name" name="child1_name" data-fk-field="child1_name" data-required data-label="Child's name" style="width:240px"></div>
+      <div class="f"><label>DOB</label><input type="date" id="child1_dob" name="child1_dob" data-fk-field="child1_dob" data-required data-label="Child's date of birth"></div>
+      <div class="f"><label>Desired Start Date</label><input type="date" id="child1_start_date" name="child1_start_date" data-required data-label="Desired start date"></div>
+    </div>
+    <div class="row">
+      <div class="f wide"><label>Child's Name</label><input type="text" id="child2_name" name="child2_name" data-fk-field="child2_name" style="width:240px"></div>
+      <div class="f"><label>DOB</label><input type="date" id="child2_dob" name="child2_dob" data-fk-field="child2_dob"></div>
+      <div class="f"><label>Desired Start Date</label><input type="date" id="child2_start_date" name="child2_start_date"></div>
+    </div>
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="expected_child" name="expected_child" id="exp"><label for="exp"><b>Expecting a child</b> — reserve a future spot; expected month:</label></span>
+      <div class="f"><input type="text" id="expected_month" name="expected_month" placeholder="e.g. Nov 2026" style="width:110px"></div>
+      <span class="cb" style="margin-left:22px"><input type="checkbox" id="sibling_enrolled" name="sibling_enrolled" id="sib"><label for="sib">A sibling already attends Play Academy</label></span>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="sec">
+    <h2>Planned Schedule of Attendance</h2>
+    <table class="sched">
+      <tr><td>Monday</td><td>from <input type="time" id="mon_from" name="mon_from"></td><td>to <input type="time" id="mon_to" name="mon_to"></td>
+          <td style="padding-left:30px">Thursday</td><td>from <input type="time" id="thu_from" name="thu_from"></td><td>to <input type="time" id="thu_to" name="thu_to"></td></tr>
+      <tr><td>Tuesday</td><td>from <input type="time" id="tue_from" name="tue_from"></td><td>to <input type="time" id="tue_to" name="tue_to"></td>
+          <td style="padding-left:30px">Friday</td><td>from <input type="time" id="fri_from" name="fri_from"></td><td>to <input type="time" id="fri_to" name="fri_to"></td></tr>
+      <tr><td>Wednesday</td><td>from <input type="time" id="wed_from" name="wed_from"></td><td>to <input type="time" id="wed_to" name="wed_to"></td><td colspan="3"></td></tr>
+    </table>
+  </div>
+
+  <!-- REFERRAL -->
+  <div class="referral">
+    <h3>⭐ Were you referred by a Play Academy family or staff member?</h3>
+    <div class="row">
+      <div class="f wide"><label>Write their name — <b>they'll receive a tuition credit</b> as our thank-you:</label></div>
+    </div>
+    <div class="row"><div class="f wide"><label>Referred by</label><input type="text" id="referred_by" name="referred_by" style="width:320px"></div></div>
+    <div class="promise">And when <b>you</b> refer a family later — you'll receive the same credit. Credits are applied after the referred child's first month of attendance.</div>
+    <div class="others">If not referred — how did you find us? 
+      <span class="cb"><input type="checkbox" id="src_google" name="src_google">Google</span>
+      <span class="cb"><input type="checkbox" id="src_social" name="src_social">Social media</span>
+      <span class="cb"><input type="checkbox" id="src_droveby" name="src_droveby">Drove by</span>
+      <span class="cb"><input type="checkbox" id="src_other" name="src_other">Other:</span>
+      <input type="text" id="src_other_text" name="src_other_text" style="border:none;border-bottom:1px solid #999;width:130px">
+    </div>
+  </div>
+
+  <!-- FEES -->
+  <div class="feebox">
+    <div class="row">
+      <div class="f"><label><b>Registration fee (nonrefundable) — $<span id="regfee-txt">75.00</span> per family</b>, paid on</label><input type="date" id="reg_fee_paid_on" name="reg_fee_paid_on"></div>
+      <div class="f"><label>Method:</label>
+        <span class="cb"><input type="checkbox" id="pay_cash" name="pay_cash">Cash</span>
+        <span class="cb"><input type="checkbox" id="pay_check" name="pay_check">Check #</span><input type="text" id="check_no" name="check_no" style="width:80px">
+        <span class="cb"><input type="checkbox" id="pay_card" name="pay_card">Card (e-receipt)</span>
+      </div>
+    </div>
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="deferred_deposit" name="deferred_deposit"><label><b>Deferred start:</b> first-week tuition deposit collected, $</label></span>
+      <input type="text" id="deposit_amount" name="deposit_amount" style="width:70px">
+      <div class="f"><label>Staff who received payment</label><input type="text" id="fee_received_by" name="fee_received_by" style="width:170px"></div>
+    </div>
+  </div>
+
+  <div class="terms">
+    <b>The tuition of</b> $<input type="text" id="tuition_amount" name="tuition_amount" style="border:none;border-bottom:1px solid #333;width:80px">
+    is payable at least one week in advance. Payment is due by Wednesday of the preceding week. Forms of payment: cash, check,
+    money order, automatic withdrawal, or credit card. To avoid late fees, we recommend automatic withdrawal (checking account),
+    which is free of charge.
+    <br><br>
+    I, <input type="text" id="payer_name" name="payer_name" data-fk-field="parent_name" data-required data-label="Name of the person responsible for fees" style="border:none;border-bottom:1px solid #333;width:280px">, am responsible for paying
+    Play Academy the above fees for my child/ren on an agreed basis. <b>Tuition fees are not subject to pro-ration for illness,
+    holidays, or emergency closure of the center. Payment is due even if your child is not here for the week.</b>
+    <br><br>
+    If a payment is past due and arrangements have not been made, a late fee of <b>$5.00 per day</b> will be charged. I understand
+    that my child may not start care in the new billing cycle without payment of outstanding fees from the previous cycle unless
+    satisfactory arrangements were made with Play Academy.
+    <br><br>
+    <span class="cb"><input type="checkbox" id="consent_contact" name="consent_contact" checked></span>
+    I agree to be contacted at the phone/e-mail provided, and to receive documents and receipts electronically.
+    <br>
+    By signing this document, I agree to abide by these terms.
+  </div>
+
+  <!-- CONTACTS -->
+  <div class="sec">
+    <h2>Parent / Guardian Contacts</h2>
+    <div class="row">
+      <div class="f wide"><label>Parent name</label><input type="text" id="parent1_name" name="parent1_name" data-fk-field="parent_name" data-required data-label="Parent/Guardian name" style="width:220px"></div>
+      <div class="f"><label>Phone</label><input type="tel" id="parent1_phone" name="parent1_phone" data-fk-field="phone_day" data-required data-label="Parent phone" style="width:130px"></div>
+      <div class="f wide"><label>E-mail</label><input type="email" id="parent1_email" name="parent1_email" data-fk-field="parent_email" data-required data-label="Parent e-mail" style="width:200px"></div>
+    </div>
+    <div class="row">
+      <div class="f wide"><label>Second contact</label><input type="text" id="parent2_name" name="parent2_name" style="width:220px"></div>
+      <div class="f"><label>Phone</label><input type="tel" id="parent2_phone" name="parent2_phone" style="width:130px"></div>
+    </div>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="sigrow">
+    <div class="sig"><canvas class="sigpad" id="sig-parent" data-fk-adopt data-formkit="signature" data-required data-label="Parent/Guardian signature" width="360" height="70"></canvas><div class="cap">Parent / Guardian signature — sign with finger or mouse <button type="button" class="sigclear" onclick="FormKit.clearSig('sig-parent')">✕ clear</button></div></div>
+    <div class="sig"><div class="line" style="border:none"><input type="date" id="parent_sig_date" data-required data-label="Date" style="width:150px"></div><div class="cap">Date</div></div>
+  </div>
+  <div class="sigrow">
+    <div class="sig"><canvas class="sigpad" id="sig-admin" data-formkit="signature" width="360" height="70"></canvas><div class="cap">Play Academy Administration <button type="button" class="sigclear" onclick="FormKit.clearSig('sig-admin')">✕ clear</button></div></div>
+    <div class="sig"><div class="line" style="border:none"><input type="date" id="admin_sig_date" style="width:150px"></div><div class="cap">Date</div></div>
+  </div>
+
+  <!-- OFFICE USE -->
+  <div class="office">
+    <h3>Office use — scan this form into the system the same day</h3>
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="office_waitlist" name="office_waitlist">Entered to waiting list, start date confirmed</span>
+      <span class="cb"><input type="checkbox" id="office_prospect" name="office_prospect">No payment — prospects list</span>
+      <div class="f"><label>Receipt #</label><input type="text" id="receipt_no" name="receipt_no" style="width:110px"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Form: start_form · <b>v1</b> · Rev. 07/2026 · Play Academy Inc.</span>
+    <span id="c-foot"></span>
+  </footer>
+</div>
+
+<script>
+/* Registration & Fee Agreement (start_form v1) — form-specific config only;
+   shared behaviour = form-kit.js.
+
+   CENTER: resolved from ?center= / kiosk / embed by the kit — the parent never picks
+   one (finding #6). The mockup shipped clickable center tabs; they are gone. If no
+   center resolves, the header stays BLANK rather than printing another site's address,
+   and the kit keeps Submit disabled behind its "open from your center's link" banner.
+
+   CONTACTS: address + phone for all three match menumaker.centers / the kit's
+   CENTERS_INFO. Pearl's suite "#30" is in the DB but was missing from the mockup —
+   restored. fax/e-mail exist nowhere else to check against: ridge is live, pearl/alpha
+   are UNCONFIRMED and marked so. */
+var CENTERS = {
+  ridge: {addr1:'28930 Ridge Rd.', addr2:'Wickliffe, OH 44092', phone:'C: 440-520-0031', fax:'F: 440-494-7093', email:'playacademy3@gmail.com', foot:'Ridge · Wickliffe, OH'},
+  pearl: {addr1:'6285 Pearl Rd. #30', addr2:'Parma Heights, OH 44130', phone:'C: 440-884-7529', fax:'', email:'playacademy2@gmail.com', foot:'Pearl · Parma Heights, OH'},
+  alpha: {addr1:'201 Alpha Park', addr2:'Highland Heights, OH 44143', phone:'C: 440-460-0600', fax:'', email:'playacademyinfo@gmail.com', foot:'Alpha · Highland Heights, OH'}
+};
+function el(id){ return document.getElementById(id); }
+function g(id){ var e=el(id); return e ? (e.value||'').trim() : ''; }
+function gc(id){ var e=el(id); return !!(e && e.checked); }
+function paintCenter(){
+  var c = CENTERS[window.FormKit ? FormKit.centerCode() : ''];
+  if (!c) return;                       // unresolved → header stays blank, never guesses
+  el('c-addr1').textContent = c.addr1;
+  el('c-addr2').textContent = c.addr2;
+  el('c-phone').textContent = c.phone;
+  el('c-fax').textContent   = c.fax;
+  el('c-foot').textContent  = c.foot;
+  if (c.email) { el('c-emaillbl').style.display=''; el('c-email').innerHTML = '<a href="mailto:'+c.email+'">'+c.email+'</a>'; }
+}
+/* OFFICE SETUP: staff types the amounts before handing the form over. */
+function syncFees(){
+  var rf = el('setup-regfee'), tu = el('setup-tuition');
+  if (rf && el('regfee-txt')) el('regfee-txt').textContent = rf.value || '0.00';
+  if (tu && el('tuition_amount') && tu.value && !el('tuition_amount').value) el('tuition_amount').value = tu.value;
+}
+function startReset(){
+  ['child1_name','child1_dob','child1_start_date','child2_name','child2_dob','child2_start_date',
+   'expected_month','referred_by','src_other_text','reg_fee_paid_on','check_no','deposit_amount',
+   'fee_received_by','tuition_amount','payer_name','parent1_name','parent1_phone','parent1_email',
+   'parent2_name','parent2_phone','receipt_no'].forEach(function(id){ var e=el(id); if(e) e.value=''; });
+  ['expected_child','sibling_enrolled','src_google','src_social','src_droveby','src_other','pay_cash',
+   'pay_check','pay_card','deferred_deposit','office_waitlist','office_prospect'].forEach(function(id){ var e=el(id); if(e) e.checked=false; });
+  ['mon','tue','wed','thu','fri'].forEach(function(d){ ['from','to'].forEach(function(k){ var e=el(d+'_'+k); if(e) e.value=''; }); });
+  var cc = el('consent_contact'); if (cc) cc.checked = true;
+  if (window.FormKit) { FormKit.clearSig('sig-parent'); FormKit.clearSig('sig-admin'); }
+  var pd = el('parent_sig_date'); if (pd) pd.value = FormKit.todayISO();
+  var ad = el('admin_sig_date'); if (ad) ad.value = '';
+  if (window.FormKit) { FormKit.status('Form cleared',''); FormKit.refreshCounter(); }
+}
+function sched(){
+  var o = {};
+  ['mon','tue','wed','thu','fri'].forEach(function(d){
+    var f = g(d+'_from'), t = g(d+'_to');
+    if (f || t) o[d] = { from: f || null, to: t || null };
+  });
+  return o;
+}
+window.FORMKIT_CONFIG = {
+  formType:'start_form', version:'v1', title:'Registration & Fee Agreement', reset:startReset,
+  /* No custom submit → the kit's default channel: submit_enrollment_form,
+     p_submission_type='start_form' → Enrollment Inbox, center_id from ?center=. */
+  collect:function(){
+    syncFees();
+    var sigDate = g('parent_sig_date') || FormKit.todayISO();
+    return {
+      formData:{
+        type:'start_form',
+        center_code: FormKit.centerCode(),
+        center_name: FormKit.centerName(),
+        child_name:  g('child1_name'),          /* Inbox/Review read child_name */
+        children: [
+          { name:g('child1_name'), dob:g('child1_dob')||null, start_date:g('child1_start_date')||null },
+          { name:g('child2_name'), dob:g('child2_dob')||null, start_date:g('child2_start_date')||null }
+        ].filter(function(c){ return c.name; }),
+        expected_child: gc('expected_child'), expected_month: g('expected_month'),
+        sibling_enrolled: gc('sibling_enrolled'),
+        schedule: sched(),
+        referred_by: g('referred_by'),
+        found_us: { google:gc('src_google'), social:gc('src_social'), drove_by:gc('src_droveby'),
+                    other:gc('src_other'), other_text:g('src_other_text') },
+        registration_fee: (el('setup-regfee')||{}).value || '',
+        reg_fee_paid_on: g('reg_fee_paid_on')||null,
+        payment_method: { cash:gc('pay_cash'), check:gc('pay_check'), check_no:g('check_no'), card:gc('pay_card') },
+        deferred_deposit: gc('deferred_deposit'), deposit_amount: g('deposit_amount'),
+        fee_received_by: g('fee_received_by'),
+        tuition_amount: g('tuition_amount'),
+        payer_name: g('payer_name'),
+        consent_contact: gc('consent_contact'),
+        parent_name: g('parent1_name'), parent_phone: g('parent1_phone'), parent_email: g('parent1_email'),
+        parent2_name: g('parent2_name'), parent2_phone: g('parent2_phone'),
+        office: { waitlist:gc('office_waitlist'), prospects:gc('office_prospect'), receipt_no:g('receipt_no') },
+        admin_signature_date: g('admin_sig_date')||null,
+        terms_version:'Rev. 07/2026'
+      },
+      signatures:{ parent_sig: FormKit.getSig('sig-parent'), admin_sig: FormKit.getSig('sig-admin') },
+      signatureDate: sigDate
+    };
+  }
+};
+document.addEventListener('DOMContentLoaded', function(){
+  /* Runs AFTER the deferred kit's boot(), so centerCode() is already resolved. */
+  paintCenter();
+  var pd = el('parent_sig_date'); if (pd && !pd.value) pd.value = FormKit.todayISO();
+  var rf = el('setup-regfee'), tu = el('setup-tuition');
+  if (rf) rf.addEventListener('input', syncFees);
+  if (tu) tu.addEventListener('input', syncFees);
+  syncFees();
+});
+</script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its
+   failure. If FormKit isn't up in ~4s (or form-kit.js errors), auto-retry the script once
+   with a cache-bust; if still down, show a reload banner. Self-clears on success; never prints. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=5"></script>
+
+</body>
+</html>
