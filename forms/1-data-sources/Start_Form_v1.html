@@ -56,6 +56,15 @@
        ("Registration fee (nonrefundable) — $75") could not break and pinned the row
        at 598px no matter how narrow the screen got. Let them wrap, and let the
        label/input pair wrap under itself. */
+    /* The schedule pairs days into two columns (Mon+Thu on one row) for paper. Scrolling
+       it in-box fixed the page but PARKED Thursday and Friday off-screen behind a scroll
+       nobody advertises — a parent would submit a schedule missing two days, and the
+       centre would read that as "does not attend". Stack all five instead. */
+    .schedwrap{overflow-x:visible}
+    table.sched,table.sched tbody,table.sched tr{display:block}
+    table.sched td{display:inline-flex;align-items:center;gap:4px;padding:2px 4px}
+    table.sched td:nth-child(1),table.sched td:nth-child(4){display:block;font-weight:600;margin-top:8px;padding-left:0 !important}
+    table.sched td:empty{display:none}
     .f{flex-wrap:wrap;min-width:0}
     .f label{white-space:normal}
     /* min-width:0 — a flex item defaults to min-width:auto and refuses to shrink below
