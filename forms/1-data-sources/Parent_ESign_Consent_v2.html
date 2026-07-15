@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // Standalone center pre-select via ?center= (embed mode is handled by the kit).
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
   // Branding + marketing from the registry `org` block (graceful if unreachable).
-  fetch('../../enroll-registry.json',{cache:'no-cache'})
+  fetch('../../enroll-registry.json?t='+Date.now(),{cache:'no-store'})
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(reg){ if(reg&&reg.org) applyOrg(reg.org); })
     .catch(function(){});

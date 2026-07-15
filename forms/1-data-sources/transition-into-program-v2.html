@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded',function(){
   var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=FormKit.todayISO();
   var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
-  fetch('../../enroll-registry.json',{cache:'no-cache'})
+  fetch('../../enroll-registry.json?t='+Date.now(),{cache:'no-store'})
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(reg){ if(reg&&reg.org) applyOrg(reg.org); })
     .catch(function(){});

@@ -139,7 +139,7 @@ li{font-size:10.5pt;line-height:1.5;margin:2px 0}
     box.hidden=false;
   }
   // Org name token from the registry org block (graceful; keeps branding depersonalized).
-  fetch('../../enroll-registry.json',{cache:'no-cache'})
+  fetch('../../enroll-registry.json?t='+Date.now(),{cache:'no-store'})
     .then(function(r){ return r.ok?r.json():null; })
     .then(function(reg){
       var name=reg&&reg.org&&reg.org.name;
