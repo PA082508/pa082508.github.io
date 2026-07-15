@@ -14,10 +14,12 @@
    A form declares:
      <script>window.FORMKIT_CONFIG = {
        formType:'cacfp_enrollment', version:'v9',
-       centerSelect:'#ctr',              // optional: <select> mapped via CENTERS
+       mintNameSelector:'#parent_name',  // optional: whose name a minted sample carries
        collect(){ return { formData:{…}, signatures:{…}, signatureDate:'YYYY-MM-DD' } },
        onSuccess(){…}                    // optional
      };</script>
+   NO centerSelect — the center is ?center=/kiosk/embed ONLY (finding #6); a picker
+   is a wrong-center filing risk and the kit strips one wherever it finds it.
      <script defer src="form-kit.js"></script>
    ============================================================ */
 (function () {
@@ -119,12 +121,34 @@
   // with the same 90-min TTL; nothing is sent to a server (v1). Fallback = draw/type
   // as before when the session has no sample. v1.5 (addressed packets) will source
   // the sample from get_prefill by token — never from a bare ?center=.
-  var SIG_SAMPLE_KEY = 'pa_sig_sample';
-  function sigSampleSave(png, name, method) {
-    try { if (png) localStorage.setItem(SIG_SAMPLE_KEY, JSON.stringify({ ts: Date.now(), png: png, name: name || '', method: method || 'draw' })); } catch (_) {}
+  // SCOPE — samples live on separate shelves, one per signer role. The scope is the
+  // VALUE of data-fk-mint / data-fk-adopt; a bare attribute means 'parent', so every
+  // form shipped before scoping keeps working untouched.
+  //
+  // Why this is not cosmetic: Add-Staff is a director's kiosk/tablet — the SAME device
+  // that just filled a family's packet. With one shared shelf, a staff form would offer
+  // the PARENT's signature for a staff member to adopt, and a JD acknowledgment signed
+  // that way is a forged signature. Cross-scope adoption is excluded structurally:
+  // a pad can only ever read the key for its own scope. Never collapse these back to
+  // one key, and never let adopt "fall back" to another scope when its own is empty —
+  // an empty shelf must degrade to draw/type, which is exactly what initAdopt does.
+  var SIG_SAMPLE_PREFIX = 'pa_sig_sample';
+  var SIG_SCOPE_DEFAULT = 'parent';
+  function sigScope(el, attr) { var v = el && el.getAttribute(attr); v = (v || '').trim(); return v || SIG_SCOPE_DEFAULT; }
+  function sigSampleKey(scope) { return SIG_SAMPLE_PREFIX + ':' + (scope || SIG_SCOPE_DEFAULT); }
+  function sigSampleSave(scope, png, name, method) {
+    try { if (png) localStorage.setItem(sigSampleKey(scope), JSON.stringify({ ts: Date.now(), scope: scope || SIG_SCOPE_DEFAULT, png: png, name: name || '', method: method || 'draw' })); } catch (_) {}
   }
-  function sigSampleLoad() {
-    try { var r = JSON.parse(localStorage.getItem(SIG_SAMPLE_KEY)); if (!r || !r.png || Date.now() - r.ts > PK_TTL) return null; return r; } catch (_) { return null; }
+  function sigSampleLoad(scope) {
+    scope = scope || SIG_SCOPE_DEFAULT;
+    function read(k) { try { var r = JSON.parse(localStorage.getItem(k)); if (!r || !r.png || Date.now() - r.ts > PK_TTL) return null; return r; } catch (_) { return null; } }
+    var r = read(sigSampleKey(scope));
+    // Legacy bridge: pre-scope kits wrote ONE unscoped key. Only a parent form could
+    // ever have minted into it (Staff Consent was never live), so honour it for the
+    // parent shelf alone — a mid-session parent keeps their sample across this deploy.
+    // Self-expiring: nothing writes the bare key any more, and it dies with the 90-min TTL.
+    if (!r && scope === SIG_SCOPE_DEFAULT) r = read(SIG_SAMPLE_PREFIX);
+    return r;
   }
   function applySample(canvas, sample) {
     if (!canvas || !sample || !sample.png) return;
@@ -142,7 +166,9 @@
   function initAdopt(canvas) {
     if (!canvas || canvas.__fkAdopt || !canvas.hasAttribute('data-fk-adopt')) return;
     canvas.__fkAdopt = true;
-    var sample = sigSampleLoad(); if (!sample) return;            // no sample → plain draw/type
+    // ONLY this pad's own scope — a staff pad never sees the parent shelf, and vice versa.
+    var sample = sigSampleLoad(sigScope(canvas, 'data-fk-adopt'));
+    if (!sample) return;                                          // empty shelf → plain draw/type
     var parent = canvas.parentNode;
     if (parent.querySelector('.fk-adopt')) return;
     var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fk-adopt fk-print-hidden';
@@ -170,12 +196,22 @@
       parent.insertBefore(bar, canvas);
     }
   }
+  // Who the sample belongs to. The form declares it — the kit does NOT guess from
+  // parent-shaped ids, which silently produced an empty name on any non-parent form.
+  //   <canvas data-fk-mint="staff" data-fk-mint-name="#emp_name">
+  // or CFG.mintNameSelector. No selector → no name (the sample still mints).
+  function mintNameFor(canvas) {
+    var sel = ((canvas && canvas.getAttribute('data-fk-mint-name')) || CFG.mintNameSelector || '').trim();
+    if (!sel) return '';
+    try { var e = $(sel); return e ? (e.value || '').trim() : ''; } catch (_) { return ''; }
+  }
   function mintSignature() {
     try {
-      var c = $('[data-fk-mint]'); if (!c || c.tagName !== 'CANVAS') return;
-      var png = getSig(c); if (!png) return;
-      var nm = ($('#parent_name') || $('#f_parent_name') || {}).value || '';
-      sigSampleSave(png, nm, 'draw');
+      $$('[data-fk-mint]').forEach(function (c) {
+        if (c.tagName !== 'CANVAS') return;
+        var png = getSig(c); if (!png) return;
+        sigSampleSave(sigScope(c, 'data-fk-mint'), png, mintNameFor(c), 'draw');
+      });
     } catch (_) {}
   }
   function applyPacket() {
