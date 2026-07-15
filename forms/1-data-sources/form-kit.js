@@ -856,14 +856,19 @@
       + '.fk-tb-center{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.16);border-radius:20px;padding:4px 11px}'
       + '.fk-tb-row{display:flex;flex-wrap:wrap;align-items:center;gap:9px;background:#fff;padding:9px 14px;border-top:1px solid #e2e8e2}'
       + '.fk-tb-name{font-weight:700;font-size:14px;color:#12241b;margin-right:4px}'
-      + '.fk-tb-b{font:inherit;font-size:12.5px;font-weight:700;border-radius:8px;padding:8px 15px;cursor:pointer;border:1.5px solid transparent;display:inline-flex;align-items:center;gap:6px}'
-      + '.fk-tb-submit{background:#0f4c35;color:#fff}'
-      + '.fk-tb-submit:disabled{opacity:.5;cursor:not-allowed}'
-      + '.fk-tb-ghost{background:#fff;color:#0f4c35;border-color:#0f4c35}'
-      + '.fk-tb-danger{background:#fff;color:#b3402e;border-color:#b3402e}'
+      // SPECIFICITY: the kit reuses the form's own toolbar div, so a form rule like
+      // `.toolbar button{background:#fff}` (0,1,1) outranks a bare `.fk-tb-submit`
+      // (0,1,0) and repaints Submit white-on-white — present, enabled, invisible.
+      // Every button rule below is scoped `.fk-toolbar button.<cls>` (0,2,1) so it
+      // outranks any `.toolbar button` a form ships. NEVER weaken these selectors.
+      + '.fk-toolbar button.fk-tb-b{font:inherit;font-size:12.5px;font-weight:700;border-radius:8px;padding:8px 15px;cursor:pointer;border:1.5px solid transparent;display:inline-flex;align-items:center;gap:6px}'
+      + '.fk-toolbar button.fk-tb-submit{background:#0f4c35;color:#fff;border-color:#0f4c35}'
+      + '.fk-toolbar button.fk-tb-submit:disabled{opacity:.5;cursor:not-allowed}'
+      + '.fk-toolbar button.fk-tb-ghost{background:#fff;color:#0f4c35;border-color:#0f4c35}'
+      + '.fk-toolbar button.fk-tb-danger{background:#fff;color:#b3402e;border-color:#b3402e}'
       + '.fk-tb-exp{font-size:11.5px;color:#6b7280;display:inline-flex;align-items:center;gap:5px;margin-left:2px}'
       + '.fk-tb-spacer{flex:1}'
-      + '.fk-tb-special{font:inherit;font-size:12px;font-weight:600;border-radius:8px;padding:7px 12px;background:#eef3ef;color:#0f4c35;border:1px solid #dcebe2;cursor:pointer}'
+      + '.fk-toolbar button.fk-tb-special{font:inherit;font-size:12px;font-weight:600;border-radius:8px;padding:7px 12px;background:#eef3ef;color:#0f4c35;border:1px solid #dcebe2;cursor:pointer}'
       + '.fk-tb-status{font-size:12.5px;font-weight:600}.fk-tb-status.ok{color:#0f4c35}.fk-tb-status.er{color:#b91c1c}.fk-tb-status.in{color:#6b7280}'
       + '.fk-tb-banner{display:flex;align-items:center;gap:9px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:600;padding:10px 14px;border-top:1px solid #e2e8e2}'
       + '@media print{.fk-toolbar{display:none!important}}';

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Transition into the Program — Play Academy</title>
+<title>Staff Consent for Electronic Signatures — Play Academy</title>
 <link rel="stylesheet" href="form-kit.css">
 <style>
   :root { --green:#0f4c35; --line:#c0d8c0; }
@@ -16,19 +16,16 @@
   fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 16px; background:#fff; }
   legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px; }
   label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
-  input[type=text], input[type=date], textarea {
+  input[type=text], input[type=date] {
     width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
-  textarea { resize:vertical; min-height:56px; line-height:1.5; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .body { font-size:13.5px; line-height:1.62; color:#233; }
   .body p { margin:0 0 11px; }
+  .body ul { margin:0 0 11px; padding-left:20px; }
+  .ack { font-size:13.5px; line-height:1.6; color:#1a2e1a; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 14px; margin-top:6px; }
   .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
   .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
   .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
-  /* center-side section — visibly not a parent field */
-  .staff { background:#f6f7f9; border:1.5px dashed #cbd5cf; }
-  .staff legend { color:#64748b; }
-  .staff .body { color:#64748b; }
-  /* Signature: drawn (canvas) OR typed (adopted-capture) */
   .sigtabs { display:flex; gap:6px; margin-top:6px; }
   .sigtab { padding:6px 14px; border:1.5px solid var(--line); border-radius:8px; background:#fff; font-size:13px; font-weight:600; color:#374151; cursor:pointer; font-family:inherit; }
   .sigtab.on { background:var(--green); color:#fff; border-color:var(--green); }
@@ -38,8 +35,6 @@
   #typed_sig { font-family:'Segoe Script','Brush Script MT',cursive; font-size:26px; color:#111; }
   #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
   #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
-  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  @media (max-width:560px){ .row { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -51,7 +46,7 @@
     <option value="ridge">Play Academy Wickliffe</option>
   </select>
   <button class="btn bs" data-formkit="submit">✔ Submit</button>
-  <button class="btn br" onclick="trReset()">✕ Clear</button>
+  <button class="btn br" onclick="consentReset()">✕ Clear</button>
   <button class="btn br" onclick="window.print()">🖨 Print</button>
   <span id="st"></span>
   <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
@@ -59,50 +54,53 @@
 
 <div class="wrap">
   <div data-formkit="banner" data-fk-banner-msg></div>
-  <h1>Transition into the Program</h1>
-  <div class="sub"><span data-fk-org>Play Academy, Inc.</span> — help us support your child as they start a new setting.</div>
-  <div id="done">✓ Submitted</div>
+  <h1>Staff Consent for Electronic Signatures</h1>
+  <div class="sub"><span data-fk-org>Play Academy, Inc.</span> — please read, then sign to consent to electronic signatures on employment forms.</div>
+  <div id="done">✓ Consent submitted</div>
 
   <fieldset>
-    <legend>Child</legend>
-    <div class="row">
-      <div><label class="f">Student Name *</label>
-        <input type="text" id="child_name" data-fk-field="child_name" autocomplete="name" data-required data-label="Student name"></div>
-      <div><label class="f">Classroom *</label>
-        <input type="text" id="classroom" data-required data-label="Classroom"></div>
-    </div>
-    <div class="body" style="margin-top:12px">
-      <p>We understand that transitions can be difficult for children and families. We at <span data-fk-org>Play Academy, Inc.</span> would like your input on how to support your child(ren) as they prepare for a new setting.</p>
+    <legend>Consent</legend>
+    <div class="body">
+      <p>Dear Team Member,</p>
+      <p>At <span data-fk-org>Play Academy, Inc.</span>, we are streamlining onboarding and employment paperwork so you spend less time on forms. Some employee forms &mdash; such as your <strong>Staff Enrollment</strong>, job-description acknowledgments, the device-use (BYOD) agreement, and workplace policy acknowledgments &mdash; will use electronic signatures (e-signatures).</p>
+      <p>Electronically signed employment forms are acceptable. Your electronic signature carries the same intent and authorization as a handwritten signature on these forms.</p>
+      <p>By signing below, you acknowledge and agree that:</p>
+      <ul>
+        <li>You consent to receiving and completing applicable employment forms electronically.</li>
+        <li>You understand that your electronic signature will be considered your legal signature on documents provided by <span data-fk-org>Play Academy, Inc.</span></li>
+        <li>You may request a paper copy of any document at any time.</li>
+        <li>Signing this consent does not change the terms or at-will nature of your employment.</li>
+      </ul>
+      <p>If you have any questions about this process, please contact the office. Thank you for being part of our team.</p>
+      <p>Sincerely,<br><span data-fk-org>Play Academy, Inc.</span></p>
     </div>
   </fieldset>
 
-  <fieldset>
-    <legend>Your input</legend>
-    <label class="f">When would you like your child to start attending <span data-fk-org>Play Academy, Inc.</span> full time? *</label>
-    <input type="date" id="start_date_full_time" data-required data-label="Start date (full time)">
-
-    <label class="f" style="margin-top:14px">Family input</label>
-    <textarea id="family_input" placeholder="How can we best support your child through this transition? (optional)"></textarea>
-
-    <div class="note">We recommend increasing time slowly during the first week, so the child can adjust to the new environment easily.</div>
+  <fieldset id="mkt_fs" data-fk-marketing hidden>
+    <legend>For our team</legend>
+    <div class="body" id="mkt_body"></div>
   </fieldset>
 
   <fieldset>
     <legend>Sign</legend>
     <div class="row">
-      <div><label class="f">Printed Name of Parent/Guardian *</label>
-        <input type="text" id="parent_name" data-fk-field="parent_name" autocomplete="name" data-required data-label="Parent/guardian name"></div>
+      <div><label class="f">Employee Name *</label>
+        <input type="text" id="employee_name" data-fk-field="staff_name" autocomplete="name" data-required data-label="Employee name"></div>
       <div><label class="f">Date *</label>
         <input type="date" id="signed_date" data-required data-label="Date"></div>
     </div>
+    <label class="f">Position / Role</label>
+    <input type="text" id="position" data-fk-field="staff_position" placeholder="e.g. Lead Teacher, Cook, Assistant">
 
-    <label class="f">Parent Signature *</label>
+    <div class="ack" id="ackline"></div>
+
+    <label class="f">Electronic Signature *</label>
     <div class="sigtabs">
       <button type="button" class="sigtab on" id="tab_draw" onclick="sigMode('draw')">✍️ Draw</button>
       <button type="button" class="sigtab" id="tab_type" onclick="sigMode('type')">⌨️ Type</button>
     </div>
     <div class="sigbox" id="draw_box">
-      <canvas id="sig" data-fk-adopt width="700" height="90" data-formkit="signature" data-required data-label="Signature"></canvas>
+      <canvas id="sig" data-fk-mint="staff" width="700" height="90" data-formkit="signature" data-required data-label="Electronic signature"></canvas>
       <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
     </div>
     <div id="type_box" style="display:none">
@@ -110,31 +108,32 @@
     </div>
     <div class="note">Your electronic signature has the same legal effect as a handwritten one. You may request a paper copy at any time.</div>
   </fieldset>
-
-  <fieldset class="staff">
-    <legend>Completed by Play Academy staff</legend>
-    <div class="body">
-      <p><strong>Next steps</strong> (transition plan) and the <strong>Director/Program Signature</strong> are added by <span data-fk-org>Play Academy, Inc.</span>'s director when they review your submission — you do not fill these in.</p>
-    </div>
-    <div class="note">This section is for the center's records and is not part of your submission.</div>
-  </fieldset>
 </div>
 
 <script>
-/* Transition into the Program v2 — form-specific config; shared behaviour = form-kit.js */
+/* Staff E-Sign Consent v1 (DRAFT) — form-specific config; shared behaviour = form-kit.js.
+   Signature mint is role-scoped ("staff") — the staff sample is NEVER offered on parent
+   forms and vice-versa (role-scoped adoption is added to form-kit in the staff заход build). */
 function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
 var SIG_METHOD='draw';
 var ORG_NAME='Play Academy, Inc.';
 
+function refreshAck(){
+  var n=g('employee_name')||'________';
+  document.getElementById('ackline').innerHTML =
+    'I, <strong>'+n.replace(/</g,'&lt;')+'</strong>, consent for '+ORG_NAME.replace(/</g,'&lt;')+
+    ' to provide employment and onboarding forms electronically and to accept my electronic signature on those documents.';
+}
 function applyOrg(org){
   if(!org) return;
   if(org.name){
     ORG_NAME=org.name;
     Array.prototype.forEach.call(document.querySelectorAll('[data-fk-org]'),function(el){ el.textContent=org.name; });
+    refreshAck();
   }
+  var txt=(org.marketing_text||'').trim();
+  if(txt){ document.getElementById('mkt_body').innerHTML=txt; document.getElementById('mkt_fs').hidden=false; }
 }
-
-// adopted-capture: typed name rendered onto the canvas so the stored signature is always an image.
 function renderTyped(){
   var c=document.getElementById('sig'); var ctx=c.getContext('2d');
   ctx.clearRect(0,0,c.width,c.height);
@@ -153,39 +152,33 @@ function sigMode(m){
   FormKit.clearSig('sig');
   if(m==='type') renderTyped();
 }
-
-function trReset(){
-  ['child_name','classroom','start_date_full_time','family_input','parent_name','typed_sig']
-    .forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
-  FormKit.clearSig('sig'); sigMode('draw');
+function consentReset(){
+  ['employee_name','position','typed_sig'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  FormKit.clearSig('sig'); sigMode('draw'); refreshAck();
   var sd=document.getElementById('signed_date'); if(sd) sd.value=FormKit.todayISO();
   if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
 }
-
 window.FORMKIT_CONFIG = {
-  formType:'transition_into_program', version:'v2', centerSelect:'#ctr', reset:trReset,
+  formType:'staff_consent', version:'v1', centerSelect:'#ctr', reset:consentReset,
   collect:function(){
     if(SIG_METHOD==='type') renderTyped();
     var sigDate=g('signed_date')||FormKit.todayISO();
     var fd={
-      type:'transition_into_program', center_code:FormKit.centerCode(),
-      doc_title:'Transition into the Program', doc_version:'v2',
-      child_name:g('child_name'),
-      classroom:g('classroom'),
-      start_date_full_time:g('start_date_full_time'),
-      family_input:g('family_input'),
-      parent_name:g('parent_name'),
+      type:'staff_consent', center_code:FormKit.centerCode(),
+      consent_title:'Staff Consent for Electronic Signatures', consent_version:'v1',
+      staff_name:g('employee_name'), position:g('position'),
       signature_method: SIG_METHOD==='type' ? 'typed' : 'drawn',
       signature_typed_value: SIG_METHOD==='type' ? g('typed_sig') : ''
     };
-    return { formData:fd, signatures:{ parent_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
+    return { formData:fd, signatures:{ staff_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
   },
-  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Submitted' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
+  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Consent submitted' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
 };
-
 document.addEventListener('DOMContentLoaded',function(){
   var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=FormKit.todayISO();
+  var pn=document.getElementById('employee_name'); if(pn) pn.addEventListener('input', refreshAck);
   var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
+  refreshAck();
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
   fetch('../../enroll-registry.json',{cache:'no-cache'})
     .then(function(r){ return r.ok ? r.json() : null; })
@@ -194,9 +187,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 <style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
-<script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its
-   failure. If FormKit isn't up in ~4s (or form-kit.js errors), auto-retry the script once
-   with a cache-bust; if still down, show a reload banner. Self-clears on success; never prints. */
+<script>/* form-kit watchdog — inline, survives a form-kit.js load failure. */
 (function(){var RETRIED=false;
 function host(){return document.body||document.documentElement;}
 function up(){return !!window.FormKit;}
