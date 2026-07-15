@@ -128,6 +128,31 @@
 
   function scoped(url) { if (!url) return url; return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'center=' + encodeURIComponent(center); }
 
+  // ── Center gate ──────────────────────────────────────────────────────────────
+  // A slot may name the centers it belongs to: centers:['pearl'].  ABSENT = every
+  // center (so every existing slot is unchanged).  A slot gated away from THIS
+  // center renders as a pending card — never as a live link, because the only
+  // thing on the other side would be another center's document.
+  function gate(s) {
+    if (!s || !Array.isArray(s.centers) || !s.centers.length) return s;
+    if (s.centers.indexOf(center) >= 0) return s;
+    var g = {}; for (var k in s) if (Object.prototype.hasOwnProperty.call(s, k)) g[k] = s[k];
+    g.pending = true;
+    g.tag = s.pendingTag || 'Coming soon';
+    g.note = s.pendingNote || 'Your center’s copy is being prepared — your director will share it.';
+    delete g.keep; delete g.handout;   // no Download/Print for a file that isn't ours
+    return g;
+  }
+  // A version is either ONE url for everyone (string) or an object keyed by center
+  // slug when each center has its own copy — the Parent Handbook carries each
+  // center's address, licence and administrator, so one shared file would hand a
+  // family another center's document.
+  function verUrl(v) {
+    if (!v) return null;
+    if (typeof v === 'string') return v;
+    return v[center] || null;
+  }
+
   fetch('enroll-registry.json?t=' + Date.now(), { cache: 'no-store' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (reg) {
@@ -152,10 +177,11 @@
         Object.keys(reg.packets || {}).forEach(function (p) {
           (reg.packets[p].slots || []).forEach(function (sl) { if (sl && sl.key && !pool[sl.key]) pool[sl.key] = sl; });
         });
-        slots = only.map(function (k) { return pool[k] || ((reg.forms && reg.forms[k]) ? { key: k } : null); }).filter(Boolean);
+        slots = only.map(function (k) { return pool[k] || ((reg.forms && reg.forms[k]) ? { key: k } : null); }).filter(Boolean).map(gate);
       } else {
         slots = pk.slots.slice()   // ZAKAZ 11: keep/pending render as their own cards
-          .filter(function (s) { return s.section !== 'if_applicable'; });
+          .filter(function (s) { return s.section !== 'if_applicable'; })
+          .map(gate);
       }
       if (!slots.length) return fail('This packet has no forms to show yet.');
       // Title: a single-form only= link is not a "packet" — name the form instead.
@@ -173,11 +199,14 @@
         function onlyLink(slug){ return 'https://pa082508.github.io/parent-forms.html?center=' + encodeURIComponent(center) + '&only=' + encodeURIComponent(slug); }
         function withK(u, slug){ return u + (u.indexOf('?') >= 0 ? '&' : '?') + 'k=' + encodeURIComponent(slug); }
         var kind = form.kind || (s.keep ? 'keep' : (s.pending || s.handout ? 'director' : 'signature'));
-        var url = (form.versions && form.current && form.versions[form.current]) || form.fallbackUrl || null;
+        var url = verUrl(form.versions && form.current && form.versions[form.current]) || form.fallbackUrl || null;
         if (url === 'PENDING') url = null;
         var card = document.createElement('div');
         // KEEP — download or print, no signature; QR = storefront only= (never a file URL)
-        if (kind === 'keep' && url) {
+        // s.pending wins over kind: kind comes from forms{} (org-wide), while pending can be
+        // set per-center by the gate. Without this a gated Keep still rendered Download/Print
+        // pointing at another center's file.
+        if (kind === 'keep' && url && !s.pending) {
           var fileLink = scoped(url), qrLink = onlyLink(s.key);
           card.className = 'card keep';
           card.innerHTML = '<div class="num keepdot">&#9670;</div>'
