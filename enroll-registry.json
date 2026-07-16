@@ -49,6 +49,7 @@
       "history": []
     },
     "dcy_01234": {
+      "requires_countersign": "director",
       "slug": "dcy_01234",
       "title": "DCY 01234 — Child Enrollment & Health (Rev. 7/2026)",
       "kind": "document",
@@ -240,6 +241,7 @@
       "audience": "staff"
     },
     "parent_consent": {
+      "auto_file": true,
       "slug": "parent_consent",
       "title": "Parent Consent for Electronic Signatures",
       "requiringOrg": "Play Academy",
@@ -334,6 +336,7 @@
       "history": []
     },
     "child_release_authorization": {
+      "requires_countersign": "director",
       "slug": "child_release_authorization",
       "title": "Child Release Authorization (+ media consent)",
       "kind": "document",
@@ -389,6 +392,7 @@
       "condition": "optional"
     },
     "transition_into_program": {
+      "requires_countersign": "director",
       "slug": "transition_into_program",
       "title": "Transition into the Program",
       "kind": "document",
@@ -504,6 +508,7 @@
       ]
     },
     "parents_book_ack": {
+      "auto_file": true,
       "slug": "parents_book_ack",
       "title": "Parent Handbook Receipt",
       "kind": "signature",
