@@ -200,7 +200,7 @@
 <body>
 
 <div class="toolbar">
-  <select id="ctr" onchange="ctrPick()"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
+  <select id="ctr" onchange="ctrPick()"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Highland Heights</option><option value="ridge">Play Academy Wickliffe</option></select>
   <button id="btnSubmit" class="primary" data-formkit="submit">Submit</button>
   <button id="btnReset" onclick="resetForm()">Reset</button>
   <button id="btnPrint" class="blue" onclick="window.print()">Print / Save PDF</button>
@@ -382,7 +382,7 @@
    per-instance medication_name (required), parent authorization signature
    (required) + physician signature (conditional → awaiting_physician flag).
    ============================================================ */
-var CENTER_NAMES_ = { pearl: 'Play Academy Parma Heights', alpha: 'Play Academy Mayfield Hills', ridge: 'Play Academy Wickliffe' };
+var CENTER_NAMES_ = { pearl: 'Play Academy Parma Heights', alpha: 'Play Academy Highland Heights', ridge: 'Play Academy Wickliffe' };
 var dateTouched = false;
 var _lastAwaiting = false;
 
@@ -536,6 +536,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=8"></script>
+<script defer src="form-kit.js?v=9"></script>
 </body>
 </html>

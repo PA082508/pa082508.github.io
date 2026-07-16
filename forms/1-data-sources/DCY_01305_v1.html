@@ -188,7 +188,7 @@
 <body>
 
 <div class="toolbar">
-  <select id="ctr" onchange="ctrPick()"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Mayfield Hills</option><option value="ridge">Play Academy Wickliffe</option></select>
+  <select id="ctr" onchange="ctrPick()"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Highland Heights</option><option value="ridge">Play Academy Wickliffe</option></select>
   <button class="primary" data-formkit="submit">Submit</button>
   <button type="button" onclick="resetForm()">Reset</button>
   <button type="button" class="blue" onclick="window.print()">Print / Save PDF</button>
@@ -380,7 +380,7 @@
 /* DCY 01305 — Child Medical Statement (JFS 01305 Rev.10/2021).
    Form-specific config only; shared transport/signatures/validation = form-kit.js.
    Submission: submission_type='medical' (FormKit uses formType), form_data.dcy_form='01305'. */
-var CENTER_NAMES={pearl:'Play Academy Parma Heights',alpha:'Play Academy Mayfield Hills',ridge:'Play Academy Wickliffe'};
+var CENTER_NAMES={pearl:'Play Academy Parma Heights',alpha:'Play Academy Highland Heights',ridge:'Play Academy Wickliffe'};
 function g(id){var e=document.getElementById(id);return e?(e.value||''):'';}
 function gc(id){var e=document.getElementById(id);return !!(e&&e.checked);}
 function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -500,6 +500,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=8"></script>
+<script defer src="form-kit.js?v=9"></script>
 </body>
 </html>

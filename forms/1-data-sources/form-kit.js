@@ -33,7 +33,7 @@
   // Per-center identity for the resolved-center header (center-auto-detect spec).
   var CENTERS_INFO = {
     pearl: { name: 'Play Academy Parma Heights', address: '6285 Pearl Rd, Parma Heights', phone: '440-884-7529' },
-    alpha: { name: 'Play Academy Mayfield Hills', address: '201 Alpha Park, Highland Heights', phone: '440-460-0600' },
+    alpha: { name: 'Play Academy Highland Heights', address: '201 Alpha Park, Highland Heights', phone: '440-460-0600' },
     ridge: { name: 'Play Academy Wickliffe', address: '28930 Ridge Rd, Wickliffe', phone: '440-520-0031' },
   };
   // Per-center CACFP meal schedule (menumaker.meal_schedule; uniform across all
