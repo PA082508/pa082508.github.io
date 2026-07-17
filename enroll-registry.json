@@ -29,6 +29,7 @@
       "history": []
     },
     "iea": {
+      "scope": "family",
       "current": "v6",
       "versions": {
         "v5": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v5.html",
@@ -201,6 +202,7 @@
       "condition": "infant"
     },
     "usda_waiver": {
+      "scope": "family",
       "slug": "usda_waiver",
       "title": "USDA Income Eligibility Waiver (declined IEA)",
       "requiringOrg": "Internal",
@@ -210,14 +212,19 @@
         "iea"
       ],
       "note": "Alternative to IEA for the same income_eligibility child-record slot: packet asks 'Will you apply for free/reduced-price meals?' → Yes ⇒ iea, No ⇒ this waiver (parent-signed). Exactly one is always on file; satisfies:['iea'] marks the shared slot met.",
-      "current": "v2",
+      "current": "v3",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v1.html",
-        "v2": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v2.html"
+        "v2": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v2.html",
+        "v3": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v3.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v2.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v3.html",
       "perInstance": false,
       "history": [
+        {
+          "at": "2026-07-18",
+          "note": "FLIP current v2 → v3 — family form: up to 4 children[] rows (name+DOB) mirroring IEA, pair-validated at submit; scope:family. DARK-sverka passed; smoke green (children[] + child_name bridge → pending, >4 second-submission glued by parent_name). satisfies:['iea'] unchanged; form-kit untouched so ?v= stays 11."
+        },
         {
           "at": "2026-07-11",
           "note": "Flipped current → existing USDA_Waiver_v1.html (income-decline waiver, IEA alternative FY2026-27). Moved from if_applicable/special_diet to mandatory pair after IEA."
