@@ -36,6 +36,8 @@
   .handout-tag { font-size: 12px; font-weight: 700; color: var(--green2); background: #fff; border: 1px solid var(--mint-b); border-radius: 999px; padding: 6px 12px; }
 
   .hint { background: var(--mint); border: 1px solid var(--mint-b); border-radius: 10px; font-size: 12.5px; color: var(--green2); padding: 11px 14px; line-height: 1.5; margin: 18px 0 14px; }
+  .lifebar { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 12px; color: #92400e; font-size: 13px; line-height: 1.5; padding: 13px 15px; margin: 0 0 18px; display: flex; gap: 12px; align-items: flex-start; }
+  .lifebar .lx { flex: 0 0 auto; background: #92400e; color: #fff; border: none; border-radius: 8px; padding: 6px 13px; font: 700 12px inherit; cursor: pointer; }
   .actions { text-align: center; }
   .actions button { font: inherit; font-size: 13px; padding: 8px 16px; border: 1.5px solid var(--mint-b); border-radius: 8px; background: #fff; color: var(--green2); cursor: pointer; font-weight: 600; }
   #cleared { color: var(--green); font-size: 13px; font-weight: 700; margin-top: 8px; display: none; }
@@ -72,8 +74,7 @@
   <div id="msg" style="display:none"></div>
 
   <div class="hint" id="hint">
-    Your information stays on this device only and clears automatically after 90 minutes.
-    Doing forms for another child? Tap &ldquo;Start new family&rdquo; first.
+    Doing forms for another child? Tap &ldquo;Start new family&rdquo; first to clear the shared details.
   </div>
   <div class="actions">
     <button id="btnNewFamily">Start new family</button>
@@ -94,7 +95,7 @@
 <script>
 (function () {
   'use strict';
-  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 90 * 60 * 1000;
+  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 24 * 60 * 60 * 1000;   // 24h — match form-kit PK_TTL (2026-07-17)
   var CENTER_NAMES = { ridge: 'Wickliffe', pearl: 'Parma Heights', alpha: 'Highland Heights' };
   var SET_TITLES = { starter: 'Welcome — enrollment packet', toddler_preschool: 'Enrollment packet', infant: 'Infant enrollment packet', admission: 'Admission packet', staff: 'Welcome to the team' };
   // Audience branding: the packet declares audience:'staff' and the page stops talking
@@ -110,6 +111,27 @@
   var only = (qs.get('only') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
 
   function show(el, on) { el.style.display = on ? '' : 'none'; }
+
+  // ── Life-of-data notice, once at the start ───────────────────────────────────
+  // The packet page is the entry point (every parent link — full set or a single
+  // only= form — lands here first), so the "kept on this device for 24h" warning
+  // belongs here, shown once. It shares form-kit's exact key (pa_fk_notice_ts) and
+  // 24h window: seen here → every form the parent opens next stays quiet. A parent
+  // who deep-links straight to a form still gets it there (the kit's own copy).
+  function lifeNotice() {
+    var KEY = 'pa_fk_notice_ts', TTL = 24 * 60 * 60 * 1000;
+    try { var ts = +localStorage.getItem(KEY); if (ts && Date.now() - ts < TTL) return; } catch (e) {}
+    var bar = document.createElement('div'); bar.className = 'lifebar';
+    var span = document.createElement('span');
+    span.innerHTML = '⏳ Your answers and signature are kept <strong>on this device for 24 hours</strong>, so you can finish later — on the same phone and browser. Nothing is sent to the center until you press <strong>Submit</strong> on a form. After a day, or on a different device, it starts fresh.';
+    var x = document.createElement('button'); x.type = 'button'; x.className = 'lx'; x.textContent = 'Got it';
+    x.addEventListener('click', function () { bar.parentNode && bar.parentNode.removeChild(bar); });
+    bar.appendChild(span); bar.appendChild(x);
+    var wrap = document.querySelector('.wrap'), head = document.querySelector('.head');
+    if (wrap && head) wrap.insertBefore(bar, head.nextSibling); else document.body.insertBefore(bar, document.body.firstChild);
+    try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}   // mark seen on show — matches the kit
+  }
+  lifeNotice();
   function fail(text) { document.getElementById('list').innerHTML = ''; show(document.getElementById('hint'), false); document.querySelector('.actions').style.display = 'none'; var m = document.getElementById('msg'); m.textContent = text; show(m, true); }
 
   // ---- session "done" tracking (per form key) ----

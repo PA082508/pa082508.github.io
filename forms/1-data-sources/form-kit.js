@@ -585,9 +585,13 @@
     txt.innerHTML = '⏳ This form saves your answers and signature <strong>on this device for ' + hrs + ' hours</strong>, so you can finish later — but on the same phone and browser. Nothing is sent to the center until you press Submit. After ' + hrs + ' hours, or on a different device, it starts fresh.';
     var ok = document.createElement('button'); ok.type = 'button'; ok.textContent = 'Got it';
     ok.setAttribute('style', 'background:#92400e;color:#fff;border:none;border-radius:8px;padding:7px 15px;font:700 12px Arial,sans-serif;cursor:pointer;flex:none');
-    ok.addEventListener('click', function () { try { localStorage.setItem(NOTICE_KEY, String(Date.now())); } catch (_) {} b.remove(); });
+    ok.addEventListener('click', function () { b.remove(); });
     b.appendChild(txt); b.appendChild(ok);
     document.body.insertBefore(b, document.body.firstChild);
+    // Mark seen on SHOW, not on dismiss — the packet index (parent-forms.html)
+    // shares this exact key, so whichever surface the parent hits first (usually
+    // the index) shows it once and every later form stays quiet for the window.
+    try { localStorage.setItem(NOTICE_KEY, String(Date.now())); } catch (_) {}
   }
   async function submit() {
     if (_submitting || _submitted) return;   // in-flight / already-submitted guard
