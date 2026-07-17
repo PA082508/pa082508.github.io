@@ -89,8 +89,16 @@
   function getSig(idOrEl) { var c = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl; return hasInk(c) ? c.toDataURL('image/png') : null; }
   function clearSig(idOrEl) { var c = typeof idOrEl === 'string' ? document.getElementById(idOrEl) : idOrEl; if (c) c.getContext('2d').clearRect(0, 0, c.width, c.height); }
 
-  // ── Session packet (localStorage, 90-min TTL) for cross-form autofill (§7) ───
-  var PK_KEY = 'pa_packet_profile', PK_TTL = 90 * 60 * 1000;
+  // ── Session packet (localStorage, 24-hour TTL) for cross-form autofill (§7) ──
+  // 24h (was 90 min) by Nikolay's call 2026-07-17: a family that has already paid
+  // the registration fee may fill the packet across the day, not in one sitting.
+  // This TTL ALSO governs the signature sample below (pa_sig_sample) — a drawn
+  // signature now persists for a day on THIS device. Safe while the device is
+  // personal (a parent's phone): there is no kiosk today — nothing sets
+  // window.PA_KIOSK anywhere. When a shared-tablet kiosk lands, the sample's TTL
+  // must be split from the data TTL, or a day-old signature is offered to the
+  // next person. Until then one timer is correct.
+  var PK_KEY = 'pa_packet_profile', PK_TTL = 24 * 60 * 60 * 1000;
   function pkLoad() { try { var r = JSON.parse(localStorage.getItem(PK_KEY)); if (!r || Date.now() - r.ts > PK_TTL) { localStorage.removeItem(PK_KEY); return null; } return r; } catch (_) { return null; } }
   function pkWrite(data) { try { localStorage.setItem(PK_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch (_) {} }
   function fkFields() { return $$('[data-fk-field]'); }
@@ -118,7 +126,7 @@
   // Consent MINTS a sample (its pad holds the drawn OR typed signature). Later
   // parent forms carrying data-fk-adopt show a "Use my signature" button that stamps
   // that sample onto their pad — no redraw. Sample sits beside pa_packet_profile
-  // with the same 90-min TTL; nothing is sent to a server (v1). Fallback = draw/type
+  // with the same 24-hour TTL; nothing is sent to a server (v1). Fallback = draw/type
   // as before when the session has no sample. v1.5 (addressed packets) will source
   // the sample from get_prefill by token — never from a bare ?center=.
   // SCOPE — samples live on separate shelves, one per signer role. The scope is the
@@ -559,6 +567,27 @@
     IDEMP = newIdemp();   // fresh idempotency token for the new form
     if (CFG.reset) { try { CFG.reset(); } catch (e) {} } else { location.reload(); return; }
     try { window.scrollTo(0, 0); } catch (e) {}
+  }
+  // ── Session-life notice ──────────────────────────────────────────────────────
+  // The kit keeps your answers AND signature on THIS device for PK_TTL (24h), so a
+  // family can fill the packet across the day. Tell them plainly: nothing is on a
+  // server until Submit; a different phone or browser starts empty; after the day
+  // it clears. Shown once per TTL window — the packet's later forms in the same
+  // sitting stay quiet (flag carries the same 24h life as the data it describes).
+  var NOTICE_KEY = 'pa_fk_notice_ts';
+  function sessionNotice() {
+    try { var ts = +localStorage.getItem(NOTICE_KEY); if (ts && Date.now() - ts < PK_TTL) return; } catch (_) {}
+    if ($('.fk-life-notice')) return;
+    var hrs = Math.round(PK_TTL / 3600000);
+    var b = document.createElement('div'); b.className = 'fk-life-notice fk-print-hidden';
+    b.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;background:#fef3c7;color:#92400e;padding:11px 16px;font:600 13px/1.45 Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.12)');
+    var txt = document.createElement('span');
+    txt.innerHTML = '⏳ This form saves your answers and signature <strong>on this device for ' + hrs + ' hours</strong>, so you can finish later — but on the same phone and browser. Nothing is sent to the center until you press Submit. After ' + hrs + ' hours, or on a different device, it starts fresh.';
+    var ok = document.createElement('button'); ok.type = 'button'; ok.textContent = 'Got it';
+    ok.setAttribute('style', 'background:#92400e;color:#fff;border:none;border-radius:8px;padding:7px 15px;font:700 12px Arial,sans-serif;cursor:pointer;flex:none');
+    ok.addEventListener('click', function () { try { localStorage.setItem(NOTICE_KEY, String(Date.now())); } catch (_) {} b.remove(); });
+    b.appendChild(txt); b.appendChild(ok);
+    document.body.insertBefore(b, document.body.firstChild);
   }
   async function submit() {
     if (_submitting || _submitted) return;   // in-flight / already-submitted guard
@@ -1027,6 +1056,7 @@
     // click the required-counter or a signature-lock → scroll to the first empty required
     var cc = $('[data-formkit="counter"]'); if (cc) { cc.style.cursor = 'pointer'; cc.title = 'Go to the first required field'; cc.addEventListener('click', gotoFirstMissing); }
     $$('.siglock,[data-fk-goto]').forEach(function (l) { l.style.cursor = 'pointer'; l.addEventListener('click', gotoFirstMissing); });
+    sessionNotice();   // 24h-life warning, once per TTL window
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
