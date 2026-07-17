@@ -214,6 +214,17 @@ window.FORMKIT_CONFIG={
   formType:'usda_waiver',version:'v3',title:'USDA Income Eligibility Waiver (family)',reset:resetForm,
   collect:function(){
     var sigDate=g('signedDate')||todayISO();
+    /* Pair validation for the child rows (kid1 name+DOB are static data-required;
+       rows 2–4 are optional but must be COMPLETE if started). A blank row never
+       blocks — only a half-filled one does. collect() throws → form-kit shows the
+       message in the status line and blocks submit (form-kit.js submit handler). */
+    for(var k=1;k<=4;k++){
+      var nmEl=document.getElementById('kid'+k+'_name'),dbEl=document.getElementById('kid'+k+'_dob');
+      if(nmEl)nmEl.classList.remove('fk-invalid');if(dbEl)dbEl.classList.remove('fk-invalid');
+      var nm=g('kid'+k+'_name'),db=g('kid'+k+'_dob');
+      if(nm&&!db){if(dbEl)dbEl.classList.add('fk-invalid');throw new Error('Child '+k+': add a date of birth (or clear the name)');}
+      if(db&&!nm){if(nmEl)nmEl.classList.add('fk-invalid');throw new Error('Child '+k+': add a name (or clear the date of birth)');}
+    }
     /* children[] mirrors the IEA structure so both income forms share one anchor
        shape: filter to rows that carry a name. Same as IEA_FY2026-27_v6 collect(). */
     var kids=[1,2,3,4].map(function(k){return {name:g('kid'+k+'_name'),dob:g('kid'+k+'_dob')};})
