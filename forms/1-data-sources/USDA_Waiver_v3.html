@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USDA Food Program Waiver — CACFP</title>
+<style>
+  /* ============================================================
+     USDA FOOD PROGRAM WAIVER (Income Eligibility — declined)
+     Fillable · e-signature · Supabase · v3 · 2026-07-18
+     v3 = FAMILY form: one waiver covers all of a household's enrolled
+     children (children[] rows, mirroring the IEA structure), so it is a
+     family anchor alongside the IEA. Purpose: survey-coverage — every
+     enrolled child is on file as either an IEA or a signed decline.
+     submission_type = 'usda_waiver'  ·  satisfies the income_eligibility slot
+     ============================================================ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color: #000; background: #e8e8e8; }
+  .sheet {
+    width: 8.5in; min-height: 11in; margin: 16px auto; padding: 0.55in 0.6in;
+    background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); display: flex; flex-direction: column;
+    page-break-after: always;
+  }
+  .sheet:last-of-type { page-break-after: auto; }
+  .agency { text-align: center; font-size: 10pt; color: #333; margin-bottom: 2px; }
+  .form-title { text-align: center; font-size: 15pt; font-weight: bold; text-transform: uppercase;
+    line-height: 1.3; margin: 6px 0 14px; }
+  .form-sub { text-align: center; font-size: 11pt; font-weight: bold; margin-bottom: 18px; }
+  p.intro { font-size: 10.5pt; line-height: 1.4; margin-bottom: 12px; }
+  .attest { border: 2px solid #000; padding: 12px 14px; margin: 16px 0 22px; display: flex; gap: 10px;
+    align-items: flex-start; }
+  .attest input[type=checkbox] { width: 18px; height: 18px; margin-top: 2px; flex: 0 0 auto; }
+  .attest .stmt { font-weight: bold; font-size: 11pt; line-height: 1.35; }
+  table { border-collapse: collapse; width: 100%; }
+  .fieldrow td { padding: 10px 4px; font-size: 11pt; vertical-align: bottom; }
+  .kids { margin: 4px 0 8px; }
+  .kids th { font-size: 9.5pt; text-transform: uppercase; letter-spacing: .02em; text-align: left;
+    padding: 2px 4px; color: #333; border-bottom: 1px solid #000; }
+  .kids td { padding: 8px 4px; vertical-align: bottom; }
+  .kids .num { width: 20px; font-weight: bold; }
+  .kids .more { font-size: 9.5pt; color: #555; padding-top: 2px; }
+  input.fill { border: none; border-bottom: 1px solid #000; outline: none; font: inherit;
+    background: transparent; padding: 1px 4px; width: 100%; }
+  input.fill:focus { background: #eef4ff; }
+  .sig-wrap { display: flex; align-items: flex-end; gap: 8px; border-bottom: 1px solid #000; }
+  canvas#sigPad { flex: 1; height: 52px; cursor: crosshair; touch-action: none; background: transparent; }
+  .sig-clear { font-size: 10px; padding: 2px 8px; border: 1px solid #999; border-radius: 3px;
+    background: #fff; cursor: pointer; align-self: center; }
+  .lbl { font-weight: bold; font-size: 10pt; display: block; margin-bottom: 2px; }
+  .usda-footer { margin-top: auto; padding-top: 20px; font-size: 10pt; display: flex; justify-content: space-between; }
+  .letter h2 { font-size: 13pt; text-align: center; margin: 4px 0 12px; text-transform: uppercase; }
+  .letter p { font-size: 10pt; line-height: 1.45; margin-bottom: 10px; }
+  .center-pick { max-width: 8.5in; margin: 14px auto 0; font-size: 13px; }
+  .center-pick select { font: inherit; padding: 4px 6px; }
+  .center-pick select.need { outline: 2px solid #c0392b; }
+  /* Toolbar */
+  .toolbar { max-width: 8.5in; margin: 14px auto 0; font-family: Arial, sans-serif; font-size: 13px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar button { font: inherit; padding: 6px 14px; border: 1px solid #888; border-radius: 4px;
+    background: #fff; cursor: pointer; }
+  .toolbar button.primary { background: #1a7a3a; color: #fff; border-color: #1a7a3a; }
+  .toolbar button.blue { background: #1a56a0; color: #fff; border-color: #1a56a0; }
+  #status { color: #666; }
+  #status.ok { color: #1a7a3a; font-weight: bold; }
+  #status.er { color: #b00020; font-weight: bold; }
+  #status.in { color: #004085; font-weight: bold; }
+  .pa-embed .toolbar, .pa-embed .center-pick { display: none !important; }
+  @page { size: letter portrait; margin: 0.5in 0.6in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar, .sig-clear, .center-pick { display: none !important; }
+    .sheet { width: auto; min-height: 10in; margin: 0; padding: 0; box-shadow: none; }
+    input.fill:focus { background: transparent; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="primary" data-formkit="submit">Submit</button>
+  <button onclick="resetForm()">Reset</button>
+  <button class="blue" onclick="window.print()">Print / Save PDF</button>
+  <span id="status" data-formkit="status"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+
+<!-- ================= PAGE 1 — WAIVER ================= -->
+<div class="sheet">
+  <div class="agency">Ohio · Child and Adult Care Food Program (CACFP)</div>
+  <div class="form-title">Child and Adult Care Food Program: Child Care Component<br>Income Eligibility Application FY 2026&#8211;2027 &mdash; Waiver</div>
+
+  <p class="intro">
+    Please review the guidelines for the United States Department of Agriculture food program on the
+    next page, &ldquo;<strong>HOUSEHOLD LETTER</strong>.&rdquo;
+  </p>
+  <p class="intro">
+    If you <strong>DO</strong> qualify by meeting the income guidelines, please fill out the
+    &ldquo;INCOME ELIGIBILITY APPLICATION FOR FREE AND REDUCED PRICE MEALS&rdquo; and return it to
+    Play Academy child care center.
+  </p>
+  <p class="intro">
+    If you <strong>DO NOT</strong> meet the income guidelines, fill out the bottom of this page and
+    return it to Play Academy child care center. <strong>DO NOT</strong> fill out the &ldquo;INCOME
+    ELIGIBILITY APPLICATION FOR FREE AND REDUCED PRICE MEALS.&rdquo;
+  </p>
+
+  <div class="attest">
+    <input type="checkbox" id="attest" name="attest" data-required data-label="Attestation">
+    <span class="stmt">I have reviewed the Reduced and Eligibility Guidelines and I DO NOT qualify for
+      the USDA food program.</span>
+  </div>
+
+  <span class="lbl">Children this waiver covers &mdash; list every child in your household enrolled at the center</span>
+  <table class="kids">
+    <thead><tr><th class="num"></th><th>Child&rsquo;s Name</th><th style="width:38%">Date of Birth</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="num">1.</td>
+        <td><input type="text" class="fill" id="kid1_name" data-required data-label="Child 1 name" data-fk-field="child_name" autocomplete="name"></td>
+        <td><input type="date" class="fill" id="kid1_dob" data-required data-label="Child 1 date of birth" data-fk-field="dob"></td>
+      </tr>
+      <tr>
+        <td class="num">2.</td>
+        <td><input type="text" class="fill" id="kid2_name" autocomplete="name"></td>
+        <td><input type="date" class="fill" id="kid2_dob"></td>
+      </tr>
+      <tr>
+        <td class="num">3.</td>
+        <td><input type="text" class="fill" id="kid3_name" autocomplete="name"></td>
+        <td><input type="date" class="fill" id="kid3_dob"></td>
+      </tr>
+      <tr>
+        <td class="num">4.</td>
+        <td><input type="text" class="fill" id="kid4_name" autocomplete="name"></td>
+        <td><input type="date" class="fill" id="kid4_dob"></td>
+      </tr>
+      <tr><td colspan="3" class="more">More than four children? Fill this waiver for the first four, then
+        submit it again for the rest &mdash; the office links siblings by the parent who signed.</td></tr>
+    </tbody>
+  </table>
+
+  <table>
+    <tr class="fieldrow">
+      <td style="width:60%"><span class="lbl">Parent Name (print)</span>
+        <input type="text" class="fill" id="parentName" data-required data-label="Parent Name" data-fk-field="parent_name" autocomplete="name"></td>
+      <td style="width:40%"><span class="lbl">Date</span>
+        <input type="date" class="fill" id="signedDate"></td>
+    </tr>
+    <tr class="fieldrow">
+      <td colspan="2"><span class="lbl">Parent Signature</span>
+        <div class="sig-wrap">
+          <canvas id="sigPad" width="600" height="52" data-formkit="signature" data-required data-label="Parent signature"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('sigPad')">Clear</button>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <div class="usda-footer">
+    <span>USDA is an equal opportunity provider, employer, and lender.</span>
+    <span>FY 2026&#8211;2027</span>
+  </div>
+</div>
+
+<!-- ================= PAGE 2 — HOUSEHOLD LETTER ================= -->
+<div class="sheet letter">
+  <h2>Household Letter &mdash; Income Eligibility Guidelines</h2>
+  <p>Dear Parent/Guardian,</p>
+  <p>
+    Play Academy participates in the U.S. Department of Agriculture (USDA) Child and Adult Care Food
+    Program (CACFP). Meals and snacks served to enrolled children may be claimed for reimbursement.
+    Households may qualify their child for free or reduced-price meal benefits based on the federal
+    income eligibility guidelines in effect for FY 2026&#8211;2027.
+  </p>
+  <p>
+    To apply for benefits, complete the <strong>Income Eligibility Application for Free and Reduced
+    Price Meals</strong> and return it to your center. If your household income is above the reduced-price
+    guidelines, or you choose not to apply, sign the <strong>Waiver</strong> on the previous page instead.
+    Exactly one of the two &mdash; the application or the waiver &mdash; must be on file for each child.
+  </p>
+  <p>
+    Reviewing the current USDA Income Eligibility Guidelines (household size and annual/monthly/weekly
+    income thresholds) will help you decide which form applies to your household. Your center director
+    can provide the current guideline table and answer any questions.
+  </p>
+  <p>
+    This institution is an equal opportunity provider. In accordance with federal civil rights law and
+    USDA civil rights regulations and policies, this institution is prohibited from discriminating on the
+    basis of race, color, national origin, sex, disability, age, or reprisal or retaliation for prior
+    civil rights activity.
+  </p>
+  <div class="usda-footer">
+    <span>USDA is an equal opportunity provider, employer, and lender.</span>
+    <span>FY 2026&#8211;2027</span>
+  </div>
+</div>
+
+<link rel="stylesheet" href="form-kit.css">
+<script>
+/* USDA Food Program Waiver v3 (family) — form-specific config only; shared behaviour = form-kit.js */
+function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
+function gc(id){var e=document.getElementById(id);return e&&e.checked}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function resetForm(){
+  [1,2,3,4].forEach(function(k){var n=document.getElementById('kid'+k+'_name');if(n)n.value='';var d=document.getElementById('kid'+k+'_dob');if(d)d.value='';});
+  var p=document.getElementById('parentName');if(p)p.value='';
+  var a=document.getElementById('attest');if(a)a.checked=false;
+  if(window.FormKit)FormKit.clearSig('sigPad');
+  var sd=document.getElementById('signedDate');if(sd)sd.value=todayISO();
+  if(window.FormKit){FormKit.status('Form cleared','');FormKit.refreshCounter();}
+}
+window.FORMKIT_CONFIG={
+  formType:'usda_waiver',version:'v3',title:'USDA Income Eligibility Waiver (family)',reset:resetForm,
+  collect:function(){
+    var sigDate=g('signedDate')||todayISO();
+    /* Pair validation for the child rows (kid1 name+DOB are static data-required;
+       rows 2–4 are optional but must be COMPLETE if started). A blank row never
+       blocks — only a half-filled one does. collect() throws → form-kit shows the
+       message in the status line and blocks submit (form-kit.js submit handler). */
+    for(var k=1;k<=4;k++){
+      var nmEl=document.getElementById('kid'+k+'_name'),dbEl=document.getElementById('kid'+k+'_dob');
+      if(nmEl)nmEl.classList.remove('fk-invalid');if(dbEl)dbEl.classList.remove('fk-invalid');
+      var nm=g('kid'+k+'_name'),db=g('kid'+k+'_dob');
+      if(nm&&!db){if(dbEl)dbEl.classList.add('fk-invalid');throw new Error('Child '+k+': add a date of birth (or clear the name)');}
+      if(db&&!nm){if(nmEl)nmEl.classList.add('fk-invalid');throw new Error('Child '+k+': add a name (or clear the date of birth)');}
+    }
+    /* children[] mirrors the IEA structure so both income forms share one anchor
+       shape: filter to rows that carry a name. Same as IEA_FY2026-27_v6 collect(). */
+    var kids=[1,2,3,4].map(function(k){return {name:g('kid'+k+'_name'),dob:g('kid'+k+'_dob')};})
+      .filter(function(k){return k.name.trim();});
+    return {
+      formData:{
+        type:'usda_waiver',
+        dcy_form:null,
+        center_code:FormKit.centerCode(),
+        center_name:FormKit.centerName(),   /* #6 — from ?center=, never a picker */
+        children:kids,
+        child_name:(kids[0]&&kids[0].name)||'',   /* first child, for legacy single-name displays */
+        parent_name:g('parentName'),
+        attestation_declined:gc('attest'),
+        attestation_text:'I have reviewed the Reduced and Eligibility Guidelines and I DO NOT qualify for the USDA food program.',
+        signed_date:sigDate
+      },
+      signatures:{parent_sig:FormKit.getSig('sigPad')},
+      signatureDate:sigDate
+    };
+  }
+};
+document.addEventListener('DOMContentLoaded',function(){var sd=document.getElementById('signedDate');if(sd&&!sd.value)sd.value=todayISO();/* #6 — center comes from ?center= via form-kit; no picker to prefill */});
+</script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its
+   failure. If FormKit isn't up in ~4s (or form-kit.js errors), auto-retry the script once
+   with a cache-bust; if still down, show a reload banner. Self-clears on success; never prints. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=11"></script>
+</body>
+</html>
