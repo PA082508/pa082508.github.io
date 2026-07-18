@@ -223,7 +223,7 @@
       "history": [
         {
           "at": "2026-07-18",
-          "note": "FLIP current v2 → v3 — family form: up to 4 children[] rows (name+DOB) mirroring IEA, pair-validated at submit; scope:family. DARK-sverka passed; smoke green (children[] + child_name bridge → pending, >4 second-submission glued by parent_name). satisfies:['iea'] unchanged; form-kit untouched so ?v= stays 11."
+          "note": "FLIP current v2 → v3 — family form: up to 4 children[] rows (name+DOB) mirroring IEA, pair-validated at submit; scope:family. DARK-sverka passed; smoke green (children[] + child_name bridge → pending, >4 second-submission glued by parent_name). satisfies:['iea'] unchanged; form-kit untouched so ?v= stays 11. Deploy markers: Pages 0d40eab · app 141cc1a (merged+verified 2026-07-18: form 200, current=v3 on both, registries diff IDENTICAL)."
         },
         {
           "at": "2026-07-11",
