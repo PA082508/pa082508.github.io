@@ -224,12 +224,16 @@
       var list = document.getElementById('list'), n = 0;
       slots.forEach(function (s) {
         var form = reg.forms[s.key] || {};
+        // sameAs alias (e.g. School Enrollment Regular/Full-Day → enroll): resolve the
+        // real document/version/kind from the TARGET, but keep the alias's own label and
+        // the alias key in the QR/&k (so it is one source document, two labels).
+        var src = form.sameAs ? (reg.forms[form.sameAs] || form) : form;
         var label = s.label || form.title || s.key;
         var note = s.note || '';
         function onlyLink(slug){ return 'https://pa082508.github.io/parent-forms.html?center=' + encodeURIComponent(center) + '&only=' + encodeURIComponent(slug); }
         function withK(u, slug){ return u + (u.indexOf('?') >= 0 ? '&' : '?') + 'k=' + encodeURIComponent(slug); }
-        var kind = form.kind || (s.keep ? 'keep' : (s.pending || s.handout ? 'director' : 'signature'));
-        var url = verUrl(form.versions && form.current && form.versions[form.current]) || form.fallbackUrl || null;
+        var kind = src.kind || (s.keep ? 'keep' : (s.pending || s.handout ? 'director' : 'signature'));
+        var url = verUrl(src.versions && src.current && src.versions[src.current]) || src.fallbackUrl || null;
         if (url === 'PENDING') url = null;
         var card = document.createElement('div');
         // KEEP — download or print, no signature; QR = storefront only= (never a file URL)
