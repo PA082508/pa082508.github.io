@@ -181,12 +181,45 @@
     return v[center] || null;
   }
 
-  fetch('enroll-registry.json?t=' + Date.now(), { cache: 'no-store' })
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (reg) {
+  // ── DB-backed packet set (?set=<uuid>) ──────────────────────────────────────
+  // A Packet-Set-Builder QR encodes a set's UUID, not a registry packet name. Resolve
+  // its composition LIVE from the database (resolve_packet_set) so the QR is permanent
+  // and archive-aware: array = compose those forms, NULL = closed/archived/wrong-center,
+  // [] = valid-but-empty. Registry packet NAMES (infant/staff/…) are untouched.
+  var SB_URL  = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
+  var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
+  var isUuidSet = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(setName);
+  function resolveSet() {
+    if (!isUuidSet || only.length) return Promise.resolve(null);   // name-set or explicit only= → skip
+    return fetch(SB_URL + '/rest/v1/rpc/resolve_packet_set', {
+      method: 'POST',
+      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+      body: JSON.stringify({ p_center_slug: center, p_set: setName })
+    }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (keys) {
+        if (keys === null) return { closed: true };                 // archived / wrong-center / unknown
+        if (!Array.isArray(keys) || !keys.length) return { empty: true };
+        return { keys: keys };
+      })
+      .catch(function () { return { error: true }; });
+  }
+
+  Promise.all([
+    fetch('enroll-registry.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }),
+    resolveSet()
+  ])
+    .then(function (res) {
+      var reg = res[0], setRes = res[1];
       if (!reg) return fail('Could not load the form list. Please try again.');
       if (!center || !(reg.centers && reg.centers[center])) return fail('Please open this packet from your center’s link or QR code.');
+      if (setRes) {
+        if (setRes.closed) return fail('This packet set is closed — please ask your center for a current link.');
+        if (setRes.empty)  return fail('This packet set has no forms yet — please ask your center for a current link.');
+        if (setRes.error)  return fail('Could not open this packet set. Please try again, or ask your center for a current link.');
+        only = setRes.keys;   // a DB set's composition flows through the same path as only=
+      }
       var pk = reg.packets && reg.packets[setName];
+      if (setRes && setRes.keys && !pk) pk = { audience: 'parent', title: 'Enrollment packet', slots: [] };
       if (!pk) return fail('This packet is not available. Please ask your center for a current link.');
 
       var cName = 'Play Academy ' + (CENTER_NAMES[center] || center);
