@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enrollment Packet — Play Academy</title>
+<style>
+  /* ============================================================
+     Parent enrollment packet — registry-driven storefront
+     v2 · 2026-07-13 · reads ?center=&set=&only= from enroll-registry.json
+     Typography standard: large form names, green accent, QR per form.
+     ============================================================ */
+  :root { --green:#0f4c35; --green2:#1a5c3f; --mint:#f0f7f4; --mint-b:#d1fae5; --ink:#14251b; --muted:#5f6b64; --line:#e3e9e4; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: #f4f6f4; color: var(--ink); padding: 22px 14px 60px; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 620px; margin: 0 auto; }
+  .head { text-align: center; margin-bottom: 22px; }
+  .k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--green2); }
+  h1 { font-size: 27px; font-weight: 800; letter-spacing: -.01em; margin: 6px 0 4px; text-wrap: balance; }
+  .sub { color: var(--muted); font-size: 13.5px; line-height: 1.5; max-width: 44ch; margin: 0 auto; }
+
+  .card { display: flex; align-items: center; gap: 15px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 13px; }
+  .num { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--green); color: var(--green); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .card.done .num { border-color: var(--green); background: var(--green); color: #fff; }
+  .info { flex: 1; min-width: 0; }
+  .info .t { font-weight: 700; font-size: 20px; letter-spacing: -.01em; line-height: 1.2; }
+  .info .d { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .right { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+  .miniqr { width: 46px; height: 46px; border: 1.5px solid var(--mint-b); border-radius: 9px; padding: 3px; background: #fff; cursor: pointer; display: block; }
+  .miniqr canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+  .open { font-size: 15px; font-weight: 800; color: #fff; background: var(--green); border: none; border-radius: 11px; padding: 11px 20px; text-decoration: none; display: inline-block; cursor: pointer; }
+  .card.done .open { background: #fff; color: var(--green); border: 1.5px solid var(--green); }
+
+  .card.handout { background: var(--mint); border-color: var(--mint-b); }
+  .card.handout .num { border-color: var(--green2); color: var(--green2); }
+  .handout-tag { font-size: 12px; font-weight: 700; color: var(--green2); background: #fff; border: 1px solid var(--mint-b); border-radius: 999px; padding: 6px 12px; }
+
+  .hint { background: var(--mint); border: 1px solid var(--mint-b); border-radius: 10px; font-size: 12.5px; color: var(--green2); padding: 11px 14px; line-height: 1.5; margin: 18px 0 14px; }
+  .lifebar { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 12px; color: #92400e; font-size: 13px; line-height: 1.5; padding: 13px 15px; margin: 0 0 18px; display: flex; gap: 12px; align-items: flex-start; }
+  .lifebar .lx { flex: 0 0 auto; background: #92400e; color: #fff; border: none; border-radius: 8px; padding: 6px 13px; font: 700 12px inherit; cursor: pointer; }
+  .actions { text-align: center; }
+  .actions button { font: inherit; font-size: 13px; padding: 8px 16px; border: 1.5px solid var(--mint-b); border-radius: 8px; background: #fff; color: var(--green2); cursor: pointer; font-weight: 600; }
+  #cleared { color: var(--green); font-size: 13px; font-weight: 700; margin-top: 8px; display: none; }
+  #msg { text-align: center; color: var(--muted); font-size: 14px; padding: 40px 10px; line-height: 1.5; }
+
+  /* full QR popup */
+  .ov { position: fixed; inset: 0; background: rgba(10,20,15,.55); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+  .ov.on { display: flex; }
+  .pop { background: #fff; border-radius: 18px; padding: 22px; max-width: 340px; width: 100%; text-align: center; box-shadow: 0 24px 70px rgba(0,0,0,.3); }
+  .pop h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .pop .u { font-size: 11px; color: var(--muted); word-break: break-all; margin: 4px 0 14px; font-family: ui-monospace, Menlo, monospace; }
+  .pop canvas { width: 240px; height: 240px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 10px; }
+  .pop .x { margin-top: 16px; font-size: 14px; font-weight: 700; color: #fff; background: var(--green); border: none; border-radius: 10px; padding: 10px 22px; cursor: pointer; }
+
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;margin:3px 0 2px;}
+  .card .badge.keepb{background:#eaf5ef;color:#0f4c35;border:1px solid #cdeadd;}
+  .card .badge.fs{background:#eef3ff;color:#1e3a8a;border:1px solid #d5e0fb;}
+  .btnrow{display:flex;gap:8px;margin-top:9px;}
+  .btn{font-size:13px;font-weight:800;text-decoration:none;padding:7px 15px;border-radius:9px;cursor:pointer;display:inline-block;}
+  .btn.dl{background:var(--green);color:#fff;}
+  .btn.pr{background:#fff;color:var(--green);border:1.5px solid var(--green);}
+  .card.keep{background:#fbfdfc;}
+  .num.keepdot{border-style:dashed;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="k" id="ctrLabel">Play Academy · Enrollment packet</div>
+    <h1 id="setTitle">Enrollment packet</h1>
+    <div class="sub" id="setSub">Complete the forms below. Start with Consent — the rest reuse your signature.</div>
+  </div>
+  <div id="list"></div>
+  <div id="msg" style="display:none"></div>
+
+  <div class="hint" id="hint">
+    Doing forms for another child? Tap &ldquo;Start new family&rdquo; first to clear the shared details.
+  </div>
+  <div class="actions">
+    <button id="btnNewFamily">Start new family</button>
+    <div id="cleared">&#10003; Shared data cleared</div>
+  </div>
+</div>
+
+<div class="ov" id="ov">
+  <div class="pop">
+    <h3 id="popTitle">Scan to open</h3>
+    <div class="u" id="popUrl"></div>
+    <canvas id="popCanvas" width="240" height="240"></canvas>
+    <br><button class="x" id="popClose">Close</button>
+  </div>
+</div>
+
+<script src="qrcodegen.js"></script>
+<script>
+(function () {
+  'use strict';
+  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 24 * 60 * 60 * 1000;   // 24h — match form-kit PK_TTL (2026-07-17)
+  var CENTER_NAMES = { ridge: 'Wickliffe', pearl: 'Parma Heights', alpha: 'Highland Heights' };
+  var SET_TITLES = { starter: 'Welcome — enrollment packet', toddler_preschool: 'Enrollment packet', infant: 'Infant enrollment packet', admission: 'Admission packet', staff: 'Welcome to the team' };
+  // Audience branding: the packet declares audience:'staff' and the page stops talking
+  // about enrolling a child. Absent = parent, so every existing packet is unchanged.
+  var AUDIENCE_COPY = {
+    staff: { crumb: 'Staff onboarding', sub: 'Complete the forms below. Start with the Consent — the rest reuses your signature.' },
+    parent: { crumb: 'Enrollment', sub: 'Complete the forms below. Start with Consent — the rest reuse your signature.' }
+  };
+
+  var qs = new URLSearchParams(location.search);
+  var center = (qs.get('center') || '').toLowerCase();
+  var setName = (qs.get('set') || 'starter').toLowerCase();
+  var only = (qs.get('only') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+
+  function show(el, on) { el.style.display = on ? '' : 'none'; }
+
+  // ── Life-of-data notice, once at the start ───────────────────────────────────
+  // The packet page is the entry point (every parent link — full set or a single
+  // only= form — lands here first), so the "kept on this device for 24h" warning
+  // belongs here, shown once. It shares form-kit's exact key (pa_fk_notice_ts) and
+  // 24h window: seen here → every form the parent opens next stays quiet. A parent
+  // who deep-links straight to a form still gets it there (the kit's own copy).
+  function lifeNotice() {
+    var KEY = 'pa_fk_notice_ts', TTL = 24 * 60 * 60 * 1000;
+    try { var ts = +localStorage.getItem(KEY); if (ts && Date.now() - ts < TTL) return; } catch (e) {}
+    var bar = document.createElement('div'); bar.className = 'lifebar';
+    var span = document.createElement('span');
+    span.innerHTML = '⏳ Your answers and signature are kept <strong>on this device for 24 hours</strong>, so you can finish later — on the same phone and browser. Nothing is sent to the center until you press <strong>Submit</strong> on a form. After a day, or on a different device, it starts fresh.';
+    var x = document.createElement('button'); x.type = 'button'; x.className = 'lx'; x.textContent = 'Got it';
+    x.addEventListener('click', function () { bar.parentNode && bar.parentNode.removeChild(bar); });
+    bar.appendChild(span); bar.appendChild(x);
+    var wrap = document.querySelector('.wrap'), head = document.querySelector('.head');
+    if (wrap && head) wrap.insertBefore(bar, head.nextSibling); else document.body.insertBefore(bar, document.body.firstChild);
+    try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}   // mark seen on show — matches the kit
+  }
+  lifeNotice();
+  function fail(text) { document.getElementById('list').innerHTML = ''; show(document.getElementById('hint'), false); document.querySelector('.actions').style.display = 'none'; var m = document.getElementById('msg'); m.textContent = text; show(m, true); }
+
+  // ---- session "done" tracking (per form key) ----
+  function packetLoad() { try { var raw = localStorage.getItem(PACKET_KEY); if (!raw) return null; var o = JSON.parse(raw); if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) { localStorage.removeItem(PACKET_KEY); return null; } return o; } catch (e) { return null; } }
+  function refreshDone() { var done = (packetLoad() || {}).done || {}; Array.prototype.forEach.call(document.querySelectorAll('.card[data-key]'), function (c) { var k = c.dataset.key, d = !!done[k]; c.classList.toggle('done', d); var num = c.querySelector('.num'); if (num) num.innerHTML = d ? '&#10003;' : c.dataset.n; var o = c.querySelector('.open'); if (o) o.textContent = d ? 'Done ✓' : 'Open'; }); }
+
+  // ---- QR (vendored qrcodegen, no external calls) ----
+  function drawQR(canvas, text, px) {
+    if (!window.qrcodegen) return;
+    var qr = qrcodegen.QrCode.encodeText(text, qrcodegen.QrCode.Ecc.MEDIUM);
+    var n = qr.size, border = 1, scale = Math.max(1, Math.floor(px / (n + border * 2))), dim = (n + border * 2) * scale;
+    canvas.width = dim; canvas.height = dim;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, dim, dim);
+    ctx.fillStyle = '#0f4c35';
+    for (var y = 0; y < n; y++) for (var x = 0; x < n; x++) if (qr.getModule(x, y)) ctx.fillRect((x + border) * scale, (y + border) * scale, scale, scale);
+  }
+  var ov = document.getElementById('ov');
+  function openQR(title, url) { document.getElementById('popTitle').textContent = title; document.getElementById('popUrl').textContent = url; drawQR(document.getElementById('popCanvas'), url, 240); ov.classList.add('on'); }
+  document.getElementById('popClose').addEventListener('click', function () { ov.classList.remove('on'); });
+  ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('on'); });
+
+  function scoped(url) { if (!url) return url; return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'center=' + encodeURIComponent(center); }
+
+  // ── Center gate ──────────────────────────────────────────────────────────────
+  // A slot may name the centers it belongs to: centers:['pearl'].  ABSENT = every
+  // center (so every existing slot is unchanged).  A slot gated away from THIS
+  // center renders as a pending card — never as a live link, because the only
+  // thing on the other side would be another center's document.
+  function gate(s) {
+    if (!s || !Array.isArray(s.centers) || !s.centers.length) return s;
+    if (s.centers.indexOf(center) >= 0) return s;
+    var g = {}; for (var k in s) if (Object.prototype.hasOwnProperty.call(s, k)) g[k] = s[k];
+    g.pending = true;
+    g.tag = s.pendingTag || 'Coming soon';
+    g.note = s.pendingNote || 'Your center’s copy is being prepared — your director will share it.';
+    delete g.keep; delete g.handout;   // no Download/Print for a file that isn't ours
+    return g;
+  }
+  // A version is either ONE url for everyone (string) or an object keyed by center
+  // slug when each center has its own copy — the Parent Handbook carries each
+  // center's address, licence and administrator, so one shared file would hand a
+  // family another center's document.
+  function verUrl(v) {
+    if (!v) return null;
+    if (typeof v === 'string') return v;
+    return v[center] || null;
+  }
+
+  // ── DB-backed packet set (?set=<uuid>) ──────────────────────────────────────
+  // A Packet-Set-Builder QR encodes a set's UUID, not a registry packet name. Resolve
+  // its composition LIVE from the database (resolve_packet_set) so the QR is permanent
+  // and archive-aware: array = compose those forms, NULL = closed/archived/wrong-center,
+  // [] = valid-but-empty. Registry packet NAMES (infant/staff/…) are untouched.
+  var SB_URL  = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
+  var SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
+  var isUuidSet = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(setName);
+  function resolveSet() {
+    if (!isUuidSet || only.length) return Promise.resolve(null);   // name-set or explicit only= → skip
+    return fetch(SB_URL + '/rest/v1/rpc/resolve_packet_set', {
+      method: 'POST',
+      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_center_slug: center, p_set: setName })
+    }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (keys) {
+        if (keys === null) return { closed: true };                 // archived / wrong-center / unknown
+        if (!Array.isArray(keys) || !keys.length) return { empty: true };
+        return { keys: keys };
+      })
+      .catch(function () { return { error: true }; });
+  }
+
+  Promise.all([
+    fetch('enroll-registry.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }),
+    resolveSet()
+  ])
+    .then(function (res) {
+      var reg = res[0], setRes = res[1];
+      if (!reg) return fail('Could not load the form list. Please try again.');
+      if (!center || !(reg.centers && reg.centers[center])) return fail('Please open this packet from your center’s link or QR code.');
+      if (setRes) {
+        if (setRes.closed) return fail('This packet set is closed — please ask your center for a current link.');
+        if (setRes.empty)  return fail('This packet set has no forms yet — please ask your center for a current link.');
+        if (setRes.error)  return fail('Could not open this packet set. Please try again, or ask your center for a current link.');
+        only = setRes.keys;   // a DB set's composition flows through the same path as only=
+      }
+      var pk = reg.packets && reg.packets[setName];
+      if (setRes && setRes.keys && !pk) pk = { audience: 'parent', title: 'Enrollment packet', slots: [] };
+      if (!pk) return fail('This packet is not available. Please ask your center for a current link.');
+
+      var cName = 'Play Academy ' + (CENTER_NAMES[center] || center);
+      var aud = AUDIENCE_COPY[pk.audience] || AUDIENCE_COPY.parent;
+      document.getElementById('ctrLabel').textContent = cName + ' · ' + aud.crumb;
+      document.getElementById('setSub').textContent = aud.sub;
+
+      // composition: director-selected (only=) OR the set default (mandatory, non-pending)
+      var slots;
+      if (only.length) {
+        // only= names FORMS, not a packet — a QR/Library link says "this form", and the
+        // scanner has no idea which set it lives in. Resolving inside one set made
+        // only= work for the 2 keys that happen to sit in `starter` and hand every
+        // other form an EMPTY packet (a Library QR for dcy_01218 did exactly that).
+        // So: take the slot definition from ANY packet that declares it (keeps label /
+        // note / keep+handout flags), else synthesise a bare slot from forms{}.
+        var pool = {};
+        Object.keys(reg.packets || {}).forEach(function (p) {
+          (reg.packets[p].slots || []).forEach(function (sl) { if (sl && sl.key && !pool[sl.key]) pool[sl.key] = sl; });
+        });
+        slots = only.map(function (k) { return pool[k] || ((reg.forms && reg.forms[k]) ? { key: k } : null); }).filter(Boolean).map(gate);
+      } else {
+        slots = pk.slots.slice()   // ZAKAZ 11: keep/pending render as their own cards
+          .filter(function (s) { return s.section !== 'if_applicable'; })
+          .map(gate);
+      }
+      if (!slots.length) return fail('This packet has no forms to show yet.');
+      // Title: a single-form only= link is not a "packet" — name the form instead.
+      document.getElementById('setTitle').textContent =
+        (only.length === 1 && slots.length === 1
+          ? (slots[0].label || (reg.forms[slots[0].key] || {}).title || 'Your form')
+          : (only.length ? 'Your forms' : (SET_TITLES[setName] || pk.title || 'Enrollment packet')));
+      try { console.debug('[packet]', setName, '· center', center, '· only', only, '· forms', slots.map(function (s) { return s.key; })); } catch (e) {}
+
+      var list = document.getElementById('list'), n = 0;
+      slots.forEach(function (s) {
+        var form = reg.forms[s.key] || {};
+        // sameAs alias (e.g. School Enrollment Regular/Full-Day → enroll): resolve the
+        // real document/version/kind from the TARGET, but keep the alias's own label and
+        // the alias key in the QR/&k (so it is one source document, two labels).
+        var src = form.sameAs ? (reg.forms[form.sameAs] || form) : form;
+        var label = s.label || form.title || s.key;
+        var note = s.note || '';
+        function onlyLink(slug){ return 'https://pa082508.github.io/parent-forms.html?center=' + encodeURIComponent(center) + '&only=' + encodeURIComponent(slug); }
+        function withK(u, slug){ return u + (u.indexOf('?') >= 0 ? '&' : '?') + 'k=' + encodeURIComponent(slug); }
+        var kind = src.kind || (s.keep ? 'keep' : (s.pending || s.handout ? 'director' : 'signature'));
+        var url = verUrl(src.versions && src.current && src.versions[src.current]) || src.fallbackUrl || null;
+        if (url === 'PENDING') url = null;
+        var card = document.createElement('div');
+        // KEEP — download or print, no signature; QR = storefront only= (never a file URL)
+        // s.pending wins over kind: kind comes from forms{} (org-wide), while pending can be
+        // set per-center by the gate. Without this a gated Keep still rendered Download/Print
+        // pointing at another center's file.
+        if (kind === 'keep' && url && !s.pending) {
+          var fileLink = scoped(url), qrLink = onlyLink(s.key);
+          card.className = 'card keep';
+          card.innerHTML = '<div class="num keepdot">&#9670;</div>'
+            + '<div class="info"><div class="t"></div><span class="badge keepb">Keep for your records</span><div class="d"></div>'
+            + '<div class="btnrow"><a class="btn dl" download>Download</a><a class="btn pr" target="_blank" rel="noreferrer">Print</a></div></div>'
+            + '<div class="right"><span class="miniqr" title="Scan to open"><canvas></canvas></span></div>';
+          card.querySelector('.t').textContent = label;
+          card.querySelector('.d').textContent = note || 'No signature needed — save or print for your information.';
+          card.querySelector('.dl').href = fileLink; card.querySelector('.pr').href = fileLink;
+          list.appendChild(card);
+          drawQR(card.querySelector('.miniqr canvas'), qrLink, 46);
+          card.querySelector('.miniqr').addEventListener('click', function(){ openQR(label, qrLink); });
+          return;
+        }
+        // DIRECTOR / pending / keep-awaiting-file — no online action
+        if (kind === 'director' || kind === 'keep' || s.pending || s.handout) {
+          card.className = 'card handout';
+          var tag = s.tag || (s.handout ? 'Given in person' : 'Director provides');
+          card.innerHTML = '<div class="num">&oplus;</div><div class="info"><div class="t"></div><div class="d"></div></div><div class="right"><span class="handout-tag"></span></div>';
+          card.querySelector('.t').textContent = label;
+          card.querySelector('.d').textContent = note || 'Your center will share this — nothing to do online yet.';
+          card.querySelector('.handout-tag').textContent = tag;
+          list.appendChild(card);
+          return;
+        }
+        // FILL & SIGN — numbered signature form; link carries &k=<slot> so form-kit marks it done on submit
+        n++;
+        var link = url ? withK(scoped(url), s.key) : null;
+        card.className = 'card'; card.dataset.key = s.key; card.dataset.n = String(n);
+        card.innerHTML = '<div class="num">' + n + '</div>'
+          + '<div class="info"><div class="t"></div><span class="badge fs">Fill &amp; sign</span><div class="d"></div></div>'
+          + '<div class="right"><span class="miniqr" title="Scan / share this form"><canvas></canvas></span>'
+          + (link ? '<a class="open" target="_blank" rel="noreferrer">Open</a>' : '') + '</div>';
+        card.querySelector('.t').textContent = label;
+        card.querySelector('.d').textContent = note;
+        if (link) { card.querySelector('.open').href = link; }
+        list.appendChild(card);
+        if (link) {
+          drawQR(card.querySelector('.miniqr canvas'), link, 46);
+          card.querySelector('.miniqr').addEventListener('click', function () { openQR(label, link); });
+        } else { card.querySelector('.miniqr').style.display = 'none'; }
+      });
+
+      refreshDone();
+      window.addEventListener('focus', refreshDone);
+      window.addEventListener('pageshow', refreshDone);
+    })
+    .catch(function () { fail('Could not load the form list. Please try again.'); });
+
+  document.getElementById('btnNewFamily').addEventListener('click', function () {
+    try { localStorage.removeItem(PACKET_KEY); } catch (e) {}
+    refreshDone();
+    var c = document.getElementById('cleared'); c.style.display = 'block';
+    setTimeout(function () { c.style.display = 'none'; }, 2500);
+  });
+})();
+</script>
+</body>
+</html>
