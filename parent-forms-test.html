@@ -193,7 +193,7 @@
     if (!isUuidSet || only.length) return Promise.resolve(null);   // name-set or explicit only= → skip
     return fetch(SB_URL + '/rest/v1/rpc/resolve_packet_set', {
       method: 'POST',
-      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': 'application/json' },
+      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
       body: JSON.stringify({ p_center_slug: center, p_set: setName })
     }).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
       .then(function (keys) {
