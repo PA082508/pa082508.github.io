@@ -36,7 +36,16 @@
   .siglock{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
     background:rgba(90,107,96,.9);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:4px;z-index:5}
   .sigclear{position:absolute;font-size:10px;padding:2px 6px;background:#c0392b;color:#fff;border:none;border-radius:4px;cursor:pointer;z-index:6}
+  /* Annual-review grid: locked on first enrollment; opened one row at a time only at
+     renewal (a personal ?t= link). The watermark says why, and never prints. */
+  .f.rvw-lock{background:rgba(200,200,200,.22);border-bottom-color:#b8c2bb;color:#8a938c;
+    cursor:not-allowed;opacity:.7}
+  .review-wm{position:absolute;left:58px;top:1255px;width:1135px;height:210px;z-index:4;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    background:rgba(90,107,96,.14);border:2px dashed rgba(90,107,96,.5);border-radius:6px;
+    color:#3f4a43;font-weight:800;font-size:20px;letter-spacing:.02em;pointer-events:none}
   @media print{
+    .review-wm{display:none!important}
     body{background:#fff}.toolbar{display:none}
     .doc{padding:0}.page{box-shadow:none;margin:0}
     .f,textarea.f{background:transparent;border:none}
@@ -133,7 +142,7 @@ var FIELDS = [
   {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
 
   {id:'parent_sig',    p:2,t:'sig', x:58,y:1015,w:780,h:56,r:1,label:'Parent signature'},
-  {id:'parent_sig_dt', p:2,t:'text',x:902,y:1020,w:291,h:34,r:1,ph:'MM/DD/YYYY',date:1},
+  {id:'parent_sig_dt', p:2,t:'text',x:902,y:1020,w:291,h:34,ph:'MM/DD/YYYY',date:1},  // NOT required: it is a STAMP, set when the parent signs (the signature itself is required)
   {id:'program_sig',   p:2,t:'sig', x:58,y:1178,w:780,h:52,label:'Program administrator signature',staff:1},
   {id:'program_sig_dt',p:2,t:'text',x:902,y:1183,w:291,h:34,ph:'MM/DD/YYYY',date:1},
 
@@ -199,9 +208,9 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
 //    parent block on both Parent #1 and Parent #2. Phone masking + autocomplete +
 //    session-packet autofill/prefill come from form-kit (type=tel / data-fk-field). ──
 (function extras(){
-  var pd=document.getElementById('f_parent_sig_dt');
-  if(pd && !pd.value){ var t=new Date();
-    pd.value=('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
+  // parent_sig_dt is NOT pre-filled on load. A date beside a signature is a STAMP, set at
+  // the moment the parent signs (stampSignatureDates, called from gate) — never typed,
+  // never back-dated. Data dates (DOB, First Day…) are unaffected.
 
   function wireSame(cbId, pfx){
     var cb=document.getElementById('f_'+cbId); if(!cb) return;
@@ -244,14 +253,93 @@ function requiredFilled(){
     .every(function(f){ return g(f.id)!==''; });
 }
 function hasInk(id){ var c=document.getElementById('f_'+id); return c && window.FormKit && FormKit.getSig && !!FormKit.getSig(c); }
+// ── "Date = signature stamp" canon (2026-07-24) ───────────────────────────────
+// A date beside a signature is a STAMP, not a field: auto-set at the moment of signing,
+// read-only, cleared with the signature. Bound STRICTLY 1:1 to its own stroke — an empty
+// signature (or empty initials) means an empty date; neighbours are never touched. Data
+// dates (DOB, First Day, effective from/to) are unaffected — they are not near a signature.
+function fmtToday(){ var t=new Date();
+  return ('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
+function stampSigDate(sigId, dtId){
+  var dt=document.getElementById('f_'+dtId); if(!dt) return;
+  dt.readOnly=true;                                   // never manual
+  dt.value = hasInk(sigId) ? (dt.value || fmtToday()) : '';   // stamp on ink, clear when erased
+}
+function stampSignatureDates(){
+  stampSigDate('parent_sig','parent_sig_dt');
+  stampSigDate('program_sig','program_sig_dt');
+}
+// Date of Review is stamped by the INITIALS in its own row (never typed), only for the row
+// being filled; the renewal-session date is "today".
+function stampReviewDate(i){
+  var init=document.getElementById('f_pg_init_'+i), dt=document.getElementById('f_pg_rev_'+i);
+  if(!init||!dt) return;
+  dt.readOnly=true;
+  dt.value = (init.value||'').trim() ? (dt.value || fmtToday()) : '';
+}
+
 function gate(){
   var reqOk = requiredFilled();
   var pLock=document.getElementById('lock_parent_sig'); if(pLock) pLock.style.display = reqOk ? 'none':'flex';
   var parentSigned = hasInk('parent_sig');
   var gLock=document.getElementById('lock_program_sig'); if(gLock) gLock.style.display = (reqOk && parentSigned) ? 'none':'flex';
+  stampSignatureDates();
 }
 document.addEventListener('mouseup', function(){ setTimeout(gate,50); });
 document.addEventListener('touchend', function(){ setTimeout(gate,50); });
+
+// ── Annual-review grid gate (п.4, 2026-07-24) ─────────────────────────────────
+// "Parent/Guardian Initials / Date of Review" accumulate ONE line per YEARLY RENEWAL,
+// signed at the review — never at first enrollment. So on a fresh (primary) form the whole
+// grid is locked + watermarked; on a renewal (a personal ?t= prefill link) the FIRST FREE
+// Parent/Guardian row opens (initials + date), prior rows stay read-only, and the
+// Administrator columns stay the director's (locked on the parent storefront). The
+// replica/print never carries the watermark. Precedent: an early submission with premature
+// initials is NOT void — this only prevents new ones (Leilani).
+var REVIEW_PG  = ['pg_init_1','pg_rev_1','pg_init_2','pg_rev_2','pg_init_3','pg_rev_3'];
+var REVIEW_ADM = ['adm_init_1','adm_rev_1','adm_init_2','adm_rev_2','adm_init_3','adm_rev_3'];
+function isRenewal(){ try{ return new URLSearchParams(location.search).has('t'); }catch(_){ return false; } }
+function lockReviewEl(el, locked){
+  if(!el) return;
+  el.readOnly = !!locked;
+  if(locked){ el.classList.add('rvw-lock'); el.tabIndex = -1; }
+  else { el.classList.remove('rvw-lock'); el.removeAttribute('tabindex'); }
+}
+function firstFreePgRow(){
+  for(var i=1;i<=3;i++){ var e=document.getElementById('f_pg_init_'+i); if(e && !(e.value||'').trim()) return i; }
+  return 0;   // all three filled → none open
+}
+function ensureReviewWatermark(){
+  if(document.getElementById('review-wm')) return;
+  var p2=document.getElementById('page2'); if(!p2) return;
+  var wm=document.createElement('div'); wm.id='review-wm'; wm.className='review-wm';
+  wm.textContent='Annual review — completed at yearly renewal';
+  p2.appendChild(wm);
+}
+function gateReviewRows(){
+  ensureReviewWatermark();
+  REVIEW_ADM.forEach(function(id){ lockReviewEl(document.getElementById('f_'+id), true); });
+  var wm=document.getElementById('review-wm');
+  if(!isRenewal()){
+    REVIEW_PG.forEach(function(id){ lockReviewEl(document.getElementById('f_'+id), true); });
+    for(var j=1;j<=3;j++){ stampReviewDate(j); }        // empty on a primary form
+    if(wm) wm.style.display='flex';
+  } else {
+    var open=firstFreePgRow();
+    for(var i=1;i<=3;i++){
+      lockReviewEl(document.getElementById('f_pg_init_'+i), i!==open);  // only the open row's initials type
+      lockReviewEl(document.getElementById('f_pg_rev_'+i), true);       // the date is a STAMP, never typed
+      stampReviewDate(i);
+    }
+    var oi=document.getElementById('f_pg_init_'+open);
+    if(oi && !oi._stampBound){ oi._stampBound=true; oi.addEventListener('input', function(){ stampReviewDate(open); }); }
+    if(wm) wm.style.display='none';
+  }
+}
+gateReviewRows();
+// Re-run after async prefill (a ?t= link fills fields shortly after load) so "first free
+// row" reflects any prior years the token carried.
+window.addEventListener('load', function(){ setTimeout(gateReviewRows, 400); setTimeout(gateReviewRows, 1200); });
 
 function dcyReset(){
   FIELDS.forEach(function(f){
