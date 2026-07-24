@@ -233,7 +233,7 @@
       "history": [
         {
           "at": "2026-07-24",
-          "note": "FLIP current v3 → v4 — date = signature STAMP (auto-set at the moment of signing, read-only, cleared with the signature, bound 1:1; data dates DOB untouched) + TYPED autograph beside Draw (3 script faces, records signature_method/signature_typed_value) + FKPad 'draw-big / fits-small' pad for the 52px overlay signature slot (bounding-box scale-to-fit, clipped to slot, no spill; slot direct-draw disabled). form-kit.js untouched so ?v= stays 11; no replica (USDA has none) so no replica-sync. Playwright: typed & drawn via pad fit within slot bounds, date stamps read-only, drawn-path date-stamp regression green. Deploy markers: PENDING."
+          "note": "FLIP current v3 → v4 — date = signature STAMP (auto-set at the moment of signing, read-only, cleared with the signature, bound 1:1; data dates DOB untouched) + TYPED autograph beside Draw (3 script faces, records signature_method/signature_typed_value) + FKPad 'draw-big / fits-small' pad for the 52px overlay signature slot (bounding-box scale-to-fit, clipped to slot, no spill; slot direct-draw disabled). form-kit.js untouched so ?v= stays 11; no replica (USDA has none) so no replica-sync. Playwright: typed & drawn via pad fit within slot bounds, date stamps read-only, drawn-path date-stamp regression green. Deploy markers: Pages 5e03159 · app 2fea4b3 (merged + verified live 2026-07-24: form 200 w/ v4 markers, registry current=v4 on both, mirrors IDENTICAL)."
         },
         {
           "at": "2026-07-18",
