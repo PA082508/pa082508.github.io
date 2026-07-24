@@ -142,7 +142,7 @@ var FIELDS = [
   {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
 
   {id:'parent_sig',    p:2,t:'sig', x:58,y:1015,w:780,h:56,r:1,label:'Parent signature'},
-  {id:'parent_sig_dt', p:2,t:'text',x:902,y:1020,w:291,h:34,r:1,ph:'MM/DD/YYYY',date:1},
+  {id:'parent_sig_dt', p:2,t:'text',x:902,y:1020,w:291,h:34,ph:'MM/DD/YYYY',date:1},  // NOT required: it is a STAMP, set when the parent signs (the signature itself is required)
   {id:'program_sig',   p:2,t:'sig', x:58,y:1178,w:780,h:52,label:'Program administrator signature',staff:1},
   {id:'program_sig_dt',p:2,t:'text',x:902,y:1183,w:291,h:34,ph:'MM/DD/YYYY',date:1},
 
@@ -208,9 +208,9 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
 //    parent block on both Parent #1 and Parent #2. Phone masking + autocomplete +
 //    session-packet autofill/prefill come from form-kit (type=tel / data-fk-field). ──
 (function extras(){
-  var pd=document.getElementById('f_parent_sig_dt');
-  if(pd && !pd.value){ var t=new Date();
-    pd.value=('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
+  // parent_sig_dt is NOT pre-filled on load. A date beside a signature is a STAMP, set at
+  // the moment the parent signs (stampSignatureDates, called from gate) — never typed,
+  // never back-dated. Data dates (DOB, First Day…) are unaffected.
 
   function wireSame(cbId, pfx){
     var cb=document.getElementById('f_'+cbId); if(!cb) return;
@@ -253,11 +253,37 @@ function requiredFilled(){
     .every(function(f){ return g(f.id)!==''; });
 }
 function hasInk(id){ var c=document.getElementById('f_'+id); return c && window.FormKit && FormKit.getSig && !!FormKit.getSig(c); }
+// ── "Date = signature stamp" canon (2026-07-24) ───────────────────────────────
+// A date beside a signature is a STAMP, not a field: auto-set at the moment of signing,
+// read-only, cleared with the signature. Bound STRICTLY 1:1 to its own stroke — an empty
+// signature (or empty initials) means an empty date; neighbours are never touched. Data
+// dates (DOB, First Day, effective from/to) are unaffected — they are not near a signature.
+function fmtToday(){ var t=new Date();
+  return ('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
+function stampSigDate(sigId, dtId){
+  var dt=document.getElementById('f_'+dtId); if(!dt) return;
+  dt.readOnly=true;                                   // never manual
+  dt.value = hasInk(sigId) ? (dt.value || fmtToday()) : '';   // stamp on ink, clear when erased
+}
+function stampSignatureDates(){
+  stampSigDate('parent_sig','parent_sig_dt');
+  stampSigDate('program_sig','program_sig_dt');
+}
+// Date of Review is stamped by the INITIALS in its own row (never typed), only for the row
+// being filled; the renewal-session date is "today".
+function stampReviewDate(i){
+  var init=document.getElementById('f_pg_init_'+i), dt=document.getElementById('f_pg_rev_'+i);
+  if(!init||!dt) return;
+  dt.readOnly=true;
+  dt.value = (init.value||'').trim() ? (dt.value || fmtToday()) : '';
+}
+
 function gate(){
   var reqOk = requiredFilled();
   var pLock=document.getElementById('lock_parent_sig'); if(pLock) pLock.style.display = reqOk ? 'none':'flex';
   var parentSigned = hasInk('parent_sig');
   var gLock=document.getElementById('lock_program_sig'); if(gLock) gLock.style.display = (reqOk && parentSigned) ? 'none':'flex';
+  stampSignatureDates();
 }
 document.addEventListener('mouseup', function(){ setTimeout(gate,50); });
 document.addEventListener('touchend', function(){ setTimeout(gate,50); });
@@ -296,14 +322,17 @@ function gateReviewRows(){
   var wm=document.getElementById('review-wm');
   if(!isRenewal()){
     REVIEW_PG.forEach(function(id){ lockReviewEl(document.getElementById('f_'+id), true); });
+    for(var j=1;j<=3;j++){ stampReviewDate(j); }        // empty on a primary form
     if(wm) wm.style.display='flex';
   } else {
     var open=firstFreePgRow();
     for(var i=1;i<=3;i++){
-      var lock = (i!==open);
-      lockReviewEl(document.getElementById('f_pg_init_'+i), lock);
-      lockReviewEl(document.getElementById('f_pg_rev_'+i), lock);
+      lockReviewEl(document.getElementById('f_pg_init_'+i), i!==open);  // only the open row's initials type
+      lockReviewEl(document.getElementById('f_pg_rev_'+i), true);       // the date is a STAMP, never typed
+      stampReviewDate(i);
     }
+    var oi=document.getElementById('f_pg_init_'+open);
+    if(oi && !oi._stampBound){ oi._stampBound=true; oi.addEventListener('input', function(){ stampReviewDate(open); }); }
     if(wm) wm.style.display='none';
   }
 }
