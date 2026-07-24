@@ -17,13 +17,14 @@
       "sameAs": "enroll"
     },
     "enroll": {
-      "current": "v9",
+      "current": "v10",
       "versions": {
         "v7": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v7.html",
         "v8": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v8.html",
-        "v9": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v9.html"
+        "v9": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v9.html",
+        "v10": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v10.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v9.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/CACFP_Enrollment_v10.html",
       "submissionType": "cacfp_enrollment",
       "slug": "enroll",
       "title": "CACFP Enrollment",
@@ -35,7 +36,12 @@
       "signer": "parent",
       "badge": "Paper + scan (online available)",
       "perInstance": false,
-      "history": []
+      "history": [
+        {
+          "at": "2026-07-24",
+          "note": "FLIP current v9 → v10 — date = signature STAMP (f_sig_date bound to f_parent_sig, auto on signing, read-only, cleared with the signature, bound 1:1, re-runs calcExp; data dates DOB untouched) + TYPED autograph beside Draw (3 script faces, records signature_method/signature_typed_value) + FKPad draw-big/fits-small pad for the tiny 25px overlay signature slot (a hand can't fit in 25px; the pad captures big, bbox scale-to-fit downscaled into the slot, CLIPPED so nothing spills onto the official scan; slot direct-draw disabled). f_parent_sig data-fk-adopt preserved. v9 kept historical. form-kit.js untouched so ?v= stays 11; no replica. Playwright: FKPad type/draw fit within the 25px slot bounds + f_sig_date stamps read-only, drawn-path regression green. CLOSES the coverage: all live signing kits now carry date-stamp + typed (+FKPad where the slot is narrow). Deploy markers: PENDING."
+        }
+      ]
     },
     "iea": {
       "scope": "family",
