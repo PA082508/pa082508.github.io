@@ -266,18 +266,24 @@
       "slug": "parent_consent",
       "title": "Parent Consent for Electronic Signatures",
       "requiringOrg": "Play Academy",
-      "current": "v2",
+      "current": "v3",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v1.html",
-        "v2": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v2.html"
+        "v2": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v2.html",
+        "v3": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v3.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v2.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v3.html",
       "submissionType": "parent_consent",
       "intakeMode": "online",
       "signer": "parent",
       "adoptsSignature": true,
       "perInstance": false,
-      "history": []
+      "history": [
+        {
+          "at": "2026-07-24",
+          "note": "FLIP current v2 → v3 — v3 = live v2 (carries data-fk-mint / data-fk-mint-name=#parent_name for role-scoped signature-sample adoption — PRESERVED, dropping it would regress scoping) + date = signature STAMP (auto on signing, read-only, cleared with the signature, bound 1:1; data dates untouched) + TYPED autograph upgraded from 1 face to 3 script faces (records signature_method/signature_typed_value). Inline (90px consent slot, no FKPad). v1 & v2 kept historical. form-kit.js untouched so ?v= stays 11; no replica. Playwright: mint present, typed inked + method typed, date stamps read-only, drawn-path regression green. Deploy markers: PENDING."
+        }
+      ]
     },
     "dcy_01218": {
       "slug": "dcy_01218",
