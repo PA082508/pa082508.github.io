@@ -79,14 +79,19 @@
       "requiringOrg": "ODJFS/DCY",
       "intakeMode": "paper_scan",
       "signer": "parent",
-      "current": "v6",
+      "current": "v7",
       "versions": {
         "v2026pdf": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01234_Child-Enrollment_2026.PDF",
-        "v6": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v6.html"
+        "v6": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v6.html",
+        "v7": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v7.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v6.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01234_v7.html",
       "perInstance": false,
       "history": [
+        {
+          "at": "2026-07-24",
+          "note": "FLIP current v6 → v7 — PARENT-signature parity on the storefront: TYPED autograph (3 script faces) + FKPad draw-big/fits-small pad on the parent slot (f_parent_sig, 56px overlay; bbox scale-to-fit clipped; slot direct-draw disabled; the attestation siglock doubles as the 'Tap to sign' affordance, so the gate is respected — blocked until required fields are filled). Records signature_method/signature_typed_value. The PROGRAM (director) slot is unchanged (director countersigns in-app). Date-stamp + review-row renewal gate already live in v6 — UNTOUCHED. f_parent_sig data-fk-adopt preserved. form-kit.js untouched so ?v= stays 11. REPLICA SYNC: the app replica DCY_01234_v7_original.html reproduces this kit's layout — coordinates unchanged (typed/FKPad are input-only, parent_sig stays 58,1015,780,56), so the read-only replica renders a typed parent signature identically (it is an image); replica origin-header edition note aligned v6→v7. v6 kept historical. Playwright: parent FKPad type/draw fit in slot + date stamps, gate respected, program untouched, collect records method/typed_value. Deploy markers: PENDING."
+        },
         {
           "at": "2026-07-10",
           "note": "Interim: repointed current to the official 2026 PDF (Rev. 7/2026); retired childcare-core-bound v4/v1 to _archive. Stage 2 replaces with a form-kit fillable."

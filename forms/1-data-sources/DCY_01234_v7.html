@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DCY 01234 — Child Enrollment (Rev. 7/2026) · fillable</title>
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  /* ===================================================================
+     DCY 01234 (Rev. 7/2026) — OVERLAY fillable.
+     Inputs are absolutely positioned over the official ODCY background
+     scans (1275×1650 @150dpi, letter). Print must be indistinguishable
+     from the official form → the scan IS the layout; we only add fields.
+     Coordinates are a FIRST PASS for Nikolay's 1:1 sverka — tune FIELDS[].
+     =================================================================== */
+  :root{ --line:#0066cc; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#5a6b60;font-family:Arial,Helvetica,sans-serif}
+  .toolbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #dbe4dd;
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 16px}
+  .toolbar .btn{font:inherit;font-size:13px;font-weight:700;border:none;border-radius:8px;padding:9px 16px;cursor:pointer}
+  .btn.p{background:#0f4c35;color:#fff}.btn.g{background:#eef2ef;color:#0f4c35;border:1px solid #cfe0d5}
+  #st{font-size:13px;font-weight:600}
+  .doc{padding:20px 0 60px}
+  .page{position:relative;width:1275px;height:1650px;margin:0 auto 20px;background:#fff no-repeat;
+    background-size:1275px 1650px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+  .page.p1{background-image:url("DCY01234_2026_page-1.png")}
+  .page.p2{background-image:url("DCY01234_2026_page-2.png")}
+  .f{position:absolute;font-family:Arial,sans-serif;font-size:15px;color:#111;
+    background:rgba(255,253,150,0.55);border:none;border-bottom:1.5px solid var(--line);
+    padding:1px 4px;outline:none}
+  .f:focus{background:rgba(255,246,120,0.8)}
+  textarea.f{background:rgba(255,253,150,0.4);border:1px dashed var(--line);resize:none;line-height:1.35;padding:3px 5px}
+  .cb{position:absolute;width:18px;height:18px;margin:0;accent-color:#0f4c35;cursor:pointer}
+  .sig{position:absolute;background:rgba(210,235,255,0.35);border:1.5px dashed #0f4c35;border-radius:4px;cursor:crosshair;display:block}
+  .siglock{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
+    background:rgba(90,107,96,.9);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:4px;z-index:5}
+  .sigclear{position:absolute;font-size:10px;padding:2px 6px;background:#c0392b;color:#fff;border:none;border-radius:4px;cursor:pointer;z-index:6}
+  /* Annual-review grid: locked on first enrollment; opened one row at a time only at
+     renewal (a personal ?t= link). The watermark says why, and never prints. */
+  .f.rvw-lock{background:rgba(200,200,200,.22);border-bottom-color:#b8c2bb;color:#8a938c;
+    cursor:not-allowed;opacity:.7}
+  .review-wm{position:absolute;left:58px;top:1255px;width:1135px;height:210px;z-index:4;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    background:rgba(90,107,96,.14);border:2px dashed rgba(90,107,96,.5);border-radius:6px;
+    color:#3f4a43;font-weight:800;font-size:20px;letter-spacing:.02em;pointer-events:none}
+  @media print{
+    .review-wm{display:none!important}
+    body{background:#fff}.toolbar{display:none}
+    .doc{padding:0}.page{box-shadow:none;margin:0}
+    .f,textarea.f{background:transparent;border:none}
+    .siglock{display:none}.sigclear{display:none}.sig{background:transparent;border:none}
+    @page{size:8.5in 11in;margin:0}
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <select id="ctr">
+    <option value="">— Select center —</option>
+    <option value="pearl">Play Academy Parma Heights</option>
+    <option value="alpha">Play Academy Highland Heights</option>
+    <option value="ridge">Play Academy Wickliffe</option>
+  </select>
+  <button class="btn p" data-formkit="submit">✔ Submit</button>
+  <button class="btn g" onclick="window.print()">🖨 Print</button>
+  <button class="btn g" onclick="dcyReset()">✕ Clear</button>
+  <span id="st" data-formkit="status"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="doc">
+  <div class="page p1" id="page1"></div>
+  <div class="page p2" id="page2"></div>
+</div>
+
+<script>
+/* ── Field map (FIRST PASS coordinates on 1275×1650). Tune x/y/w/h during sverka. ──
+   t: 'text'|'area'|'cb'|'sig'  · p: page 1|2 · r: required · fk: session-packet key   */
+var FIELDS = [
+  // ── PAGE 1 ──────────────────────────────────────────────────────────────────
+  {id:'child_name', p:1,t:'text',x:58,y:255,w:560,h:34,fk:'child_name',r:1},
+  {id:'dob',        p:1,t:'text',x:652,y:255,w:258,h:34,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1},
+  {id:'first_day',  p:1,t:'text',x:938,y:255,w:270,h:34,r:1,ph:'MM/DD/YYYY',date:1},
+  {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1,addr:1},
+  {id:'city',       p:1,t:'text',x:58,y:410,w:575,h:32,fk:'city',r:1},
+  {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1,ac:'address-level1'},
+  {id:'zip',        p:1,t:'text',x:948,y:410,w:248,h:32,fk:'zip',r:1},
+
+  {id:'p1_name',    p:1,t:'text',x:58,y:485,w:560,h:32,fk:'parent_name',r:1},
+  {id:'p1_phone',   p:1,t:'text',x:652,y:485,w:556,h:32,r:1,tel:1},
+  {id:'p1_same',    p:1,t:'cb',  x:219,y:521},
+  {id:'p1_address', p:1,t:'text',x:58,y:566,w:560,h:26},
+  {id:'p1_city',    p:1,t:'text',x:658,y:558,w:295,h:28},
+  {id:'p1_state',   p:1,t:'text',x:965,y:558,w:88,h:28,ac:'address-level1'},
+  {id:'p1_zip',     p:1,t:'text',x:1094,y:558,w:106,h:28},
+  {id:'p1_email',   p:1,t:'text',x:58,y:630,w:575,h:28,fk:'parent_email'},
+  {id:'p1_cell',    p:1,t:'text',x:658,y:630,w:550,h:28,tel:1},
+  {id:'p1_work',    p:1,t:'text',x:58,y:705,w:575,h:28},
+  {id:'p1_work_ph', p:1,t:'text',x:658,y:705,w:550,h:28,tel:1},
+
+  {id:'p2_na',      p:1,t:'cb',  x:60,y:787},
+  {id:'p2_name',    p:1,t:'text',x:180,y:777,w:438,h:32},
+  {id:'p2_phone',   p:1,t:'text',x:652,y:777,w:556,h:32,tel:1},
+  {id:'p2_same',    p:1,t:'cb',  x:212,y:817},
+  {id:'p2_address', p:1,t:'text',x:58,y:860,w:560,h:26},
+  {id:'p2_city',    p:1,t:'text',x:658,y:852,w:295,h:28},
+  {id:'p2_state',   p:1,t:'text',x:965,y:852,w:88,h:28,ac:'address-level1'},
+  {id:'p2_zip',     p:1,t:'text',x:1094,y:852,w:106,h:28},
+  {id:'p2_email',   p:1,t:'text',x:58,y:924,w:575,h:28},
+  {id:'p2_cell',    p:1,t:'text',x:658,y:924,w:550,h:28,tel:1},
+  {id:'p2_work',    p:1,t:'text',x:58,y:999,w:575,h:28},
+  {id:'p2_work_ph', p:1,t:'text',x:658,y:999,w:550,h:28,tel:1},
+
+  {id:'ec1_name',   p:1,t:'text',x:58,y:1084,w:560,h:22,r:1},
+  {id:'ec2_na',     p:1,t:'cb',  x:661,y:1091},
+  {id:'ec2_name',   p:1,t:'text',x:812,y:1090,w:396,h:20},
+  {id:'ec1_phone',  p:1,t:'text',x:58,y:1140,w:560,h:20,r:1,tel:1},
+  {id:'ec2_phone',  p:1,t:'text',x:658,y:1140,w:550,h:20,tel:1},
+  {id:'ec1_other',  p:1,t:'text',x:322,y:1190,w:316,h:22},
+  {id:'ec2_other',  p:1,t:'text',x:922,y:1190,w:300,h:22},
+  {id:'ec1_rel_y',  p:1,t:'cb',  x:60,y:1274,excl:'ec1_rel'},
+  {id:'ec1_rel_n',  p:1,t:'cb',  x:60,y:1297,excl:'ec1_rel'},
+  {id:'ec2_rel_y',  p:1,t:'cb',  x:661,y:1274,excl:'ec2_rel'},
+  {id:'ec2_rel_n',  p:1,t:'cb',  x:661,y:1297,excl:'ec2_rel'},
+  {id:'health_y',   p:1,t:'cb',  x:60,y:1433,excl:'health'},
+  {id:'health_n',   p:1,t:'cb',  x:60,y:1456,excl:'health'},
+
+  // ── PAGE 2 ──────────────────────────────────────────────────────────────────
+  {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name',r:1},
+  {id:'dob2',       p:2,t:'text',x:892,y:130,w:301,h:36,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1},
+  {id:'development',p:2,t:'area',x:58,y:228,w:1150,h:22},
+  {id:'na_dev',     p:2,t:'cb',  x:62,y:270},
+  {id:'accommod',   p:2,t:'area',x:58,y:322,w:1150,h:38},
+  {id:'na_acc',     p:2,t:'cb',  x:62,y:372},
+  {id:'svc_y',      p:2,t:'cb',  x:64,y:452,excl:'svc'},
+  {id:'svc_n',      p:2,t:'cb',  x:62,y:478,excl:'svc'},
+  {id:'svc_provider',p:2,t:'text',x:58,y:558,w:1150,h:16},
+  {id:'na_svc',     p:2,t:'cb',  x:62,y:581},
+  {id:'trans_yes',  p:2,t:'cb',  x:62,y:646,excl:'transport'},
+  {id:'trans_no',   p:2,t:'cb',  x:62,y:751,excl:'transport'},
+  {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
+
+  {id:'parent_sig',    p:2,t:'sig', x:58,y:1015,w:780,h:56,r:1,label:'Parent signature'},
+  {id:'parent_sig_dt', p:2,t:'text',x:902,y:1020,w:291,h:34,ph:'MM/DD/YYYY',date:1},  // NOT required: it is a STAMP, set when the parent signs (the signature itself is required)
+  {id:'program_sig',   p:2,t:'sig', x:58,y:1178,w:780,h:52,label:'Program administrator signature',staff:1},
+  {id:'program_sig_dt',p:2,t:'text',x:902,y:1183,w:291,h:34,ph:'MM/DD/YYYY',date:1},
+
+  {id:'pg_init_1',p:2,t:'text',x:58,y:1268,w:255,h:26},{id:'pg_rev_1',p:2,t:'text',x:335,y:1268,w:228,h:26,date:1},
+  {id:'adm_init_1',p:2,t:'text',x:572,y:1268,w:290,h:26},{id:'adm_rev_1',p:2,t:'text',x:885,y:1268,w:308,h:26,date:1},
+  {id:'pg_init_2',p:2,t:'text',x:58,y:1348,w:255,h:26},{id:'pg_rev_2',p:2,t:'text',x:335,y:1348,w:228,h:26,date:1},
+  {id:'adm_init_2',p:2,t:'text',x:572,y:1348,w:290,h:26},{id:'adm_rev_2',p:2,t:'text',x:885,y:1348,w:308,h:26,date:1},
+  {id:'pg_init_3',p:2,t:'text',x:58,y:1428,w:255,h:26},{id:'pg_rev_3',p:2,t:'text',x:335,y:1428,w:228,h:26,date:1},
+  {id:'adm_init_3',p:2,t:'text',x:572,y:1428,w:290,h:26},{id:'adm_rev_3',p:2,t:'text',x:885,y:1428,w:308,h:26,date:1},
+];
+
+function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkbox'?(e.checked?'Yes':''):(e.value||'').trim()):''}
+
+// ── Render fields over the page scans ─────────────────────────────────────────
+(function render(){
+  var pg = {1:document.getElementById('page1'), 2:document.getElementById('page2')};
+  FIELDS.forEach(function(f){
+    var host = pg[f.p], el;
+    if(f.t==='cb'){
+      el=document.createElement('input'); el.type='checkbox'; el.className='cb';
+      el.style.left=f.x+'px'; el.style.top=f.y+'px';
+      if(f.excl) el.setAttribute('data-fk-exclusive',f.excl);   // form-kit initExclusive: Yes/No & has/hasn't pairs
+    } else if(f.t==='area'){
+      el=document.createElement('textarea'); el.className='f';
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+    } else if(f.t==='sig'){
+      el=document.createElement('canvas'); el.className='sig'; el.width=f.w; el.height=f.h;
+      el.setAttribute('data-formkit','signature');
+      if(!f.staff) el.setAttribute('data-fk-adopt','');   // ZAKAZ 9: parent sig adopts the consent sample; program (staff) sig does not
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      if(f.r){el.setAttribute('data-required','');el.setAttribute('data-label',f.label||f.id);}
+      if(f.id==='parent_sig') el.style.pointerEvents='none';   // parent signs via FKPad (draw-big/fits-small), never tiny direct-draw
+      // clear button
+      var cb=document.createElement('button');cb.type='button';cb.className='sigclear';cb.textContent='✕';
+      cb.style.left=(f.x+f.w-22)+'px';cb.style.top=(f.y+2)+'px';
+      cb.onclick=(function(fid,cel){return function(){FormKit.clearSig(cel);if(fid==='parent_sig'&&window.__fkTyped)window.__fkTyped.f_parent_sig={method:'drawn',name:''};gate();};})(f.id,el);
+      host.appendChild(cb);
+      // lock overlay (attestation-gate)
+      var lock=document.createElement('div');lock.className='siglock';lock.id='lock_'+f.id;
+      lock.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      lock.textContent = f.staff ? 'Program review — after the parent signs' : 'Complete the required fields first';
+      host.appendChild(lock);
+    } else {
+      el=document.createElement('input'); el.type=f.tel?'tel':'text'; el.className='f';
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      if(f.ph) el.placeholder=f.ph;
+      if(f.tel) el.setAttribute('autocomplete','tel');   // form-kit initPhones masks type=tel
+      if(f.ac)  el.setAttribute('autocomplete',f.ac);
+      if(f.date) el.setAttribute('data-fk-date','1');    // form-kit initDates: MM/DD/YYYY mask + popup calendar
+      if(f.addr){ el.setAttribute('data-fk-address','1'); el.setAttribute('data-fk-addr-state','f_state'); } // initAddress: city/zip via fk, state explicit
+    }
+    el.id='f_'+f.id;
+    if(f.fk) el.setAttribute('data-fk-field',f.fk);
+    if(f.r && f.t!=='sig'){ el.setAttribute('data-required',''); el.setAttribute('data-label',f.id); }
+    host.appendChild(el);
+    if(f.t==='text'||f.t==='area') el.addEventListener('input',gate);
+    if(f.t==='cb') el.addEventListener('change',gate);
+  });
+  gate();
+})();
+
+// ── Speed-standard additions (additive JS, packet kit standard): today-default on
+//    the parent sign date + "Same as Child's" auto-copies the child address into a
+//    parent block on both Parent #1 and Parent #2. Phone masking + autocomplete +
+//    session-packet autofill/prefill come from form-kit (type=tel / data-fk-field). ──
+(function extras(){
+  // parent_sig_dt is NOT pre-filled on load. A date beside a signature is a STAMP, set at
+  // the moment the parent signs (stampSignatureDates, called from gate) — never typed,
+  // never back-dated. Data dates (DOB, First Day…) are unaffected.
+
+  function wireSame(cbId, pfx){
+    var cb=document.getElementById('f_'+cbId); if(!cb) return;
+    var map=[['address',pfx+'_address'],['city',pfx+'_city'],['state',pfx+'_state'],['zip',pfx+'_zip']];
+    cb.addEventListener('change',function(){
+      map.forEach(function(pair){
+        var src=document.getElementById('f_'+pair[0]), dst=document.getElementById('f_'+pair[1]);
+        if(!dst) return;
+        dst.value = cb.checked ? (src?src.value:'') : '';
+        dst.readOnly = cb.checked;
+        dst.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      gate();
+    });
+  }
+  // Parent #2 "Not Applicable" → disable + clear the whole P2 block (incl. unchecking
+  // Same as Child's and wiping any copied address), so N/A can't coexist with data.
+  function wireNA(){
+    var na=document.getElementById('f_p2_na'); if(!na) return;
+    var ids=['p2_name','p2_phone','p2_same','p2_address','p2_city','p2_state','p2_zip','p2_email','p2_cell','p2_work','p2_work_ph'];
+    na.addEventListener('change',function(){
+      var off=na.checked;
+      ids.forEach(function(id){ var e=document.getElementById('f_'+id); if(!e) return;
+        if(off){ if(e.type==='checkbox') e.checked=false; else { e.value=''; e.readOnly=false; } e.disabled=true; e.style.opacity='0.4'; }
+        else { e.disabled=false; e.style.opacity=''; }
+      });
+      gate();
+    });
+  }
+  wireSame('p1_same','p1');
+  wireSame('p2_same','p2');
+  wireNA();
+  gate();
+})();
+
+// ── Attestation-gate: signatures unlock only after the required gate closes; the
+//    Program acknowledgement (staff) unlocks only after the parent has signed. ──
+function requiredFilled(){
+  return FIELDS.filter(function(f){return f.r && f.t!=='sig';})
+    .every(function(f){ return g(f.id)!==''; });
+}
+function hasInk(id){ var c=document.getElementById('f_'+id); return c && window.FormKit && FormKit.getSig && !!FormKit.getSig(c); }
+// ── "Date = signature stamp" canon (2026-07-24) ───────────────────────────────
+// A date beside a signature is a STAMP, not a field: auto-set at the moment of signing,
+// read-only, cleared with the signature. Bound STRICTLY 1:1 to its own stroke — an empty
+// signature (or empty initials) means an empty date; neighbours are never touched. Data
+// dates (DOB, First Day, effective from/to) are unaffected — they are not near a signature.
+function fmtToday(){ var t=new Date();
+  return ('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
+function stampSigDate(sigId, dtId){
+  var dt=document.getElementById('f_'+dtId); if(!dt) return;
+  dt.readOnly=true;                                   // never manual
+  dt.value = hasInk(sigId) ? (dt.value || fmtToday()) : '';   // stamp on ink, clear when erased
+}
+function stampSignatureDates(){
+  stampSigDate('parent_sig','parent_sig_dt');
+  stampSigDate('program_sig','program_sig_dt');
+}
+// Date of Review is stamped by the INITIALS in its own row (never typed), only for the row
+// being filled; the renewal-session date is "today".
+function stampReviewDate(i){
+  var init=document.getElementById('f_pg_init_'+i), dt=document.getElementById('f_pg_rev_'+i);
+  if(!init||!dt) return;
+  dt.readOnly=true;
+  dt.value = (init.value||'').trim() ? (dt.value || fmtToday()) : '';
+}
+
+window.__stampSigDates = stampSignatureDates;   // FKPad calls this after committing a signature
+function openParentPad(){ if(window.FKPad) FKPad.open('f_parent_sig',{name:(document.getElementById('f_p1_name')||{}).value||'',title:'Parent signature'}); }
+function gate(){
+  var reqOk = requiredFilled();
+  var parentSigned = hasInk('parent_sig');
+  // The parent's siglock doubles as the sign affordance: blocked until required fields are
+  // filled, then it becomes "tap to sign" (opens the big pad — draw or type); hidden once signed.
+  var pLock=document.getElementById('lock_parent_sig');
+  if(pLock){
+    if(parentSigned){ pLock.style.display='none'; pLock.onclick=null; }
+    else if(!reqOk){ pLock.style.display='flex'; pLock.textContent='Complete the required fields first'; pLock.classList.remove('siglock-go'); pLock.onclick=null; }
+    else { pLock.style.display='flex'; pLock.textContent='✍ Tap to sign — draw big or type'; pLock.classList.add('siglock-go'); pLock.onclick=openParentPad; }
+  }
+  var gLock=document.getElementById('lock_program_sig'); if(gLock) gLock.style.display = (reqOk && parentSigned) ? 'none':'flex';
+  stampSignatureDates();
+}
+document.addEventListener('mouseup', function(){ setTimeout(gate,50); });
+document.addEventListener('touchend', function(){ setTimeout(gate,50); });
+
+// ── Annual-review grid gate (п.4, 2026-07-24) ─────────────────────────────────
+// "Parent/Guardian Initials / Date of Review" accumulate ONE line per YEARLY RENEWAL,
+// signed at the review — never at first enrollment. So on a fresh (primary) form the whole
+// grid is locked + watermarked; on a renewal (a personal ?t= prefill link) the FIRST FREE
+// Parent/Guardian row opens (initials + date), prior rows stay read-only, and the
+// Administrator columns stay the director's (locked on the parent storefront). The
+// replica/print never carries the watermark. Precedent: an early submission with premature
+// initials is NOT void — this only prevents new ones (Leilani).
+var REVIEW_PG  = ['pg_init_1','pg_rev_1','pg_init_2','pg_rev_2','pg_init_3','pg_rev_3'];
+var REVIEW_ADM = ['adm_init_1','adm_rev_1','adm_init_2','adm_rev_2','adm_init_3','adm_rev_3'];
+function isRenewal(){ try{ return new URLSearchParams(location.search).has('t'); }catch(_){ return false; } }
+function lockReviewEl(el, locked){
+  if(!el) return;
+  el.readOnly = !!locked;
+  if(locked){ el.classList.add('rvw-lock'); el.tabIndex = -1; }
+  else { el.classList.remove('rvw-lock'); el.removeAttribute('tabindex'); }
+}
+function firstFreePgRow(){
+  for(var i=1;i<=3;i++){ var e=document.getElementById('f_pg_init_'+i); if(e && !(e.value||'').trim()) return i; }
+  return 0;   // all three filled → none open
+}
+function ensureReviewWatermark(){
+  if(document.getElementById('review-wm')) return;
+  var p2=document.getElementById('page2'); if(!p2) return;
+  var wm=document.createElement('div'); wm.id='review-wm'; wm.className='review-wm';
+  wm.textContent='Annual review — completed at yearly renewal';
+  p2.appendChild(wm);
+}
+function gateReviewRows(){
+  ensureReviewWatermark();
+  REVIEW_ADM.forEach(function(id){ lockReviewEl(document.getElementById('f_'+id), true); });
+  var wm=document.getElementById('review-wm');
+  if(!isRenewal()){
+    REVIEW_PG.forEach(function(id){ lockReviewEl(document.getElementById('f_'+id), true); });
+    for(var j=1;j<=3;j++){ stampReviewDate(j); }        // empty on a primary form
+    if(wm) wm.style.display='flex';
+  } else {
+    var open=firstFreePgRow();
+    for(var i=1;i<=3;i++){
+      lockReviewEl(document.getElementById('f_pg_init_'+i), i!==open);  // only the open row's initials type
+      lockReviewEl(document.getElementById('f_pg_rev_'+i), true);       // the date is a STAMP, never typed
+      stampReviewDate(i);
+    }
+    var oi=document.getElementById('f_pg_init_'+open);
+    if(oi && !oi._stampBound){ oi._stampBound=true; oi.addEventListener('input', function(){ stampReviewDate(open); }); }
+    if(wm) wm.style.display='none';
+  }
+}
+gateReviewRows();
+// Re-run after async prefill (a ?t= link fills fields shortly after load) so "first free
+// row" reflects any prior years the token carried.
+window.addEventListener('load', function(){ setTimeout(gateReviewRows, 400); setTimeout(gateReviewRows, 1200); });
+
+function dcyReset(){
+  FIELDS.forEach(function(f){
+    var e=document.getElementById('f_'+f.id); if(!e)return;
+    if(f.t==='sig') FormKit.clearSig(e);
+    else if(f.t==='cb') e.checked=false;
+    else e.value='';
+  });
+  gate(); if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter();FormKit.status&&FormKit.status('Cleared','')}
+}
+
+// ── form-kit integration: reuse submit / status / counter / signature capture. ──
+window.FORMKIT_CONFIG = {
+  formType:'dcy_01234', version:'v7', title:'Child Enrollment & Health (DCY 01234)', reset:dcyReset,
+  collect:function(){
+    var fd={ type:'dcy_01234', dcy_form:'01234', dcy_version:'v7', center_code:FormKit.centerCode() };
+    FIELDS.forEach(function(f){ if(f.t!=='sig') fd[f.id]=g(f.id); });
+    var pm=(window.__fkTyped||{}).f_parent_sig||{};   // how the parent signed (draw|type) — parent rail
+    fd.signature_method = pm.method || 'drawn';
+    fd.signature_typed_value = pm.method==='typed' ? (pm.name||'') : '';
+    return {
+      formData:fd,
+      signatures:{ parent_sig:FormKit.getSig('f_parent_sig'), program_sig:FormKit.getSig('f_program_sig') },
+      signatureDate: g('parent_sig_dt') || ''
+    };
+  },
+  onSuccess:function(ref){ FormKit.status && FormKit.status('✓ Submitted'+(ref?(' — Ref '+ref):''),'ok'); }
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+  try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
+});
+</script>
+<style>
+  .siglock.siglock-go{background:rgba(15,76,53,.92);cursor:pointer}
+  .fkpad-back{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:16px}
+  .fkpad{background:#fff;border-radius:14px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column}
+  .fkpad-h{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0f4c35;color:#fff}
+  .fkpad-title{font-weight:800;font-size:15px;flex:1}
+  .fkpad-tabs{display:flex;gap:6px}
+  .fkpad-tab{font:inherit;font-size:12px;font-weight:700;padding:5px 12px;border:1px solid rgba(255,255,255,.5);border-radius:7px;background:transparent;color:#fff;cursor:pointer}
+  .fkpad-tab.on{background:#fff;color:#0f4c35}
+  .fkpad-draw,.fkpad-type{padding:16px}
+  .fkpad-canvas{width:100%;height:240px;background:rgba(255,253,150,.35);border:1.5px dashed #0f4c35;border-radius:10px;cursor:crosshair;display:block;touch-action:none}
+  .fkpad-name{width:100%;font:inherit;font-size:18px;padding:10px 12px;border:1.5px solid #c0d8c0;border-radius:9px;margin-bottom:12px}
+  .fkpad-faces{display:flex;gap:8px;flex-wrap:wrap}
+  .fkpad-face{font-size:26px;line-height:1;padding:6px 16px;border:1px solid #c0d8c0;border-radius:9px;background:#fff;color:#0f4c35;cursor:pointer}
+  .fkpad-face.on{border:2px solid #0f4c35}
+  .fkpad-foot{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #eef2ee}
+  .fkpad-clear,.fkpad-cancel{font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer}
+  .fkpad-ok{font:inherit;font-size:13px;font-weight:800;padding:8px 18px;border:none;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer}
+  @media print{#fk-wd-banner,#fk-wd-ns{display:none!important}.fkpad-back{display:none!important}}
+</style>
+<script>
+/* Parent-signature parity (2026-07-24): typed autograph (3 script faces) + FKPad
+   "draw-big / fits-small" pad on the parent signature slot, matching the app CountersignField
+   and the other kits. The pad renders onto f_parent_sig (getSig reads pixels), scale-to-fit +
+   clipped into the 56px overlay slot; records signature_method/typed_value; the existing
+   date-stamp + attestation gate + review-gate are untouched. Program (director) slot unchanged. */
+window.FKTyped = window.FKTyped || (function(){
+  var FACES=["'Snell Roundhand','Savoye LET','Apple Chancery',cursive",
+             "'Bradley Hand','Segoe Script','Brush Script MT',cursive",
+             "'Noteworthy','Marker Felt','Trebuchet MS',cursive"];
+  return {FACES:FACES};
+})();
+window.FKPad = window.FKPad || (function(){
+  var modal,big,nameI,faces,tabD,tabT,wD,wT,titleE,cur=null;
+  function stacks(){ return (window.FKTyped&&FKTyped.FACES)||["cursive","cursive","cursive"]; }
+  function fitBig(){ big.width=Math.max(320,big.clientWidth||600); big.height=Math.max(160,big.clientHeight||240); }
+  function build(){
+    modal=document.createElement('div'); modal.className='fkpad-back';
+    modal.innerHTML='<div class="fkpad"><div class="fkpad-h"><span class="fkpad-title">Signature</span>'
+      +'<div class="fkpad-tabs"><button type="button" class="fkpad-tab on" data-m="draw">✍ Draw</button>'
+      +'<button type="button" class="fkpad-tab" data-m="type">⌨ Type</button></div></div>'
+      +'<div class="fkpad-draw"><canvas class="fkpad-canvas"></canvas></div>'
+      +'<div class="fkpad-type" style="display:none"><input class="fkpad-name" type="text" placeholder="Type your full name" autocomplete="off"><div class="fkpad-faces"></div></div>'
+      +'<div class="fkpad-foot"><button type="button" class="fkpad-clear">Clear</button><span style="flex:1"></span>'
+      +'<button type="button" class="fkpad-cancel">Cancel</button><button type="button" class="fkpad-ok">Use signature</button></div></div>';
+    document.body.appendChild(modal);
+    big=modal.querySelector('.fkpad-canvas'); nameI=modal.querySelector('.fkpad-name');
+    tabD=modal.querySelector('[data-m=draw]'); tabT=modal.querySelector('[data-m=type]');
+    wD=modal.querySelector('.fkpad-draw'); wT=modal.querySelector('.fkpad-type'); titleE=modal.querySelector('.fkpad-title'); faces=modal.querySelector('.fkpad-faces');
+    stacks().forEach(function(st,i){ var b=document.createElement('button'); b.type='button'; b.className='fkpad-face'+(i===0?' on':''); b.style.fontFamily=st; b.textContent='Abc';
+      b.onclick=function(){ cur.face=i; [].forEach.call(faces.children,function(x){x.classList.toggle('on',x===b);}); paint(); }; faces.appendChild(b); });
+    tabD.onclick=function(){ mode('draw'); }; tabT.onclick=function(){ mode('type'); };
+    nameI.oninput=function(){ paint(); };
+    modal.querySelector('.fkpad-clear').onclick=function(){ if(cur.mode==='draw') FormKit.clearSig(big); else { nameI.value=''; paint(); } };
+    modal.querySelector('.fkpad-cancel').onclick=close; modal.querySelector('.fkpad-ok').onclick=commit;
+    modal.addEventListener('mousedown',function(e){ if(e.target===modal) close(); });
+  }
+  function mode(m){ cur.mode=m; tabD.classList.toggle('on',m==='draw'); tabT.classList.toggle('on',m==='type');
+    wD.style.display=m==='draw'?'':'none'; wT.style.display=m==='type'?'':'none';
+    if(m==='draw'){ fitBig(); if(window.FormKit&&FormKit.initSig) FormKit.initSig(big); FormKit.clearSig(big); } else paint(); }
+  function paint(){ fitBig(); var ctx=big.getContext('2d'); ctx.clearRect(0,0,big.width,big.height);
+    var t=(nameI.value||'').trim(); if(!t) return; ctx.fillStyle='#111'; ctx.textBaseline='middle'; ctx.textAlign='left';
+    var s=Math.floor(big.height*0.5),pad=40; ctx.font=s+'px '+stacks()[cur.face];
+    while(ctx.measureText(t).width>big.width-pad*2&&s>24){ s-=4; ctx.font=s+'px '+stacks()[cur.face]; } ctx.fillText(t,pad,big.height/2); }
+  function bbox(c){ var ctx=c.getContext('2d'),d=ctx.getImageData(0,0,c.width,c.height).data,mnx=c.width,mny=c.height,mxx=0,mxy=0,f=false;
+    for(var y=0;y<c.height;y++)for(var x=0;x<c.width;x++){ if(d[(y*c.width+x)*4+3]>10){f=true; if(x<mnx)mnx=x; if(x>mxx)mxx=x; if(y<mny)mny=y; if(y>mxy)mxy=y;} }
+    return f?{x:mnx,y:mny,w:mxx-mnx+1,h:mxy-mny+1}:null; }
+  function open(slotId,opts){ if(!modal) build(); opts=opts||{}; cur={slotId:slotId,face:0,mode:'draw'};
+    nameI.value=opts.name||''; [].forEach.call(faces.children,function(x,i){x.classList.toggle('on',i===0);});
+    titleE.textContent=opts.title||'Signature'; modal.style.display='flex'; mode('draw'); }
+  function commit(){ var slot=document.getElementById(cur.slotId); if(!slot){ close(); return; }
+    var sctx=slot.getContext('2d'); sctx.clearRect(0,0,slot.width,slot.height); var bb=bbox(big);
+    if(bb){ var pd=2,aw=slot.width-pd*2,ah=slot.height-pd*2,sc=Math.min(aw/bb.w,ah/bb.h),w=bb.w*sc,h=bb.h*sc;
+      sctx.drawImage(big,bb.x,bb.y,bb.w,bb.h,(slot.width-w)/2,(slot.height-h)/2,w,h); }
+    slot.dispatchEvent(new Event('fk:ink',{bubbles:true}));
+    window.__fkTyped=window.__fkTyped||{}; window.__fkTyped[cur.slotId]={method:cur.mode==='type'?'typed':'drawn',name:cur.mode==='type'?(nameI.value||'').trim():''};
+    if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}
+    if(typeof gate==='function') try{ gate(); }catch(_){}
+    close(); }
+  function close(){ if(modal) modal.style.display='none'; }
+  return {open:open, close:close};
+})();
+</script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its
+   failure. If FormKit isn't up in ~4s (or form-kit.js errors), auto-retry the script once
+   with a cache-bust; if still down, show a reload banner. Self-clears on success; never prints. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=11"></script>
+</body>
+</html>
