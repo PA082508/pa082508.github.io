@@ -558,16 +558,21 @@
       "slug": "staff_consent",
       "title": "Staff Consent for Electronic Signatures",
       "kind": "signature",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/Staff_Consent_v1.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Staff_Consent_v1.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/Staff_Consent_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Staff_Consent_v1.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Staff_Consent_v2.html",
       "intakeMode": "online|kiosk",
       "signer": "staff",
       "audience": "staff",
       "note": "Employment-forms e-signature consent. Signed FIRST in the staff packet: it mints the staff-scoped signature sample (pa_sig_sample:staff) that Staff Enrollment then adopts, so an employee draws or types once. The staff shelf is never offered on a parent form and vice-versa. Channel submit_enrollment_form, submission_type=staff_consent.",
       "history": [
+        {
+          "at": "2026-07-24",
+          "note": "FLIP current v1 → v2 — v2 = live v1 (keeps data-fk-mint=\"staff\" / data-fk-mint-name=#employee_name — the staff-scoped sample mint, PRESERVED) + date = signature STAMP (auto on signing, read-only, cleared with the signature, bound 1:1; data dates untouched) + TYPED autograph upgraded 1→3 script faces (records signature_method/signature_typed_value). Inline (90px consent slot, no FKPad). v1 kept historical. form-kit.js untouched so ?v= stays 11; no replica. Playwright: staff mint present, typed inked + method typed, date stamps read-only, drawn-path regression green. Deploy markers: PENDING."
+        },
         {
           "at": "2026-07-15",
           "note": "v1 LIVE on Nikolay's «флип staff» after preview. Was dark since 2026-07-14 (efb0576 unpublished an accidental publish); gate was «staff-превью ПОСЛЕ фикса №5» — fix #5 shipped in 31027c2, preview seen 2026-07-15. Micro-edits into the kit standard: staff banner (data-fk-banner-msg), data-fk-mint-name=#employee_name, centre picker stripped (finding #6)."
