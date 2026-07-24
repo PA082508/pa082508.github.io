@@ -281,7 +281,7 @@
       "history": [
         {
           "at": "2026-07-24",
-          "note": "FLIP current v2 → v3 — v3 = live v2 (carries data-fk-mint / data-fk-mint-name=#parent_name for role-scoped signature-sample adoption — PRESERVED, dropping it would regress scoping) + date = signature STAMP (auto on signing, read-only, cleared with the signature, bound 1:1; data dates untouched) + TYPED autograph upgraded from 1 face to 3 script faces (records signature_method/signature_typed_value). Inline (90px consent slot, no FKPad). v1 & v2 kept historical. form-kit.js untouched so ?v= stays 11; no replica. Playwright: mint present, typed inked + method typed, date stamps read-only, drawn-path regression green. Deploy markers: PENDING."
+          "note": "FLIP current v2 → v3 — v3 = live v2 (carries data-fk-mint / data-fk-mint-name=#parent_name for role-scoped signature-sample adoption — PRESERVED, dropping it would regress scoping) + date = signature STAMP (auto on signing, read-only, cleared with the signature, bound 1:1; data dates untouched) + TYPED autograph upgraded from 1 face to 3 script faces (records signature_method/signature_typed_value). Inline (90px consent slot, no FKPad). v1 & v2 kept historical. form-kit.js untouched so ?v= stays 11; no replica. Playwright: mint present, typed inked + method typed, date stamps read-only, drawn-path regression green. Deploy markers: Pages 4d30786 · app e25c363 (merged + verified live 2026-07-24: form 200 w/ v3 markers, mint present, registry current=v3 on both, mirrors IDENTICAL)."
         }
       ]
     },
