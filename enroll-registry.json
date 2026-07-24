@@ -221,15 +221,20 @@
         "iea"
       ],
       "note": "Alternative to IEA for the same income_eligibility child-record slot: packet asks 'Will you apply for free/reduced-price meals?' → Yes ⇒ iea, No ⇒ this waiver (parent-signed). Exactly one is always on file; satisfies:['iea'] marks the shared slot met.",
-      "current": "v3",
+      "current": "v4",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v1.html",
         "v2": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v2.html",
-        "v3": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v3.html"
+        "v3": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v3.html",
+        "v4": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v4.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v3.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/USDA_Waiver_v4.html",
       "perInstance": false,
       "history": [
+        {
+          "at": "2026-07-24",
+          "note": "FLIP current v3 → v4 — date = signature STAMP (auto-set at the moment of signing, read-only, cleared with the signature, bound 1:1; data dates DOB untouched) + TYPED autograph beside Draw (3 script faces, records signature_method/signature_typed_value) + FKPad 'draw-big / fits-small' pad for the 52px overlay signature slot (bounding-box scale-to-fit, clipped to slot, no spill; slot direct-draw disabled). form-kit.js untouched so ?v= stays 11; no replica (USDA has none) so no replica-sync. Playwright: typed & drawn via pad fit within slot bounds, date stamps read-only, drawn-path date-stamp regression green. Deploy markers: PENDING."
+        },
         {
           "at": "2026-07-18",
           "note": "FLIP current v2 → v3 — family form: up to 4 children[] rows (name+DOB) mirroring IEA, pair-validated at submit; scope:family. DARK-sverka passed; smoke green (children[] + child_name bridge → pending, >4 second-submission glued by parent_name). satisfies:['iea'] unchanged; form-kit untouched so ?v= stays 11. Deploy markers: Pages 0d40eab · app 141cc1a (merged+verified 2026-07-18: form 200, current=v3 on both, registries diff IDENTICAL)."
