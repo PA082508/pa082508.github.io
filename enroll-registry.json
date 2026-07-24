@@ -39,12 +39,13 @@
     },
     "iea": {
       "scope": "family",
-      "current": "v6",
+      "current": "v7",
       "versions": {
         "v5": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v5.html",
-        "v6": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v6.html"
+        "v6": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v6.html",
+        "v7": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v7.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v6.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/IEA_FY2026-27_v7.html",
       "submissionType": "iea",
       "slug": "iea",
       "title": "Income Eligibility Application (FY2026-27)",
@@ -56,7 +57,12 @@
       "signer": "parent",
       "perInstance": false,
       "expiryMonths": 12,
-      "history": []
+      "history": [
+        {
+          "at": "2026-07-24",
+          "note": "FLIP current v6 → v7 — date = signature STAMP on BOTH date fields (p4_date bound to sig_adult, sp_certdate bound to sig_sponsor + calcDates; auto on signing, read-only, cleared with the signature, bound 1:1; data dates untouched) + TYPED autograph beside Draw on the ADULT/parent signature (sig_adult, 3 script faces, records signature_method/signature_typed_value) + FKPad draw-big/fits-small pad for the 52px adult overlay slot (bbox scale-to-fit, clipped). SPONSOR signature (sig_sponsor) NOT given typed/FKPad — untouched this flip; #17 'Sponsor Use Only' layout NOT touched (separate заход). sig_adult data-fk-adopt preserved. v6 kept historical. form-kit.js untouched so ?v= stays 11; no replica. Playwright: adult FKPad type/draw fit in slot + p4 stamps, sponsor untouched + sp_certdate stamps on its own sig, drawn-path regression green. Deploy markers: PENDING."
+        }
+      ]
     },
     "dcy_01234": {
       "requires_countersign": "director",
