@@ -1094,6 +1094,10 @@
     "ridge": {
       "org_id": "3a9a290e-7e49-491e-946b-ad86f2399910",
       "center_id": "4aed7d5a-00d0-4a4c-ac99-311046ad2027"
+    },
+    "zzdemo": {
+      "org_id": "3a9a290e-7e49-491e-946b-ad86f2399910",
+      "center_id": "0de1b5a4-e6d8-4e34-a5e4-e3dde23e1c6c"
     }
   },
   "allowedParentOrigins": [
