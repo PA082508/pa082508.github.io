@@ -31,7 +31,7 @@ input[type=text]:focus,input[type=tel]:focus,input[type=email]:focus,input[type=
 </head>
 <body>
 <div id="tb">
-  <h1>CACFP Enrollment v9</h1>
+  <h1>CACFP Enrollment v10</h1>
   <select id="ctr" onchange="ctrPick()"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Highland Heights</option><option value="ridge">Play Academy Wickliffe</option></select>
   <button class="btn bs" data-formkit="submit">&#128232; Submit</button>
   <button class="btn br" onclick="clear_()">&#10005; Clear</button>
@@ -131,6 +131,9 @@ input[type=text]:focus,input[type=tel]:focus,input[type=email]:focus,input[type=
   <canvas id="f_parent_sig" data-fk-adopt width="382" height="25" data-formkit="signature" data-required data-label="Parent signature" style="width:100%;height:100%;background:rgba(255,253,150,0.85);cursor:crosshair;border-bottom:1px solid #0066cc;display:block;" title="Sign here"></canvas>
   <button onclick="FormKit.clearSig('f_parent_sig')" style="position:absolute;top:0;right:2px;font-size:9px;padding:0 4px;background:#E53935;color:#fff;border:none;border-radius:2px;cursor:pointer;z-index:21;">&#10005;</button>
 </div>
+    <div style="position:absolute;z-index:22;left:272.1px;top:1006px">
+      <button type="button" class="fkpad-trigger" data-fk-pad="f_parent_sig" data-fk-pad-name="#f_parent_name" data-fk-pad-title="Parent signature">✍ Add signature — draw</button>
+    </div>
     <input type="text" id="f_parent_name" data-fk-field="parent_name" data-required data-label="Parent/guardian printed name" autocomplete="name" placeholder="Print name" title="Parent/guardian printed name" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:1px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:1px solid #0066cc;outline:none;left:272.1px;top:1059px;width:381.7px;height:21px;">
     <input type="date" id="f_sig_date" data-touched="0" onchange="this.dataset.touched=1;calcExp()" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:10px;padding:2px 1px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:772px;top:1038.7px;width:86px;height:46.2px;">
     <input type="tel" id="f_phone" data-fk-field="phone_day" autocomplete="tel" oninput="fmtPhone(this)" style="position:absolute;z-index:20;font-family:Arial,sans-serif;font-size:12px;padding:2px 4px;box-sizing:border-box;background:rgba(255,253,150,0.9);border:none;border-bottom:2px solid #0066cc;outline:none;left:992.5px;top:1038.7px;width:215.2px;height:46.2px;">
@@ -159,17 +162,17 @@ function ctrPick(){var e=document.getElementById('ctr');if(!e)return;e.classList
 function clear_(){document.querySelectorAll('[id^=f_]').forEach(function(e){if(e.tagName!=='CANVAS')e.value=''});document.querySelectorAll('[id^=cb_]').forEach(function(e){e.checked=false});if(window.FormKit)FormKit.clearSig('f_parent_sig');var x=document.getElementById('exp');if(x)x.textContent='';if(window.FormKit)FormKit.status('Cleared','')}
 function PA_APPLY(fd){var S=function(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v},C=function(id,v){var e=document.getElementById(id);if(e)e.checked=!!v};S('f_center',fd.center_name);S('f_child_name',fd.child_name);S('f_dob',fd.birthdate);if(fd.birthdate)calcAge();S('f_phone',fd.day_phone);if(fd.mailing){S('f_street',fd.mailing.street);S('f_city',fd.mailing.city);S('f_zip',fd.mailing.zip)}S('f_parent_name',fd.parent_name);S('f_parent_dob',fd.parent_birthdate);S('f_parent_email',fd.parent_email);C('cb_varies',fd.schedule_varies);if(fd.schedule)DAYS.forEach(function(d){var x=fd.schedule[d];if(!x)return;C('cb_'+d,x.in_care);S('f_'+d+'_arr1',x.arr1);S('f_'+d+'_dep1',x.dep1);S('f_'+d+'_arr2',x.arr2);S('f_'+d+'_dep2',x.dep2);if(x.meals)MEALS.forEach(function(m){C('cb_'+d+'_'+m,x.meals[m])})})}
 window.FORMKIT_CONFIG={
-  formType:'cacfp_enrollment',version:'v9',title:'CACFP Enrollment',expiry:'12 mo',reset:clear_,applyPrefill:PA_APPLY,
+  formType:'cacfp_enrollment',version:'v11',title:'CACFP Enrollment',expiry:'12 mo',reset:clear_,applyPrefill:PA_APPLY,
   collect:function(){
     /* Out-of-care days (day box unchecked) serialize with EMPTY hours + all-false
        meals — no phantom times/meals reach the payload / DB / checkmark export. */
     var schedule={};DAYS.forEach(function(d){var ic=gc('cb_'+d);var meals={};MEALS.forEach(function(m){meals[m]=ic&&gc('cb_'+d+'_'+m)});schedule[d]={in_care:ic,arr1:ic?g('f_'+d+'_arr1'):'',dep1:ic?g('f_'+d+'_dep1'):'',arr2:ic?g('f_'+d+'_arr2'):'',dep2:ic?g('f_'+d+'_dep2'):'',meals:meals}});
     var sigDate=g('f_sig_date')||FormKit.todayISO();
-    return {formData:{type:'cacfp_enrollment',center_code:FormKit.centerCode(),center_name:g('f_center'),child_name:g('f_child_name'),age:g('f_age'),birthdate:g('f_dob'),schedule:schedule,schedule_varies:gc('cb_varies'),day_phone:g('f_phone'),mailing:{street:g('f_street'),city:g('f_city'),zip:g('f_zip')},parent_name:g('f_parent_name'),parent_birthdate:g('f_parent_dob'),parent_email:g('f_parent_email'),expires_on:FormKit.isoDate(expDate(sigDate))},signatures:{parent_sig:FormKit.getSig('f_parent_sig')},signatureDate:sigDate};
+    return {formData:{type:'cacfp_enrollment',center_code:FormKit.centerCode(),center_name:g('f_center'),child_name:g('f_child_name'),age:g('f_age'),birthdate:g('f_dob'),schedule:schedule,schedule_varies:gc('cb_varies'),day_phone:g('f_phone'),mailing:{street:g('f_street'),city:g('f_city'),zip:g('f_zip')},parent_name:g('f_parent_name'),signature_method:'drawn',signature_typed_value:'',parent_birthdate:g('f_parent_dob'),parent_email:g('f_parent_email'),expires_on:FormKit.isoDate(expDate(sigDate))},signatures:{parent_sig:FormKit.getSig('f_parent_sig')},signatureDate:sigDate};
   },
   onSuccess:function(){calcExp();var dn=document.getElementById('done');if(dn){dn.style.display='block';setTimeout(function(){dn.style.display='none'},6000)}}
 };
-document.addEventListener('DOMContentLoaded',function(){var sd=document.getElementById('f_sig_date');if(sd&&!sd.value){sd.value=FormKit.todayISO();calcExp()}try{var r=JSON.parse(localStorage.getItem('pa_packet_profile'));if(r&&Date.now()-r.ts<5400000&&r.data.center_code){var c=document.getElementById('ctr');if(c&&!c.value){c.value=r.data.center_code;ctrPick()}}}catch(_){}});
+document.addEventListener('DOMContentLoaded',function(){/* f_sig_date is a signature STAMP — set on signing, not on load */try{var r=JSON.parse(localStorage.getItem('pa_packet_profile'));if(r&&Date.now()-r.ts<5400000&&r.data.center_code){var c=document.getElementById('ctr');if(c&&!c.value){c.value=r.data.center_code;ctrPick()}}}catch(_){}});
 </script>
 <style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
 <script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its
@@ -196,5 +199,97 @@ setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
 <script defer src="form-kit.js?v=13"></script>
+<style>
+  .fkpad-trigger{font:inherit;font-size:12px;font-weight:700;padding:6px 14px;border:1px solid #0f4c35;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .fkpad-done{font-size:11px;color:#0f4c35;font-weight:700;margin-left:8px;background:#fff;padding:1px 5px;border-radius:4px}
+  @media print{.fkpad-trigger,.fkpad-done{display:none!important}}
+  .fkpad-back{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:16px}
+  .fkpad{background:#fff;border-radius:14px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column}
+  .fkpad-h{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0f4c35;color:#fff}
+  .fkpad-title{font-weight:800;font-size:15px;flex:1}
+  .fkpad-hint{font-size:12px;font-weight:700;opacity:.9}
+  .fkpad-draw{padding:16px}
+  .fkpad-canvas{width:100%;height:240px;background:rgba(255,253,150,.35);border:1.5px dashed #0f4c35;border-radius:10px;cursor:crosshair;display:block;touch-action:none}
+  .fkpad-foot{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #eef2ee}
+  .fkpad-clear,.fkpad-cancel{font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer}
+  .fkpad-ok{font:inherit;font-size:13px;font-weight:800;padding:8px 18px;border:none;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer}
+</style>
+<script>
+/* FKPad — "draw big → fits small", DRAW ONLY (2026-07-27). A narrow overlay signature slot is
+   too small to sign in — the trigger opens a LARGE pad; the drawn stroke is captured hi-res, its
+   ink bounding-box SCALE-TO-FIT (downscaled) into the real slot canvas and CLIPPED to the slot
+   bounds, so nothing spills onto the official form. There is NO typed rail on this form: the
+   licensing authority (DCY) requires a real signature, not a typed name — see
+   docs/compliance/e-signature.md. Records signature_method='drawn' and stamps the date. */
+window.FKPad = window.FKPad || (function(){
+  var modal,big,titleE,cur=null;
+  function fitBig(){ big.width=Math.max(320,big.clientWidth||600); big.height=Math.max(160,big.clientHeight||240); }
+  function build(){
+    modal=document.createElement('div'); modal.className='fkpad-back';
+    modal.innerHTML='<div class="fkpad"><div class="fkpad-h"><span class="fkpad-title">Signature</span>'
+      +'<span class="fkpad-hint">\u270d Draw your signature</span></div>'
+      +'<div class="fkpad-draw"><canvas class="fkpad-canvas"></canvas></div>'
+      +'<div class="fkpad-foot"><button type="button" class="fkpad-clear">Clear</button><span style="flex:1"></span>'
+      +'<button type="button" class="fkpad-cancel">Cancel</button><button type="button" class="fkpad-ok">Use signature</button></div></div>';
+    document.body.appendChild(modal);
+    big=modal.querySelector('.fkpad-canvas'); titleE=modal.querySelector('.fkpad-title');
+    modal.querySelector('.fkpad-clear').onclick=function(){ FormKit.clearSig(big); };
+    modal.querySelector('.fkpad-cancel').onclick=close; modal.querySelector('.fkpad-ok').onclick=commit;
+    modal.addEventListener('mousedown',function(e){ if(e.target===modal) close(); });
+  }
+  function arm(){ fitBig(); if(window.FormKit&&FormKit.initSig) FormKit.initSig(big); FormKit.clearSig(big); }
+  function bbox(c){ var ctx=c.getContext('2d'),d=ctx.getImageData(0,0,c.width,c.height).data,mnx=c.width,mny=c.height,mxx=0,mxy=0,f=false;
+    for(var y=0;y<c.height;y++)for(var x=0;x<c.width;x++){ if(d[(y*c.width+x)*4+3]>10){f=true; if(x<mnx)mnx=x; if(x>mxx)mxx=x; if(y<mny)mny=y; if(y>mxy)mxy=y;} }
+    return f?{x:mnx,y:mny,w:mxx-mnx+1,h:mxy-mny+1}:null; }
+  function open(slotId,opts){ if(!modal) build(); opts=opts||{}; cur={slotId:slotId};
+    titleE.textContent=opts.title||'Signature'; modal.style.display='flex'; arm(); }
+  function commit(){ var slot=document.getElementById(cur.slotId); if(!slot){ close(); return; }
+    var sctx=slot.getContext('2d'); sctx.clearRect(0,0,slot.width,slot.height); var bb=bbox(big);
+    if(bb){ var pd=2,aw=slot.width-pd*2,ah=slot.height-pd*2,sc=Math.min(aw/bb.w,ah/bb.h),w=bb.w*sc,h=bb.h*sc;
+      sctx.drawImage(big,bb.x,bb.y,bb.w,bb.h,(slot.width-w)/2,(slot.height-h)/2,w,h); }
+    slot.dispatchEvent(new Event('fk:ink',{bubbles:true}));
+    if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}
+    var b=document.querySelector('.fkpad-trigger[data-fk-pad="'+cur.slotId+'"]'); if(b){ var dn=b.parentNode.querySelector('.fkpad-done'); if(!dn){ dn=document.createElement('span'); dn.className='fkpad-done'; b.parentNode.insertBefore(dn,b.nextSibling); } dn.textContent='\u2713 signed'; }
+    close(); }
+  function close(){ if(modal) modal.style.display='none'; }
+  return {open:open, close:close};
+})();
+(function(){
+  function wire(btn){ if(btn._fkp) return; btn._fkp=1; var slot=btn.getAttribute('data-fk-pad');
+    var c=document.getElementById(slot); if(c) c.style.pointerEvents='none';   /* no tiny direct drawing — sign in the pad */
+    btn.addEventListener('click',function(){ var sel=btn.getAttribute('data-fk-pad-name'),nm=''; if(sel){ var e=document.querySelector(sel); if(e) nm=(e.value||'').trim(); }
+      FKPad.open(slot,{name:nm,title:btn.getAttribute('data-fk-pad-title')||'Signature'}); }); }
+  function boot(){ [].forEach.call(document.querySelectorAll('.fkpad-trigger[data-fk-pad]'),wire); }
+  if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded',boot);
+})();
+</script>
+<script>
+/* Date = signature stamp (canon 2026-07-24): the signature date is auto-set at the moment of
+   signing (ISO for <input type=date>), read-only, cleared with the signature, bound STRICTLY
+   1:1 to its own stroke. Empty signature = empty date. No gate() here, so we add listeners.
+   Data dates (DOB…) are untouched. */
+(function(){
+  var PAIRS=[{sig:'f_parent_sig',date:'f_sig_date',after:'calcExp'}];
+  function todayISO(){ try{ if(window.FormKit&&FormKit.todayISO) return FormKit.todayISO(); }catch(_){}
+    var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function inked(id){ try{ return !!(window.FormKit&&FormKit.getSig&&FormKit.getSig(id)); }catch(_){ return false; } }
+  function lock(dt){ dt.readOnly=true; dt.tabIndex=-1; dt.style.pointerEvents='none'; dt.style.background='#eef1ef'; }
+  function stampOne(p){
+    var dt=document.getElementById(p.date); if(!dt) return; lock(dt);
+    var typed=p.typed?((document.getElementById(p.typed)||{}).value||''):'';
+    var has=inked(p.sig)||(typed&&String(typed).trim());
+    dt.value = has ? (dt.value||todayISO()) : '';
+    if(p.after&&window[p.after]) try{ window[p.after](); }catch(_){}
+  }
+  function stampAll(){ for(var i=0;i<PAIRS.length;i++) stampOne(PAIRS[i]); }
+  function bindTyped(){ PAIRS.forEach(function(p){ if(p.typed){ var e=document.getElementById(p.typed);
+    if(e&&!e._sdbound){ e._sdbound=1; e.addEventListener('input',function(){ setTimeout(stampAll,10); }); } } }); }
+  document.addEventListener('mouseup',function(){ setTimeout(stampAll,60); });
+  document.addEventListener('touchend',function(){ setTimeout(stampAll,60); });
+  document.addEventListener('DOMContentLoaded',function(){ bindTyped(); stampAll(); });
+  window.addEventListener('load',function(){ bindTyped(); setTimeout(stampAll,300); });
+  window.__stampSigDates=stampAll;
+})();
+</script>
 </body>
 </html>

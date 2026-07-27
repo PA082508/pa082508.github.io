@@ -200,14 +200,44 @@
   // a pad can only ever read the key for its own scope. Never collapse these back to
   // one key, and never let adopt "fall back" to another scope when its own is empty —
   // an empty shelf must degrade to draw/type, which is exactly what initAdopt does.
+  // ── SAMPLE SCOPE — the shelf is CONSERVED (2026-07-27, Nikolay: «чтобы избежать споров») ──
+  // While this is 'none' there is NO minting, NO "Use my signature" button and NO shelf read
+  // anywhere: every signature in the system is a fresh live stroke made on THAT document, with
+  // its own date. The mechanic below is NOT deleted — it is locked behind this one flag, so
+  // turning it back on is a decision, not a rewrite.
+  //
+  // Turning it on is gated on counsel (question #1 in docs/compliance/lawyer-memo.md) AND
+  // Nikolay's word, and on the conditions written in
+  // docs/specs/2026-07-27-signature-sample-unconservation.md — drawn-only, minted ONLY under
+  // the consent text, applied by a deliberate tap per form, trailed as method='adopted' with
+  // date + who + device, owner's authenticated session only. Flipping this constant alone is
+  // NOT enough to satisfy those conditions; read the spec first.
+  //   'none'   — conserved (DEFAULT)
+  //   'parent' — the pre-2026-07-27 behaviour, kept for the day it is turned back on
+  var SAMPLE_SCOPE = 'none';
+  function samplesOn() { return SAMPLE_SCOPE !== 'none'; }
+
   var SIG_SAMPLE_PREFIX = 'pa_sig_sample';
   var SIG_SCOPE_DEFAULT = 'parent';
+  // A shelf minted BEFORE the conservation must not survive it on someone's phone: while the
+  // flag is off, drop the keys on boot. Nothing reads them anyway — this is so the device is
+  // as empty as the claim we make about it.
+  function purgeSamples() {
+    try {
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf(SIG_SAMPLE_PREFIX) === 0) localStorage.removeItem(k);
+      }
+    } catch (_) {}
+  }
   function sigScope(el, attr) { var v = el && el.getAttribute(attr); v = (v || '').trim(); return v || SIG_SCOPE_DEFAULT; }
   function sigSampleKey(scope) { return SIG_SAMPLE_PREFIX + ':' + (scope || SIG_SCOPE_DEFAULT); }
   function sigSampleSave(scope, png, name, method) {
+    if (!samplesOn()) return;                                     // conserved: nothing is minted
     try { if (png) localStorage.setItem(sigSampleKey(scope), JSON.stringify({ ts: Date.now(), scope: scope || SIG_SCOPE_DEFAULT, png: png, name: name || '', method: method || 'draw' })); } catch (_) {}
   }
   function sigSampleLoad(scope) {
+    if (!samplesOn()) return null;                                // conserved: the shelf is not read
     scope = scope || SIG_SCOPE_DEFAULT;
     function read(k) { try { var r = JSON.parse(localStorage.getItem(k)); if (!r || !r.png || Date.now() - r.ts > PK_TTL) return null; return r; } catch (_) { return null; } }
     var r = read(sigSampleKey(scope));
@@ -232,6 +262,7 @@
     img.src = sample.png;
   }
   function initAdopt(canvas) {
+    if (!samplesOn()) return;                                     // conserved: no "Use my signature"
     if (!canvas || canvas.__fkAdopt || !canvas.hasAttribute('data-fk-adopt')) return;
     canvas.__fkAdopt = true;
     // ONLY this pad's own scope — a staff pad never sees the parent shelf, and vice versa.
@@ -285,6 +316,7 @@
     return m === 'typed' ? 'typed' : 'draw';
   }
   function mintSignature(data) {
+    if (!samplesOn()) return;                                     // conserved: submitting mints nothing
     try {
       var method = mintMethod(data);
       $$('[data-fk-mint]').forEach(function (c) {
@@ -1132,6 +1164,7 @@
 
   function boot() {
     injectFavicon();
+    if (!samplesOn()) purgeSamples();   // conserved: a shelf minted before the flip does not survive it
     stripCenterPickers();   // #6 — before anything can read or show a picker
     $$('[data-formkit="signature"]').forEach(function (c) { initSig(c); initAdopt(c); });
     initConditionals(); initValidation(); initTooltips(); initChoices();

@@ -26,14 +26,10 @@
   .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
   .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
   .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
-  /* Signature: drawn (canvas) OR typed (adopted-capture) */
-  .sigtabs { display:flex; gap:6px; margin-top:6px; }
-  .sigtab { padding:6px 14px; border:1.5px solid var(--line); border-radius:8px; background:#fff; font-size:13px; font-weight:600; color:#374151; cursor:pointer; font-family:inherit; }
-  .sigtab.on { background:var(--green); color:#fff; border-color:var(--green); }
+  /* Signature: DRAWN on the canvas — this form has no typed rail (see e-signature.md) */
   .sigbox { position:relative; margin-top:8px; }
   canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
   .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
-  #typed_sig { font-family:'Segoe Script','Brush Script MT',cursive; font-size:26px; color:#111; }
   #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
   #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
 </style>
@@ -99,21 +95,9 @@
     <div class="ack" id="ackline"></div>
 
     <label class="f">Electronic Signature *</label>
-    <div class="sigtabs">
-      <button type="button" class="sigtab on" id="tab_draw" onclick="sigMode('draw')">✍️ Draw</button>
-      <button type="button" class="sigtab" id="tab_type" onclick="sigMode('type')">⌨️ Type</button>
-    </div>
     <div class="sigbox" id="draw_box">
       <canvas id="sig" data-fk-mint data-fk-mint-name="#parent_name" width="700" height="90" data-formkit="signature" data-required data-label="Electronic signature"></canvas>
       <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
-    </div>
-    <div id="type_box" style="display:none">
-      <input type="text" id="typed_sig" placeholder="Type your full name as your signature" autocomplete="off">
-      <div class="tf-faces" style="display:flex;gap:6px;margin-top:8px">
-        <button type="button" data-tf="0" onclick="setTypedFace(0)" style="font-family:'Snell Roundhand','Savoye LET',cursive;font-size:22px;line-height:1;padding:2px 14px;border:2px solid #0f4c35;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer">Abc</button>
-        <button type="button" data-tf="1" onclick="setTypedFace(1)" style="font-family:'Bradley Hand','Segoe Script',cursive;font-size:22px;line-height:1;padding:2px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer">Abc</button>
-        <button type="button" data-tf="2" onclick="setTypedFace(2)" style="font-family:'Noteworthy','Marker Felt',cursive;font-size:22px;line-height:1;padding:2px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer">Abc</button>
-      </div>
     </div>
     <div class="note">Your electronic signature has the same legal effect as a handwritten one. You may request a paper copy at any time.</div>
   </fieldset>
@@ -122,7 +106,6 @@
 <script>
 /* Parent E-Sign Consent v1 — form-specific config; shared behaviour = form-kit.js */
 function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
-var SIG_METHOD='draw';
 
 // Org display name — BRANDING (layer 2), depersonalized: default matches the approved copy,
 // then overwritten from registry `org.name` (interim config → org settings in Stage 2). The
@@ -151,56 +134,28 @@ function applyOrg(org){
   if(txt){ document.getElementById('mkt_body').innerHTML=txt; document.getElementById('mkt_fs').hidden=false; }
 }
 
-// Render the typed name onto the signature canvas so capture stays kit-native
-// (adopted-capture: the stored signature is always an image, drawn or typed).
-// 3 script faces (canon "type OR draw"), matching the app CountersignField.
-var TYPED_FACES=["'Snell Roundhand','Savoye LET','Apple Chancery',cursive","'Bradley Hand','Segoe Script','Brush Script MT',cursive","'Noteworthy','Marker Felt','Trebuchet MS',cursive"];
-var TYPED_FACE=0;
-function renderTyped(){
-  var c=document.getElementById('sig'); var ctx=c.getContext('2d');
-  ctx.clearRect(0,0,c.width,c.height);
-  var t=g('typed_sig');
-  if(t){ ctx.fillStyle='#111'; ctx.textBaseline='middle'; ctx.textAlign='left';
-    var s=Math.floor(c.height*0.55),pad=14; ctx.font=s+'px '+TYPED_FACES[TYPED_FACE];
-    while(ctx.measureText(t).width>c.width-pad*2 && s>10){ s-=2; ctx.font=s+'px '+TYPED_FACES[TYPED_FACE]; }
-    ctx.fillText(t, pad, c.height/2); }
-  c.dispatchEvent(new Event('fk:ink',{bubbles:true}));   // mark the required field satisfied
-  if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}   /* type stamps the date */
-}
-function setTypedFace(i){ TYPED_FACE=i;
-  var box=document.getElementById('type_box'); if(box)[].forEach.call(box.querySelectorAll('[data-tf]'),function(b){ b.style.border=(+b.getAttribute('data-tf')===i)?'2px solid #0f4c35':'1px solid #c0d8c0'; });
-  renderTyped();
-}
-function sigMode(m){
-  SIG_METHOD=m;
-  document.getElementById('tab_draw').classList.toggle('on', m==='draw');
-  document.getElementById('tab_type').classList.toggle('on', m==='type');
-  document.getElementById('draw_box').style.display = m==='draw' ? '' : 'none';
-  document.getElementById('type_box').style.display = m==='type' ? '' : 'none';
-  FormKit.clearSig('sig');
-  if(m==='type') renderTyped();
-  else if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}   /* switching to draw clears the date */
-}
-
+// This form is DRAW ONLY (2026-07-27). The typed autograph v3 offered here is removed: this
+// signature MINTS the parent's sample (pa_sig_sample:parent) that DCY 01234 / IEA / CACFP
+// Enrollment adopt with one tap — a typed sample would land on a government form as ink.
+// See docs/compliance/e-signature.md.
 function consentReset(){
-  ['parent_name','child_names','typed_sig'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
-  FormKit.clearSig('sig'); sigMode('draw'); refreshAck();
+  ['parent_name','child_names'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  FormKit.clearSig('sig'); refreshAck();
   var sd=document.getElementById('signed_date'); if(sd) sd.value='';  /* stamp clears on reset */
   if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
 }
 
 window.FORMKIT_CONFIG = {
-  formType:'parent_consent', version:'v3', reset:consentReset,
+  formType:'parent_consent', version:'v4', reset:consentReset,
   collect:function(){
-    if(SIG_METHOD==='type') renderTyped();               // ensure the canvas holds the typed sig
     var sigDate=g('signed_date')||FormKit.todayISO();
     var fd={
       type:'parent_consent', center_code:FormKit.centerCode(),
-      consent_title:'Parent Consent for Electronic Signatures', consent_version:'v3',
+      consent_title:'Parent Consent for Electronic Signatures', consent_version:'v4',
       parent_name:g('parent_name'),
       child_name:g('child_names'),                        // packet autofill key (data-fk-field)
-      signature_method: SIG_METHOD==='type' ? 'typed' : 'drawn',
-      signature_typed_value: SIG_METHOD==='type' ? g('typed_sig') : ''
+      signature_method: 'drawn',                          // draw only — no typed rail on this form
+      signature_typed_value: ''
     };
     return { formData:fd, signatures:{ parent_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
   },
@@ -212,7 +167,6 @@ window.FORMKIT_CONFIG = {
 document.addEventListener('DOMContentLoaded',function(){
   /* signed_date is a signature STAMP — set on signing, not on load (see stamp block) */
   var pn=document.getElementById('parent_name'); if(pn) pn.addEventListener('input', refreshAck);
-  var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
   refreshAck();
   // Standalone center pre-select via ?center= (embed mode is handled by the kit).
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
@@ -253,7 +207,7 @@ setTimeout(function(){up()?clear():retry();},4000);
    signing — draw OR type — read-only, cleared with the signature, bound 1:1. No gate() here,
    so we add listeners. Data dates are untouched. */
 (function(){
-  var PAIRS=[{sig:'sig',date:'signed_date'}];  /* typed renders onto the canvas → inked() covers both modes */
+  var PAIRS=[{sig:'sig',date:'signed_date'}];
   function todayISO(){ try{ if(window.FormKit&&FormKit.todayISO) return FormKit.todayISO(); }catch(_){}
     var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   function inked(id){ try{ return !!(window.FormKit&&FormKit.getSig&&FormKit.getSig(id)); }catch(_){ return false; } }

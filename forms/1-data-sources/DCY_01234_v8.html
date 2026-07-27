@@ -174,10 +174,11 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       if(!f.staff) el.setAttribute('data-fk-adopt','');   // ZAKAZ 9: parent sig adopts the consent sample; program (staff) sig does not
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
       if(f.r){el.setAttribute('data-required','');el.setAttribute('data-label',f.label||f.id);}
+      if(f.id==='parent_sig') el.style.pointerEvents='none';   // parent signs via FKPad (draw-big/fits-small), never tiny direct-draw
       // clear button
       var cb=document.createElement('button');cb.type='button';cb.className='sigclear';cb.textContent='✕';
       cb.style.left=(f.x+f.w-22)+'px';cb.style.top=(f.y+2)+'px';
-      cb.onclick=function(){FormKit.clearSig(el);gate();};
+      cb.onclick=(function(fid,cel){return function(){FormKit.clearSig(cel);gate();};})(f.id,el);
       host.appendChild(cb);
       // lock overlay (attestation-gate)
       var lock=document.createElement('div');lock.className='siglock';lock.id='lock_'+f.id;
@@ -278,10 +279,19 @@ function stampReviewDate(i){
   dt.value = (init.value||'').trim() ? (dt.value || fmtToday()) : '';
 }
 
+window.__stampSigDates = stampSignatureDates;   // FKPad calls this after committing a signature
+function openParentPad(){ if(window.FKPad) FKPad.open('f_parent_sig',{name:(document.getElementById('f_p1_name')||{}).value||'',title:'Parent signature'}); }
 function gate(){
   var reqOk = requiredFilled();
-  var pLock=document.getElementById('lock_parent_sig'); if(pLock) pLock.style.display = reqOk ? 'none':'flex';
   var parentSigned = hasInk('parent_sig');
+  // The parent's siglock doubles as the sign affordance: blocked until required fields are
+  // filled, then it becomes "tap to sign" (opens the big pad — draw or type); hidden once signed.
+  var pLock=document.getElementById('lock_parent_sig');
+  if(pLock){
+    if(parentSigned){ pLock.style.display='none'; pLock.onclick=null; }
+    else if(!reqOk){ pLock.style.display='flex'; pLock.textContent='Complete the required fields first'; pLock.classList.remove('siglock-go'); pLock.onclick=null; }
+    else { pLock.style.display='flex'; pLock.textContent='✍ Tap to sign — draw big'; pLock.classList.add('siglock-go'); pLock.onclick=openParentPad; }
+  }
   var gLock=document.getElementById('lock_program_sig'); if(gLock) gLock.style.display = (reqOk && parentSigned) ? 'none':'flex';
   stampSignatureDates();
 }
@@ -353,10 +363,12 @@ function dcyReset(){
 
 // ── form-kit integration: reuse submit / status / counter / signature capture. ──
 window.FORMKIT_CONFIG = {
-  formType:'dcy_01234', version:'v6', title:'Child Enrollment & Health (DCY 01234)', reset:dcyReset,
+  formType:'dcy_01234', version:'v8', title:'Child Enrollment & Health (DCY 01234)', reset:dcyReset,
   collect:function(){
-    var fd={ type:'dcy_01234', dcy_form:'01234', dcy_version:'v6', center_code:FormKit.centerCode() };
+    var fd={ type:'dcy_01234', dcy_form:'01234', dcy_version:'v8', center_code:FormKit.centerCode() };
     FIELDS.forEach(function(f){ if(f.t!=='sig') fd[f.id]=g(f.id); });
+    fd.signature_method = 'drawn';        // v8: the parent slot is DRAW ONLY — no typed rail exists
+    fd.signature_typed_value = '';
     return {
       formData:fd,
       signatures:{ parent_sig:FormKit.getSig('f_parent_sig'), program_sig:FormKit.getSig('f_program_sig') },
@@ -369,6 +381,61 @@ window.FORMKIT_CONFIG = {
 document.addEventListener('DOMContentLoaded',function(){
   try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
 });
+</script>
+<style>
+  .siglock.siglock-go{background:rgba(15,76,53,.92);cursor:pointer}
+  .fkpad-back{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:16px}
+  .fkpad{background:#fff;border-radius:14px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column}
+  .fkpad-h{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0f4c35;color:#fff}
+  .fkpad-title{font-weight:800;font-size:15px;flex:1}
+  .fkpad-hint{font-size:12px;font-weight:700;opacity:.9}
+  .fkpad-draw{padding:16px}
+  .fkpad-canvas{width:100%;height:240px;background:rgba(255,253,150,.35);border:1.5px dashed #0f4c35;border-radius:10px;cursor:crosshair;display:block;touch-action:none}
+  .fkpad-foot{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #eef2ee}
+  .fkpad-clear,.fkpad-cancel{font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer}
+  .fkpad-ok{font:inherit;font-size:13px;font-weight:800;padding:8px 18px;border:none;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer}
+  @media print{#fk-wd-banner,#fk-wd-ns{display:none!important}.fkpad-back{display:none!important}}
+</style>
+<script>
+/* Parent-signature pad (v8, 2026-07-27): FKPad "draw-big / fits-small" on the parent signature
+   slot — DRAW ONLY. The typed autograph that v7 offered here is REMOVED: DCY requires an
+   official electronic or physical signature, not a typed name (docs/compliance/e-signature.md).
+   The pad renders onto f_parent_sig (getSig reads pixels), scale-to-fit + clipped into the 56px
+   overlay slot; records signature_method='drawn'; the existing date-stamp + attestation gate +
+   review-gate are untouched. Program (director) slot unchanged — it was never typed-capable. */
+window.FKPad = window.FKPad || (function(){
+  var modal,big,titleE,cur=null;
+  function fitBig(){ big.width=Math.max(320,big.clientWidth||600); big.height=Math.max(160,big.clientHeight||240); }
+  function build(){
+    modal=document.createElement('div'); modal.className='fkpad-back';
+    modal.innerHTML='<div class="fkpad"><div class="fkpad-h"><span class="fkpad-title">Signature</span>'
+      +'<span class="fkpad-hint">\u270d Draw your signature</span></div>'
+      +'<div class="fkpad-draw"><canvas class="fkpad-canvas"></canvas></div>'
+      +'<div class="fkpad-foot"><button type="button" class="fkpad-clear">Clear</button><span style="flex:1"></span>'
+      +'<button type="button" class="fkpad-cancel">Cancel</button><button type="button" class="fkpad-ok">Use signature</button></div></div>';
+    document.body.appendChild(modal);
+    big=modal.querySelector('.fkpad-canvas'); titleE=modal.querySelector('.fkpad-title');
+    modal.querySelector('.fkpad-clear').onclick=function(){ FormKit.clearSig(big); };
+    modal.querySelector('.fkpad-cancel').onclick=close; modal.querySelector('.fkpad-ok').onclick=commit;
+    modal.addEventListener('mousedown',function(e){ if(e.target===modal) close(); });
+  }
+  function arm(){ fitBig(); if(window.FormKit&&FormKit.initSig) FormKit.initSig(big); FormKit.clearSig(big); }
+  function bbox(c){ var ctx=c.getContext('2d'),d=ctx.getImageData(0,0,c.width,c.height).data,mnx=c.width,mny=c.height,mxx=0,mxy=0,f=false;
+    for(var y=0;y<c.height;y++)for(var x=0;x<c.width;x++){ if(d[(y*c.width+x)*4+3]>10){f=true; if(x<mnx)mnx=x; if(x>mxx)mxx=x; if(y<mny)mny=y; if(y>mxy)mxy=y;} }
+    return f?{x:mnx,y:mny,w:mxx-mnx+1,h:mxy-mny+1}:null; }
+  function open(slotId,opts){ if(!modal) build(); opts=opts||{}; cur={slotId:slotId};
+    titleE.textContent=opts.title||'Signature'; modal.style.display='flex'; arm(); }
+  function commit(){ var slot=document.getElementById(cur.slotId); if(!slot){ close(); return; }
+    var sctx=slot.getContext('2d'); sctx.clearRect(0,0,slot.width,slot.height); var bb=bbox(big);
+    if(bb){ var pd=2,aw=slot.width-pd*2,ah=slot.height-pd*2,sc=Math.min(aw/bb.w,ah/bb.h),w=bb.w*sc,h=bb.h*sc;
+      sctx.drawImage(big,bb.x,bb.y,bb.w,bb.h,(slot.width-w)/2,(slot.height-h)/2,w,h); }
+    slot.dispatchEvent(new Event('fk:ink',{bubbles:true}));
+    if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}
+    if(typeof gate==='function') try{ gate(); }catch(_){}
+    close(); }
+  function close(){ if(modal) modal.style.display='none'; }
+  return {open:open, close:close};
+})();
 </script>
 <style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
 <script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its

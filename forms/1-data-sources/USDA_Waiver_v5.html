@@ -150,7 +150,7 @@
     <tr class="fieldrow">
       <td colspan="2"><span class="lbl">Parent Signature</span>
         <div style="margin:6px 0">
-          <button type="button" class="fkpad-trigger" data-fk-pad="sigPad" data-fk-pad-name="#parentName" data-fk-pad-title="Parent signature">✍ Add signature — draw big or type</button>
+          <button type="button" class="fkpad-trigger" data-fk-pad="sigPad" data-fk-pad-name="#parentName" data-fk-pad-title="Parent signature">✍ Add signature — draw</button>
         </div>
         <div class="sig-wrap">
           <canvas id="sigPad" width="600" height="52" data-formkit="signature" data-required data-label="Parent signature"></canvas>
@@ -214,7 +214,7 @@ function resetForm(){
   if(window.FormKit){FormKit.status('Form cleared','');FormKit.refreshCounter();}
 }
 window.FORMKIT_CONFIG={
-  formType:'usda_waiver',version:'v4',title:'USDA Income Eligibility Waiver (family)',reset:resetForm,
+  formType:'usda_waiver',version:'v5',title:'USDA Income Eligibility Waiver (family)',reset:resetForm,
   collect:function(){
     var sigDate=g('signedDate')||todayISO();
     /* Pair validation for the child rows (kid1 name+DOB are static data-required;
@@ -241,8 +241,8 @@ window.FORMKIT_CONFIG={
         children:kids,
         child_name:(kids[0]&&kids[0].name)||'',   /* first child, for legacy single-name displays */
         parent_name:g('parentName'),
-        signature_method:((window.__fkTyped||{}).sigPad||{}).method||'drawn',
-        signature_typed_value:(((window.__fkTyped||{}).sigPad||{}).method==='typed')?(((window.__fkTyped||{}).sigPad||{}).name||''):'',
+        signature_method:'drawn',
+        signature_typed_value:'',
         attestation_declined:gc('attest'),
         attestation_text:'I have reviewed the Reduced and Eligibility Guidelines and I DO NOT qualify for the USDA food program.',
         signed_date:sigDate
@@ -280,63 +280,6 @@ setTimeout(function(){up()?clear():retry();},4000);
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
 <script defer src="form-kit.js?v=13"></script>
 <style>
-  .fkt{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
-  .fkt-tab{font:inherit;font-size:12px;font-weight:700;padding:4px 12px;border:1px solid #c9d6cd;border-radius:7px;background:#fff;color:#374151;cursor:pointer}
-  .fkt-tab.on{background:#0f4c35;color:#fff;border-color:#0f4c35}
-  .fkt-ui{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-  .fkt-input{font:inherit;font-size:14px;padding:6px 9px;border:1px solid #c9d6cd;border-radius:7px;min-width:170px}
-  .fkt-face{font-size:19px;line-height:1;padding:3px 12px;border:1px solid #c9d6cd;border-radius:7px;background:#fff;color:#0f4c35;cursor:pointer}
-  .fkt-face.on{border:2px solid #0f4c35;padding:2px 11px}
-  @media print{.fkt{display:none!important}}
-</style>
-<script>
-/* Typed autograph (canon "type OR draw", 2026-07-24): the signer may TYPE their name in one of
-   3 script faces instead of drawing. Rendered onto the SAME signature canvas — getSig reads
-   pixels, so the date-stamp + submit are unchanged. Records signature_method/typed_value.
-   Matches the app CountersignField. */
-window.FKTyped = window.FKTyped || (function(){
-  var FACES=["'Snell Roundhand','Savoye LET','Apple Chancery',cursive",
-             "'Bradley Hand','Segoe Script','Brush Script MT',cursive",
-             "'Noteworthy','Marker Felt','Trebuchet MS',cursive"];
-  function render(canvasId,name,face){
-    var c=document.getElementById(canvasId); if(!c) return; var ctx=c.getContext('2d');
-    ctx.clearRect(0,0,c.width,c.height);
-    var t=(name||'').trim();
-    if(t){ ctx.fillStyle='#111'; ctx.textBaseline='middle'; ctx.textAlign='left';
-      var s=Math.floor(c.height*0.64),pad=12; ctx.font=s+'px '+FACES[face||0];
-      while(ctx.measureText(t).width>c.width-pad*2 && s>9){ s-=2; ctx.font=s+'px '+FACES[face||0]; }
-      ctx.fillText(t,pad,c.height/2); }
-    c.dispatchEvent(new Event('fk:ink',{bubbles:true}));
-  }
-  return {FACES:FACES, render:render};
-})();
-(function(){
-  window.__fkTyped = window.__fkTyped || {};
-  function nm(box,input){ var v=(input&&input.value||'').trim(); if(v) return v;
-    var sel=box.getAttribute('data-fk-typed-name'); if(sel){ var e=document.querySelector(sel); if(e) return (e.value||'').trim(); } return ''; }
-  function init(box){
-    if(box._fkt) return; box._fkt=1;
-    var cv=box.getAttribute('data-fk-typed'); window.__fkTyped[cv]={method:'drawn',name:''};
-    var input=box.querySelector('.fkt-input');
-    var faceBtns=[].slice.call(box.querySelectorAll('[data-fkt-face]')); var face=0; var mode='draw';
-    function stamp(){ if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){} }
-    function paint(){ FKTyped.render(cv, nm(box,input), face); window.__fkTyped[cv].name=nm(box,input); stamp(); }
-    function setMode(m){
-      mode=m; window.__fkTyped[cv].method=(m==='type'?'typed':'drawn');   /* DB rail values, not the tab labels */
-      [].forEach.call(box.querySelectorAll('[data-fkt-mode]'),function(b){ b.classList.toggle('on', b.getAttribute('data-fkt-mode')===m); });
-      var ui=box.querySelector('.fkt-ui'); if(ui) ui.style.display = m==='type'?'':'none';
-      if(m==='type') paint(); else { if(window.FormKit&&FormKit.clearSig) FormKit.clearSig(cv); window.__fkTyped[cv].name=''; stamp(); }
-    }
-    [].forEach.call(box.querySelectorAll('[data-fkt-mode]'),function(b){ b.addEventListener('click',function(){ setMode(b.getAttribute('data-fkt-mode')); }); });
-    faceBtns.forEach(function(b){ b.addEventListener('click',function(){ face=+b.getAttribute('data-fkt-face');
-      faceBtns.forEach(function(x){ x.classList.toggle('on', x===b); }); if(mode==='type') paint(); }); });
-    if(input) input.addEventListener('input',function(){ if(mode==='type') paint(); });
-  }
-  function boot(){ [].forEach.call(document.querySelectorAll('[data-fk-typed]'), init); }
-  if(document.readyState!=='loading') boot(); else document.addEventListener('DOMContentLoaded', boot);
-})();
-</script>
-<style>
   .fkpad-trigger{font:inherit;font-size:12px;font-weight:700;padding:6px 14px;border:1px solid #0f4c35;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer}
   .fkpad-done{font-size:11px;color:#0f4c35;font-weight:700;margin-left:8px}
   @media print{.fkpad-trigger,.fkpad-done{display:none!important}}
@@ -344,71 +287,49 @@ window.FKTyped = window.FKTyped || (function(){
   .fkpad{background:#fff;border-radius:14px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column}
   .fkpad-h{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0f4c35;color:#fff}
   .fkpad-title{font-weight:800;font-size:15px;flex:1}
-  .fkpad-tabs{display:flex;gap:6px}
-  .fkpad-tab{font:inherit;font-size:12px;font-weight:700;padding:5px 12px;border:1px solid rgba(255,255,255,.5);border-radius:7px;background:transparent;color:#fff;cursor:pointer}
-  .fkpad-tab.on{background:#fff;color:#0f4c35}
-  .fkpad-draw,.fkpad-type{padding:16px}
+  .fkpad-hint{font-size:12px;font-weight:700;opacity:.9}
+  .fkpad-draw{padding:16px}
   .fkpad-canvas{width:100%;height:240px;background:rgba(255,253,150,.35);border:1.5px dashed #0f4c35;border-radius:10px;cursor:crosshair;display:block;touch-action:none}
-  .fkpad-name{width:100%;font:inherit;font-size:18px;padding:10px 12px;border:1.5px solid #c0d8c0;border-radius:9px;margin-bottom:12px}
-  .fkpad-faces{display:flex;gap:8px;flex-wrap:wrap}
-  .fkpad-face{font-size:26px;line-height:1;padding:6px 16px;border:1px solid #c0d8c0;border-radius:9px;background:#fff;color:#0f4c35;cursor:pointer}
-  .fkpad-face.on{border:2px solid #0f4c35}
   .fkpad-foot{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #eef2ee}
   .fkpad-clear,.fkpad-cancel{font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer}
   .fkpad-ok{font:inherit;font-size:13px;font-weight:800;padding:8px 18px;border:none;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer}
 </style>
 <script>
-/* FKPad — "draw big → fits small" (DocuSign pattern, 2026-07-24). A narrow overlay signature
-   slot is too small to sign in — the trigger opens a LARGE pad; the drawn stroke or typed name
-   is captured hi-res, its ink bounding-box SCALE-TO-FIT (downscaled) into the real slot canvas
-   and CLIPPED to the slot bounds, so nothing spills onto the official form. Records
-   signature_method/typed_value (window.__fkTyped[slot]) and stamps the date. */
+/* FKPad — "draw big → fits small", DRAW ONLY (2026-07-27). A narrow overlay signature slot is
+   too small to sign in — the trigger opens a LARGE pad; the drawn stroke is captured hi-res, its
+   ink bounding-box SCALE-TO-FIT (downscaled) into the real slot canvas and CLIPPED to the slot
+   bounds, so nothing spills onto the official form. There is NO typed rail on this form: the
+   licensing authority (DCY) requires a real signature, not a typed name — see
+   docs/compliance/e-signature.md. Records signature_method='drawn' and stamps the date. */
 window.FKPad = window.FKPad || (function(){
-  var modal,big,nameI,faces,tabD,tabT,wD,wT,titleE,cur=null;
-  function stacks(){ return (window.FKTyped&&FKTyped.FACES)||["cursive","cursive","cursive"]; }
+  var modal,big,titleE,cur=null;
   function fitBig(){ big.width=Math.max(320,big.clientWidth||600); big.height=Math.max(160,big.clientHeight||240); }
   function build(){
     modal=document.createElement('div'); modal.className='fkpad-back';
     modal.innerHTML='<div class="fkpad"><div class="fkpad-h"><span class="fkpad-title">Signature</span>'
-      +'<div class="fkpad-tabs"><button type="button" class="fkpad-tab on" data-m="draw">✍ Draw</button>'
-      +'<button type="button" class="fkpad-tab" data-m="type">⌨ Type</button></div></div>'
+      +'<span class="fkpad-hint">\u270d Draw your signature</span></div>'
       +'<div class="fkpad-draw"><canvas class="fkpad-canvas"></canvas></div>'
-      +'<div class="fkpad-type" style="display:none"><input class="fkpad-name" type="text" placeholder="Type your full name" autocomplete="off"><div class="fkpad-faces"></div></div>'
       +'<div class="fkpad-foot"><button type="button" class="fkpad-clear">Clear</button><span style="flex:1"></span>'
       +'<button type="button" class="fkpad-cancel">Cancel</button><button type="button" class="fkpad-ok">Use signature</button></div></div>';
     document.body.appendChild(modal);
-    big=modal.querySelector('.fkpad-canvas'); nameI=modal.querySelector('.fkpad-name');
-    tabD=modal.querySelector('[data-m=draw]'); tabT=modal.querySelector('[data-m=type]');
-    wD=modal.querySelector('.fkpad-draw'); wT=modal.querySelector('.fkpad-type'); titleE=modal.querySelector('.fkpad-title'); faces=modal.querySelector('.fkpad-faces');
-    stacks().forEach(function(st,i){ var b=document.createElement('button'); b.type='button'; b.className='fkpad-face'+(i===0?' on':''); b.style.fontFamily=st; b.textContent='Abc';
-      b.onclick=function(){ cur.face=i; [].forEach.call(faces.children,function(x){x.classList.toggle('on',x===b);}); paint(); }; faces.appendChild(b); });
-    tabD.onclick=function(){ mode('draw'); }; tabT.onclick=function(){ mode('type'); };
-    nameI.oninput=function(){ paint(); };
-    modal.querySelector('.fkpad-clear').onclick=function(){ if(cur.mode==='draw') FormKit.clearSig(big); else { nameI.value=''; paint(); } };
+    big=modal.querySelector('.fkpad-canvas'); titleE=modal.querySelector('.fkpad-title');
+    modal.querySelector('.fkpad-clear').onclick=function(){ FormKit.clearSig(big); };
     modal.querySelector('.fkpad-cancel').onclick=close; modal.querySelector('.fkpad-ok').onclick=commit;
     modal.addEventListener('mousedown',function(e){ if(e.target===modal) close(); });
   }
-  function mode(m){ cur.mode=m; tabD.classList.toggle('on',m==='draw'); tabT.classList.toggle('on',m==='type');
-    wD.style.display=m==='draw'?'':'none'; wT.style.display=m==='type'?'':'none';
-    if(m==='draw'){ fitBig(); if(window.FormKit&&FormKit.initSig) FormKit.initSig(big); FormKit.clearSig(big); } else paint(); }
-  function paint(){ fitBig(); var ctx=big.getContext('2d'); ctx.clearRect(0,0,big.width,big.height);
-    var t=(nameI.value||'').trim(); if(!t) return; ctx.fillStyle='#111'; ctx.textBaseline='middle'; ctx.textAlign='left';
-    var s=Math.floor(big.height*0.5),pad=40; ctx.font=s+'px '+stacks()[cur.face];
-    while(ctx.measureText(t).width>big.width-pad*2&&s>24){ s-=4; ctx.font=s+'px '+stacks()[cur.face]; } ctx.fillText(t,pad,big.height/2); }
+  function arm(){ fitBig(); if(window.FormKit&&FormKit.initSig) FormKit.initSig(big); FormKit.clearSig(big); }
   function bbox(c){ var ctx=c.getContext('2d'),d=ctx.getImageData(0,0,c.width,c.height).data,mnx=c.width,mny=c.height,mxx=0,mxy=0,f=false;
     for(var y=0;y<c.height;y++)for(var x=0;x<c.width;x++){ if(d[(y*c.width+x)*4+3]>10){f=true; if(x<mnx)mnx=x; if(x>mxx)mxx=x; if(y<mny)mny=y; if(y>mxy)mxy=y;} }
     return f?{x:mnx,y:mny,w:mxx-mnx+1,h:mxy-mny+1}:null; }
-  function open(slotId,opts){ if(!modal) build(); opts=opts||{}; cur={slotId:slotId,face:0,mode:'draw'};
-    nameI.value=opts.name||''; [].forEach.call(faces.children,function(x,i){x.classList.toggle('on',i===0);});
-    titleE.textContent=opts.title||'Signature'; modal.style.display='flex'; mode('draw'); }
+  function open(slotId,opts){ if(!modal) build(); opts=opts||{}; cur={slotId:slotId};
+    titleE.textContent=opts.title||'Signature'; modal.style.display='flex'; arm(); }
   function commit(){ var slot=document.getElementById(cur.slotId); if(!slot){ close(); return; }
     var sctx=slot.getContext('2d'); sctx.clearRect(0,0,slot.width,slot.height); var bb=bbox(big);
     if(bb){ var pd=2,aw=slot.width-pd*2,ah=slot.height-pd*2,sc=Math.min(aw/bb.w,ah/bb.h),w=bb.w*sc,h=bb.h*sc;
       sctx.drawImage(big,bb.x,bb.y,bb.w,bb.h,(slot.width-w)/2,(slot.height-h)/2,w,h); }
     slot.dispatchEvent(new Event('fk:ink',{bubbles:true}));
-    window.__fkTyped=window.__fkTyped||{}; window.__fkTyped[cur.slotId]={method:cur.mode==='type'?'typed':'drawn',name:cur.mode==='type'?(nameI.value||'').trim():''};
     if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}
-    var b=document.querySelector('.fkpad-trigger[data-fk-pad="'+cur.slotId+'"]'); if(b){ var dn=b.parentNode.querySelector('.fkpad-done'); if(!dn){ dn=document.createElement('span'); dn.className='fkpad-done'; b.parentNode.insertBefore(dn,b.nextSibling); } dn.textContent='✓ signed'; }
+    var b=document.querySelector('.fkpad-trigger[data-fk-pad="'+cur.slotId+'"]'); if(b){ var dn=b.parentNode.querySelector('.fkpad-done'); if(!dn){ dn=document.createElement('span'); dn.className='fkpad-done'; b.parentNode.insertBefore(dn,b.nextSibling); } dn.textContent='\u2713 signed'; }
     close(); }
   function close(){ if(modal) modal.style.display='none'; }
   return {open:open, close:close};

@@ -25,13 +25,9 @@
   .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
   .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
   .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
-  .sigtabs { display:flex; gap:6px; margin-top:6px; }
-  .sigtab { padding:6px 14px; border:1.5px solid var(--line); border-radius:8px; background:#fff; font-size:13px; font-weight:600; color:#374151; cursor:pointer; font-family:inherit; }
-  .sigtab.on { background:var(--green); color:#fff; border-color:var(--green); }
   .sigbox { position:relative; margin-top:8px; }
   canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
   .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
-  #typed_sig, #typed_sig2 { font-family:'Segoe Script','Brush Script MT',cursive; font-size:26px; color:#111; }
   .na { display:flex; align-items:center; gap:8px; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
   .na input { width:18px; height:18px; }
   .p2wrap.off { opacity:.45; }
@@ -92,16 +88,9 @@
         <input type="date" id="signed_date" data-required data-label="Date"></div>
     </div>
     <label class="f">Signature *</label>
-    <div class="sigtabs">
-      <button type="button" class="sigtab on" id="tab_draw" onclick="sigMode('draw')">✍️ Draw</button>
-      <button type="button" class="sigtab" id="tab_type" onclick="sigMode('type')">⌨️ Type</button>
-    </div>
     <div class="sigbox" id="draw_box">
       <canvas id="sig" data-fk-adopt data-fk-mint data-fk-mint-name="#parent_name" width="700" height="90" data-formkit="signature" data-required data-label="Signature"></canvas>
       <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
-    </div>
-    <div id="type_box" style="display:none">
-      <input type="text" id="typed_sig" placeholder="Type your full name as your signature" autocomplete="off">
     </div>
   </fieldset>
 
@@ -118,16 +107,9 @@
           <input type="date" id="signed_date2" data-label="Second date"></div>
       </div>
       <label class="f">Signature</label>
-      <div class="sigtabs">
-        <button type="button" class="sigtab on" id="tab_draw2" onclick="sigMode2('draw')">✍️ Draw</button>
-        <button type="button" class="sigtab" id="tab_type2" onclick="sigMode2('type')">⌨️ Type</button>
-      </div>
       <div class="sigbox" id="draw_box2">
         <canvas id="sig2" width="700" height="90" data-formkit="signature" data-label="Second signature"></canvas>
         <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig2')">✕</button>
-      </div>
-      <div id="type_box2" style="display:none">
-        <input type="text" id="typed_sig2" placeholder="Type full name as signature" autocomplete="off">
       </div>
     </div>
     <div class="note">A second signature is optional — tick N/A if there is only one parent or guardian.</div>
@@ -140,64 +122,37 @@
    enrollment contingent on a "signed Parent Handbook receipt", so a paraphrase would collect a
    signature on weaker words than the document itself requires. */
 function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
-var SIG_METHOD='draw', SIG_METHOD2='draw';
 
 function refreshEcho(){
   document.getElementById('e_parent').textContent = g('parent_name') || '________';
   document.getElementById('e_child').textContent  = g('child_name')  || '________';
 }
-function renderTypedInto(canvasId, srcId){
-  var c=document.getElementById(canvasId), ctx=c.getContext('2d');
-  ctx.clearRect(0,0,c.width,c.height);
-  var t=g(srcId); if(!t) return;
-  ctx.fillStyle='#111'; ctx.textBaseline='middle';
-  ctx.font='38px "Segoe Script","Brush Script MT",cursive';
-  ctx.fillText(t, 14, c.height/2);
-  c.dispatchEvent(new Event('fk:ink',{bubbles:true}));
-}
-function sigMode(m){
-  SIG_METHOD=m;
-  document.getElementById('tab_draw').classList.toggle('on', m==='draw');
-  document.getElementById('tab_type').classList.toggle('on', m==='type');
-  document.getElementById('draw_box').style.display = m==='draw' ? '' : 'none';
-  document.getElementById('type_box').style.display = m==='type' ? '' : 'none';
-  FormKit.clearSig('sig');
-  if(m==='type') renderTypedInto('sig','typed_sig');
-}
-function sigMode2(m){
-  SIG_METHOD2=m;
-  document.getElementById('tab_draw2').classList.toggle('on', m==='draw');
-  document.getElementById('tab_type2').classList.toggle('on', m==='type');
-  document.getElementById('draw_box2').style.display = m==='draw' ? '' : 'none';
-  document.getElementById('type_box2').style.display = m==='type' ? '' : 'none';
-  FormKit.clearSig('sig2');
-  if(m==='type') renderTypedInto('sig2','typed_sig2');
-}
+// This form is DRAW ONLY (2026-07-27). The typed autograph v1 offered here is removed: this
+// signature MINTS the parent's sample (pa_sig_sample:parent) that DCY 01234 / IEA / CACFP
+// Enrollment adopt with one tap — a typed sample would land on a government form as ink.
+// See docs/compliance/e-signature.md.
 /* P2 N/A — enable when unchecked, disable + clear when checked (pattern from DCY 01218),
    so "N/A" can never coexist with a second signature. */
 function syncP2(){
   var off=document.getElementById('p2_na').checked;
   document.getElementById('p2wrap').classList.toggle('off', off);
-  ['print_name2','signed_date2','typed_sig2'].forEach(function(id){
+  ['print_name2','signed_date2'].forEach(function(id){
     var e=document.getElementById(id); if(!e) return;
     e.disabled=off; if(off) e.value='';
   });
-  ['tab_draw2','tab_type2'].forEach(function(id){ var b=document.getElementById(id); if(b) b.disabled=off; });
   var c=document.getElementById('sig2'); if(c){ c.style.pointerEvents = off ? 'none' : ''; if(off) FormKit.clearSig('sig2'); }
 }
 function ackReset(){
-  ['parent_name','child_name','print_name','typed_sig','print_name2','typed_sig2'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  ['parent_name','child_name','print_name','print_name2'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
   var na=document.getElementById('p2_na'); if(na) na.checked=false;
   FormKit.clearSig('sig'); FormKit.clearSig('sig2');
-  sigMode('draw'); sigMode2('draw'); syncP2(); refreshEcho();
+  syncP2(); refreshEcho();
   ['signed_date'].forEach(function(id){var e=document.getElementById(id); if(e) e.value=FormKit.todayISO();});
   if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
 }
 window.FORMKIT_CONFIG = {
-  formType:'parents_book_ack', version:'v1', reset:ackReset,
+  formType:'parents_book_ack', version:'v2', reset:ackReset,
   collect:function(){
-    if(SIG_METHOD==='type') renderTypedInto('sig','typed_sig');
-    if(SIG_METHOD2==='type') renderTypedInto('sig2','typed_sig2');
     var na=document.getElementById('p2_na').checked;
     var fd={
       type:'parents_book_ack', center_code:FormKit.centerCode(),
@@ -205,12 +160,12 @@ window.FORMKIT_CONFIG = {
       ack_text_source:'handbook signature page (verbatim)',
       parent_name:g('parent_name'), child_name:g('child_name'),
       print_name:g('print_name'),
-      signature_method: SIG_METHOD==='type' ? 'typed' : 'drawn',
-      signature_typed_value: SIG_METHOD==='type' ? g('typed_sig') : '',
+      signature_method: 'drawn',                          // draw only — no typed rail on this form
+      signature_typed_value: '',
       second_parent_na: na,
       print_name2: na ? '' : g('print_name2'),
       signed_date2: na ? '' : g('signed_date2'),
-      signature2_method: na ? '' : (SIG_METHOD2==='type' ? 'typed' : 'drawn')
+      signature2_method: na ? '' : 'drawn'
     };
     var sigs={ parent_sig: FormKit.getSig('sig') };
     if(!na){ var s2=FormKit.getSig('sig2'); if(s2) sigs.parent2_sig=s2; }
@@ -221,8 +176,6 @@ window.FORMKIT_CONFIG = {
 document.addEventListener('DOMContentLoaded',function(){
   var sd=document.getElementById('signed_date'); if(sd&&!sd.value) sd.value=FormKit.todayISO();
   ['parent_name','child_name'].forEach(function(id){ var e=document.getElementById(id); if(e) e.addEventListener('input', refreshEcho); });
-  var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', function(){ renderTypedInto('sig','typed_sig'); });
-  var ts2=document.getElementById('typed_sig2'); if(ts2) ts2.addEventListener('input', function(){ renderTypedInto('sig2','typed_sig2'); });
   refreshEcho(); syncP2();
 });
 </script>
