@@ -29,18 +29,36 @@
   var SUPA_URL = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
   var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
   var ORG = '3a9a290e-7e49-491e-946b-ad86f2399910';
-  var CENTERS = { pearl: '881ef4ce-1a27-4d3b-aa60-59d2a307bf2b', alpha: '099c404b-e6d3-4543-9d9a-1fb11a2ee62d', ridge: '4aed7d5a-00d0-4a4c-ac99-311046ad2027' };
+  // ⚠ THIS MAP IS THE SECOND HALF OF A CENTRE. enroll-registry.json (the storefront's
+  // half) and this map (the form's half) must be edited in the SAME commit — a centre
+  // present in only one of them produces the worst failure we have: the storefront hands
+  // out a link that opens a form which then refuses to file. That is exactly how take 6
+  // died (registry got zzdemo in 3695e64, this map did not). `--rehearse-only` now opens
+  // the real form URL and asserts the submit channel is armed, so the drift cannot ride
+  // silently to a recording again.
+  var CENTERS = {
+    pearl: '881ef4ce-1a27-4d3b-aa60-59d2a307bf2b',
+    alpha: '099c404b-e6d3-4543-9d9a-1fb11a2ee62d',
+    ridge: '4aed7d5a-00d0-4a4c-ac99-311046ad2027',
+    zzdemo: '0de1b5a4-e6d8-4e34-a5e4-e3dde23e1c6c',   // one-time demo centre — not a live site, not in any claim
+  };
   // Per-center identity for the resolved-center header (center-auto-detect spec).
   var CENTERS_INFO = {
     pearl: { name: 'Play Academy Parma Heights', address: '6285 Pearl Rd, Parma Heights', phone: '440-884-7529' },
     alpha: { name: 'Play Academy Highland Heights', address: '201 Alpha Park, Highland Heights', phone: '440-460-0600' },
     ridge: { name: 'Play Academy Wickliffe', address: '28930 Ridge Rd, Wickliffe', phone: '440-520-0031' },
+    // Wording matches menumaker.centers row for zzdemo (name + address read 2026-07-27),
+    // so nothing on camera claims to be a real site. Phone is a 555 number by scenario convention.
+    zzdemo: { name: 'ZZ Demo', address: '(demo — not a real site)', phone: '(555) 010-0000' },
   };
   // Per-center CACFP meal schedule (menumaker.meal_schedule; uniform across all
   // classrooms 2026-07). §4 auto-derives ONLY from the resolved center's slots —
   // meals not served here (PM snack / evening snack) are NEVER auto-checked.
   var CM = { b: ['07:00', '08:00'], as: ['09:15', '09:45'], l: ['11:30', '12:30'], su: ['15:30', '16:30'] };
-  var CENTER_MEALS = { pearl: CM, alpha: CM, ridge: CM };
+  // zzdemo has ZERO rows in menumaker.meal_schedule (measured 2026-07-27). It gets the same
+  // uniform slots so a packet form's §4 behaves like a real centre's; seeding the demo centre's
+  // real schedule is a DB write and waits for Nikolay's word.
+  var CENTER_MEALS = { pearl: CM, alpha: CM, ridge: CM, zzdemo: CM };
   var MEALS = ['b', 'as', 'l', 'ps', 'su', 'es'];
   // Shared brand assets (drop pa-logo.png 603×203 + pa-icon-144.png into this dir).
   var LOGO_URL = 'pa-icon-192.png', FAVICON_URL = 'pa-icon-144.png';
@@ -53,9 +71,51 @@
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
   var debounce = function (fn, ms) { var t; return function () { var a = arguments, c = this; clearTimeout(t); t = setTimeout(function () { fn.apply(c, a); }, ms); }; };
 
+  // ── Honest refusal (no silent no-ops) ───────────────────────────────────────
+  // Take 6 died because a refusal had nowhere to land: the toolbar's Submit was
+  // DISABLED, so the click never reached submit(), and the only signal was a
+  // passive yellow strip. Rule now: anything the kit refuses to do, it says — in
+  // words, where the eye already is. An error ALWAYS gets a toast, even when the
+  // toolbar status slot is missing, restyled away, or scrolled off screen.
+  function toast(msg) {
+    if (!msg) return;
+    var old = $('.fk-toast'); if (old && old.parentNode) old.parentNode.removeChild(old);
+    var t = document.createElement('div'); t.className = 'fk-toast fk-print-hidden';
+    t.setAttribute('role', 'alert');
+    t.textContent = msg;
+    t.addEventListener('click', function () { if (t.parentNode) t.parentNode.removeChild(t); });
+    document.body.appendChild(t);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 9000);
+  }
   function status(msg, kind) {
     var e = $('[data-formkit="status"]') || document.getElementById('st');
-    if (e) { e.textContent = msg; e.className = kind || ''; }
+    // keep the toolbar's own class — `.fk-tb-status.er{color:#b91c1c}` needs BOTH,
+    // and the old assignment wiped fk-tb-status, so every error rendered unstyled.
+    if (e) { e.textContent = msg; e.className = 'fk-tb-status ' + (kind || ''); }
+    if (kind === 'er') toast(msg);
+  }
+  function urlCenterParam() { try { return new URLSearchParams(location.search).get('center') || ''; } catch (_) { return ''; } }
+  // The old text ("open this from your center's packet link or QR") misdiagnoses the
+  // commonest case out loud: the parent DID open it from the packet link — the link
+  // carried a centre this build of the form does not know. Name what was seen.
+  function unresolvedCenterText() {
+    var c = urlCenterParam();
+    return c
+      ? '⚠ Nothing was sent. This form does not recognise the center “' + c + '” in your link. '
+        + 'Your answers are still here on this device — ask the center for a current packet link or QR and open the form again.'
+      : "⚠ Nothing was sent. This form has no center — open it from your center's packet link or QR, and your answers will still be here.";
+  }
+  function refuseNoCenter() {
+    var t = unresolvedCenterText();
+    status(t, 'er');                        // toolbar line + toast (status toasts every 'er')
+    if (_tbBanner) {
+      _tbBanner.textContent = t;
+      _tbBanner.style.display = '';
+      _tbBanner.classList.remove('fk-flash');
+      void _tbBanner.offsetWidth;           // restart the animation on a repeat press
+      _tbBanner.classList.add('fk-flash');
+      try { _tbBanner.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    }
   }
 
   // ── Center resolution (NO visible picker — ?center= / kiosk / embed only) ────
@@ -595,9 +655,12 @@
   }
   async function submit() {
     if (_submitting || _submitted) return;   // in-flight / already-submitted guard
+    // Centre FIRST. It used to be checked after field validation, so a parent learned
+    // the link was unusable only after filling and signing the whole form — take 6 to
+    // the letter. The bigger blocker is named on the first press, whenever it comes.
+    if (!centerUuid()) { refuseNoCenter(); return; }   // #6 still absolute — but now it REFUSES OUT LOUD
     var missing = refreshCounter();
     if (missing.length) { var f = firstMissing(); if (f) { (f.scrollIntoView || function () {}).call(f, { behavior: 'smooth', block: 'center' }); if (f.focus) f.focus(); fieldMsg(f, true); } status('Please complete the highlighted fields', 'er'); return; }
-    if (!centerUuid()) { status("⚠ Please open this form from your center's packet link or QR", 'er'); return; }
     var data;
     try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status('Error: ' + e.message, 'er'); return; }
     if (!data) { status('Nothing to submit', 'er'); return; }
@@ -991,7 +1054,14 @@
       + '.fk-toolbar button.fk-tb-special{font:inherit;font-size:12px;font-weight:600;border-radius:8px;padding:7px 12px;background:#eef3ef;color:#0f4c35;border:1px solid #dcebe2;cursor:pointer}'
       + '.fk-tb-status{font-size:12.5px;font-weight:600}.fk-tb-status.ok{color:#0f4c35}.fk-tb-status.er{color:#b91c1c}.fk-tb-status.in{color:#6b7280}'
       + '.fk-tb-banner{display:flex;align-items:center;gap:9px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:600;padding:10px 14px;border-top:1px solid #e2e8e2}'
-      + '@media print{.fk-toolbar{display:none!important}}';
+      // unarmed = muted but LIVE. Never `disabled` — a click must always get an answer.
+      + '.fk-toolbar button.fk-tb-submit.fk-tb-unarmed{background:#7f9c8e;border-color:#7f9c8e;cursor:pointer}'
+      + '@keyframes fkFlash{0%,100%{background:#fef3c7}30%,60%{background:#fde68a;box-shadow:0 0 0 3px rgba(180,83,9,.35) inset}}'
+      + '.fk-tb-banner.fk-flash{animation:fkFlash 1.1s ease-in-out 2}'
+      + '.fk-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10000;max-width:min(620px,92vw);'
+      + 'background:#7f1d1d;color:#fff;border-radius:10px;padding:13px 17px;font:600 13.5px/1.5 Arial,sans-serif;'
+      + 'box-shadow:0 8px 26px rgba(0,0,0,.3);cursor:pointer}'
+      + '@media print{.fk-toolbar,.fk-toast{display:none!important}}';
     document.head.appendChild(s);
   }
   function tbBtn(cls, txt) { var b = document.createElement('button'); b.type = 'button'; b.className = cls; b.innerHTML = txt; return b; }
@@ -999,8 +1069,20 @@
     var chip = $('[data-formkit="center-chip"]');
     var code = centerCode(), info = CENTERS_INFO[code], has = !!centerUuid();
     if (chip) { if (info) { chip.textContent = '📍 ' + info.name.replace(/^Play Academy\s+/, ''); chip.style.display = ''; } else { chip.style.display = 'none'; } }
-    if (_tbBanner) _tbBanner.style.display = has ? 'none' : '';
-    if (_tbSubmit) _tbSubmit.disabled = !has;
+    if (_tbBanner) { _tbBanner.style.display = has ? 'none' : ''; if (!has) _tbBanner.textContent = unresolvedCenterText(); }
+    // Finding #6 is enforced in submit() — no centre resolved, no write, ever. The
+    // button nevertheless stays ENABLED: a disabled button eats the click and answers
+    // nothing, which is how a fully-filled, fully-signed form went four presses with no
+    // word either way. Unarmed it looks muted; pressed, it says what is wrong.
+    if (_tbSubmit) {
+      // NOT aria-disabled either: the control really is live and really does answer,
+      // and Playwright (like a screen reader) treats aria-disabled as disabled — which
+      // would hide the very refusal path the rehearsal has to exercise.
+      _tbSubmit.disabled = false;
+      _tbSubmit.removeAttribute('aria-disabled');
+      _tbSubmit.classList[has ? 'remove' : 'add']('fk-tb-unarmed');
+      _tbSubmit.title = has ? '' : 'This form has no center yet — press to see why';
+    }
   }
   function initToolbar() {
     var tb = $('[data-formkit="toolbar"]') || $('.toolbar') || document.getElementById('tb');
@@ -1081,6 +1163,13 @@
     refreshCounter: refreshCounter, applyConditionals: applyConditionals,
     fmtPhone: fmtPhone, todayISO: todayISO, isoDate: isoDate,
     CENTERS: CENTERS, ORG: ORG,
+    // KIT is the cache-bust number in the <script src="form-kit.js?v=N"> includes.
+    // A rehearsal reads it to prove the browser got the build it thinks it got.
+    KIT: 12,
+    // armed() === true means "pressing Submit would really call the RPC". The
+    // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
+    armed: function () { return !!centerUuid(); },
+    whyNotArmed: function () { return centerUuid() ? '' : unresolvedCenterText(); },
     // Exposed so a form's CFG.submit override can POST to its own dedicated
     // table without re-inlining the anon key (UX-only retrofit path).
     supa: { url: SUPA_URL, key: SUPA_KEY, headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' } },
