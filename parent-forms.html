@@ -241,6 +241,12 @@
           (reg.packets[p].slots || []).forEach(function (sl) { if (sl && sl.key && !pool[sl.key]) pool[sl.key] = sl; });
         });
         slots = only.map(function (k) { return pool[k] || ((reg.forms && reg.forms[k]) ? { key: k } : null); }).filter(Boolean).map(gate);
+        // A single-form link may pin the variant of a multi-variant form:
+        //   ?center=…&only=start_form&variant=infant
+        // Without it the pooled slot decides, and the pool takes the FIRST packet that
+        // declares the key (starter → no variant → the form's default). Explicit beats pooled.
+        var onlyVariant = (qs.get('variant') || '').trim();
+        if (onlyVariant) slots = slots.map(function (s) { var c = Object.assign({}, s); c.variant = onlyVariant; return c; });
       } else {
         slots = pk.slots.slice()   // ZAKAZ 11: keep/pending render as their own cards
           .filter(function (s) { return s.section !== 'if_applicable'; })
@@ -265,6 +271,10 @@
         var note = s.note || '';
         function onlyLink(slug){ return 'https://pa082508.github.io/parent-forms.html?center=' + encodeURIComponent(center) + '&only=' + encodeURIComponent(slug); }
         function withK(u, slug){ return u + (u.indexOf('?') >= 0 ? '&' : '?') + 'k=' + encodeURIComponent(slug); }
+        // A slot may pin a VARIANT of a multi-variant form (start_form: infant / school_age /
+        // voucher). The packet knows the contour, so the link decides — the parent is never
+        // asked which fee regime applies to them. No variant on the slot → the form's default.
+        function withVariant(u, v){ return v ? u + (u.indexOf('?') >= 0 ? '&' : '?') + 'variant=' + encodeURIComponent(v) : u; }
         var kind = src.kind || (s.keep ? 'keep' : (s.pending || s.handout ? 'director' : 'signature'));
         var url = verUrl(src.versions && src.current && src.versions[src.current]) || src.fallbackUrl || null;
         if (url === 'PENDING') url = null;
@@ -301,7 +311,7 @@
         }
         // FILL & SIGN — numbered signature form; link carries &k=<slot> so form-kit marks it done on submit
         n++;
-        var link = url ? withK(scoped(url), s.key) : null;
+        var link = url ? withVariant(withK(scoped(url), s.key), s.variant) : null;
         card.className = 'card'; card.dataset.key = s.key; card.dataset.n = String(n);
         card.innerHTML = '<div class="num">' + n + '</div>'
           + '<div class="info"><div class="t"></div><span class="badge fs">Fill &amp; sign</span><div class="d"></div></div>'

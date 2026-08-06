@@ -540,21 +540,38 @@
     },
     "start_form": {
       "slug": "start_form",
-      "title": "Registration Start Form",
+      "title": "Registration & Fee Agreement",
       "kind": "signature",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v2.html",
       "intakeMode": "online|kiosk",
       "signer": "parent",
       "history": [
+        {
+          "at": "2026-07-27",
+          "note": "FLIP current v1 → v2 — ONE form, FOUR variants (Николай, заказ 27.07; спека docs/specs/2026-07-27-fee-agreement-variant-form.md). Источники — наши четыре docx, положены в forms/3-library/our-documents/ (Fee / Infant / School Age / Voucher) и зарегистрированы в sources. Вариант переключает РОВНО четыре блока (рег.взнос · условия оплаты · просрочка · хвост ответственности) через data-variant + один проход applyVariant; скелет один, копий нет. Титул печатной страницы = собственный титул исходного docx. Выбор варианта: ?variant= из слота пакета → панель в шапке (офис/киоск) → standard; запись хранит и variant, и variant_source. СУММЫ ВЫНЕСЕНЫ ИЗ ТЕКСТА в реестр (fees, effective-dated, резолв на дату подписи, применённый набор снимком в fees_applied; при недоступном реестре — вшитый снимок издания и честный source=builtin). Дети 1..N («+ Add another child») вместо фиксированных двух; children[] и child_name сохранены. Даты подписей стали ШТАМПАМИ (read-only, ставятся при подписи, стираются с ней); слот администрации отпирается только после подписи родителя. Обе подписи DRAW-ONLY (docs/compliance/e-signature.md). Zelle (phone-to-phone) добавлен в Forms of payment и в способы оплаты рег.взноса; реквизит — из конфига, номер печатается только если задан. Опечатки исходников исправлены при переносе: mew→new, ineligibly→ineligibility, owned→owed, child/renon→children on, 31stof→31st of. Registration fee убран из панели OFFICE SETUP — ставка приходит из конфига, стойка не может с ним разойтись. form-kit.js не тронут → ?v= остаётся 12. v1 остаётся историческим; сабмишенов у start_form на момент флипа — 0. ОНЛАЙН-ОПЛАТА РАССМОТРЕНА И СНЯТА ВЛАДЕЛЬЦЕМ (27.07, тем же заходом): блок Zelle — реквизит, сумма к оплате, генерируемая строка memo, предупреждение о необратимости, поле самодекларации — построен и СНЯТ ЦЕЛИКОМ, вместе с ключом конфига zelle_recipient (был zelle_phone) и стоп-точкой «живой перевод $1». Форма — ДОКУМЕНТ, а не платёжная система; оплата у стойки, кешем или чеком. ПОБОЧНЫЙ ЭФФЕКТ: блок «Forms of payment» вернулся к тексту docx БЕЗ наших добавок — реплика 1:1 стала строже, чем задумывалась. ОПЕЧАТКА №6 (та же дисциплина, что и первые пять; §0.6 attendance-module-spec: «структуру сохраняем, орфографию правим»): в docx «Payment is due by Wednesday FROM the following week» — «from» стоит вместо «for»; «by Wednesday FOR the following week» = та же предоплата, что и в v1. Ставим формулировку v1 — «by Wednesday OF THE PRECEDING WEEK». Расхождения по смыслу не было, была порча текста. Правка в общем абзаце вариантов standard + school_age."
+        },
         {
           "at": "2026-07-15",
           "note": "FLIP → v1 on Nikolay's «поля ок». Mockup taken into the kit (2ee96b7/48e90bb): centre tabs removed (finding #6), Ridge-hardcoded header replaced by ?center= with blank honest degradation, logo → shared pa-logo.png (161KB→24KB). 9 required; OFFICE SETUP badged, never required, director-prefilled via session packet. Channel submit_enrollment_form, submission_type=start_form. OPEN (not blockers): Alpha e-mail unconfirmed, pearl/alpha fax empty."
         }
       ],
+      "variants": {
+        "standard": "Fee Agreement",
+        "infant": "Infant Fee Agreement",
+        "school_age": "School Age Fee Agreement",
+        "voucher": "CARETAKER/PROVIDER Fee Agreement"
+      },
+      "sources": {
+        "standard": "forms/3-library/our-documents/Fee Agreement.docx",
+        "infant": "forms/3-library/our-documents/Infant Agreement.docx",
+        "school_age": "forms/3-library/our-documents/School Age Agreement.docx",
+        "voucher": "forms/3-library/our-documents/Voucher Agreement.docx"
+      },
       "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid. (Описание карточки для случая, когда форма не объявлена ни одним набором: витрина синтезирует слот из forms{} и берёт label/note отсюда. Канон формы-двери.)"
     },
     "parents_book": {
@@ -632,6 +649,21 @@
     "_note": "STAGE-2 SWAP POINT — org-level branding. Interim values live here (editable as DATA, no code deploy); Stage 2 sources them from org settings (OrgContext). name = organization display name used in form headers/body tokens ([data-fk-org]); marketing_text = admin-editable promo copy (credits / material incentives) injected into the Parent Consent marketing slot — empty = nothing renders. Read by parent-facing forms via ../../enroll-registry.json.",
     "name": "Play Academy, Inc.",
     "marketing_text": ""
+  },
+  "fees": {
+    "_note": "Ставки денежного договора (start_form / Fee Agreement). ЭФФЕКТИВНЫ ПО ДАТЕ: форма резолвит строку на ДАТУ ПОДПИСИ и кладёт применённый набор снимком в запись. Смена ставки = НОВАЯ строка с новым from (и to у прежней); прежнюю не редактируем — иначе подписанный в прошлом договор начнёт печататься сегодняшней суммой. Org-wide: ставки едины для Ridge/Pearl/Alpha (Николай, 27.07.2026). Если разойдутся — добавляется блок \"centers\" с перекрытием по-полю, форма к этому готова.",
+    "defaults": [
+      {
+        "from": "2026-01-01",
+        "to": null,
+        "reg_fee": 75.0,
+        "reg_fee_school_age": 25.0,
+        "reg_fee_voucher": 25.0,
+        "infant_waiting_deposit": 150.0,
+        "late_fee_per_day": 5.0,
+        "absentee_days_per_half_year": 10
+      }
+    ]
   },
   "conditions": {
     "_note": "SINGLE SOURCE OF CONDITIONAL LOGIC — the one map. Read by: (a) packets.admission If-applicable grouping (a conditional form's group = forms[key].condition); (b) parent-forms.html + ParentPacketPage group headers & order (this key order); (c) Stage-2 in-form conditional hints (detectOn = the form whose answers raise it; detect = the answer signals; issue:'director' = handed out in person, rendered as a director line not a parent link). Do NOT encode conditions anywhere else in code or in a second map. Supersedes the per-form conditional.triggers used in Stage 1.",
@@ -1051,8 +1083,9 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "label": "Registration Start Form",
-          "note": "Confirms your start date and fees. Your director can fill the amounts with you."
+          "label": "Infant Fee Agreement",
+          "note": "Confirms your start date and fees, including the infant waiting fee (credited on your infant’s first day).",
+          "variant": "infant"
         },
         {
           "key": "parents_book_ack",
@@ -1087,7 +1120,13 @@
         { "key": "center_parent_information", "section": "mandatory" },
         { "key": "building_for_the_future", "section": "mandatory" },
         { "key": "wic_information", "section": "mandatory" },
-        { "key": "start_form", "section": "mandatory" },
+        {
+          "key": "start_form",
+          "section": "mandatory",
+          "variant": "school_age",
+          "label": "School Age Fee Agreement",
+          "note": "Confirms your start date and fees for school-age care."
+        },
         { "key": "parents_book_ack", "section": "mandatory" },
         { "key": "parents_book", "section": "mandatory" }
       ]

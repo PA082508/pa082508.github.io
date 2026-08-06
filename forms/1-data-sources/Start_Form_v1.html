@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Play Academy — Registration &amp; Fee Agreement</title>
+<script>/* EDITION FORWARD — added 2026-07-27 with the v1 → v2 flip (four-variant Fee Agreement).
+   A QR is an IDENTIFIER, not a version: the composition comes from the server. Cards printed
+   before the flip encode this file's URL directly, so without this they would keep opening the
+   retired edition forever. Forward to the current edition, preserving EVERY parameter the old
+   link carried (center, k, prefill…) and the hash. Nothing below is removed — ?keep=1 renders
+   v1 exactly as it was, for a historical read.
+   An old link carries no ?variant=, so it lands on the DEFAULT (standard) variant; a packet /
+   storefront link carries its slot's variant and lands on the right one. */
+(function(){ try {
+  var q = location.search || '';
+  if (/[?&]keep=1(&|$)/.test(q)) return;
+  location.replace('Start_Form_v2.html' + q + (location.hash || ''));
+} catch(_) {} })();</script>
 <!-- FORM REGISTRY: slug=start_form · version=v1 · Rev. 07/2026 · requiringOrg=Internal · signer=parent · intakeMode=online|kiosk -->
 <style>
   :root{ --green:#1e4d36; --green-soft:#eaf3ec; --line:#333; --accent:#b31b4e; }
