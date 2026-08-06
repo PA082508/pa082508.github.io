@@ -1096,13 +1096,13 @@
       "title": "Staff onboarding",
       "mode": "addressed",
       "audience": "staff",
-      "_note": "Employee-facing packet. Consent FIRST (mints the staff signature sample), then Staff Enrollment (adopts it).",
+      "_note": "Employee-facing packet. Consent FIRST (agreement to electronic records), then Staff Enrollment. NOTE: sample minting/adoption is CONSERVED since 27.07 (SAMPLE_SCOPE=none) — every form carries its own fresh dated signature.",
       "slots": [
         {
           "key": "staff_consent",
           "section": "mandatory",
-          "label": "Staff Consent (E-Signature)",
-          "note": "Signed first — the rest reuses your signature."
+          "label": "Consent to Electronic Records & Signatures",
+          "note": "Signed first. Every form is then signed with its own fresh, dated signature."
         },
         {
           "key": "staff",
