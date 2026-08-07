@@ -626,6 +626,46 @@
           "note": "v1 LIVE on Nikolay's «флип staff» after preview. Was dark since 2026-07-14 (efb0576 unpublished an accidental publish); gate was «staff-превью ПОСЛЕ фикса №5» — fix #5 shipped in 31027c2, preview seen 2026-07-15. Micro-edits into the kit standard: staff banner (data-fk-banner-msg), data-fk-mint-name=#employee_name, centre picker stripped (finding #6)."
         }
       ]
+    },
+    "safepass_staff_ack": {
+      "slug": "safepass_staff_ack",
+      "title": "SafePass — Staff Package & Acknowledgment",
+      "kind": "signature",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/SafePass_Staff_Ack_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/SafePass_Staff_Ack_v1.html",
+      "stableUrl": "https://pa082508.github.io/letter.html?doc=safepass_staff_ack",
+      "intakeMode": "online|kiosk",
+      "signer": "staff",
+      "audience": "staff",
+      "channelKind": "letter_ack",
+      "note": "FIRST INSTANCE of the «Letter with signature» frame (spec 2026-08-06, b73dff1): title · letter body · universal signature window · visible document version · DB trail. The page carries the whole staff package on ONE screen above the pad — §1 the letter (VERBATIM, owner 2026-08-07), §2 the SafePass overview, §3 the one-page teacher guide, §4 the Q&A — so there is nothing to read elsewhere before signing. ?section=letter|overview|guide|qa isolates one part for print; ?print=1 drops the chrome. No staff list is ever exposed on this public page: the signer types First + Last freely and the centre comes from ?center=. Draw-only signature (canon 27.07) with the date as an auto STAMP. CHANNEL: submit_enrollment_form, submission_type = letter_ack — the KIND is shared by every future letter under signature; WHICH letter was signed is data (letter_key / letter_version / package_version), so a new letter is a new body in this shape, not a new table, route or submission type. MAIL THE stableUrl, never the versioned file: a file URL freezes the edition the day it is sent.",
+      "history": [
+        {
+          "at": "2026-08-07",
+          "note": "v1 published — SafePass staff package + acknowledgment for Red Room (Wickliffe), effective Monday, August 10. Letter text verbatim from the owner; overview / one-pager / Q&A assembled from docs/instructions/safepass.md and the GatePulse teacher & director guides — nothing invented. Carries the restored 26.06 canon of the trusted adult's personal QR (permanent / for a period / one-time; the teacher is always the final check) with an explicit honest line that the permanent card is not on the tablets yet and the director's one-time code is today's path."
+        }
+      ]
+    },
+    "safepass_parent_letter_ridge": {
+      "slug": "safepass_parent_letter_ridge",
+      "title": "SafePass — Letter to Red Room families (Ridge)",
+      "kind": "keep",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/SafePass_Parent_Letter_Ridge_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/SafePass_Parent_Letter_Ridge_v1.html",
+      "audience": "parent",
+      "note": "Read-only letter to families — NO signature block, by the owner's ruling of 2026-08-07: for parents this letter is an invitation, and activating the phone number IS the consent. Text VERBATIM; the only substitution is {LINK} → the shared SafePass activation link for Ridge (/safepass/parent?center=<ridge uuid>), also rendered as a QR for the printed copy and the classroom door.",
+      "history": [
+        {
+          "at": "2026-08-07",
+          "note": "v1 published with the Red Room start date Monday, August 10. Supersedes the Wickliffe parent-letter v2 DRAFT in docs/drafts/ — a different edition with unconfirmed dates that was never published. The «No smartphone?» line is the owner's replacement wording of 2026-08-07 (consolidated block #7, canon 26.06 restored): a permanent PERSONAL QR CARD, not a photo card."
+        }
+      ]
     }
   },
   "org": {
@@ -695,7 +735,7 @@
           "key": "parent_consent",
           "section": "mandatory",
           "label": "Parent Consent (E-Signature)",
-          "note": "Signed first — adopts your signature for the rest of the packet."
+          "note": "Signed first — adopts your signature for the rest of the packet. Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
         },
         {
           "key": "dcy_01234",
@@ -822,7 +862,7 @@
           "key": "parent_consent",
           "section": "mandatory",
           "label": "Parent Consent (E-Signature)",
-          "note": "Signed first — adopts your signature for the rest of the packet."
+          "note": "Signed first — adopts your signature for the rest of the packet. Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
         },
         {
           "key": "start_form",
@@ -847,7 +887,7 @@
           "key": "parent_consent",
           "section": "mandatory",
           "label": "Parent Consent (E-Signature)",
-          "note": "Signed first — adopts your signature for the rest of the packet."
+          "note": "Signed first — adopts your signature for the rest of the packet. Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
         },
         {
           "key": "dcy_01234",
@@ -956,7 +996,7 @@
           "key": "parent_consent",
           "section": "mandatory",
           "label": "Parent Consent (E-Signature)",
-          "note": "Signed first — adopts your signature for the rest of the packet."
+          "note": "Signed first — adopts your signature for the rest of the packet. Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
         },
         {
           "key": "dcy_01234",
@@ -1074,7 +1114,11 @@
       "mode": "addressed",
       "_note": "Starter draft for school-age enrollment; the owner fine-tunes composition in the Set Builder (forms move between all four sets by her decision). Carries the two School Enrollment labels (Regular + Full-Day, sameAs enroll). transition_into_program is intentionally EXCLUDED — it belongs to the Infants contour (transition out of the infant room); school-age children already hold the full document set. Not a hard rule — the owner may move it.",
       "slots": [
-        { "key": "parent_consent", "section": "mandatory" },
+        {
+          "key": "parent_consent",
+          "section": "mandatory",
+          "note": "Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
+        },
         { "key": "dcy_01234", "section": "mandatory" },
         { "key": "school_enrollment_regular", "section": "mandatory" },
         { "key": "school_enrollment_fullday", "section": "mandatory" },
@@ -1102,7 +1146,7 @@
           "key": "staff_consent",
           "section": "mandatory",
           "label": "Consent to Electronic Records & Signatures",
-          "note": "Signed first. Every form is then signed with its own fresh, dated signature."
+          "note": "Signed first. Every form is then signed with its own fresh, dated signature. Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
         },
         {
           "key": "staff",
