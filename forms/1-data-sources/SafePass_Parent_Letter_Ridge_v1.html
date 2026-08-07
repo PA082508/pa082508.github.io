@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SafePass — Letter to Red Room families (Ridge) — Play Academy</title>
+<style>
+  /* Read-only letter. NO signature block: for families this letter is an
+     invitation — activating the number IS the consent (owner's ruling 07.08).
+     Body text is VERBATIM; {LINK} is substituted, nothing else is touched. */
+  :root { --green:#0f4c35; --line:#c0d8c0; --ink:#1a2e1a; --muted:#6b7280; }
+  * { box-sizing:border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:var(--ink); background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .toolbar { position:sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; gap:10px; align-items:center; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  .wrap { max-width:900px; margin:0 auto; padding:20px 16px; }
+  h1 { font-size:22px; color:var(--green); margin:14px 0 2px; letter-spacing:-0.01em; }
+  .sub { color:var(--muted); font-size:13px; }
+  .ver { display:inline-block; font-size:11.5px; font-weight:700; color:#166534; background:#dcfce7; border:1px solid #bbf7d0; border-radius:999px; padding:3px 10px; margin:10px 0 14px; }
+  .letter { background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:20px 22px; font-size:14.5px; line-height:1.72; }
+  .letter .subj { font-weight:700; color:var(--green); margin-bottom:14px; font-size:15.5px; }
+  .letter p { margin:0 0 12px; }
+  .letter ol { margin:0 0 12px; padding-left:22px; }
+  .letter li { margin:0 0 6px; }
+  .letter .sign-off { margin-top:16px; font-weight:700; }
+  a.link { color:#0f4c35; font-weight:700; word-break:break-all; }
+  .qrbox { display:flex; align-items:center; gap:14px; margin-top:18px; padding:14px 16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; }
+  .qrbox canvas { border:1px solid #e2e8e2; border-radius:6px; background:#fff; }
+  .qrbox .t { font-size:13px; font-weight:700; color:var(--green); }
+  .qrbox .u { font-size:11.5px; color:var(--muted); word-break:break-all; margin-top:3px; }
+  @media print { body{background:#fff;padding:0} .toolbar{display:none!important} .wrap{max-width:none;padding:0 12px} .letter{border:1px solid #ccc} }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+</div>
+
+<div class="wrap">
+  <h1>Letter to Red Room families</h1>
+  <div class="sub">Play Academy Ridge · Wickliffe, Ohio</div>
+  <div class="ver">Package version v1 · effective Monday, August 10</div>
+
+  <div class="letter">
+    <!-- VERBATIM, owner's text of 2026-08-07. {LINK} substituted with the Ridge
+         activation link; not one other word is changed. -->
+    <div class="subj">Subject: New at Play Academy Ridge — SafePass drop-off &amp; pick-up (Red Room starts Monday, August 10)</div>
+    <p>Dear Red Room families,</p>
+    <p>Starting Monday, August 10, Red Room becomes the first classroom at Play Academy to use SafePass — our own simple, secure way to check your child in and out.</p>
+    <p><strong>One-time setup (about 2 minutes):</strong></p>
+    <ol>
+      <li>At the door, Ms. Sonia will register you and take your photo — at pick-up, that photo is what tells the teacher "this is the right adult."</li>
+      <li>On your own phone, open <a class="link" id="lnk" href="#">{LINK}</a> (or scan the QR at the classroom door) and enter your phone number — the same one we have on file. No passwords, no codes, nothing to install. Tip: choose "Add to Home Screen."</li>
+    </ol>
+    <p><strong>Every day after:</strong> dropping off — tap Drop-off when you arrive; picking up — tap Pick-up; the teacher sees your photo on the classroom tablet, checks it's really you, and releases your child. The final check is always a person, face to face.</p>
+    <!-- Line replaced by the owner 2026-08-07 (consolidated block #7, canon 26.06 restored):
+         the permanent personal QR card is the ratified path for adults without a smartphone. -->
+    <p><strong>No smartphone?</strong> No problem — we'll set up a permanent personal QR card that works the same way at the door.</p>
+    <p><strong>One request:</strong> please make sure at least two adults are authorized to pick up your child — a second parent, a grandparent, a trusted friend. It protects you on the day your phone dies or work runs late. Just tell Ms. Sonia who to add.</p>
+    <p>Questions? Ask Ms. Sonia at drop-off or reply to this message.</p>
+    <p>Thank you for helping us keep every hand-off safe.</p>
+    <div class="sign-off">— Play Academy Ridge</div>
+  </div>
+
+  <div class="qrbox">
+    <canvas id="qrc" width="140" height="140"></canvas>
+    <div>
+      <div class="t">Scan to open on your phone</div>
+      <div class="u" id="qru"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../../qrcodegen.js"></script>
+<script>
+/* {LINK} for families = the shared SafePass activation link for Ridge (Wickliffe).
+   The center UUID is the one the parent gate reads from ?center=. */
+(function(){
+  var LINK='https://menumaker-app.vercel.app/safepass/parent?center=4aed7d5a-00d0-4a4c-ac99-311046ad2027';
+  var a=document.getElementById('lnk'); if(a){ a.href=LINK; a.textContent=LINK; }
+  var u=document.getElementById('qru'); if(u) u.textContent=LINK;
+  if(!window.qrcodegen) return;
+  var c=document.getElementById('qrc');
+  var qr=qrcodegen.QrCode.encodeText(LINK, qrcodegen.QrCode.Ecc.MEDIUM);
+  var n=qr.size, b=1, scale=Math.max(1,Math.floor(140/(n+b*2))), dim=(n+b*2)*scale;
+  c.width=dim; c.height=dim;
+  var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,dim,dim); x.fillStyle='#0f4c35';
+  for(var y=0;y<n;y++) for(var i=0;i<n;i++) if(qr.getModule(i,y)) x.fillRect((i+b)*scale,(y+b)*scale,scale,scale);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opening…  — Play Academy</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; background:#f4f6f4; color:#1a2e1a; margin:0;
+         min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .card { background:#fff; border:1.5px solid #c0d8c0; border-radius:12px; padding:22px 24px; max-width:520px; }
+  h1 { font-size:18px; color:#0f4c35; margin:0 0 8px; }
+  p { font-size:13.5px; line-height:1.6; color:#374151; margin:0 0 8px; }
+  code { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:4px; padding:1px 5px; font-size:12.5px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1 id="h">Opening the letter…</h1>
+  <p id="m">One moment.</p>
+</div>
+<script>
+/* ─────────────────────────────────────────────────────────────────────────────
+   STABLE ENTRY POINT for «Letter with signature» pages.
+
+   Why this file exists: a mailed link is sent once and lives for years. A link
+   straight to  …/Letter_X_v1.html  freezes the version the day it is sent — when
+   v2 lands, everyone who kept the e-mail is reading v1 for ever. This resolver
+   is the one address that is safe to mail or print into a QR: it asks the
+   registry which edition is CURRENT and forwards there.
+
+   Usage:  letter.html?doc=<registry key>&center=<slug>
+           optional: &section=letter|overview|guide|qa   (print one part)
+                     &print=1                            (print view)
+
+   Everything else is forwarded untouched, plus  k=<the letter's channel kind>
+   so the storefront can mark the slot done on return.
+   ───────────────────────────────────────────────────────────────────────────── */
+(function () {
+  'use strict';
+  var qs = new URLSearchParams(location.search);
+  var key = (qs.get('doc') || '').trim();
+  var h = document.getElementById('h'), m = document.getElementById('m');
+  function fail(title, msg) { h.textContent = title; m.innerHTML = msg; }
+
+  if (!key) {
+    fail('This link is incomplete',
+         'It does not say which letter to open. Ask your center for a current link or QR — nothing was lost.');
+    return;
+  }
+
+  fetch('enroll-registry.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (reg) {
+      var f = reg && reg.forms && reg.forms[key];
+      if (!f || typeof f !== 'object') { throw 0; }
+      var cur = f.current, url = null;
+      if (cur && f.versions && typeof f.versions[cur] === 'string') url = f.versions[cur];
+      if (!url) url = f.fallbackUrl || null;
+      if (!url) { throw 0; }
+
+      var u = new URL(url, location.href);
+      qs.forEach(function (v, k) { if (k !== 'doc') u.searchParams.set(k, v); });
+      // Channel kind for the storefront's done-marker (form-kit reads ?k=).
+      if (f.channelKind) u.searchParams.set('k', f.channelKind);
+      location.replace(u.toString());
+    })
+    .catch(function () {
+      fail('This letter could not be opened',
+           'The link is fine to keep — ask your center to re-send it, or open the document from the office. ' +
+           'Requested: <code>' + key.replace(/[<>&]/g, '') + '</code>');
+    });
+})();
+</script>
+</body>
+</html>
