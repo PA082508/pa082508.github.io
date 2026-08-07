@@ -666,6 +666,24 @@
           "note": "v1 published with the Red Room start date Monday, August 10. Supersedes the Wickliffe parent-letter v2 DRAFT in docs/drafts/ — a different edition with unconfirmed dates that was never published. The «No smartphone?» line is the owner's replacement wording of 2026-08-07 (consolidated block #7, canon 26.06 restored): a permanent PERSONAL QR CARD, not a photo card."
         }
       ]
+    },
+    "safepass_parent_addendum_ridge": {
+      "slug": "safepass_parent_addendum_ridge",
+      "title": "SafePass — Parent Handbook Addendum",
+      "kind": "keep",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/SafePass_Parent_Addendum_Ridge_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/SafePass_Parent_Addendum_Ridge_v1.html",
+      "audience": "parent",
+      "note": "Addendum to the Parent Handbook (parents_book v1, 43 pp., effective 1/1/2025) — SafePass check-in and check-out. Read-only, NO signature block: the signed instrument for the handbook is parents_book_ack; an addendum is read, not signed. Text VERBATIM (owner's final wording 2026-08-07) and carries the restored 26.06 canon of the trusted adult's permanent personal QR. The body has no {LINK}; the Ridge activation link sits beside it with a QR so a printed copy still leads a family to where access is set up.",
+      "history": [
+        {
+          "at": "2026-08-07",
+          "note": "v1 published with the staff package, effective Monday, August 10. Held back from the first publish of the package because the verbatim text had not arrived; released the same day it did — nothing was authored on the centre's behalf."
+        }
+      ]
     }
   },
   "org": {
