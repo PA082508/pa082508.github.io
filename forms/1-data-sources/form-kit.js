@@ -618,6 +618,29 @@
   window.addEventListener('beforeprint', function () { _swap = []; $$('input[type=date]').forEach(function (e) { if (!e.value) { _swap.push(e); e.type = 'text'; } }); });
   window.addEventListener('afterprint', function () { _swap.forEach(function (e) { e.type = 'date'; }); _swap = []; });
 
+  // ── РЕДАКЦИЯ ФОРМЫ, КОТОРУЮ ПОДПИСАЛИ ────────────────────────────────────────
+  // ПОВОД (09.08). Запись подписи не говорила, ПРОТИВ КАКОЙ редакции она подписана:
+  // `form_version` стоял пустым у всех 8 консентов и ещё 90 записей. Пока редакций
+  // одна — это мелочь; в день, когда `current` переводят (v4 → v5 в этот же день),
+  // это юридический хвост: доказать «подписано против v5» нечем.
+  //
+  // ОБЪЯВЛЯЕТ САМА СТРАНИЦА, а не реестр: указатель реестра говорит, что СЕЙЧАС
+  // считается текущим, а запись обязана помнить, что человек ДЕРЖАЛ ПЕРЕД ГЛАЗАМИ.
+  // Родня канону провода происхождения: «редакция берётся у самой формы».
+  //   1. <meta name="fk-form-version" content="v5"> — если форма сказала прямо;
+  //   2. иначе — из имени файла (`…_v5.html`): в этом репозитории редакция ЕСТЬ имя;
+  //   3. иначе — null. НЕ УГАДЫВАЕМ: пустое поле честнее выдуманного.
+  function fkVersion() {
+    try {
+      var m = document.querySelector('meta[name="fk-form-version"]');
+      var own = m && (m.getAttribute('content') || '').trim();
+      if (own) return own;
+      var f = (location.pathname.split('/').pop() || '');
+      var hit = f.match(/_v(\d+)\.html?$/i);
+      return hit ? 'v' + hit[1] : null;
+    } catch (e) { return null; }
+  }
+
   // ── CORE submit — one path: embed host, else RPC ─────────────────────────────
   async function rpc(payload) {
     var r = await fetch(SUPA_URL + '/rest/v1/rpc/submit_enrollment_form', {
@@ -706,7 +729,7 @@
         res = await CFG.submit(data);
       } else if (EMBED.active) { res = await EMBED.save(data.formData, data.signatures, data.signatureDate); }
       else {
-        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP });
+        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP, p_form_version: fkVersion() });
       }
       status('Submitted for center review', 'ok');
       savePacket();
@@ -732,7 +755,7 @@
       return new Promise(function (res, rej) {
         var nonce = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
         st.pend[nonce] = { res: res, rej: rej };
-        send({ type: 'save', formType: FORM_TYPE, formData: fd, signatures: sigs || null, signatureDate: sigDate || null, nonce: nonce });
+        send({ type: 'save', formType: FORM_TYPE, formData: fd, signatures: sigs || null, signatureDate: sigDate || null, formVersion: fkVersion(), nonce: nonce });
         setTimeout(function () { if (st.pend[nonce]) { delete st.pend[nonce]; rej(new Error('No response from host')); } }, 20000);
       });
     };
