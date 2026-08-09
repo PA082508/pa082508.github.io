@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parent Consent for Electronic Signatures — Play Academy</title>
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  :root { --green:#0f4c35; --line:#c0d8c0; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#1a2e1a; background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px; }
+  .toolbar { position: sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  h1 { font-size: 22px; color: var(--green); margin: 14px 0 2px; }
+  .sub { color:#6b7280; font-size:13px; margin-bottom:14px; }
+  fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 16px; background:#fff; }
+  legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px; }
+  label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
+  input[type=text], input[type=date] {
+    width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .body { font-size:13.5px; line-height:1.62; color:#233; }
+  .body p { margin:0 0 11px; }
+  .body ul { margin:0 0 11px; padding-left:20px; }
+  .ack { font-size:13.5px; line-height:1.6; color:#1a2e1a; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 14px; margin-top:6px; }
+  .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  /* Signature: DRAWN on the canvas — this form has no typed rail (see e-signature.md) */
+  .sigbox { position:relative; margin-top:8px; }
+  canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
+  .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+  #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
+  #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
+  /* ── v5: ПОДПИСЬ ВЫШЕ СГИБА ─────────────────────────────────────────────────
+     Замер 09.08 (анонимный телефон, scripts/probe-storefront-qr.mjs): подписная
+     канва лежала на 1465px — 1.7 экрана телефона от верха, за всей преамбулой.
+     Лист сканируют СТОЯ у стойки, с ребёнком на руках: подпись за два экрана
+     прокрутки равна отсутствующей подписи.
+     Текст никуда не делся и НЕ сокращён — он свёрнут одним тапом и РАЗВЁРНУТ
+     ЦЕЛИКОМ НА ПЕЧАТИ: это юридический документ, и бумага обязана нести его весь. */
+  details.fold { border:0; padding:0; margin:0; }
+  details.fold > summary {
+    list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px;
+    font-size:13.5px; font-weight:700; color:var(--green); padding:2px 0 8px; }
+  details.fold > summary::-webkit-details-marker { display:none; }
+  details.fold > summary::after { content:'▾'; margin-left:auto; font-size:15px; }
+  details.fold[open] > summary::after { content:'▴'; }
+  .fold-hint { font-weight:400; color:#6b7280; font-size:12.5px; }
+  @media print {
+    details.fold > summary { display:none; }
+    details.fold > .body { display:block !important; }
+    .fold-hint { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <select id="ctr">
+    <option value="">— Select center —</option>
+    <option value="pearl">Play Academy Parma Heights</option>
+    <option value="alpha">Play Academy Highland Heights</option>
+    <option value="ridge">Play Academy Wickliffe</option>
+  </select>
+  <button class="btn bs" data-formkit="submit">✔ Submit</button>
+  <button class="btn br" onclick="consentReset()">✕ Clear</button>
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+  <span id="st"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="wrap">
+  <div data-formkit="banner" data-fk-banner-msg></div>
+  <h1>Parent Consent for Electronic Signatures</h1>
+  <div class="sub"><span data-fk-org>Play Academy, Inc.</span> — please read, then sign to consent to electronic signatures on parent forms.</div>
+  <div id="done">✓ Consent submitted</div>
+
+  <fieldset>
+    <legend>Consent</legend>
+    <p class="body" style="margin:0 0 10px"><b>In one line:</b> you agree that your electronic
+      signature counts as your legal signature on parent forms — and you may ask for paper at any
+      time. The full text is below and prints in full.</p>
+    <details class="fold">
+      <summary>Read the full consent text <span class="fold-hint">(prints in full)</span></summary>
+      <div class="body">
+      <p>Dear Parents/Guardians,</p>
+      <p>At <span data-fk-org>Play Academy, Inc.</span>, we are committed to making our enrollment and paperwork process as convenient and efficient as possible for our families. To simplify document completion, we will be transitioning to the use of electronic signatures (e-signatures) in some parent forms, like we have been doing with field trips forms for the past couple of weeks.</p>
+      <p>Electronically signed parent forms, including enrollment documents and the CACFP Income Eligibility Application, are acceptable. Electronic signatures carry the same intent and authorization as handwritten signatures for these forms.</p>
+      <p>By signing below, you acknowledge and agree that:</p>
+      <ul>
+        <li>You consent to receiving and completing applicable parent forms electronically.</li>
+        <li>You understand that your electronic signature will be considered your legal signature on documents provided by <span data-fk-org>Play Academy, Inc.</span></li>
+        <li>You may request a paper copy of any document at any time if you prefer to complete forms by hand.</li>
+      </ul>
+      <p>If you have any questions regarding this process, please contact our office. We appreciate your cooperation as we continue to improve our services for our families.</p>
+      <p>Thank you for your continued trust and support.</p>
+      <p>Sincerely,<br><span data-fk-org>Play Academy, Inc.</span></p>
+      </div>
+    </details>
+  </fieldset>
+
+  <!-- EDITABLE MARKETING SLOT — admin edits registry `org.marketing_text` as DATA (no code deploy).
+       Empty text ⇒ this whole section stays hidden. Content is org-level promo (e.g. credits /
+       material incentives). STAGE-2: org.marketing_text moves to org settings. -->
+  <fieldset id="mkt_fs" data-fk-marketing hidden>
+    <legend>For our families</legend>
+    <div class="body" id="mkt_body"></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Sign</legend>
+    <div class="row">
+      <div><label class="f">Parent/Guardian Name *</label>
+        <input type="text" id="parent_name" data-fk-field="parent_name" autocomplete="name" data-required data-label="Parent/Guardian name"></div>
+      <div><label class="f">Date *</label>
+        <input type="date" id="signed_date"></div><!-- stamp: NOT required — the signature is the gate; the date is set on signing -->
+    </div>
+    <label class="f">Child(ren)'s Name(s) *</label>
+    <input type="text" id="child_names" data-fk-field="child_name" data-required data-label="Child(ren)'s name(s)" placeholder="One or more children">
+
+    <div class="ack" id="ackline"></div>
+
+    <label class="f">Electronic Signature *</label>
+    <div class="sigbox" id="draw_box">
+      <canvas id="sig" data-fk-mint data-fk-mint-name="#parent_name" width="700" height="90" data-formkit="signature" data-required data-label="Electronic signature"></canvas>
+      <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
+    </div>
+    <div class="note">Your electronic signature has the same legal effect as a handwritten one. You may request a paper copy at any time.</div>
+  </fieldset>
+</div>
+
+<script>
+/* Parent E-Sign Consent v1 — form-specific config; shared behaviour = form-kit.js */
+function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
+
+// Org display name — BRANDING (layer 2), depersonalized: default matches the approved copy,
+// then overwritten from registry `org.name` (interim config → org settings in Stage 2). The
+// legal wording is unchanged; only the org identity is a swappable token.
+var ORG_NAME='Play Academy, Inc.';
+
+// Live ack line with the parent's name + org name substituted.
+function refreshAck(){
+  var n=g('parent_name')||'________';
+  document.getElementById('ackline').innerHTML =
+    'I, <strong>'+n.replace(/</g,'&lt;')+'</strong>, give my consent for '+ORG_NAME.replace(/</g,'&lt;')+
+    ' to provide enrollment and other required parent forms electronically and to accept my electronic signature on those documents.';
+}
+
+// Branding + editable marketing, sourced from the registry `org` block (STAGE-2 SWAP POINT:
+// org settings later). Legal body untouched; org name fills [data-fk-org] tokens, and the
+// admin-editable marketing copy (org.marketing_text) fills the marketing slot (empty ⇒ hidden).
+function applyOrg(org){
+  if(!org) return;
+  if(org.name){
+    ORG_NAME=org.name;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fk-org]'),function(el){ el.textContent=org.name; });
+    refreshAck();
+  }
+  var txt=(org.marketing_text||'').trim();
+  if(txt){ document.getElementById('mkt_body').innerHTML=txt; document.getElementById('mkt_fs').hidden=false; }
+}
+
+// This form is DRAW ONLY (2026-07-27). The typed autograph v3 offered here is removed: this
+// signature MINTS the parent's sample (pa_sig_sample:parent) that DCY 01234 / IEA / CACFP
+// Enrollment adopt with one tap — a typed sample would land on a government form as ink.
+// See docs/compliance/e-signature.md.
+function consentReset(){
+  ['parent_name','child_names'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  FormKit.clearSig('sig'); refreshAck();
+  var sd=document.getElementById('signed_date'); if(sd) sd.value='';  /* stamp clears on reset */
+  if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
+}
+
+window.FORMKIT_CONFIG = {
+  formType:'parent_consent', version:'v4', reset:consentReset,
+  collect:function(){
+    var sigDate=g('signed_date')||FormKit.todayISO();
+    var fd={
+      type:'parent_consent', center_code:FormKit.centerCode(),
+      consent_title:'Parent Consent for Electronic Signatures', consent_version:'v4',
+      parent_name:g('parent_name'),
+      child_name:g('child_names'),                        // packet autofill key (data-fk-field)
+      signature_method: 'drawn',                          // draw only — no typed rail on this form
+      signature_typed_value: ''
+    };
+    return { formData:fd, signatures:{ parent_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
+  },
+  // F4 standard: show the Ref; do NOT auto-reset — the kit locks the form and its
+  // "Start a new form" button (→ reset:consentReset) is the reset path.
+  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Consent submitted' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+  /* signed_date is a signature STAMP — set on signing, not on load (see stamp block) */
+  var pn=document.getElementById('parent_name'); if(pn) pn.addEventListener('input', refreshAck);
+  refreshAck();
+  // Standalone center pre-select via ?center= (embed mode is handled by the kit).
+  try{ var c=new URLSearchParams(location.search).get('center'); if(c){var e=document.getElementById('ctr'); if(e&&!e.value) e.value=c;} }catch(_){}
+  // Branding + marketing from the registry `org` block (graceful if unreachable).
+  fetch('../../enroll-registry.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){ if(reg&&reg.org) applyOrg(reg.org); })
+    .catch(function(){});
+});
+</script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its
+   failure. If FormKit isn't up in ~4s (or form-kit.js errors), auto-retry the script once
+   with a cache-bust; if still down, show a reload banner. Self-clears on success; never prints. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=13"></script>
+<script>
+/* Date = signature stamp (canon 2026-07-24): the signed date is auto-set at the moment of
+   signing — draw OR type — read-only, cleared with the signature, bound 1:1. No gate() here,
+   so we add listeners. Data dates are untouched. */
+(function(){
+  var PAIRS=[{sig:'sig',date:'signed_date'}];
+  function todayISO(){ try{ if(window.FormKit&&FormKit.todayISO) return FormKit.todayISO(); }catch(_){}
+    var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function inked(id){ try{ return !!(window.FormKit&&FormKit.getSig&&FormKit.getSig(id)); }catch(_){ return false; } }
+  function lock(dt){ dt.readOnly=true; dt.tabIndex=-1; dt.style.pointerEvents='none'; dt.style.background='#eef1ef'; }
+  function stampOne(p){
+    var dt=document.getElementById(p.date); if(!dt) return; lock(dt);
+    var typed=p.typed?((document.getElementById(p.typed)||{}).value||''):'';
+    var has=inked(p.sig)||(typed&&String(typed).trim());
+    dt.value = has ? (dt.value||todayISO()) : '';
+    if(p.after&&window[p.after]) try{ window[p.after](); }catch(_){}
+  }
+  function stampAll(){ for(var i=0;i<PAIRS.length;i++) stampOne(PAIRS[i]); }
+  function bindTyped(){ PAIRS.forEach(function(p){ if(p.typed){ var e=document.getElementById(p.typed);
+    if(e&&!e._sdbound){ e._sdbound=1; e.addEventListener('input',function(){ setTimeout(stampAll,10); }); } } }); }
+  document.addEventListener('mouseup',function(){ setTimeout(stampAll,60); });
+  document.addEventListener('touchend',function(){ setTimeout(stampAll,60); });
+  document.addEventListener('DOMContentLoaded',function(){ bindTyped(); stampAll(); });
+  window.addEventListener('load',function(){ bindTyped(); setTimeout(stampAll,300); });
+  window.__stampSigDates=stampAll;
+})();
+</script>
+</body>
+</html>
