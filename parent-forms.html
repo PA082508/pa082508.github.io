@@ -32,6 +32,20 @@
   .card.done .open { background: #fff; color: var(--green); border: 1.5px solid var(--green); }
 
   .card.handout { background: var(--mint); border-color: var(--mint-b); }
+  /* ── ОДНА ФОРМА ПО ССЫЛКЕ (`only=` с одним ключом) ─────────────────────────
+     Замер 09.08: с распечатанного листа QR открывает ЭТУ страницу, и владелец
+     прочитал её как ПИСЬМО — карточка с длинным описанием, а кнопка Open сбоку
+     и мелкая. Родитель у стойки пришёл подписать, а не читать карточку.
+     Поэтому в одноформенном режиме карточка перестаёт быть карточкой: действие
+     во всю ширину и первым, описание — под ним. Мини-QR убран: он ведёт туда,
+     где человек уже стоит (он пришёл по нему), и только занимает место. */
+  .solo .card { display: block; padding: 18px; }
+  .solo .card .num { display: none; }
+  .solo .card .right { display: block; margin: 0 0 12px; }
+  .solo .card .miniqr { display: none !important; }
+  .solo .card .open { display: block; width: 100%; text-align: center; padding: 16px 20px; font-size: 17px; }
+  .solo .card .info .t { font-size: 22px; }
+  .solo .card .info .d { margin-top: 8px; }
   .card.handout .num { border-color: var(--green2); color: var(--green2); }
   .handout-tag { font-size: 12px; font-weight: 700; color: var(--green2); background: #fff; border: 1px solid var(--mint-b); border-radius: 999px; padding: 6px 12px; }
 
@@ -316,6 +330,10 @@
           card.querySelector('.miniqr').addEventListener('click', function () { openQR(label, link); });
         } else { card.querySelector('.miniqr').style.display = 'none'; }
       });
+
+      // Одноформенный режим: ссылка/QR названы ОДНУ форму — страница становится
+      // её обложкой, а не списком пакета (замер 09.08).
+      if (slots.length === 1 && n === 1) { list.classList.add('solo'); }
 
       refreshDone();
       window.addEventListener('focus', refreshDone);

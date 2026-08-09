@@ -303,20 +303,25 @@
       "slug": "parent_consent",
       "title": "Parent Consent for Electronic Signatures",
       "requiringOrg": "Play Academy",
-      "current": "v4",
+      "current": "v5",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v1.html",
         "v2": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v2.html",
         "v3": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v3.html",
-        "v4": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v4.html"
+        "v4": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v4.html",
+        "v5": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v5.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v4.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parent_ESign_Consent_v5.html",
       "submissionType": "parent_consent",
       "intakeMode": "online",
       "signer": "parent",
       "adoptsSignature": true,
       "perInstance": false,
       "history": [
+        {
+          "at": "2026-08-09",
+          "note": "FLIP current v4 → v5 — ПОДПИСЬ ВЫШЕ СГИБА. Замер 09.08 анонимным телефоном (scripts/probe-storefront-qr.mjs, iPhone 390x844): у v4 блок Sign начинался на 1381px, подписная канва на 1696px — ДВА ЭКРАНА прокрутки за преамбулой; лист с QR сканируют стоя у стойки с ребёнком на руках, и подпись за двумя экранами равна отсутствующей. v5 = v4 + преамбула в <details> (свёрнута на экране, РАЗВЁРНУТА ЦЕЛИКОМ НА ПЕЧАТИ — это юридический документ, бумага несёт его весь) + строка сути над ней. Текст консента НЕ сокращён и не переписан ни на слово. Замер после: Sign с 807px, подпись 1121px, страница 1967→1392. НЕ ТРОНУТО: coordinates, data-fk-mint/mint-name, collect(), signature_method='drawn', штамп даты, attestation gate, form-kit.js (?v= остаётся 13). v4 остаётся историческим — подписанные против него записи читаются как раньше."
+        },
         {
           "at": "2026-07-27",
           "note": "FLIP current v3 → v4 — DRAW ONLY on the parent signature — the TYPED autograph added on 2026-07-24 is REMOVED (tab, script faces, typed renderer and its CSS all deleted from the edition; the FKPad \"draw-big / fits-small\" pad stays, so a narrow overlay slot is still signable). Reason: the licensing authority (Ohio DCY) states that an electronic signature must be an official electronic or physical signature and \"can't just be the parent typing their name in\". collect() now records signature_method='drawn' unconditionally; signature_typed_value stays in the payload as '' so downstream readers are unchanged. Attestation gate, date-stamp-on-signing, adopt shelf and every coordinate are UNTOUCHED. form-kit.js untouched → ?v= stays 12. Headless read-back on all six editions: 0 typed affordances in the DOM, pad still inks the slot, collect()=drawn, 0 page errors. See docs/compliance/e-signature.md. This form MINTS the parent sample (pa_sig_sample:parent) that DCY 01234 / IEA / CACFP Enrollment adopt with one tap — a typed sample would land on a government form as ink and be recorded there as drawn. Closing it at the mint keeps form-kit.js untouched."
