@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SafePass — Staff Package &amp; Acknowledgment — Play Academy</title>
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  /* ─────────────────────────────────────────────────────────────────────────
+     «Letter with signature» — FIRST INSTANCE of the frame (spec b73dff1).
+     Frame  = title · letter body · universal signature window · visible
+              document version · DB trail (who · when · version · ink image).
+     Instance = everything inside <main>. A future letter under signature is a
+     COPY OF THIS FILE with a new body — no new table, no new route, no second
+     signature block.
+     ───────────────────────────────────────────────────────────────────────── */
+  :root { --green:#0f4c35; --line:#c0d8c0; --ink:#1a2e1a; --muted:#6b7280; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:var(--ink); background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+  .toolbar { position: sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  h1 { font-size: 23px; color: var(--green); margin: 14px 0 2px; letter-spacing:-0.01em; }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:6px; }
+  .ver { display:inline-block; font-size:11.5px; font-weight:700; color:#166534; background:#dcfce7; border:1px solid #bbf7d0; border-radius:999px; padding:3px 10px; margin-bottom:14px; }
+  fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 18px; background:#fff; }
+  legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px; }
+  label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
+  input[type=text], input[type=date] { width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
+  input:disabled, input[readonly] { background:#eef1ef; color:#4b5563; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:560px){ .row { grid-template-columns:1fr; } }
+
+  /* ── Package body: letter + three documents, ONE screen above the signature ── */
+  .doc { font-size:14.5px; line-height:1.72; }
+  .doc p { margin:0 0 12px; }
+  .doc h2 { font-size:17px; color:var(--green); margin:22px 0 8px; letter-spacing:-0.01em; }
+  .doc h3 { font-size:14px; color:#0a3320; margin:16px 0 6px; }
+  .doc ul, .doc ol { margin:0 0 12px; padding-left:22px; }
+  .doc li { margin:0 0 6px; }
+  .doc table { border-collapse:collapse; width:100%; font-size:13px; margin:0 0 12px; }
+  .doc th, .doc td { border:1px solid #e2e8e2; padding:7px 9px; text-align:left; vertical-align:top; }
+  .doc th { background:#f0fdf4; color:#0a3320; font-size:12.5px; }
+  .letter { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:16px 18px; }
+  .letter .subj { font-weight:700; color:var(--green); margin-bottom:12px; font-size:15px; }
+  .letter .sign-off { margin-top:14px; font-weight:700; }
+  .rule { font-size:13px; color:#3f3f46; background:#fffbeb; border:1px solid #fde68a; border-radius:9px; padding:10px 12px; margin:0 0 12px; }
+  .legal { font-size:12.5px; color:var(--muted); }
+  .toc { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px; }
+  .toc a { font-size:12.5px; font-weight:700; color:#1a5c3f; background:#fff; border:1px solid #d1fae5; border-radius:999px; padding:6px 12px; text-decoration:none; }
+
+  .note { font-size:12px; color:var(--muted); background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
+  /* Voluntariness of the e-signature — VERBATIM (spec 4c1cf9d). Never reworded. */
+  .voluntary { font-size:12.5px; line-height:1.6; color:#374151; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; margin:0 0 12px; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  .sigbox { position:relative; margin-top:8px; }
+  canvas.sig { width:100%; height:110px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; touch-action:none; }
+  .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+  #done { display:none; background:var(--green); color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
+  #st { font-size:13px; font-weight:600; } #st.ok{color:var(--green)} #st.er{color:#b91c1c} #st.in{color:var(--muted)}
+  .qrbox { display:none; margin-top:12px; align-items:center; gap:12px; }
+  .qrbox canvas { border:1px solid #e2e8e2; border-radius:6px; }
+  .qrbox .u { font-size:11.5px; color:var(--muted); word-break:break-all; }
+
+  /* ?section=<name> isolates one document for printing; ?print=1 drops the chrome. */
+  body.only .pkg > section { display:none; }
+  body.only .pkg > section.on { display:block; }
+  body.printview .toolbar, body.printview #signblock, body.printview .toc, body.printview #done { display:none !important; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .toolbar, .toc, .sig-clear { display:none !important; }
+    .wrap { max-width:none; padding:0 12px; }
+    fieldset { border:none; padding:0; margin:0 0 10px; }
+    .letter { border:1px solid #ccc; background:#fff; }
+    .qrbox { display:flex !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn bs" data-formkit="submit">✔ Submit</button>
+  <button class="btn br" onclick="ackReset()">✕ Clear</button>
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+  <span id="st"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="wrap">
+  <!-- The kit's default line talks about enrolling a child. This is a staff letter:
+       it declares its own. (Bare attribute would keep the parent default.) -->
+  <div data-formkit="banner" data-fk-banner-msg="📄 Read the package below, then sign at the bottom"></div>
+
+  <h1 id="pageTitle">SafePass — Staff Package &amp; Acknowledgment</h1>
+  <div class="sub"><span data-fk-org>Play Academy, Inc.</span> · <span data-fk-center-name>your center</span></div>
+  <!-- Visible document version — part of the frame, not decoration. -->
+  <div class="ver">Package version v2 · effective on the day your director names</div>
+
+  <div id="done">✓ Acknowledgment submitted</div>
+
+  <nav class="toc" id="toc">
+    <a href="#letter">Letter</a>
+    <a href="#overview">SafePass — what it is</a>
+    <a href="#guide">Your one-page guide</a>
+    <a href="#parentview">What the parent sees</a>
+    <a href="#qa">Questions &amp; answers</a>
+    <a href="#signblock">Sign</a>
+  </nav>
+
+  <div class="pkg" id="pkg">
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       1. THE LETTER — VERBATIM, owner's text of 2026-08-07. Do not reword,
+          do not re-punctuate, do not "improve". Edition v2 (11.08.2026): every centre, room,
+          date and personal name replaced by universal words — a letter outlives the date it
+          was written on, and the start day is named aloud by the director.
+       ════════════════════════════════════════════════════════════════════════ -->
+  <section id="letter">
+  <fieldset>
+    <legend>1 · Letter to teachers</legend>
+    <div class="doc letter">
+      <div class="subj">Subject: SafePass is starting in your room — your work stays exactly the same</div>
+      <p>Dear teachers,</p>
+      <p>Let's start with the most important thing: nothing in your duties changes. You will keep doing what you already do every day — greet each child, hand each child only to the right adult, keep count of your room, mark meals as always.</p>
+      <p>What we are adding is systematization: the same work, properly recorded. SafePass writes down what you already do — every hand-off, every hour — so that the record protects you, the family, and the center legally.</p>
+      <p>In practice: your director gives you a personal 4-digit PIN — your signature key on any classroom tablet; arriving and leaving, you tap it and your hours record themselves. At pick-up you do what you have always done — look at the adult in front of you; the tablet now helps by showing that adult's photo, and your confirmation becomes the official record, signed by your name. The rule you already live by — children are never without an adult — is now backed by the system, so it cannot be broken by accident or hurry. Meals: no changes — mark them in Meal Count exactly as today.</p>
+      <p>Why this protects you: Ohio licensing rules (OAC 5180:2-12-09 — continuous supervision; 5180:2-12-18 — record keeping) already require everything above. Until now, proving compliance meant scattered papers. Now every mark is recorded under the name of the person who made it — your careful work is visible as yours, and no one else's mistake can ever land on you.</p>
+      <p>Below this letter you will find the full package: the SafePass overview, your one-page guide, and a detailed Q&amp;A. Please read them and sign at the bottom — your signature confirms you were properly informed; it adds no new obligation.</p>
+      <p>One room in the centre goes first; your director will tell you the day your room joins. Every question — to your director, any day.</p>
+      <div class="sign-off">— Nikolay &amp; Tatiana, Play Academy</div>
+    </div>
+    <!-- {LINK} for teachers = the address of THIS page. Printed + QR so the letter
+         on paper still leads to the place where it is signed. -->
+    <div class="qrbox" id="qrbox">
+      <canvas id="qrc" width="132" height="132"></canvas>
+      <div>
+        <div style="font-size:12.5px;font-weight:700;color:#0f4c35">Read and sign online</div>
+        <div class="u" id="qru"></div>
+      </div>
+    </div>
+  </fieldset>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       2. SafePass OVERVIEW (положение). Assembled from what is already written
+          and already built: docs/instructions/safepass.md and the GatePulse
+          teacher / director guides. Nothing here is a new promise — every rule
+          below is either an Ohio licensing rule or a behaviour that exists.
+       ════════════════════════════════════════════════════════════════════════ -->
+  <section id="overview">
+  <fieldset>
+    <legend>2 · SafePass — what it is</legend>
+    <div class="doc">
+      <div class="rule"><strong>In one sentence:</strong> your duties do not change. SafePass records the work you already do, so that the record protects you, the family and the center. This is systematization, not a new way of working.</div>
+
+      <h2>What SafePass records</h2>
+      <p>SafePass keeps the <strong>chain of custody</strong> for every child — drop-off, pick-up, early and late care, and transport. Each tap is a timestamp with a name on it. Everything else follows from one rule: <strong>physical handoff only</strong>. Responsibility transfers when the child is physically in your hands (Accept), or in the authorized person's hands (Release) — never when a parent merely walks into the building.</p>
+
+      <h2>The four rules</h2>
+      <ul>
+        <li><strong>Physical handoff only.</strong> The transfer happens at the handoff, not at the door of the building.</li>
+        <li><strong>Never tap in advance.</strong> Your tap is your signature. Tapping before the child is in your hands signs for something that has not happened.</li>
+        <li><strong>A person you do not recognize.</strong> Ask for a government photo ID. If they are not on the authorized list — do not release the child, and call your director.</li>
+        <li><strong>Children are never without an adult.</strong> If you are the only checked-in adult in the room, the tablet will not let you check out until someone relieves you, and it tells you how many children are with you. In a genuine emergency there is a way out — the button says so plainly, and the director is told.</li>
+      </ul>
+
+      <h2>Your PIN, and your hours</h2>
+      <p>Your director gives you a personal 4-digit PIN. It is your signature key on any classroom tablet — it is what makes a record <em>yours</em> and not the tablet's. <strong>Your worked hours are recorded and visible to you.</strong></p>
+      <ul>
+        <li><strong>Check in with your PIN when you start</strong> — one drop sound means it is recorded, with the minute.</li>
+        <li><strong>Check out with your PIN when you leave</strong> — two drops.</li>
+        <li><strong>Breaks go through check-out and check-in</strong>, the same two taps. A break you did not check out of is time you were on the clock, and the record cannot tell the difference.</li>
+        <li><strong>Only your own taps count.</strong> A colleague cannot check you in. Nobody types your hours in afterwards, and nobody can quietly round them.</li>
+        <li><strong>Covering another room?</strong> Check in with your PIN on <em>that</em> room's tablet. Everything you mark there is recorded under your name, not under the name of the person you are covering.</li>
+      </ul>
+
+      <h2>Meals — nothing changes</h2>
+      <p>Mark meals in Meal Count exactly as you do today. SafePass does not touch the meal count; the two live side by side.</p>
+
+      <h2>Paper never stops working</h2>
+      <p>The paper sign-in / sign-out panel stays, and stays legal. If the network is down, or a parent has no phone, use paper as before and the office reconciles it. SafePass never removes the paper option.</p>
+
+      <h2>Photos, and what is not done with them</h2>
+      <p>Every authorized adult is photographed at their own registration, with their own consent. The photo exists for exactly one purpose: so that the teacher at the door can see the face of the person collecting the child. It is kept privately inside our management system, visible only to staff for identification, and it is deleted if that person's access is withdrawn or if they ask us to remove it. It is never used publicly — not on the website, not in social media — without asking that person separately. <strong>No face-recognition technology is used at any point:</strong> the comparison is made by a person looking at a face.</p>
+      <p>An authorized adult who prefers not to be photographed keeps their right to collect the child — teachers ask for a photo ID instead. A teacher may ask any authorized person they do not personally recognize for a photo ID.</p>
+
+      <h2>Adults without a smartphone — the personal QR</h2>
+      <p>An authorized adult who does not use a smartphone — a grandparent, for example — is given a <strong>personal QR code</strong>, printed as a card or saved as a picture on any phone. At pick-up you scan the code with the classroom tablet, the adult's photo and name appear, and you confirm face to face — <strong>the same check as for everyone else</strong>. The code is personal, can be replaced at any time, and is deactivated immediately if it is lost.</p>
+      <p>The code carries a <strong>term</strong>, and there are three:</p>
+      <ul>
+        <li><strong>Permanent</strong> — for a regularly authorized adult, valid until it is revoked.</li>
+        <li><strong>For a period</strong> — for a named stretch of time, e.g. a grandparent staying for a month.</li>
+        <li><strong>One-time</strong> — for a single pick-up by someone new, arranged with the director.</li>
+      </ul>
+      <p>Whatever the term, <strong>the final check is always the teacher</strong>: the code opens the record, your eyes close it. A scan never releases a child on its own.</p>
+      <p class="legal"><strong>Where this stands today (2026-08-07):</strong> the permanent QR card is policy and is being built; it is not on the tablets yet. Until it is issued, an authorized adult without a smartphone comes through the <strong>one-time code from the director</strong>, which works today. Nothing about the check at the door changes either way.</p>
+
+      <h2>Why this protects you</h2>
+      <p class="legal">Ohio licensing rules already require everything above — <strong>OAC 5180:2-12-09</strong> (continuous supervision) and <strong>OAC 5180:2-12-18</strong> (record keeping). What changes is only how compliance is proven. Until now it meant scattered papers. Now every mark carries the name of the person who made it: your careful work is visible as yours, and no one else's mistake lands on you.</p>
+      <p class="legal">Nap-time breaks follow <strong>OAC 5180:2-12-20(A)(7)</strong>, effective 2026-07-01 — see the one-page guide below.</p>
+    </div>
+  </fieldset>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       3. ONE-PAGE TEACHER GUIDE — condensed from docs/guides/gatepulse-teacher-guide.md.
+          Same steps, same wording where the wording matters.
+       ════════════════════════════════════════════════════════════════════════ -->
+  <section id="guide">
+  <fieldset>
+    <legend>3 · Your one-page guide</legend>
+    <div class="doc">
+      <h3>1. Check in when you enter the room</h3>
+      <p>Tap <strong>Check in</strong> on the room tablet and enter your PIN. That is what puts <strong>your name</strong> on the tablet for the day. Tap <strong>Check out</strong> when you leave. Covering a room today? Check in <em>to that room</em> — your check-in follows you, not the tablet.</p>
+      <p>The first person checked in for the shift is shown as the <strong>duty teacher</strong> — first and larger in the list. That is ordering only: <strong>anyone checked in may sign a handoff.</strong></p>
+
+      <h3>2. A handoff: card, then your own name</h3>
+      <p>When a parent taps Drop Off or Pick Up, a card appears in <strong>Incoming requests</strong> with the child's name and photo.</p>
+      <ol>
+        <li>Tap the <strong>child's card</strong> — that is the child you are handing over.</li>
+        <li>Tap <strong>your own name tile</strong> — one big button per teacher checked into this room today.</li>
+      </ol>
+      <p><strong>The person who actually received the child taps their own tile.</strong> That single tap is both "it's me" and "confirmed", and the record is signed with <strong>your</strong> name — not the duty teacher's, not whoever is holding the tablet.</p>
+      <p>Two steps, never one: card → tile. That is deliberate, so a stray touch cannot release a child.</p>
+      <p><strong>At pick-up, look at the adult first.</strong> The tablet shows you that adult's photo — it helps, it does not decide. Receive or release the child physically, and only then tap.</p>
+
+      <h3>3. Nobody checked in? Emergency PIN</h3>
+      <p>If no one has checked into the room today, the tablet does <strong>not</strong> lock you out. It offers <strong>"No teacher checked in — emergency confirm with staff PIN"</strong>. Your PIN identifies you, the handoff goes through, and the record is stamped so the director can see it happened outside the normal path. Use it when it is real — a dead check-in tablet with a parent at the door — not as a shortcut.</p>
+
+      <h3>4. Paper panel — the fallback that always works</h3>
+      <p>The paper sign-in / out panel stays on the tablet and stays legal. Network down, or a parent without a phone: use paper as before, and the office reconciles it.</p>
+
+      <h3>5. Registering a parent from your room</h3>
+      <p>The <strong>Parents</strong> tab shows the authorized adults <strong>for your class only</strong>. Anyone not yet registered has a <strong>Register</strong> button — tap it while the parent is standing in front of you, then tap your own name tile so the action is recorded as yours.</p>
+      <p>You <strong>cannot</strong> add a person to the pickup list or remove one from your tablet — who may collect a child is decided at the office, on the enrollment form. You only turn on app access for someone already on the list.</p>
+
+      <h3>6. Lunch breaks during nap time</h3>
+      <p>Ohio lets a room run on fewer adults during nap — within limits. Your partner can take their break <strong>without a floater covering the room</strong>, as long as <strong>all four</strong> are true:</p>
+      <ul>
+        <li><strong>every</strong> child in the group is resting on a cot or a mat;</li>
+        <li>it lasts <strong>no longer than two hours</strong>;</li>
+        <li>the group has <strong>no infants</strong> in it;</li>
+        <li>your group is inside the <strong>doubled</strong> ratio for its age — doubling the ratio is not the same as "one adult, any number of children" — and there are still enough staff <strong>in the building</strong> to meet the normal ratio for the group.</li>
+      </ul>
+      <p><strong>Check out when you leave and check in when you come back.</strong> The tiles then show who is really in the room, which is the whole point of them. <strong>One tile during nap is a normal state, not an error.</strong> <span class="legal">(OAC 5180:2-12-20(A)(7), effective 2026-07-01.)</span></p>
+
+      <h3>Quick answers</h3>
+      <table>
+        <tr><th>Situation</th><th>Do this</th></tr>
+        <tr><td>Card doesn't appear</td><td>Check the room selector at the top — you may be looking at another room.</td></tr>
+        <tr><td>Parent standing there, no request</td><td>Have them tap Drop Off / Pick Up; or use the paper panel.</td></tr>
+        <tr><td>Wrong teacher's name on a record</td><td>Whoever tapped is who is recorded — tell the director; corrections are made at the office.</td></tr>
+        <tr><td>Your name has no tile</td><td>You're not checked in today. Check in, and the tile appears.</td></tr>
+        <tr><td>Red strip "Mark not saved" with Retry</td><td>Tap <strong>Retry</strong>. If it fails twice, tell your director.</td></tr>
+      </table>
+    </div>
+  </fieldset>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       4. Q&A — assembled from the existing guides only (safepass.md,
+          gatepulse-teacher-guide.md, gatepulse-director-guide.md,
+          gatepulse-parent-guide.md). Nothing invented.
+       ════════════════════════════════════════════════════════════════════════ -->
+  <!-- ════════════════════════════════════════════════════════════════════════
+       4. WHAT THE PARENT SEES (издание v2, заказ владельца 11.08).
+          Учитель стоит по эту сторону планшета и не видит, что происходит на
+          телефоне семьи, — а спрашивают его. Раздел собран из того же, что
+          получает родитель в своём пакете: ни одного нового обещания.
+       ════════════════════════════════════════════════════════════════════════ -->
+  <section id="parentview">
+  <fieldset>
+    <legend>4 · What the parent sees</legend>
+    <div class="doc">
+      <p>Families get their own package, and it is worth knowing what is in it: parents ask
+      <em>you</em>, not the office, and an answer of "I don't know" at the door costs the whole
+      minute you saved.</p>
+
+      <h2>At the desk, once</h2>
+      <p>The first time, an adult is registered at the front desk: name, phone, and a photo taken
+      right there. That photo is what you will see on the tablet at pick-up. Anyone the family
+      names as allowed to collect the child is registered the same way — the family decides who,
+      the document says so, and the desk records it.</p>
+
+      <h2>On their own phone, after that</h2>
+      <p>The parent opens the app, enters their phone number and confirms it with a code sent by
+      text. There is no password to invent and nothing to remember: the phone <em>is</em> the key.
+      They see their own children — nobody else's — and they can hand off and collect.</p>
+
+      <h2>What they do at the door</h2>
+      <p>Drop-off: the parent taps the child's name; you accept, and the child is in your count
+      from that second. Pick-up: the parent taps, you see who is asking and their photo, you hand
+      the child over and confirm. The confirmation is yours and carries your name — the parent's
+      tap is a request, your tap is the record.</p>
+
+      <h2>An adult without a smartphone</h2>
+      <p>Nobody is locked out. The desk issues a one-time code for that pick-up; the permanent
+      personal QR card is written into the policy but is <em>not</em> issued yet, and the family
+      is told exactly that.</p>
+
+      <h2>What the family is NOT asked</h2>
+      <p>No signature is required from families for SafePass itself, and no payment. If a parent
+      says they were asked to sign something for it, that is a mistake worth telling your director
+      about the same day.</p>
+
+      <h2>The honest part</h2>
+      <p>Not every family will have activated their phone on day one. That is expected: the paper
+      panel and the desk keep working exactly as before, and a family that has not registered yet
+      is not a family that gets turned away.</p>
+    </div>
+  </fieldset>
+  </section>
+
+  <section id="qa">
+  <fieldset>
+    <legend>5 · Questions &amp; answers</legend>
+    <div class="doc">
+
+      <h3>Does anything change in what I do?</h3>
+      <p>No. Greet each child, hand each child only to the right adult, keep count of your room, mark meals. The work is the same; what is new is that it is written down under your name.</p>
+
+      <h3>Is this a way of watching me?</h3>
+      <p>It is the opposite. Every mark carries the name of the person who made it, so your careful work is visible as yours — and no one else's mistake can land on you. Your worked hours come from your own two taps, are recorded and are visible to you; nobody types them in afterwards and nobody can quietly round them.</p>
+
+      <h3>Will the tablet show me rates or amounts?</h3>
+      <p>No. SafePass records and shows <strong>worked hours</strong> — nothing else. There are no rates, no totals in money and no calculation of any kind on the tablet.</p>
+
+      <h3>What exactly is my PIN?</h3>
+      <p>A personal 4-digit number your director gives you. It is your signature key on any classroom tablet. It is what makes a record yours. Do not share it — a colleague cannot check you in, and should not be able to.</p>
+
+      <h3>I forgot to check out yesterday. What happens?</h3>
+      <p>The record says you were still on duty, because that is all it can say. Tell your director — corrections are made at the office, never by editing the tablet.</p>
+
+      <h3>Do I check out for lunch?</h3>
+      <p>Yes. Breaks go through check-out and check-in, the same two taps. A break you did not check out of is time you were on the clock, and the record cannot tell the difference.</p>
+
+      <h3>I am covering another teacher's room today.</h3>
+      <p>Check in with your PIN on that room's tablet. Your name appears in "In this room today", and everything you mark there — meals, handoffs — is recorded under your name, not the name of the person you are covering. Check out when you leave.</p>
+
+      <h3>I am the only adult in the room and my shift is over.</h3>
+      <p>The tablet will not let you check out while children are in the room, and it tells you how many. That is the supervision rule, not a quirk. In a real emergency the button "Leave anyway — the director will be told" exists: nobody holds you in the building, the system simply records honestly that this was an exception.</p>
+
+      <h3>A parent is at the door but no card appeared.</h3>
+      <p>Check the room selector at the top — you may be looking at another room. If there is still no request, have them tap Drop Off / Pick Up, or use the paper panel.</p>
+
+      <h3>Nobody is checked in and a parent is waiting.</h3>
+      <p>Use the emergency PIN path — the tablet offers it. The handoff goes through, and the record is marked as taken outside the normal path so the director can see it. It is for real situations, not for saving a tap.</p>
+
+      <h3>I do not recognize the adult at pick-up.</h3>
+      <p>Ask for a government photo ID. If the person is not on the authorized list, do not release the child and call your director. The tablet's photo helps you; the decision is still yours, face to face.</p>
+
+      <h3>Can I add someone to a child's pickup list?</h3>
+      <p>No, and that is deliberate. Who may collect a child is decided at the office, on the enrollment form. From your tablet you can only turn on app access for someone already on that list.</p>
+
+      <h3>What if the network is down?</h3>
+      <p>Use the paper sign-in / out panel exactly as before. It stays on the tablet, it stays legal, and the office reconciles it.</p>
+
+      <h3>A parent or grandparent has no smartphone.</h3>
+      <p>Nothing breaks. They get a <strong>personal QR code</strong> — a printed card, or a picture saved on any phone. You scan it with the tablet, their photo and name come up, and you confirm face to face, exactly as with everyone else. Codes come in three terms: permanent, for a period, or one-time for a single pick-up arranged with the director.</p>
+      <p><em>Today, while the QR card is still being built:</em> the adult comes through the <strong>one-time code from the director</strong>. The door check does not change.</p>
+
+      <h3>Does this change Meal Count?</h3>
+      <p>No. Mark meals exactly as today.</p>
+
+      <h3>Am I obliged to sign this acknowledgment electronically?</h3>
+      <p>No. Signing electronically is voluntary — you may print this package and sign it by hand, or sign it in person at the office. Paper and electronic signatures are equally accepted. The signature confirms you were properly informed; it adds no new obligation.</p>
+
+      <h3>When does my room start?</h3>
+      <p>One room goes first; your director will tell you the day your room joins.</p>
+
+      <h3>Who do I ask?</h3>
+      <p>Your director, any day.</p>
+    </div>
+  </fieldset>
+  </section>
+
+  </div><!-- /.pkg -->
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       THE UNIVERSAL SIGNATURE WINDOW (spec b73dff1, 06.08).
+       Frame of the pad: ink area · Clear · auto date-stamp · ink as an image in
+       the data. Nothing else. It carries NO identity logic of its own — the
+       page around it decides who is signing. Here that is a free-typed name.
+       No global signature state on the page: a second pad added later gets its
+       own id, its own date, its own required — it must never share a key.
+       ════════════════════════════════════════════════════════════════════════ -->
+  <fieldset id="signblock">
+    <legend>Acknowledgment &amp; signature</legend>
+
+    <div class="rule">By signing below I confirm that I have received and read the SafePass package above — the letter, the overview, the one-page guide and the Q&amp;A — and that I had the opportunity to ask questions. My signature confirms that I was properly informed; it adds no new obligation.</div>
+
+    <div class="row">
+      <div><label class="f">First name *</label>
+        <input type="text" id="first_name" autocomplete="given-name" data-required data-label="First name"></div>
+      <div><label class="f">Last name *</label>
+        <input type="text" id="last_name" autocomplete="family-name" data-required data-label="Last name"></div>
+    </div>
+
+    <label class="f">Signature *</label>
+    <div class="sigbox">
+      <canvas id="sig" class="sig" width="900" height="110" data-formkit="signature" data-required data-label="Signature"></canvas>
+      <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <div><label class="f">Date</label>
+        <input type="date" id="signed_date" readonly tabindex="-1"></div>
+      <div><label class="f">Center</label>
+        <input type="text" id="center_show" readonly tabindex="-1"></div>
+    </div>
+
+    <!-- VERBATIM, spec 4c1cf9d — never reworded. -->
+    <div class="voluntary" style="margin-top:12px">Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted.</div>
+
+    <div class="note">The date is stamped automatically the moment you sign, and clears if you clear the signature. It is not typed by hand.</div>
+  </fieldset>
+
+</div>
+
+<script>
+/* SafePass — Staff Package & Acknowledgment (letter_ack) v1.
+   Form-specific config only; all shared behaviour lives in form-kit.js.
+
+   CHANNEL: the storefront's single submit path — submit_enrollment_form —
+   with p_submission_type = 'letter_ack'. 'letter_ack' is the KIND of record,
+   shared by every future letter under signature; WHICH letter was signed is
+   data (letter_key / letter_version / package_version). That is what makes the
+   frame reusable: a new letter is a new body in this file's shape, not a new
+   table, route or submission type. */
+function g(id){ var e=document.getElementById(id); return e?(e.value||'').trim():''; }
+
+function ackReset(){
+  ['first_name','last_name'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+  FormKit.clearSig('sig');
+  var sd=document.getElementById('signed_date'); if(sd) sd.value='';   /* stamp clears with the ink */
+  if(window.FormKit){ FormKit.refreshCounter && FormKit.refreshCounter(); FormKit.status('Cleared',''); }
+}
+
+var LETTER = {
+  key: 'safepass_staff_ack',
+  version: 'v1',
+  title: 'SafePass is starting in your room — your work stays exactly the same',
+  package_key: 'safepass_staff_package',
+  package_version: 'v1',
+  effective_date: null
+};
+
+window.FORMKIT_CONFIG = {
+  formType:'letter_ack', version:'v1', reset:ackReset,
+  collect:function(){
+    var first=g('first_name'), last=g('last_name');
+    var fd={
+      type:'letter_ack',
+      center_code: FormKit.centerCode(),
+      signer_role: 'staff',
+      letter_key: LETTER.key,
+      letter_version: LETTER.version,
+      letter_title: LETTER.title,
+      package_key: LETTER.package_key,
+      package_version: LETTER.package_version,
+      effective_date: LETTER.effective_date,
+      first_name: first,
+      last_name: last,
+      staff_name: (first+' '+last).trim(),
+      name_source: 'free_text',            /* no staff list is exposed on a public page */
+      signature_method: 'drawn',           /* draw only — canon 27.07, no typed rail */
+      signature_typed_value: ''
+    };
+    return { formData:fd, signatures:{ staff_sig: FormKit.getSig('sig') },
+             signatureDate: g('signed_date') || FormKit.todayISO() };
+  },
+  onSuccess:function(ref){
+    var d=document.getElementById('done');
+    if(d){ d.innerHTML='✓ Acknowledgment submitted'+(ref?' — Ref <strong>'+ref+'</strong>':''); d.style.display='block'; }
+  }
+};
+
+/* ── ?section=<name> isolates one document for printing; ?print=1 drops the
+      chrome (toolbar, TOC, signature). Both are for the Library cards — the
+      package itself is always ONE screen. The param is NOT called `doc`: the
+      stable entry point letter.html owns that name for the registry key. ── */
+(function(){
+  var qs=new URLSearchParams(location.search);
+  var only=(qs.get('section')||'').toLowerCase();
+  var VALID={letter:1,overview:1,guide:1,qa:1};
+  if(only && VALID[only]){
+    document.body.classList.add('only');
+    var s=document.getElementById(only); if(s) s.classList.add('on');
+    document.body.classList.add('printview');
+    var t={letter:'SafePass — Letter to teachers',overview:'SafePass — what it is',
+           guide:'SafePass — Your one-page guide',qa:'SafePass — Questions & answers'}[only];
+    document.getElementById('pageTitle').textContent=t;
+    document.title=t+' — Play Academy';
+  }
+  if(qs.get('print')==='1') document.body.classList.add('printview');
+})();
+
+/* ── {LINK} for teachers = the address of this page, printed with a QR so the
+      paper copy leads back to where it is signed. Vendored encoder, no network. */
+(function(){
+  var url=location.origin+location.pathname+'?center='+encodeURIComponent(
+    (new URLSearchParams(location.search).get('center')||'ridge')) + '&k=letter_ack';
+  var u=document.getElementById('qru'); if(u) u.textContent=url;
+  function draw(){
+    if(!window.qrcodegen) return;
+    var c=document.getElementById('qrc'); if(!c) return;
+    var qr=qrcodegen.QrCode.encodeText(url, qrcodegen.QrCode.Ecc.MEDIUM);
+    var n=qr.size, b=1, scale=Math.max(1,Math.floor(132/(n+b*2))), dim=(n+b*2)*scale;
+    c.width=dim; c.height=dim;
+    var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,dim,dim); x.fillStyle='#0f4c35';
+    for(var y=0;y<n;y++) for(var i=0;i<n;i++) if(qr.getModule(i,y)) x.fillRect((i+b)*scale,(y+b)*scale,scale,scale);
+  }
+  if(document.readyState!=='loading') draw(); else document.addEventListener('DOMContentLoaded',draw);
+})();
+
+document.addEventListener('DOMContentLoaded',function(){
+  /* signed_date is a STAMP — set on signing, never on load (stamp block below). */
+  fetch('../../enroll-registry.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){
+      if(reg && reg.org && reg.org.name){
+        Array.prototype.forEach.call(document.querySelectorAll('[data-fk-org]'),function(el){ el.textContent=reg.org.name; });
+      }
+    }).catch(function(){});
+  /* Center label — form-kit fills [data-fk-center-name]; mirror it into the read-only box. */
+  setTimeout(function(){
+    var cs=document.getElementById('center_show');
+    if(cs && window.FormKit) cs.value = FormKit.centerName() || FormKit.centerCode() || '';
+  }, 400);
+});
+</script>
+
+<script src="../../qrcodegen.js"></script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, survives a form-kit.js load failure. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=14"></script>
+<script>
+/* Date = signature stamp (canon 2026-07-24): auto-set at the moment of signing,
+   read-only, cleared with the signature, bound 1:1. PAIRS is a LIST on purpose —
+   a second pad on this page gets its own entry, never a shared key. */
+(function(){
+  var PAIRS=[{sig:'sig',date:'signed_date'}];
+  function todayISO(){ try{ if(window.FormKit&&FormKit.todayISO) return FormKit.todayISO(); }catch(_){}
+    var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function inked(id){ try{ return !!(window.FormKit&&FormKit.getSig&&FormKit.getSig(id)); }catch(_){ return false; } }
+  function lock(dt){ dt.readOnly=true; dt.tabIndex=-1; dt.style.pointerEvents='none'; dt.style.background='#eef1ef'; }
+  function stampOne(p){
+    var dt=document.getElementById(p.date); if(!dt) return; lock(dt);
+    dt.value = inked(p.sig) ? (dt.value||todayISO()) : '';
+  }
+  function stampAll(){ for(var i=0;i<PAIRS.length;i++) stampOne(PAIRS[i]); }
+  document.addEventListener('mouseup',function(){ setTimeout(stampAll,60); });
+  document.addEventListener('touchend',function(){ setTimeout(stampAll,60); });
+  document.addEventListener('DOMContentLoaded',stampAll);
+  window.addEventListener('load',function(){ setTimeout(stampAll,300); });
+  window.__stampSigDates=stampAll;
+})();
+</script>
+</body>
+</html>

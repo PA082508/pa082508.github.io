@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SafePass — Parent Package — Play Academy</title>
+<style>
+  :root { --green:#0f4c35; --line:#c0d8c0; --ink:#1a2e1a; --muted:#6b7280; }
+  * { box-sizing:border-box }
+  body { font-family:Arial,Helvetica,sans-serif; color:var(--ink); background:#f4f6f4; margin:0; padding:0 0 60px }
+  .wrap { max-width:900px; margin:0 auto; padding:20px 16px }
+  h1 { font-size:23px; color:var(--green); margin:14px 0 2px; letter-spacing:-0.01em }
+  .sub { color:var(--muted); font-size:13px; margin-bottom:6px }
+  .ver { display:inline-block; font-size:11.5px; font-weight:700; color:#166534; background:#dcfce7;
+         border:1px solid #bbf7d0; border-radius:999px; padding:3px 10px; margin-bottom:14px }
+  fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 18px; background:#fff }
+  legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px }
+  .doc { font-size:14.5px; line-height:1.72 }
+  .doc p { margin:0 0 12px }
+  .doc h2 { font-size:17px; color:var(--green); margin:22px 0 8px }
+  .doc h3 { font-size:14px; color:#0a3320; margin:16px 0 6px }
+  .doc ul,.doc ol { margin:0 0 12px; padding-left:22px } .doc li { margin:0 0 6px }
+  .letter { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:16px 18px }
+  .letter .subj { font-weight:700; color:var(--green); margin-bottom:12px; font-size:15px }
+  .letter .sign-off { margin-top:14px; font-weight:700 }
+  .toc { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 16px }
+  .toc a { font-size:12.5px; font-weight:700; color:#1a5c3f; background:#fff; border:1px solid #d1fae5;
+           border-radius:999px; padding:6px 12px; text-decoration:none }
+  .steps { display:flex; flex-wrap:wrap; gap:18px; margin:6px 0 4px }
+  .scheme { margin:0; text-align:center; width:150px }
+  .scheme figcaption { font-size:12px; color:var(--muted); margin-top:6px; line-height:1.4 }
+  .replace { font-size:12px; color:#7a4b00; background:#fffbeb; border:1.5px dashed #f0c674;
+             border-radius:9px; padding:8px 11px; margin:6px 0 14px }
+  .note { font-size:12.5px; color:var(--muted); background:#f9fafb; border:1px solid #eef2ee;
+          border-radius:8px; padding:9px 11px; margin:10px 0 }
+  .rule { font-size:13px; color:#3f3f46; background:#fffbeb; border:1px solid #fde68a;
+          border-radius:9px; padding:10px 12px; margin:0 0 12px }
+  @media print { body { background:#fff } .toc, .replace { display:none } fieldset { break-inside:avoid } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>SafePass — Parent Package</h1>
+  <div class="sub">Play Academy · everything a family needs, on one page</div>
+  <div class="ver">Package version v1 · no dates, no room names — your director names the start day</div>
+
+  <nav class="toc">
+    <a href="#letter">Letter</a>
+    <a href="#register">1 · Register at the desk</a>
+    <a href="#download">2 · Get the app</a>
+    <a href="#install">3 · Set it up</a>
+    <a href="#use">4 · Everyday use</a>
+    <a href="#qa">Questions &amp; answers</a>
+  </nav>
+
+  <!-- 1. ОБЛОЖКА-ПИСЬМО ─────────────────────────────────────────────────── -->
+  <section id="letter"><fieldset>
+    <legend>Letter to families</legend>
+    <div class="doc letter">
+      <div class="subj">Subject: Picking your child up is about to get simpler — and safer</div>
+      <p>Dear parents,</p>
+      <p>We are adding SafePass: a simple way of recording who brought your child and who took
+      them home. Nothing about your day changes — you still walk in, greet the teacher and take
+      your child. What changes is that every hand-off is written down at the moment it happens,
+      by the two people who were there.</p>
+      <p>Why we are doing it: a child is handed from person to person several times a day, and
+      until now that trail lived in memory and on paper. Now it is a record — one that protects
+      your child first, and everyone else second.</p>
+      <p>It takes one visit to the front desk and about two minutes on your phone. Both are
+      described below, step by step. If you would rather not use a phone at all, you do not have
+      to: the desk keeps working exactly as before.</p>
+      <div class="sign-off">— Play Academy</div>
+    </div>
+    <div class="note">No signature is asked of families for SafePass, and nothing is charged.
+    Activating your phone number is your agreement.</div>
+  </fieldset></section>
+
+  <!-- 2. РЕГИСТРАЦИЯ ────────────────────────────────────────────────────── -->
+  <section id="register"><fieldset>
+    <legend>1 · Register at the front desk — once</legend>
+    <div class="doc">
+      <p>The first step happens at the centre, not on the phone. Come to the front desk and the
+      staff will register you: your name, your phone number, and a photo taken right there.</p>
+      <h3>Why the photo</h3>
+      <p>It is shown to the teacher at pick-up, so they see who is asking for the child before
+      handing them over. It is used for nothing else: not shared, not published, and removed when
+      your child leaves the centre.</p>
+      <h3>Anyone else who may collect your child</h3>
+      <p>Grandparents, a neighbour, an older sibling — bring them to the desk once and they are
+      registered the same way. You decide who; the enrolment paper you signed says so; the desk
+      records it.</p>
+      <div class="rule">An adult who is not registered will not be handed the child — even if the
+      teacher recognises them. That is the whole point of the system, and it is the one rule we
+      ask you to explain to your family.</div>
+    </div>
+  </fieldset></section>
+
+  <!-- 3. ЗАКАЧКА ────────────────────────────────────────────────────────── -->
+  <section id="download"><fieldset>
+    <legend>2 · Get the app on your phone</legend>
+    <div class="doc">
+      <p>There is nothing to find in an app store. SafePass opens in the browser you already
+      have, and then sits on your home screen like any other app.</p>
+      <div class="steps">
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="Scan the QR from the desk sheet — or open the link the centre sent you">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">safepass link</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">opens in browser</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Open</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>Scan the QR from the desk sheet — or open the link the centre sent you</figcaption>
+</figure>
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="The page opens. Nothing to install, nothing to pay">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">SafePass</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Enter your phone</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Continue</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>The page opens. Nothing to install, nothing to pay</figcaption>
+</figure>
+      </div>
+      <div class="replace">📷 <b>Temporary drawing.</b> Replace with a real screenshot from the phone before this page goes to families.</div>
+      <div class="note">Any phone from the last several years will do. If the page does not open,
+      ask at the desk — that is a two-minute fix, not a reason to give up on it.</div>
+    </div>
+  </fieldset></section>
+
+  <!-- 4. УСТАНОВКА ──────────────────────────────────────────────────────── -->
+  <section id="install"><fieldset>
+    <legend>3 · Put it on your home screen</legend>
+    <div class="doc">
+      <p>This step is optional but worth the twenty seconds: on the home screen the app opens in
+      one tap instead of finding a link in your messages.</p>
+      <h3>iPhone</h3>
+      <div class="steps">
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="Tap Share at the bottom of Safari">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">SafePass</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Share ⤴</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Tap here</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>Tap Share at the bottom of Safari</figcaption>
+</figure>
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="Choose “Add to Home Screen”">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Add to Home Screen</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Add Bookmark</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Add</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>Choose “Add to Home Screen”</figcaption>
+</figure>
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="The icon appears with your other apps">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">SafePass</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">on home screen</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Open</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>The icon appears with your other apps</figcaption>
+</figure>
+      </div>
+      <div class="replace">📷 <b>Temporary drawing.</b> Replace with a real screenshot from the phone before this page goes to families.</div>
+      <h3>Android</h3>
+      <div class="steps">
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="Tap the ⋮ menu in Chrome">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">SafePass</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">⋮ menu</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Tap here</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>Tap the ⋮ menu in Chrome</figcaption>
+</figure>
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="Choose “Install app” or “Add to Home screen”">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Install app</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Add to Home screen</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Install</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>Choose “Install app” or “Add to Home screen”</figcaption>
+</figure>
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="The icon appears with your other apps">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">SafePass</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">on home screen</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Open</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>The icon appears with your other apps</figcaption>
+</figure>
+      </div>
+      <div class="replace">📷 <b>Temporary drawing.</b> Replace with a real screenshot from the phone before this page goes to families.</div>
+    </div>
+  </fieldset></section>
+
+  <!-- 5. ПОЛЬЗОВАНИЕ ────────────────────────────────────────────────────── -->
+  <section id="use"><fieldset>
+    <legend>4 · Everyday use</legend>
+    <div class="doc">
+      <h3>Signing in — your phone is the key</h3>
+      <p>Enter your phone number; a code arrives by text; type it in. There is no password to
+      invent and none to forget. You will see your own children and nobody else's.</p>
+      <div class="steps">
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="Enter your number">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Your phone number</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">(555) 555-0100</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Send code</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>Enter your number</figcaption>
+</figure>
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="Type the code from the text">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Enter the code</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">· · · ·</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Confirm</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>Type the code from the text</figcaption>
+</figure>
+      </div>
+      <div class="replace">📷 <b>Temporary drawing.</b> Replace with a real screenshot from the phone before this page goes to families.</div>
+      <h3>Dropping off</h3>
+      <p>Tap your child's name. The teacher accepts, and from that second the child is counted in
+      their room. You are free to go.</p>
+      <h3>Picking up</h3>
+      <p>Tap your child's name. The teacher sees your name and your photo, brings the child, and
+      confirms. Your tap is the request; the teacher's tap is the record.</p>
+      <div class="steps">
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="Choose your child">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Your children</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">your child · in room</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Pick up</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>Choose your child</figcaption>
+</figure>
+        
+<figure class="scheme">
+  <svg viewBox="0 0 240 420" width="150" height="262" role="img" aria-label="The teacher confirms and the day is recorded">
+    <rect x="8" y="8" width="224" height="404" rx="26" fill="#fff" stroke="#0f4c35" stroke-width="3"/>
+    <rect x="94" y="18" width="52" height="8" rx="4" fill="#cfe6d6"/>
+    
+      <rect x="26" y="58" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="84" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">Handed to you</text>
+      <rect x="26" y="116" width="188" height="42" rx="9" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="120" y="142" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#0a3320">confirmed by teacher</text>
+      <rect x="26" y="174" width="188" height="42" rx="9" fill="#0f4c35" stroke="#bbf7d0"/>
+      <text x="120" y="200" font-family="Arial" font-size="13" text-anchor="middle"
+            fill="#fff">Done</text>
+    <circle cx="120" cy="396" r="7" fill="#e2e8e2"/>
+  </svg>
+  <figcaption>The teacher confirms and the day is recorded</figcaption>
+</figure>
+      </div>
+      <div class="replace">📷 <b>Temporary drawing.</b> Replace with a real screenshot from the phone before this page goes to families.</div>
+      <h3>If your phone is dead, forgotten, or not with you</h3>
+      <p>Go to the desk. Staff can release the child the way they always have, and an adult
+      without a smartphone can be given a one-time code for that pick-up. Nobody is turned away
+      for lack of a phone.</p>
+    </div>
+  </fieldset></section>
+
+  <!-- 6. ВОПРОСЫ-ОТВЕТЫ ─────────────────────────────────────────────────── -->
+  <section id="qa"><fieldset>
+    <legend>Questions &amp; answers</legend>
+    <div class="doc">
+      <h3>Do I have to use it?</h3>
+      <p>No. The desk and paper keep working. The app is faster for you and clearer for us, and
+      that is the whole argument.</p>
+
+      <h3>Does it cost anything?</h3>
+      <p>No. Not now and not later — it is part of how the centre keeps its records.</p>
+
+      <h3>Who can see my child's photo and mine?</h3>
+      <p>Staff of your centre, at the moment of a hand-off. Photos are not shared with anyone,
+      not published, and are removed when your child leaves.</p>
+
+      <h3>Can my mother pick the child up?</h3>
+      <p>Yes, once she is registered at the desk. Bring her in once; after that she is on the list
+      you approved.</p>
+
+      <h3>What if someone I did not approve comes for my child?</h3>
+      <p>The child will not be handed over. The teacher can see who is authorised, and an
+      unregistered adult is not.</p>
+
+      <h3>I changed my phone number.</h3>
+      <p>Tell the desk — the number is your key, and a key that belongs to someone else is the one
+      thing we cannot leave in place.</p>
+
+      <h3>Does the app track where I am?</h3>
+      <p>No. It records taps at the door — who handed the child over and when — and nothing about
+      your location.</p>
+
+      <h3>What if the internet is down at the centre?</h3>
+      <p>Staff fall back to paper, exactly as before, and the day is recorded afterwards. A hand-off
+      is never delayed because a screen is unhappy.</p>
+
+      <h3>When does this start for my room?</h3>
+      <p>Your director will tell you. One room starts first and the rest follow.</p>
+    </div>
+  </fieldset></section>
+
+  <div class="note">Questions we did not answer here belong to your director — ask any day.</div>
+</div>
+</body>
+</html>
