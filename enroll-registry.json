@@ -636,17 +636,18 @@
       "slug": "safepass_staff_ack",
       "title": "SafePass — Staff Package & Acknowledgment",
       "kind": "signature",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/SafePass_Staff_Ack_v1.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/SafePass_Staff_Ack_v1.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/SafePass_Staff_Ack_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/SafePass_Staff_Ack_v1.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/SafePass_Staff_Ack_v2.html",
       "stableUrl": "https://pa082508.github.io/letter.html?doc=safepass_staff_ack",
       "intakeMode": "online|kiosk",
       "signer": "staff",
       "audience": "staff",
       "channelKind": "letter_ack",
-      "note": "FIRST INSTANCE of the «Letter with signature» frame (spec 2026-08-06, b73dff1): title · letter body · universal signature window · visible document version · DB trail. The page carries the whole staff package on ONE screen above the pad — §1 the letter (VERBATIM, owner 2026-08-07), §2 the SafePass overview, §3 the one-page teacher guide, §4 the Q&A — so there is nothing to read elsewhere before signing. ?section=letter|overview|guide|qa isolates one part for print; ?print=1 drops the chrome. No staff list is ever exposed on this public page: the signer types First + Last freely and the centre comes from ?center=. Draw-only signature (canon 27.07) with the date as an auto STAMP. CHANNEL: submit_enrollment_form, submission_type = letter_ack — the KIND is shared by every future letter under signature; WHICH letter was signed is data (letter_key / letter_version / package_version), so a new letter is a new body in this shape, not a new table, route or submission type. MAIL THE stableUrl, never the versioned file: a file URL freezes the edition the day it is sent.",
+      "note": "FIRST INSTANCE of the «Letter with signature» frame (spec 2026-08-06, b73dff1): title · letter body · universal signature window · visible document version · DB trail. The page carries the whole staff package on ONE screen above the pad — §1 the letter (VERBATIM, owner 2026-08-07), §2 the SafePass overview, §3 the one-page teacher guide, §4 the Q&A — so there is nothing to read elsewhere before signing. ?section=letter|overview|guide|qa isolates one part for print; ?print=1 drops the chrome. No staff list is ever exposed on this public page: the signer types First + Last freely and the centre comes from ?center=. Draw-only signature (canon 27.07) with the date as an auto STAMP. CHANNEL: submit_enrollment_form, submission_type = letter_ack — the KIND is shared by every future letter under signature; WHICH letter was signed is data (letter_key / letter_version / package_version), so a new letter is a new body in this shape, not a new table, route or submission type. MAIL THE stableUrl, never the versioned file: a file URL freezes the edition the day it is sent. · ИЗДАНИЕ v2 (11.08.2026): текст обезличен целиком — ни центра, ни комнаты, ни даты старта, ни имени сотрудника (греп-проба на ноль в видимом тексте); центр приходит машинным путём из ?center=. Добавлен раздел «What the parent sees»: учитель стоит по эту сторону планшета, а спрашивают его.",
       "history": [
         {
           "at": "2026-08-07",
@@ -1142,21 +1143,66 @@
           "section": "mandatory",
           "note": "Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
         },
-        { "key": "dcy_01234", "section": "mandatory" },
-        { "key": "school_enrollment_regular", "section": "mandatory" },
-        { "key": "school_enrollment_fullday", "section": "mandatory" },
-        { "key": "iea", "section": "mandatory" },
-        { "key": "usda_waiver", "section": "mandatory" },
-        { "key": "child_release_authorization", "section": "mandatory" },
-        { "key": "special_diet", "section": "if_applicable" },
-        { "key": "fluid_milk", "section": "if_applicable" },
-        { "key": "dcy_01305", "section": "if_applicable" },
-        { "key": "center_parent_information", "section": "mandatory" },
-        { "key": "building_for_the_future", "section": "mandatory" },
-        { "key": "wic_information", "section": "mandatory" },
-        { "key": "start_form", "section": "mandatory" },
-        { "key": "parents_book_ack", "section": "mandatory" },
-        { "key": "parents_book", "section": "mandatory" }
+        {
+          "key": "dcy_01234",
+          "section": "mandatory"
+        },
+        {
+          "key": "school_enrollment_regular",
+          "section": "mandatory"
+        },
+        {
+          "key": "school_enrollment_fullday",
+          "section": "mandatory"
+        },
+        {
+          "key": "iea",
+          "section": "mandatory"
+        },
+        {
+          "key": "usda_waiver",
+          "section": "mandatory"
+        },
+        {
+          "key": "child_release_authorization",
+          "section": "mandatory"
+        },
+        {
+          "key": "special_diet",
+          "section": "if_applicable"
+        },
+        {
+          "key": "fluid_milk",
+          "section": "if_applicable"
+        },
+        {
+          "key": "dcy_01305",
+          "section": "if_applicable"
+        },
+        {
+          "key": "center_parent_information",
+          "section": "mandatory"
+        },
+        {
+          "key": "building_for_the_future",
+          "section": "mandatory"
+        },
+        {
+          "key": "wic_information",
+          "section": "mandatory"
+        },
+        {
+          "key": "start_form",
+          "section": "mandatory"
+        },
+        {
+          "key": "parents_book_ack",
+          "section": "mandatory"
+        },
+        {
+          "key": "parents_book",
+          "section": "mandatory"
+        }
       ]
     },
     "staff": {
