@@ -662,6 +662,65 @@
   function newIdemp() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null; }
   var IDEMP = newIdemp();
   function shortRef(v) { var s = (v && typeof v === 'object') ? (v.id || v.submissionId || v.ref || '') : v; s = String(s == null ? '' : s); return s ? s.slice(0, 8).toUpperCase() : ''; }
+
+  // ── ПАМЯТЬ О ПОДАННОМ (п.3, заказ владельца 13.08) ───────────────────────────
+  //
+  // Замер по семье Rife: ОДНА И ТА ЖЕ форма ушла дважды с разницей 5,5 минут — родитель
+  // не увидел, что первая уже отправлена, и нажал снова. Обе легли в базу, обе одобрены,
+  // и разбирать двойника пришлось офису. Замок `lockForm` держит только ТЕКУЩУЮ страницу:
+  // закрыл вкладку — и форма снова выглядит чистой.
+  //
+  // Здесь память живёт В ЭТОМ БРАУЗЕРЕ и переживает перезагрузку: открыв форму снова,
+  // родитель видит, ЧТО и КОГДА он уже отправил и НА КОГО. Это не запрет — вторая подача
+  // остаётся возможной (ребёнок в семье не один, бывает и настоящая переподача), но она
+  // теперь ОСОЗНАННАЯ.
+  var SUB_KEY = 'cacfp_submitted_v1', SUB_TTL = 30 * 24 * 3600e3;
+  function subLoad() {
+    try {
+      var o = JSON.parse(localStorage.getItem(SUB_KEY)) || {};
+      var now = Date.now(), changed = false;
+      for (var k in o) { if (now - (o[k].ts || 0) > SUB_TTL) { delete o[k]; changed = true; } }
+      if (changed) localStorage.setItem(SUB_KEY, JSON.stringify(o));
+      return o;
+    } catch (_) { return {}; }
+  }
+  function rememberSubmitted(data, ref) {
+    try {
+      var fd = (data && data.formData) || {};
+      var o = subLoad();
+      o[FORM_TYPE] = { ts: Date.now(), child: String(fd.child_name || '').trim(), ref: ref || '' };
+      localStorage.setItem(SUB_KEY, JSON.stringify(o));
+    } catch (_) {}
+  }
+  function submittedWords(rec) {
+    var d = new Date(rec.ts);
+    var when = isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return '✓ Submitted' + (rec.child ? ' for ' + rec.child : '') + (when ? ' · ' + when : '') + (rec.ref ? ' · Ref ' + rec.ref : '');
+  }
+  // Плашка при ПОВТОРНОМ открытии. Стоит СВЕРХУ и не блокирует поля: у семьи с двумя
+  // детьми вторая подача — норма, и путь к ней назван прямо, иначе родитель либо
+  // отправит дубль на того же ребёнка, либо не отправит ничего.
+  function showSubmittedBanner() {
+    try {
+      if (_submitted) return;
+      var rec = subLoad()[FORM_TYPE];
+      if (!rec || !rec.ts) return;
+      var b = document.createElement('div');
+      b.className = 'fk-already-banner fk-print-hidden';
+      // СВЕРХУ И ЛИПКО. Бланк — абсолютно позиционированная страница-картинка: плашка,
+      // вставленная «в поток», уезжает под неё и на экране не видна (замер 13.08).
+      b.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;margin:0;background:#f0fff4;border-bottom:2px solid #0a7d46;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#0a5c34;box-shadow:0 2px 10px rgba(0,0,0,.10)');
+      b.innerHTML =
+        '<div style="font-weight:700;font-size:14px">' + submittedWords(rec) + '</div>' +
+        '<div style="margin-top:4px">Opening this form again does not change what was sent. ' +
+        'Sending a second copy for the same child means the office has to reconcile two forms.</div>' +
+        '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #bde5cd">' +
+        '<strong>Another child in the same family?</strong> Fill this form again with that child\'s name, ' +
+        'date of birth and details — every child needs their own form. Your own details stay the same.</div>';
+      document.body.insertBefore(b, document.body.firstChild);
+    } catch (_) {}
+  }
+
   function lockForm(ref) {
     _submitted = true;
     $$('input,select,textarea,button').forEach(function (el) { if (!el.hasAttribute('data-fk-newform')) el.disabled = true; });
@@ -736,6 +795,7 @@
       markSlotDone();
       mintSignature(data);
       var ref = shortRef(res);
+      rememberSubmitted(data, ref);      // память переживает перезагрузку, в отличие от lockForm
       lockForm(ref);                     // read-only + banner; blocks re-submit
       if (CFG.onSuccess) CFG.onSuccess(ref);   // pass the Ref so a form's #done can echo it
     } catch (e) { status('Error: ' + e.message, 'er'); if (window.console) console.error(e); }
@@ -1199,6 +1259,7 @@
     var cc = $('[data-formkit="counter"]'); if (cc) { cc.style.cursor = 'pointer'; cc.title = 'Go to the first required field'; cc.addEventListener('click', gotoFirstMissing); }
     $$('.siglock,[data-fk-goto]').forEach(function (l) { l.style.cursor = 'pointer'; l.addEventListener('click', gotoFirstMissing); });
     sessionNotice();   // 24h-life warning, once per TTL window
+    showSubmittedBanner();   // «уже отправлено» — переживает закрытие вкладки
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
