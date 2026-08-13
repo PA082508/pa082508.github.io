@@ -721,6 +721,37 @@
     } catch (_) {}
   }
 
+
+  // ── ИСТЁКШАЯ АДРЕСНАЯ ССЫЛКА ГОВОРИТ СЛОВАМИ (п.5, слово владельца 13.08) ─────
+  //
+  // Адресная ссылка (?t=<token>) — это ПРОПУСК: она несёт имя ребёнка, дату рождения и
+  // телефон родителя, и живёт 7 дней. Стационарный QR центра (?center=&set=) токена не
+  // несёт и не истекает НИКОГДА — печатную бумагу ломать нельзя.
+  //
+  // На истёкшем токене сервер отдаёт пустой префилл. Пустой экран родитель читает как
+  // «сайт сломался» и звонит в центр — поэтому спрашиваем ПОЧЕМУ пусто и говорим это вслух.
+  async function linkStatusNotice() {
+    try {
+      var t = new URLSearchParams(location.search).get('t');
+      if (!t) return;                                   // стационарный QR — истекать нечему
+      var r = await fetch(SUPA_URL + '/rest/v1/rpc/prefill_link_status', {
+        method: 'POST',
+        headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+        body: JSON.stringify({ p_token: t }),
+      });
+      if (!r.ok) return;                                // сеть молчит — не пугаем зря
+      var st = await r.json();
+      if (!st || st.status !== 'expired') return;
+      var b = document.createElement('div');
+      b.className = 'fk-expired-banner fk-print-hidden';
+      b.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#fff8e6;border-bottom:2px solid #b45309;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#7a4a00');
+      b.innerHTML = '<strong>This link was for ' + (st.child_name || 'your child') +
+        ' and expired on ' + (st.expired_on || 'an earlier date') + '.</strong> ' +
+        'Ask the centre for a new one — nothing you filled was lost.';
+      document.body.insertBefore(b, document.body.firstChild);
+    } catch (_) {}
+  }
+
   function lockForm(ref) {
     _submitted = true;
     $$('input,select,textarea,button').forEach(function (el) { if (!el.hasAttribute('data-fk-newform')) el.disabled = true; });
@@ -1260,6 +1291,7 @@
     $$('.siglock,[data-fk-goto]').forEach(function (l) { l.style.cursor = 'pointer'; l.addEventListener('click', gotoFirstMissing); });
     sessionNotice();   // 24h-life warning, once per TTL window
     showSubmittedBanner();   // «уже отправлено» — переживает закрытие вкладки
+    linkStatusNotice();      // истёкшая адресная ссылка — словами, а не пустым экраном
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
