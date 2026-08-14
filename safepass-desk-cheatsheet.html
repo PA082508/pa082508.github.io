@@ -13,15 +13,34 @@
   .steps { display:flex; flex-wrap:wrap; gap:14px; margin:8px 0 4px }
   .scheme { margin:0; text-align:center; width:132px }
   .scheme figcaption { font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.35 }
+  .ver { display:inline-block; font-size:11.5px; font-weight:700; color:#166534; background:#dcfce7; border:1px solid #bbf7d0; border-radius:999px; padding:3px 10px; margin:0 0 12px }
   .replace { font-size:12px; color:#7a4b00; background:#fffbeb; border:1.5px dashed #f0c674; border-radius:9px; padding:8px 11px; margin:6px 0 10px }
   .legal { font-size:12.5px; color:#3f3f46; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:9px 11px }
   .print { padding:8px 16px; border-radius:9px; border:1.5px solid var(--green); background:#fff; color:var(--green); font-weight:700; font-size:13px; cursor:pointer; font-family:inherit }
   @media print { body { background:#fff } .print, .replace { display:none } fieldset { break-inside:avoid } }
 </style></head><body><div class="wrap">
-  <h1>Desk cheat sheet — register a parent, install the app</h1>
+  <h1>Desk cheat sheet — register a parent, set a PIN, install the app</h1>
+  <div class="ver">Edition v2 · adds the PIN at the door (stage 1)</div>
   <div class="sub">Play Academy · keep this at the front desk</div>
   <button class="print" onclick="window.print()">🖨 Print</button>
   <fieldset><legend>One minute, five steps</legend><div class="doc">
+<h3>Setting the adult's PIN — four digits they say themselves</h3>
+<p>⭐ <strong>New with the PIN at the door.</strong> The PIN is how an adult who arrived without a
+phone opens a request at the tablet. Open the child's card → <strong>SafePass</strong> tab →
+<strong>Set PIN</strong> next to the adult's name.</p>
+<ol>
+  <li><strong>Ask them to say four digits.</strong> Do not choose the digits for them: a PIN
+      chosen for someone is a PIN written on a piece of paper in their bag.</li>
+  <li><strong>Type the four digits and save.</strong> If the screen says those digits are already
+      in use in this centre, ask for four different ones — two people cannot share a PIN, or the
+      teacher would see the wrong face at the door.</li>
+  <li><strong>Tell them what it is for:</strong> at the tablet they tap <em>PIN at the door</em>,
+      enter their four digits, and the teacher sees their name and photo and hands the child over
+      face to face. The PIN opens a request — it never opens the door by itself.</li>
+</ol>
+<p class="legal">No photo on file? The door will ask the teacher to check ID. Take the photo at
+the desk while the adult is standing in front of you.</p>
+
 <h3>Registering a parent and installing the app — one minute</h3>
 <p>The family should not have to learn anything. They come to you; you do these five things and
 hand the phone back. Everything below happens on <strong>their</strong> phone, not on ours.</p>
@@ -127,8 +146,7 @@ hand the phone back. Everything below happens on <strong>their</strong> phone, n
 <p class="legal"><strong>If it says “This number is not registered yet”</strong> — the registration
 in step 1 has not saved, or the number differs by a digit. Fix it on your screen and try again;
 do not send the family home to "try later".</p>
-<p class="legal"><strong>No smartphone?</strong> Skip steps 2–4: they get a personal photo card.
-While the printed cards are being rolled out, that is a one-time code at pick-up — and the check at
-the door is the same either way.</p>
+<p class="legal"><strong>No smartphone?</strong> Skip steps 2–4: they get a personal card with a
+QR code — the same security, the same one-tap process.</p>
 </div></fieldset>
 </div></body></html>
