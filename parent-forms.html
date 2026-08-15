@@ -170,6 +170,23 @@
 
   function scoped(url) { if (!url) return url; return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'center=' + encodeURIComponent(center); }
 
+  /* ── ИМЕННОЙ ТОКЕН ДОЕЗЖАЕТ ДО ФОРМЫ ───────────────────────────────────────
+     Замер 15.08. Приложение выдаёт семье адрес витрины с токеном
+     (`parent-forms.html?center=&only=&t=<токен>` — так строят и `waveLink`, и
+     «Issue Renewal»), а витрина отдавала кнопке Open адрес БЕЗ токена:
+     `CACFP_Enrollment_v11.html?center=ridge&k=enroll`. Префилл живёт в ките и
+     берётся из `?t=` на странице ФОРМЫ — значит родитель открывал пустой бланк,
+     а «эта ссылка истекла» не могла сказаться вовсе: киту нечего было спросить.
+
+     ⚠️ ТОЛЬКО КНОПКА OPEN. В QR токен не кладём НИКОГДА (запрет: снятый со стены
+     код с чужим именем — утечка). Поэтому адрес расходится надвое: QR остаётся
+     безымянным, именной уходит по кнопке, которую нажимает сам родитель. */
+  var personalToken = qs.get('t') || '';
+  function withToken(url) {
+    if (!url || !personalToken) return url;
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + encodeURIComponent(personalToken);
+  }
+
   // ── Center gate ──────────────────────────────────────────────────────────────
   // A slot may name the centers it belongs to: centers:['pearl'].  ABSENT = every
   // center (so every existing slot is unchanged).  A slot gated away from THIS
@@ -315,7 +332,9 @@
         }
         // FILL & SIGN — numbered signature form; link carries &k=<slot> so form-kit marks it done on submit
         n++;
+        // Два адреса из одного: безымянный — в QR, именной — в кнопку Open.
         var link = url ? withK(scoped(url), s.key) : null;
+        var openHref = withToken(link);
         card.className = 'card'; card.dataset.key = s.key; card.dataset.n = String(n);
         card.innerHTML = '<div class="num">' + n + '</div>'
           + '<div class="info"><div class="t"></div><span class="badge fs">Fill &amp; sign</span><div class="d"></div></div>'
@@ -323,7 +342,7 @@
           + (link ? '<a class="open" target="_blank" rel="noreferrer">Open</a>' : '') + '</div>';
         card.querySelector('.t').textContent = label;
         card.querySelector('.d').textContent = note;
-        if (link) { card.querySelector('.open').href = link; }
+        if (link) { card.querySelector('.open').href = openHref; }
         list.appendChild(card);
         if (link) {
           drawQR(card.querySelector('.miniqr canvas'), link, 46);
