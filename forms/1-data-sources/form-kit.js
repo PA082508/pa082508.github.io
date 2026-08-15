@@ -742,6 +742,103 @@
   //
   // На истёкшем токене сервер отдаёт пустой префилл. Пустой экран родитель читает как
   // «сайт сломался» и звонит в центр — поэтому спрашиваем ПОЧЕМУ пусто и говорим это вслух.
+/* fk:pad:start — ОКНО ПОДПИСИ ОБЩИМ КОМПОНЕНТОМ КИТА (v18, 15.08).
+   Было: окно жило В ДВУХ бланках (CACFP и IEA), остальные подписывались в узкой
+   строке. Узкая строка — не «попроще», а хуже: в неё физически нельзя расписаться, и
+   родитель ставит закорючку, не похожую на свою подпись.
+
+   ⚠️ КОПИИ В БЛАНКАХ НЕ УДАЛЕНЫ И НЕ МЕШАЮТ: там объявлено `window.FKPad || (…)`, и
+   кит объявляет первым — копия становится пустышкой. Удаление копий — отдельный
+   спокойный заход, а не довесок к изданию.
+
+   ПОДКЛЮЧЕНИЕ САМО, БЕЗ ПРАВКИ СЕМИ БЛАНКОВ: кит находит узкую канву подписи и ставит
+   над ней триггер. Порядок жизненного цикла важен — у DCY 01234 пад создаётся НА ЛЕТУ,
+   поэтому подключение идёт ПОСЛЕ инициализации полей, а не при разборе разметки. */
+(function(){
+  var st = document.createElement('style');
+  st.textContent = `.fkpad-trigger{font:inherit;font-size:12px;font-weight:700;padding:6px 14px;border:1px solid #0f4c35;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .fkpad-done{font-size:11px;color:#0f4c35;font-weight:700;margin-left:8px;background:#fff;padding:1px 5px;border-radius:4px}
+  @media print{.fkpad-trigger,.fkpad-done{display:none!important}}
+  .fkpad-back{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:16px}
+  .fkpad{background:#fff;border-radius:14px;width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;font-family:Arial,Helvetica,sans-serif;display:flex;flex-direction:column}
+  .fkpad-h{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0f4c35;color:#fff}
+  .fkpad-title{font-weight:800;font-size:15px;flex:1}
+  .fkpad-hint{font-size:12px;font-weight:700;opacity:.9}
+  .fkpad-draw{padding:16px}
+  .fkpad-canvas{width:100%;height:240px;background:rgba(255,253,150,.35);border:1.5px dashed #0f4c35;border-radius:10px;cursor:crosshair;display:block;touch-action:none}
+  .fkpad-foot{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #eef2ee}
+  .fkpad-clear,.fkpad-cancel{font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer}
+  .fkpad-ok{font:inherit;font-size:13px;font-weight:800;padding:8px 18px;border:none;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer}`;
+  document.head.appendChild(st);
+})();
+window.FKPad = window.FKPad || (function(){
+  var modal,big,titleE,cur=null;
+  function fitBig(){ big.width=Math.max(320,big.clientWidth||600); big.height=Math.max(160,big.clientHeight||240); }
+  function build(){
+    modal=document.createElement('div'); modal.className='fkpad-back';
+    modal.innerHTML='<div class="fkpad"><div class="fkpad-h"><span class="fkpad-title">Signature</span>'
+      +'<span class="fkpad-hint">\u270d Draw your signature</span></div>'
+      +'<div class="fkpad-draw"><canvas class="fkpad-canvas"></canvas></div>'
+      +'<div class="fkpad-foot"><button type="button" class="fkpad-clear">Clear</button><span style="flex:1"></span>'
+      +'<button type="button" class="fkpad-cancel">Cancel</button><button type="button" class="fkpad-ok">Use signature</button></div></div>';
+    document.body.appendChild(modal);
+    big=modal.querySelector('.fkpad-canvas'); titleE=modal.querySelector('.fkpad-title');
+    modal.querySelector('.fkpad-clear').onclick=function(){ FormKit.clearSig(big); };
+    modal.querySelector('.fkpad-cancel').onclick=close; modal.querySelector('.fkpad-ok').onclick=commit;
+    modal.addEventListener('mousedown',function(e){ if(e.target===modal) close(); });
+  }
+  function arm(){ fitBig(); if(window.FormKit&&FormKit.initSig) FormKit.initSig(big); FormKit.clearSig(big); }
+  function bbox(c){ var ctx=c.getContext('2d'),d=ctx.getImageData(0,0,c.width,c.height).data,mnx=c.width,mny=c.height,mxx=0,mxy=0,f=false;
+    for(var y=0;y<c.height;y++)for(var x=0;x<c.width;x++){ if(d[(y*c.width+x)*4+3]>10){f=true; if(x<mnx)mnx=x; if(x>mxx)mxx=x; if(y<mny)mny=y; if(y>mxy)mxy=y;} }
+    return f?{x:mnx,y:mny,w:mxx-mnx+1,h:mxy-mny+1}:null; }
+  function open(slotId,opts){ if(!modal) build(); opts=opts||{}; cur={slotId:slotId};
+    titleE.textContent=opts.title||'Signature'; modal.style.display='flex'; arm(); }
+  function commit(){ var slot=document.getElementById(cur.slotId); if(!slot){ close(); return; }
+    var sctx=slot.getContext('2d'); sctx.clearRect(0,0,slot.width,slot.height); var bb=bbox(big);
+    if(bb){ var pd=2,aw=slot.width-pd*2,ah=slot.height-pd*2,sc=Math.min(aw/bb.w,ah/bb.h),w=bb.w*sc,h=bb.h*sc;
+      sctx.drawImage(big,bb.x,bb.y,bb.w,bb.h,(slot.width-w)/2,(slot.height-h)/2,w,h); }
+    slot.dispatchEvent(new Event('fk:ink',{bubbles:true}));
+    if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}
+    var b=document.querySelector('.fkpad-trigger[data-fk-pad="'+cur.slotId+'"]'); if(b){ var dn=b.parentNode.querySelector('.fkpad-done'); if(!dn){ dn=document.createElement('span'); dn.className='fkpad-done'; b.parentNode.insertBefore(dn,b.nextSibling); } dn.textContent='\u2713 signed'; }
+    close(); }
+  function close(){ if(modal) modal.style.display='none'; }
+  return {open:open, close:close};
+})();
+window.fkAttachPads = function () {
+  var pads = Array.prototype.slice.call(document.querySelectorAll('canvas[id]'));
+  pads.forEach(function (c) {
+    if (!/sig/i.test(c.id)) return;                       // канва не подписи — не трогаем
+    if (c.getAttribute('data-fk-pad-attached')) return;
+    if (document.querySelector('[data-fk-pad="' + c.id + '"]')) return;  // бланк уже несёт свой триггер
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'fkpad-trigger';
+    b.setAttribute('data-fk-pad', c.id);
+    b.setAttribute('data-fk-pad-title', 'Signature');
+    b.textContent = '\u270D Add signature — draw';
+    c.parentNode.insertBefore(b, c);
+    c.setAttribute('data-fk-pad-attached', '1');
+  });
+};
+
+/* ⚠️ ОТКРЫВАЕМ ДЕЛЕГИРОВАНИЕМ, А НЕ ПРИВЯЗКОЙ К КНОПКАМ (найдено пробой 15.08).
+   Бланки вешали обработчик на кнопки, существующие В МОМЕНТ старта. Кнопки, которые
+   кит ставит сам, появляются позже — и окно не открывалось НИ НА ОДНОЙ форме, кроме
+   тех двух, где кнопка лежала в разметке. Один слушатель на документе ловит и
+   сегодняшние кнопки, и те, что появятся в любой будущей форме. */
+document.addEventListener('click', function (e) {
+  var b = e.target && e.target.closest && e.target.closest('.fkpad-trigger');
+  if (!b || !window.FKPad) return;
+  var slot = b.getAttribute('data-fk-pad');
+  if (!slot) return;
+  e.preventDefault();
+  window.FKPad.open(slot, {
+    title: b.getAttribute('data-fk-pad-title') || 'Signature',
+    nameSel: b.getAttribute('data-fk-pad-name') || null,
+  });
+}, true);
+/* fk:pad:end */
+
   /* fk:prefill:start — А3, кит v17 (15.08).
      ИМЕННАЯ ССЫЛКА НАКОНЕЦ ЗАПОЛНЯЕТ ФОРМУ. До v17 кит спрашивал у токена только СРОК
      жизни и никогда не звал get_prefill: родитель по именной ссылке открывал пустой
@@ -1478,6 +1575,7 @@
     linkStatusNotice();      // истёкшая адресная ссылка — словами, а не пустым экраном
     fkPrefill();             // именная ссылка заполняет форму (А3, v17)
     fkTwinsNote();           // про близнецов — ДО заполнения, а не после подачи
+    if (window.fkAttachPads) window.fkAttachPads();   // окно подписи — всем формам (v18)
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
@@ -1503,7 +1601,7 @@
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 17,
+    KIT: 18,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
