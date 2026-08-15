@@ -182,6 +182,24 @@
      код с чужим именем — утечка). Поэтому адрес расходится надвое: QR остаётся
      безымянным, именной уходит по кнопке, которую нажимает сам родитель. */
   var personalToken = qs.get('t') || '';
+
+  /* ── «КАК ЭТО ЗАПОЛНЯЕТСЯ» — блок на пакете (v17) ──────────────────────────
+     Семья открывает список форм и не знает трёх вещей: заполнено ли уже что-то за
+     неё, можно ли бросить на середине и что будет после Submit. Три строки словами
+     дешевле трёх звонков в центр. Блок появляется ТОЛЬКО у именной ссылки: у
+     стационарного QR префилла нет, и обещать его там нельзя. */
+  function howToComplete() {
+    if (!personalToken) return;
+    var d = document.createElement('div');
+    d.setAttribute('style', 'margin:10px 0 14px;padding:11px 13px;border:1.5px solid #c0d8c0;border-radius:10px;background:#f8fbf9;font:400 13px/1.6 system-ui,sans-serif;color:#0f4c35');
+    d.innerHTML = '<strong>How to complete</strong>' +
+      '<div>· We have pre-filled what we already know about your child — please check it and complete the rest.</div>' +
+      '<div>· One child per form. Twins and multiples need a form each.</div>' +
+      '<div>· Press Submit when done; it comes straight to the centre. This link is personal — please don\'t forward it.</div>';
+    var list = document.getElementById('list');
+    if (list && list.parentNode) list.parentNode.insertBefore(d, list);
+  }
+
   function withToken(url) {
     if (!url || !personalToken) return url;
     return url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + encodeURIComponent(personalToken);
@@ -354,6 +372,7 @@
       // её обложкой, а не списком пакета (замер 09.08).
       if (slots.length === 1 && n === 1) { list.classList.add('solo'); }
 
+      howToComplete();
       refreshDone();
       window.addEventListener('focus', refreshDone);
       window.addEventListener('pageshow', refreshDone);

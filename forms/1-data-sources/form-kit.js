@@ -742,6 +742,92 @@
   //
   // На истёкшем токене сервер отдаёт пустой префилл. Пустой экран родитель читает как
   // «сайт сломался» и звонит в центр — поэтому спрашиваем ПОЧЕМУ пусто и говорим это вслух.
+  /* fk:prefill:start — А3, кит v17 (15.08).
+     ИМЕННАЯ ССЫЛКА НАКОНЕЦ ЗАПОЛНЯЕТ ФОРМУ. До v17 кит спрашивал у токена только СРОК
+     жизни и никогда не звал get_prefill: родитель по именной ссылке открывал пустой
+     бланк, а экран выдачи обещал обратное.
+
+     ⚠️ ИМЕНА ПОЛЕЙ КАНОНИЧЕСКИЕ — те, что стоят на бланках (`data-fk-field`). Перевод
+     живёт на сервере (миграция 20260815b): три словаря разъезжались, и совпадало одно
+     имя из семи. Здесь НИКАКОГО перевода нет и быть не должно — второй словарь
+     разъедется с первым на первой же правке.
+
+     ⛔ НЕ ПЕРЕБИВАЕМ НАБРАННОЕ: заполняется только пустое поле. Родитель, вернувшийся
+     на форму, не должен увидеть, как его правка исчезла под нашей подстановкой. */
+  const fkToken = () => new URLSearchParams(location.search).get('t') || null;
+
+  /* ФОРМА ЗНАЧЕНИЯ ПРИНАДЛЕЖИТ ПОЛЮ, А НЕ ИСТОЧНИКУ (найдено сквозной пробой 15.08).
+     База отдаёт дату как `2017-05-13`, а на бланке стоит поле с маской ММ/ДД/ГГГГ —
+     ISO-строка легла в него как «20/17/0513», и родитель увидел бы мусор в графе
+     «дата рождения». Переводим у САМОГО поля: input[type=date] понимает ISO, все
+     прочие — американский порядок. Ничего не угадываем: не дата — кладём как есть. */
+  function fkShape(el, v) {
+    var iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+    if (!iso) return v;
+    if ((el.type || '').toLowerCase() === 'date') return v;
+    return iso[2] + '/' + iso[3] + '/' + iso[1];
+  }
+
+  async function fkPrefill() {
+    var t = fkToken();
+    if (!t) return;                                   // стационарный QR — подставлять нечего
+    var r, data;
+    try {
+      r = await fetch(SUPA_URL + '/rest/v1/rpc/get_prefill', {
+        method: 'POST',
+        headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+        body: JSON.stringify({ p_token: t }),
+      });
+      if (!r.ok) return;
+      data = await r.json();
+    } catch (_) { return; }
+    if (!data || typeof data !== 'object') return;    // истёкший токен → null, скажет linkStatusNotice
+
+    var filled = 0;
+    fkFields().forEach(function (e) {
+      var k = e.getAttribute('data-fk-field');
+      if (!k || k.charAt(0) === '_') return;
+      var v = data[k];
+      if (v === null || v === undefined || String(v).trim() === '') return;
+      if ((e.value || '').trim() !== '') return;      // набранное родителем сильнее
+      e.value = fkShape(e, String(v));
+      e.dispatchEvent(new Event('input', { bubbles: true }));
+      e.dispatchEvent(new Event('change', { bubbles: true }));
+      filled++;
+    });
+    if (!filled) return;
+
+    var b = document.createElement('div');
+    b.className = 'fk-prefill-banner fk-print-hidden';
+    b.setAttribute('style', 'position:sticky;top:0;z-index:9997;background:#e8f5ec;border-bottom:2px solid #0f4c35;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#0f4c35');
+    b.innerHTML = '<strong>We filled this in — please check.</strong> ' +
+      'We used what we already have for ' + ((data.child_name || 'your child') + '') +
+      '. Correct anything that changed, and complete the rest.';
+    document.body.insertBefore(b, document.body.firstChild);
+  }
+  /* fk:prefill:end */
+  /* fk:twins-note:start — примечание близнецам ВИДИМО ДО ЗАПОЛНЕНИЯ (v17).
+     До v17 слова про близнецов стояли в плашке «✓ Submitted» — то есть родитель
+     читал их ПОСЛЕ того, как подал одну форму на двоих. Предупреждение, приходящее
+     после ошибки, — не предупреждение. Теперь оно стоит у самого поля имени, с
+     первой секунды, и молчит там, где двое законны: на семейных формах и на полях,
+     объявленных `data-fk-multi-child`. */
+  function fkTwinsNote() {
+    var f = $$('[data-fk-field="child_name"]').filter(function (e) {
+      return !e.hasAttribute('data-fk-multi-child');
+    })[0];
+    if (!f) return;
+    if (typeof FAMILY_SCOPE_TYPES !== 'undefined' && FAMILY_SCOPE_TYPES[FORM_TYPE]) return;
+    if (document.querySelector('.fk-twins-note')) return;
+    var n = document.createElement('div');
+    n.className = 'fk-twins-note fk-print-hidden';
+    n.setAttribute('style', 'margin:4px 0 0;font:400 12px/1.45 Arial,sans-serif;color:#7a4a00');
+    n.textContent = 'One child per form — twins and multiples too: same birthday, same last name, still two forms.';
+    (f.parentNode || document.body).insertBefore(n, f.nextSibling);
+  }
+  /* fk:twins-note:end */
+
+
   async function linkStatusNotice() {
     try {
       var t = new URLSearchParams(location.search).get('t');
@@ -917,7 +1003,7 @@
         res = await CFG.submit(data);
       } else if (EMBED.active) { res = await EMBED.save(data.formData, data.signatures, data.signatureDate); }
       else {
-        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP, p_form_version: fkVersion() });
+        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP, p_form_version: fkVersion(), p_token: fkToken() });
       }
       status('Submitted for center review', 'ok');
       savePacket();
@@ -1390,6 +1476,8 @@
     sessionNotice();   // 24h-life warning, once per TTL window
     showSubmittedBanner();   // «уже отправлено» — переживает закрытие вкладки
     linkStatusNotice();      // истёкшая адресная ссылка — словами, а не пустым экраном
+    fkPrefill();             // именная ссылка заполняет форму (А3, v17)
+    fkTwinsNote();           // про близнецов — ДО заполнения, а не после подачи
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
@@ -1415,7 +1503,7 @@
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 16,
+    KIT: 17,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
