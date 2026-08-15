@@ -105,8 +105,11 @@
         + 'Your answers are still here on this device — ask the center for a current packet link or QR and open the form again.'
       : "⚠ Nothing was sent. This form has no center — open it from your center's packet link or QR, and your answers will still be here.";
   }
-  function refuseNoCenter() {
-    var t = unresolvedCenterText();
+  // ОТКАЗ ВСЛУХ — один способ на все отказы submit'а. Тихий отказ (только строка в
+  // тулбаре) родитель принимает за отправку: он нажал, ничего не изменилось, страница
+  // на месте. Поэтому строка + тост + мигающая плашка, и она же — доказательство в
+  // пробе: отказ виден глазом, а не выведен из отсутствия POST.
+  function refuseAloud(t) {
     status(t, 'er');                        // toolbar line + toast (status toasts every 'er')
     if (_tbBanner) {
       _tbBanner.textContent = t;
@@ -117,6 +120,7 @@
       try { _tbBanner.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
     }
   }
+  function refuseNoCenter() { refuseAloud(unresolvedCenterText()); }
 
   // ── Center resolution (NO visible picker — ?center= / kiosk / embed only) ────
   var _center = '', _onCenter = [];   // _onCenter: run once the center resolves (no live picker)
@@ -390,12 +394,15 @@
     return !!(el.value || '').trim();
   }
   function requiredEls() { return $$('[data-required]').filter(function (e) { return !e.getAttribute('data-inactive'); }); }
-  function fieldMsg(el, show) {
+  // `msg` необязателен: без него — прежние слова «… is required». С ним поле может
+  // сказать СВОЮ беду (пустота и «здесь двое детей» — разные беды, и «is required»
+  // на заполненном поле читается как поломка формы).
+  function fieldMsg(el, show, msg) {
     var box = el.tagName === 'CANVAS' || el.getAttribute('data-fk-choice') ? el : el;
     var next = box.parentNode.querySelector('.fk-msg');
     if (show) {
       if (!next) { next = document.createElement('div'); next.className = 'fk-msg'; box.parentNode.appendChild(next); }
-      next.textContent = (el.getAttribute('data-label') || 'This field') + ' is required';
+      next.textContent = msg || ((el.getAttribute('data-label') || 'This field') + ' is required');
       if (el.classList) el.classList.add('fk-invalid');
     } else {
       if (next) next.remove();
@@ -716,7 +723,12 @@
         'Sending a second copy for the same child means the office has to reconcile two forms.</div>' +
         '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #bde5cd">' +
         '<strong>Another child in the same family?</strong> Fill this form again with that child\'s name, ' +
-        'date of birth and details — every child needs their own form. Your own details stay the same.</div>';
+        'date of birth and details — every child needs their own form. Your own details stay the same.' +
+        // Прецедент Rife 14.08: семья вписала двоих в одно поле имени. «Каждому свою
+        // форму» звучит как совет про РАЗНЫХ детей — про близнецов надо сказать вслух,
+        // иначе одно имя, одна дата рождения и одна фамилия читаются как один ребёнок.
+        '<br><strong>Twins and multiples are no exception</strong> — same birthday, same last name, ' +
+        'still two children and two forms. Two names in one form cannot be filed for both.</div>';
       document.body.insertBefore(b, document.body.firstChild);
     } catch (_) {}
   }
@@ -798,6 +810,83 @@
     // the index) shows it once and every later form stays quiet for the window.
     try { localStorage.setItem(NOTICE_KEY, String(Date.now())); } catch (_) {}
   }
+  /* fk:one-child:start — ОДНО ПОЛЕ = ОДИН РЕБЁНОК, ВКЛЮЧАЯ БЛИЗНЕЦОВ ───────────
+   *
+   * ⭐ ПРЕЦЕДЕНТ RIFE, 14.08. Семья отправила DCY 01234 и e-sign consent, вписав в
+   * поле имени ребёнка «Isaac Rife, Amari Rife». Одна подача на двоих — это не
+   * мелкая неопрятность: подача применяется К ОДНОМУ ребёнку (`applied_roster_id`
+   * один), поэтому второй ребёнок остаётся без формы, будучи уверенным, что она
+   * подана. Дальше — тише и хуже: в деле второго стоит «∅ not on file», директор
+   * звонит семье, семья предъявляет отправленное. Раньше был Colbert, 12.08:
+   * «Ari and Canaan Colbert», одобрено. Замер 15.08 — три такие подачи всего.
+   *
+   * ПОЧЕМУ ЗДЕСЬ, А НЕ В РАЗБОРЕ. Разобрать двойную подачу на две задним числом
+   * нельзя: подпись стоит под ОДНИМ документом, и делить её — подделка. Чинится
+   * только в момент подачи, до POST: 0 записей, и родитель узнаёт об этом сразу.
+   *
+   * СЕМЕЙНЫЕ ФОРМЫ ИСКЛЮЧЕНЫ НАМЕРЕННО. У IEA и USDA-waiver в реестре стоит
+   * scope:"family" — там перечисление всех детей домохозяйства и есть предмет
+   * формы. Список ниже обязан совпадать с реестром (проба это стережёт).
+   *
+   * ЛОВУШКА ЗАПЯТОЙ. «Rife, Isaac» — это ОДИН ребёнок, записанный «Фамилия, Имя»
+   * (так пишут в бумажных журналах). Поэтому запятая сама по себе не улика:
+   * двое — когда по обе стороны стоит ПОЛНОЕ имя (два слова и больше) или когда
+   * частей три. Союз («and», «&», «+», «/», «;») — улика всегда: имя одного
+   * ребёнка союза не содержит. Наклон выбран сознательно: пропустить редкую
+   * двойню безопаснее, чем отбить настоящее имя — отбитый родитель не подаст
+   * НИЧЕГО, а пропущенная двойня видна директору во входящих.
+   */
+  var FAMILY_SCOPE_TYPES = { iea: 1, usda_waiver: 1 };
+  var ONE_CHILD_REFUSAL = 'One form per child, including twins — use your personal link for each child';
+  var ONE_CHILD_FIELD_MSG = 'Enter one child here. The other child needs a separate form — your own details stay the same.';
+  function looksLikeMoreThanOneChild(raw) {
+    var s = String(raw == null ? '' : raw).replace(/\s+/g, ' ').trim();
+    if (!s) return false;
+    var letters = function (p) { return /[a-zÀ-ɏ]/i.test(p); };
+    // Сказано словом — спорить не о чем.
+    if (/\btwins?\b|\btriplets?\b/i.test(s)) return true;
+    // Союз: «Ari and Canaan Colbert», «Isaac & Amari», «Isaac/Amari».
+    var joined = s.split(/\s*(?:\band\b|&|\+|\/|;)\s*/i).filter(letters);
+    if (joined.length > 1) return true;
+    // Запятая: улика только при двух полных именах (или трёх частях).
+    var parts = s.split(',').map(function (p) { return p.trim(); }).filter(letters);
+    if (parts.length > 2) return true;
+    if (parts.length === 2) {
+      var full = parts.filter(function (p) { return p.split(' ').filter(Boolean).length >= 2; });
+      return full.length >= 2;
+    }
+    return false;
+  }
+  /* fk:one-child:end */
+
+  // Поле имени ребёнка — то, что кит КЛАДЁТ в form_data.child_name; у консента его id
+  // вовсе `child_names`, и поиск по имени/id молча промахивался (замер пробы 15.08:
+  // отбивка звучала, а курсор оставался в никуда).
+  function childNameField() {
+    return $('[data-fk-field="child_name"]') || $('[name="child_name"]') || document.getElementById('child_name');
+  }
+  /**
+   * ФОРМА МОЖЕТ ОБЪЯВИТЬ СЕБЯ МНОГОДЕТНОЙ — атрибутом на самом поле:
+   *   <input data-fk-field="child_name" data-fk-multi-child …>
+   * Так сделан e-sign consent: это документ ВЗРОСЛОГО («я согласен подписывать
+   * электронно»), его поле прямо называется «Child(ren)'s name(s)», и к ребёнку он
+   * не подшивается вовсе — замер 15.08: у всех 45 консентов applied_roster_id пуст.
+   * Объявление стоит НА ПОЛЕ, а не в списке где-то ещё: список забывают обновить,
+   * а поле уносит своё свойство с собой в любую новую редакцию.
+   */
+  function fieldTakesManyChildren() {
+    var f = childNameField();
+    return !!(f && f.hasAttribute('data-fk-multi-child'));
+  }
+  function refuseTwoChildren() {
+    var f = childNameField();
+    if (f) {
+      try { f.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (f.focus) f.focus(); } catch (_) {}
+      try { fieldMsg(f, true, ONE_CHILD_FIELD_MSG); } catch (_) {}
+    }
+    refuseAloud(ONE_CHILD_REFUSAL);
+  }
+
   async function submit() {
     if (_submitting || _submitted) return;   // in-flight / already-submitted guard
     // Centre FIRST. It used to be checked after field validation, so a parent learned
@@ -809,6 +898,15 @@
     var data;
     try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status('Error: ' + e.message, 'er'); return; }
     if (!data) { status('Nothing to submit', 'er'); return; }
+    // ДО ЛЮБОГО ТРАНСПОРТА — и до RPC, и до embed, и до собственного CFG.submit формы:
+    // отказ обязан означать НОЛЬ записей, а не «записали и потом пожалели».
+    // Смотрим ВСЕ поля имени ребёнка, а не одно: DCY 01234 повторяет имя на второй
+    // странице (`child_name2`), и двойное имя приходило именно парой.
+    var childNames = Object.keys(data.formData || {}).filter(function (k) { return /^child_name/.test(k); });
+    if (!FAMILY_SCOPE_TYPES[FORM_TYPE] && !fieldTakesManyChildren() &&
+        childNames.some(function (k) { return looksLikeMoreThanOneChild(data.formData[k]); })) {
+      refuseTwoChildren(); return;
+    }
     _submitting = true;
     status('Saving…', 'in');
     try {
@@ -1314,7 +1412,10 @@
     CENTERS: CENTERS, ORG: ORG,
     // KIT is the cache-bust number in the <script src="form-kit.js?v=N"> includes.
     // A rehearsal reads it to prove the browser got the build it thinks it got.
-    KIT: 12,
+    // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
+    // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
+    // во всех включениях — проба пола версий теперь требует этого прямо.
+    KIT: 16,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
