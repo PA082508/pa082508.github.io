@@ -853,6 +853,13 @@ document.addEventListener('click', function (e) {
      на форму, не должен увидеть, как его правка исчезла под нашей подстановкой. */
   const fkToken = () => new URLSearchParams(location.search).get('t') || null;
 
+  /* Метка «тронуто рукой В ЭТОЙ СЕССИИ». isTrusted отличает палец от нашей же
+     подстановки: программный input поднимает то же событие, и без этой проверки
+     префилл объявил бы тронутым всё, что сам и заполнил. */
+  document.addEventListener('input', function (e) {
+    if (e.isTrusted && e.target && e.target.setAttribute) e.target.setAttribute('data-fk-touched', '1');
+  }, true);
+
   /* ФОРМА ЗНАЧЕНИЯ ПРИНАДЛЕЖИТ ПОЛЮ, А НЕ ИСТОЧНИКУ (найдено сквозной пробой 15.08).
      База отдаёт дату как `2017-05-13`, а на бланке стоит поле с маской ММ/ДД/ГГГГ —
      ISO-строка легла в него как «20/17/0513», и родитель увидел бы мусор в графе
@@ -886,7 +893,13 @@ document.addEventListener('click', function (e) {
       if (!k || k.charAt(0) === '_') return;
       var v = data[k];
       if (v === null || v === undefined || String(v).trim() === '') return;
-      if ((e.value || '').trim() !== '') return;      // набранное родителем сильнее
+      // ⭐ СТАРШИНСТВО (канон v19, 15.08). ИМЕННАЯ ССЫЛКА СИЛЬНЕЕ ЛЮБОЙ ПАМЯТИ.
+      // v17 берёг «уже заполненное» — и берёг им ПАКЕТНУЮ ПАМЯТЬ О ДРУГОМ РЕБЁНКЕ:
+      // мать, заполнившая форму одного близнеца, открывала ссылку второго и видела
+      // в графе имени ПЕРВОГО (замер 15.08 — «МУСОР Wrong Child»). Токен называет
+      // ребёнка точно, память знает лишь «кто-то на этом телефоне».
+      // Уступаем ТОЛЬКО тому, что человек изменил руками В ЭТОЙ СЕССИИ.
+      if (e.getAttribute('data-fk-touched')) return;
       e.value = fkShape(e, String(v));
       e.dispatchEvent(new Event('input', { bubbles: true }));
       e.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1601,7 +1614,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 18,
+    KIT: 19,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
