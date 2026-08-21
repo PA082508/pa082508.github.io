@@ -279,7 +279,13 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
    форму ВООБЩЕ — замок держал бы её на верном ответе. Два предиката одного вопроса
    расходятся молча; спрашиваем кит, который считает пропуски для Submit. */
 function requiredFilled(){
-  if(window.FormKit && FormKit.refreshCounter) return FormKit.refreshCounter().length===0;
+  /* ⛔ ПОДПИСЬ НЕ СТЕРЕЖЁТ САМУ СЕБЯ. Замок открывается, когда заполнено всё ОСТАЛЬНОЕ;
+     считать её саму в этот счёт значит запереть подпись навсегда — «заполните
+     обязательные» висело бы на форме, где не заполнена ровно она.
+     ⚠️ Дефект внесён 21.08 вместе с «одним предикатом» (v22): прежний обход полей
+     подписи исключал (`f.t!=='sig'`), а кит их считает. Поймано пробой 01225. */
+  if(window.FormKit && FormKit.refreshCounter)
+    return FormKit.refreshCounter().filter(function(e){return e.tagName!=='CANVAS'}).length===0;
   /* Кита нет — форму всё равно нельзя ни проверить, ни отправить. Честнее держать
      подпись закрытой, чем открыть её непроверенной. */
   return false;

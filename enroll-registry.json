@@ -362,17 +362,28 @@
     },
     "dcy_01225": {
       "slug": "dcy_01225",
-      "title": "DCY 01225 — Routine Trip (Rev. 6/2025)",
+      "title": "DCY 01225 — Routine Trip Permission (Rev. 6/2025)",
       "kind": "document",
       "section": "dcy",
       "requiringOrg": "ODJFS/DCY",
       "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225%20Routine%20Trip.PDF"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225%20Routine%20Trip.PDF",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/DCY_01225_v2.html"
       },
       "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225%20Routine%20Trip.PDF",
       "perInstance": false,
-      "history": []
+      "history": [
+        {
+          "at": "2026-08-21",
+          "note": "v2: kit-path overlay over the official Rev. 6/2025 scan. PDF v1 kept as history. DARK until the word — coordinates await a 1:1 paper sverka."
+        }
+      ],
+      "submissionType": "dcy_01225",
+      "signer": "parent",
+      "intakeMode": "online",
+      "condition": "school_age",
+      "expiryMonths": 12
     },
     "dcy_01226": {
       "slug": "dcy_01226",
