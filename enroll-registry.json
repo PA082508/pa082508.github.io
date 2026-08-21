@@ -167,17 +167,24 @@
       "submissionType": "medical",
       "expiryDays": 30,
       "perInstance": false,
-      "current": "v2021pdf",
+      "current": null,
       "versions": {
         "v2021pdf": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01305_Child-Medical-Statement.PDF"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01305_Child-Medical-Statement.PDF",
+      "fallbackUrl": null,
       "history": [
         {
           "at": "2026-07-11",
           "note": "Interim: current → official JFS 01305 PDF (Rev. 10/2021, physician-signed, paper). Parent prints and takes to physician. No HTML rebuild (wet signature)."
+        },
+        {
+          "at": "2026-08-21",
+          "note": "Retired. Not deleted: the file and the 2021 version stay reachable as history. Old QR codes and links land on a \"form retired\" notice instead of the PDF."
         }
-      ]
+      ],
+      "status": "retired",
+      "retiredAt": "2026-08-21",
+      "retiredReason": "Child physical examination is not required by OAC 5180:2-12-15 (Child records, eff. 2026-07-01); the rule names DCY 01234, the immunization record (30 days / 13 months) and DCY 01236 — JFS 01305 is not named. What the rule does require is the immunization record, carried by its own document type, not by this form."
     },
     "special_diet": {
       "slug": "special_diet",

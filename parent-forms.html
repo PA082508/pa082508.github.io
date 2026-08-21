@@ -314,6 +314,29 @@
         var note = s.note || '';
         function onlyLink(slug){ return 'https://pa082508.github.io/parent-forms.html?center=' + encodeURIComponent(center) + '&only=' + encodeURIComponent(slug); }
         function withK(u, slug){ return u + (u.indexOf('?') >= 0 ? '&' : '?') + 'k=' + encodeURIComponent(slug); }
+        /* ⭐ ФОРМА, ВЫВЕДЕННАЯ ИЗ ОБРАЩЕНИЯ (21.08, JFS 01305).
+           Запись в реестре ОСТАЁТСЯ — это история изданий, а не список живого. Но карточку
+           семье больше не показываем: набор молча теряет строку, а старая ссылка или
+           напечатанный QR не должны отдавать бумагу, которой мы больше не просим.
+           ⛔ Тихо оборвать ссылку нельзя: родитель с распечатанным QR решит, что сломались
+           мы, и придёт с вопросом — либо, что хуже, принесёт справку зря. */
+        if (src.status === 'retired') {
+          /* В наборе — просто нет строки. */
+          if (only.indexOf(s.key) < 0) return;
+          /* Свой элемент: общий `card` создаётся ниже, и трогать его отсюда значило бы
+             упасть на undefined — молча, внутри промиса, пустым списком. */
+          var rcard = document.createElement('div');
+          rcard.className = 'card handout';
+          rcard.innerHTML = '<div class="num">&#9679;</div><div class="info"><div class="t"></div>'
+            + '<div class="d"></div></div><div class="right"><span class="handout-tag">No longer needed</span></div>';
+          rcard.querySelector('.t').textContent = label;
+          rcard.querySelector('.d').textContent =
+            'This form is no longer required, and the center is not asking for it. '
+            + 'Nothing to do — if you were sent here by an older link or a printed code, you can ignore it. '
+            + 'If your center still needs something from you, they will tell you directly.';
+          list.appendChild(rcard);
+          return;
+        }
         var kind = src.kind || (s.keep ? 'keep' : (s.pending || s.handout ? 'director' : 'signature'));
         var url = verUrl(src.versions && src.current && src.versions[src.current]) || src.fallbackUrl || null;
         if (url === 'PENDING') url = null;
