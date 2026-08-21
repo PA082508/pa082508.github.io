@@ -484,12 +484,48 @@
   // `msg` необязателен: без него — прежние слова «… is required». С ним поле может
   // сказать СВОЮ беду (пустота и «здесь двое детей» — разные беды, и «is required»
   // на заполненном поле читается как поломка формы).
+  /* ⭐⭐ ВСТАВЛЕННОЕ КИТОМ ОБЯЗАНО СТОЯТЬ У СВОЕЙ КЛЕТКИ (v23).
+   *
+   * ДЕФЕКТ, НАЙДЕННЫЙ ВЛАДЕЛЬЦЕМ 21.08 НА СТРАНИЦЕ 2 БЛАНКА 01234: две кнопки
+   * «Add signature — draw» и красная подсказка «Specialized services … is required»
+   * стояли в ЛЕВОМ ВЕРХНЕМ УГЛУ страницы вместо своих мест.
+   *
+   * ПРИЧИНА ОДНА НА ОБА СЛУЧАЯ. Кит писался под формы обычного потока и вставлял
+   * узел рядом с полем: `parentNode.insertBefore` / `parentNode.appendChild`. А
+   * бланк-накладка кладёт КАЖДУЮ клетку `position:absolute` внутрь страницы-контейнера
+   * — значит «рядом с полем» в разметке не означает «рядом с полем на экране»:
+   * статический узел падает в начало контейнера, то есть в угол листа.
+   *
+   * ⛔ Чинить это в бланке нельзя: тогда каждый следующий бланк-накладка (01236, 01217,
+   * 01305 и все будущие) принесёт ту же беду заново.
+   *
+   * ПРАВИЛО: если клетка позиционирована абсолютно — вставленный узел позиционируется
+   * абсолютно ТОЖЕ, по координатам самой клетки. */
+  function isOverlayField(el) {
+    try { return getComputedStyle(el).position === 'absolute'; } catch (_) { return false; }
+  }
+  function placeNear(el, node, where) {
+    if (!isOverlayField(el)) return;                     // обычный поток — не трогаем
+    var w = el.offsetWidth || 0, h = el.offsetHeight || 0;
+    node.style.position = 'absolute';
+    node.style.zIndex = '6';
+    if (where === 'inside') {                            // кнопка подписи — поверх площадки
+      node.style.left = (el.offsetLeft + 8) + 'px';
+      node.style.top = (el.offsetTop + Math.max(0, (h - 30) / 2)) + 'px';
+    } else {                                             // подсказка — под клеткой
+      node.style.left = el.offsetLeft + 'px';
+      node.style.top = (el.offsetTop + h + 2) + 'px';
+      node.style.maxWidth = Math.max(220, w) + 'px';
+    }
+  }
+
   function fieldMsg(el, show, msg) {
     var box = el.tagName === 'CANVAS' || el.getAttribute('data-fk-choice') ? el : el;
     var next = box.parentNode.querySelector('.fk-msg');
     if (show) {
       if (!next) { next = document.createElement('div'); next.className = 'fk-msg'; box.parentNode.appendChild(next); }
       next.textContent = msg || ((el.getAttribute('data-label') || 'This field') + ' is required');
+      placeNear(box, next, 'below');
       if (el.classList) el.classList.add('fk-invalid');
     } else {
       if (next) next.remove();
@@ -941,6 +977,7 @@ window.fkAttachPads = function () {
     b.setAttribute('data-fk-pad-title', 'Signature');
     b.textContent = '\u270D Add signature — draw';
     c.parentNode.insertBefore(b, c);
+    placeNear(c, b, 'inside');
     c.setAttribute('data-fk-pad-attached', '1');
   });
 };
@@ -1832,7 +1869,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 22,
+    KIT: 23,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },

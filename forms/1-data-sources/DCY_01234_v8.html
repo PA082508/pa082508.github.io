@@ -195,6 +195,11 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       host.appendChild(cb);
       // lock overlay (attestation-gate)
       var lock=document.createElement('div');lock.className='siglock';lock.id='lock_'+f.id;
+      /* ⭐ У РОДИТЕЛЬСКОЙ ПОДПИСИ ОТКРЫВАШКА УЖЕ ЕСТЬ — ЭТОТ САМЫЙ ЗАМОК («✍ Tap to
+         sign — draw big»). Помечаем его как открывашку окна подписи, и кит не ставит
+         ВТОРУЮ кнопку поверх той же площадки: две кнопки на одно действие — это вопрос
+         «а в чём разница?», на который у формы нет ответа. */
+      if(f.id==='parent_sig') lock.setAttribute('data-fk-pad','f_'+f.id);
       lock.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
       lock.textContent = f.staff ? 'Program review — after the parent signs' : 'Complete the required fields first';
       host.appendChild(lock);
@@ -538,6 +543,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=22"></script>
+<script defer src="form-kit.js?v=23"></script>
 </body>
 </html>
