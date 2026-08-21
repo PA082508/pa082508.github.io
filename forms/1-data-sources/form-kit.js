@@ -424,7 +424,28 @@
     }
     return false;
   }
-  function requiredEls() { return $$('[data-required]').filter(function (e) { return !e.getAttribute('data-inactive'); }); }
+  /* ⭐⭐ ВОПРОС, КОТОРЫЙ ЗАДАЁТСЯ НЕ ВСЕГДА (v21, правка владельца 21.08).
+   *
+   *   data-required-when="id"  → обязателен, только пока то поле заполнено.
+   *
+   * ПОВОД. Часть вопросов бумаги ОТКРЫВАЕТСЯ предыдущим ответом: провайдера услуг
+   * спрашивают только у того, кто ответил «услуги есть»; можно ли отдавать ребёнка
+   * второму экстренному — только когда второй экстренный назван. Требовать ответа на
+   * незаданный вопрос значит держать семью за нашу собственную разметку: она видит
+   * пустую строку, которую бумага ей не адресовала, и не может отправить форму.
+   *
+   * ⛔ Условие спрашивается через isFilledSelf: рекурсии между условиями нет. */
+  function requiredEls() {
+    return $$('[data-required]').filter(function (e) {
+      if (e.getAttribute('data-inactive')) return false;
+      var w = e.getAttribute('data-required-when');
+      if (w) {
+        var src = document.getElementById(w) || document.getElementById('f_' + w);
+        if (!isFilledSelf(src)) return false;
+      }
+      return true;
+    });
+  }
   // `msg` необязателен: без него — прежние слова «… is required». С ним поле может
   // сказать СВОЮ беду (пустота и «здесь двое детей» — разные беды, и «is required»
   // на заполненном поле читается как поломка формы).
@@ -1676,7 +1697,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 20,
+    KIT: 21,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
