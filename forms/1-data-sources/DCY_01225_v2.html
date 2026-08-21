@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DCY 01225 — Routine Trip Permission (Rev. 6/2025) · fillable</title>
+<meta name="fk-form-version" content="v2">
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  /* ===================================================================
+     DCY 01225 (Rev. 6/2025) — Routine Trip Permission for Child Care.
+     ОВЕРЛЕЙ НАД ОФИЦИАЛЬНЫМ СКАНОМ (1275x1650 @150dpi, letter): печать
+     обязана быть неотличима от бланка штата — скан И ЕСТЬ вёрстка, мы
+     только кладём поля. Координаты сняты от ФОНА: три серые полосы
+     распознаны по картинке (y 220-284, 583-647, 774-837), остальное
+     размечено от них и сверяется глазами (канон калибровки).
+     ⚠️ КООРДИНАТЫ — ПЕРВЫЙ ПРОХОД, как это было и у 01234 v8. Три серые полосы найдены
+     ПО КАРТИНКЕ (y 220-284, 583-647, 774-837) и держат разметку; остальное размечено от
+     них и проверено глазами по снимку. 1:1 сверка на бумаге — за владельцем: печать
+     обязана совпасть с бланком штата, а этого не докажет ни одна проба в браузере.
+     =================================================================== */
+  :root{ --line:#0066cc; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#5a6b60;font-family:Arial,Helvetica,sans-serif}
+  .doc{padding:20px 0 60px}
+  .page{position:relative;width:1275px;height:1650px;margin:0 auto 20px;background:#fff no-repeat;
+    background-size:1275px 1650px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+  .page.p1{background-image:url("DCY01225_page-1.png")}
+  .f{position:absolute;font-family:Arial,sans-serif;font-size:15px;color:#111;
+    background:rgba(255,253,150,0.55);border:none;border-bottom:1.5px solid var(--line);
+    padding:1px 4px;outline:none}
+  .f:focus{background:rgba(255,246,120,0.8)}
+  .cb{position:absolute;width:18px;height:18px;margin:0;accent-color:#0f4c35;cursor:pointer}
+  .sig{position:absolute;background:rgba(210,235,255,0.35);border:1.5px dashed #0f4c35;border-radius:4px;cursor:crosshair;display:block}
+  .siglock{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
+    background:rgba(90,107,96,.9);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:4px;z-index:5}
+  .sigclear{position:absolute;font-size:10px;padding:2px 6px;background:#c0392b;color:#fff;border:none;border-radius:4px;cursor:pointer;z-index:6}
+  /* Подсказка про разрешение на плавание — рядом со своим вопросом, не в углу. */
+  .swimnote{position:absolute;left:130px;top:578px;width:1010px;font:600 13px Arial,sans-serif;
+    color:#92400e;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;padding:5px 9px;z-index:4}
+  @media print{
+    body{background:#fff}.doc{padding:0}.page{box-shadow:none;margin:0}
+    .f{background:transparent;border:none}
+    .siglock,.sigclear,.swimnote{display:none!important}.sig{background:transparent;border:none}
+    @page{size:8.5in 11in;margin:0}
+  }
+.fkml{margin:6px 0;padding:8px 10px;border:1.5px solid #fcd34d;background:#fffbeb;border-radius:8px;font:13px Arial,Helvetica,sans-serif;color:#92400e}
+.fkml-head{font-weight:700;margin-bottom:4px}
+.fkml-item{display:block;width:100%;text-align:left;background:none;border:none;padding:2px 0;color:#92400e;text-decoration:underline;cursor:pointer;font:inherit}
+</style>
+</head>
+<body>
+<div data-formkit="missing-list" class="fkml fk-print-hidden" style="display:none"></div>
+<div class="doc"><div class="page p1" id="pg1"></div></div>
+
+<script>
+/* Клетки бланка — СЛОВО В СЛОВО с оригинала DCY 01225 (Rev. 6/2025).
+   x/y — левый верхний угол поля на скане 1275x1650. */
+var FIELDS = [
+  /* ── Routine Trip Information ─────────────────────────────────────── */
+  {id:'destinations',    t:'text',x:132,y:312,w:1005,h:30,r:1,label:'Routine trip destination(s)'},
+  {id:'permission_date', t:'text',x:132,y:378,w:300,h:30,r:1,date:1,ph:'MM/DD/YYYY',
+     label:'Date of permission (valid for one year)'},
+
+  /* ⭐ MODE: на бумаге это ОДНА строка со списком в скобках. Владелец (21.08) выбрал
+     пять галочек ПЛЮС «other»: ответ становится машиночитаемым — водителю нужен именно
+     он, — а лист остаётся тем же, способы на бумаге и так напечатаны.
+     ⭐⭐ КАЖДАЯ ГАЛОЧКА СТОИТ ПОД СВОИМ СЛОВОМ. Пять безымянных квадратиков — это
+     загадка: родитель не обязан догадываться, какой из них «school bus». Подписывать их
+     своими словами нельзя (печать обязана остаться официальным бланком), поэтому
+     подпись даёт САМ БЛАНК — та самая строка в скобках над ними.
+     Обязательна ГРУППА: любая отметка либо текст в «other» закрывает вопрос. */
+  {id:'mode_walk',    t:'cb',x:556,y:436,excl:'mode',r:1,label:'Mode of transportation'},
+  {id:'mode_bus',     t:'cb',x:638,y:436,excl:'mode'},
+  {id:'mode_public',  t:'cb',x:740,y:436,excl:'mode'},
+  {id:'mode_parent',  t:'cb',x:876,y:436,excl:'mode'},
+  {id:'mode_provider',t:'cb',x:996,y:436,excl:'mode'},
+  {id:'mode_other',   t:'text',x:132,y:456,w:390,h:20,ph:'other (describe)'},
+
+  /* ⛔ ВОДА — ДВА РАЗНЫХ ВОПРОСА, и оба обязательны. Ни один не предзаполняется:
+     это единственные клетки бланка про безопасность ребёнка, и «нет», поставленное
+     нами и подписанное семьёй, было бы нашим ответом за её подписью.
+     Клетки положены ПОВЕРХ печатных квадратиков бланка. */
+  {id:'water_y', t:'cb',x:140,y:501,excl:'water',r:1,label:'Access to water 18 inches or deeper — yes or no'},
+  {id:'water_n', t:'cb',x:312,y:501,excl:'water'},
+  {id:'wact_y',  t:'cb',x:772,y:544,excl:'wact',r:1,label:'Water activities planned — yes or no'},
+  {id:'wact_n',  t:'cb',x:892,y:544,excl:'wact'},
+
+  /* ── Child's Information ──────────────────────────────────────────── */
+  {id:'child_name', t:'text',x:132,y:678,w:1005,h:30,r:1,fk:'child_name',ac:'name',label:'Child name'},
+
+  /* ⛔ КАТЕГОРИЯ КРЕСЛА НЕ ВЫВОДИТСЯ ИЗ ДАТЫ РОЖДЕНИЯ: на бумаге она про вес и рост
+     тоже («40 lbs», «4' 9"»), и решает её родитель. */
+  {id:'seat_under4', t:'cb',x:143,y:742,excl:'seat',r:1,label:'Car seat category'},
+  {id:'seat_over4',  t:'cb',x:497,y:742,excl:'seat'},
+  {id:'seat_8yr',    t:'cb',x:798,y:742,excl:'seat'},
+
+  /* ── Signature ────────────────────────────────────────────────────── */
+  {id:'parent_sig',    t:'sig', x:132,y:934,w:690,h:46,r:1,label:'Parent signature'},
+  {id:'parent_sig_dt', t:'text',x:880,y:938,w:240,h:26,label:'Date'}
+];
+
+function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkbox'?(e.checked?'Yes':''):(e.value||'').trim()):''}
+function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
+
+(function(){
+  var host=document.getElementById('pg1');
+  FIELDS.forEach(function(f){
+    var el;
+    if(f.t==='cb'){
+      el=document.createElement('input'); el.type='checkbox'; el.className='cb';
+      el.style.left=f.x+'px'; el.style.top=f.y+'px';
+      if(f.excl) el.setAttribute('data-fk-exclusive',f.excl);
+    } else if(f.t==='sig'){
+      el=document.createElement('canvas'); el.className='sig'; el.width=f.w; el.height=f.h;
+      el.setAttribute('data-formkit','signature'); el.setAttribute('data-fk-adopt','');
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      el.style.pointerEvents='none';                 /* подписываем через FKPad — «рисуй крупно» */
+      if(f.r){el.setAttribute('data-required','');el.setAttribute('data-label',f.label||f.id)}
+      var cb=document.createElement('button');cb.type='button';cb.className='sigclear';cb.textContent='✕';
+      cb.style.left=(f.x+f.w-22)+'px';cb.style.top=(f.y+2)+'px';
+      cb.onclick=function(){FormKit.clearSig(el);gate()};
+      host.appendChild(cb);
+      var lock=document.createElement('div');lock.className='siglock';lock.id='lock_'+f.id;
+      lock.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      lock.textContent='Complete the required fields first';
+      /* Замок И ЕСТЬ открывашка окна подписи — кит второй кнопки не ставит (v23). */
+      lock.setAttribute('data-fk-pad','f_'+f.id);
+      host.appendChild(lock);
+    } else {
+      el=document.createElement('input'); el.type='text'; el.className='f';
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      if(f.ph) el.placeholder=f.ph;
+      if(f.ac) el.setAttribute('autocomplete',f.ac);
+      if(f.date) el.setAttribute('data-fk-date','1');
+    }
+    el.id='f_'+f.id;
+    if(f.fk) el.setAttribute('data-fk-field',f.fk);
+    if(f.r && f.t!=='sig'){ el.setAttribute('data-required',''); el.setAttribute('data-label',f.label||f.id) }
+    /* «other» закрывает вопрос о способе наравне с галочками. */
+    if(f.id==='mode_walk') el.setAttribute('data-required-alt','f_mode_other');
+    host.appendChild(el);
+    if(f.t==='text') el.addEventListener('input',gate);
+    if(f.t==='cb') el.addEventListener('change',gate);
+  });
+
+  /* Подсказка про плавание — появляется у СВОЕГО вопроса и только при «Yes». */
+  var note=document.createElement('div'); note.className='swimnote fk-print-hidden';
+  note.id='swimnote'; note.style.display='none';
+  note.textContent='A swimming permission slip is required — the center will give it to you.';
+  host.appendChild(note);
+  gate();
+})();
+
+function swimNote(){
+  var n=document.getElementById('swimnote'); if(!n) return;
+  n.style.display = gc('wact_y') ? '' : 'none';
+}
+/* Дата рядом с подписью — ШТАМП: ставится в момент подписи, только чтение, гаснет
+   вместе с подписью (канон 24.07). */
+function fmtToday(){var t=new Date();return ('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear()}
+function stampSigDate(){
+  var dt=document.getElementById('f_parent_sig_dt'); if(!dt) return;
+  var signed=window.FormKit&&FormKit.getSig&&FormKit.getSig('f_parent_sig');
+  dt.readOnly=true; dt.value = signed ? (dt.value||fmtToday()) : '';
+}
+window.__stampSigDates = stampSigDate;
+
+function requiredFilled(){
+  /* Один предикат на один вопрос: спрашиваем кит, а не свой обход (канон v22). */
+  /* ⛔ ПОДПИСЬ НЕ СТЕРЕЖЁТ САМУ СЕБЯ. Замок открывается, когда заполнено всё ОСТАЛЬНОЕ;
+     считать её саму в этот счёт значит запереть подпись навсегда — «заполните
+     обязательные» висело бы на форме, где не заполнена ровно она.
+     ⚠️ Дефект внесён 21.08 вместе с «одним предикатом» (v22): прежний обход полей
+     подписи исключал (`f.t!=='sig'`), а кит их считает. Поймано пробой 01225. */
+  if(window.FormKit&&FormKit.refreshCounter)
+    return FormKit.refreshCounter().filter(function(e){return e.tagName!=='CANVAS'}).length===0;
+  return false;
+}
+function gate(){
+  swimNote();
+  var ok=requiredFilled();
+  var signed=window.FormKit&&FormKit.getSig&&!!FormKit.getSig('f_parent_sig');
+  var lock=document.getElementById('lock_parent_sig');
+  if(lock){
+    if(signed){ lock.style.display='none'; lock.onclick=null }
+    else if(!ok){ lock.style.display='flex'; lock.textContent='Complete the required fields first'; lock.onclick=null }
+    else { lock.style.display='flex'; lock.textContent='✍ Tap to sign — draw big';
+           lock.onclick=function(){ if(window.FKPad) FKPad.open('f_parent_sig',{title:'Parent signature'}) } }
+  }
+  stampSigDate();
+}
+document.addEventListener('mouseup', function(){ setTimeout(gate,50) });
+document.addEventListener('touchend', function(){ setTimeout(gate,50) });
+
+function resetForm(){
+  FIELDS.forEach(function(f){
+    var e=document.getElementById('f_'+f.id); if(!e) return;
+    if(f.t==='sig') FormKit.clearSig(e); else if(f.t==='cb') e.checked=false; else e.value='';
+  });
+  gate(); if(window.FormKit&&FormKit.status) FormKit.status('Cleared','');
+}
+
+/* Префилл из пакета: имя ребёнка и школа-назначение приходят единым пакетом семьи. */
+function PA_APPLY(fd){
+  var S=function(id,v){var e=document.getElementById('f_'+id); if(e&&v!=null&&!e.value) e.value=v};
+  S('child_name', fd.child_name);
+}
+
+window.FORMKIT_CONFIG = {
+  formType:'dcy_01225', version:'v2', title:'Routine Trip Permission (DCY 01225)',
+  formKey:'dcy_01225', reset:resetForm, applyPrefill:PA_APPLY,
+  collect:function(){
+    var fd={ type:'dcy_01225', dcy_form:'01225', dcy_version:'v2', center_code:FormKit.centerCode() };
+    FIELDS.forEach(function(f){ if(f.t!=='sig') fd[f.id]=g(f.id) });
+    /* Срок бланка — «valid for one year» ОТ ДАТЫ РОДИТЕЛЯ, а не от дня загрузки.
+       Кладём его в подачу, чтобы карточка не пересчитывала его заново и не разошлась. */
+    fd.valid_from = g('permission_date');
+    fd.mode_other = g('mode_other');
+    fd.signature_method='drawn';
+    return {
+      formData: fd,
+      signatures: { parent_sig: FormKit.getSig('f_parent_sig') },
+      signatureDate: g('parent_sig_dt') || null
+    };
+  }
+};
+</script>
+<script src="form-kit.js?v=23"></script>
+</body>
+</html>
