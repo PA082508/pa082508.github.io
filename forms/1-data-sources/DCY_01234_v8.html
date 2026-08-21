@@ -83,16 +83,16 @@
    t: 'text'|'area'|'cb'|'sig'  · p: page 1|2 · r: required · fk: session-packet key   */
 var FIELDS = [
   // ── PAGE 1 ──────────────────────────────────────────────────────────────────
-  {id:'child_name', p:1,t:'text',x:58,y:255,w:560,h:34,fk:'child_name',r:1},
-  {id:'dob',        p:1,t:'text',x:652,y:255,w:258,h:34,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1},
-  {id:'first_day',  p:1,t:'text',x:938,y:255,w:270,h:34,r:1,ph:'MM/DD/YYYY',date:1},
-  {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1,addr:1},
-  {id:'city',       p:1,t:'text',x:58,y:410,w:575,h:32,fk:'city',r:1},
-  {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1,ac:'address-level1',fk:'state'},
-  {id:'zip',        p:1,t:'text',x:948,y:410,w:248,h:32,fk:'zip',r:1},
+  {id:'child_name', p:1,t:'text',x:58,y:255,w:560,h:34,fk:'child_name',r:1,label:'Child name'},
+  {id:'dob',        p:1,t:'text',x:652,y:255,w:258,h:34,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1,label:'Child date of birth'},
+  {id:'first_day',  p:1,t:'text',x:938,y:255,w:270,h:34,r:1,ph:'MM/DD/YYYY',date:1,label:'First day of attendance'},
+  {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1,addr:1,label:'Street address'},
+  {id:'city',       p:1,t:'text',x:58,y:410,w:575,h:32,fk:'city',r:1,label:'City'},
+  {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1,ac:'address-level1',fk:'state',label:'State'},
+  {id:'zip',        p:1,t:'text',x:948,y:410,w:248,h:32,fk:'zip',r:1,label:'ZIP code'},
 
-  {id:'p1_name',    p:1,t:'text',x:58,y:485,w:560,h:32,fk:'parent_name',r:1},
-  {id:'p1_phone',   p:1,t:'text',x:652,y:485,w:556,h:32,fk:'phone_day',r:1,tel:1},
+  {id:'p1_name',    p:1,t:'text',x:58,y:485,w:560,h:32,fk:'parent_name',r:1,label:'Parent 1 — name'},
+  {id:'p1_phone',   p:1,t:'text',x:652,y:485,w:556,h:32,fk:'phone_day',r:1,tel:1,label:'Parent 1 — phone'},
   {id:'p1_same',    p:1,t:'cb',  x:219,y:521},
   {id:'p1_address', p:1,t:'text',x:58,y:566,w:560,h:26},
   {id:'p1_city',    p:1,t:'text',x:658,y:558,w:295,h:28},
@@ -116,10 +116,10 @@ var FIELDS = [
   {id:'p2_work',    p:1,t:'text',x:58,y:999,w:575,h:28},
   {id:'p2_work_ph', p:1,t:'text',x:658,y:999,w:550,h:28,tel:1},
 
-  {id:'ec1_name',   p:1,t:'text',x:58,y:1084,w:560,h:22,r:1},
+  {id:'ec1_name',   p:1,t:'text',x:58,y:1084,w:560,h:22,r:1,label:'Emergency contact 1 — name'},
   {id:'ec2_na',     p:1,t:'cb',  x:661,y:1091},
   {id:'ec2_name',   p:1,t:'text',x:812,y:1090,w:396,h:20},
-  {id:'ec1_phone',  p:1,t:'text',x:58,y:1140,w:560,h:20,r:1,tel:1},
+  {id:'ec1_phone',  p:1,t:'text',x:58,y:1140,w:560,h:20,r:1,tel:1,label:'Emergency contact 1 — phone'},
   {id:'ec2_phone',  p:1,t:'text',x:658,y:1140,w:550,h:20,tel:1},
   {id:'ec1_other',  p:1,t:'text',x:322,y:1190,w:316,h:22},
   {id:'ec2_other',  p:1,t:'text',x:922,y:1190,w:300,h:22},
@@ -135,8 +135,11 @@ var FIELDS = [
   {id:'health_n',   p:1,t:'cb',  x:60,y:1456,excl:'health'},
 
   // ── PAGE 2 ──────────────────────────────────────────────────────────────────
-  {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name',r:1},
-  {id:'dob2',       p:2,t:'text',x:892,y:130,w:301,h:36,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1},
+  /* ⛔ ПАРА БЛИЗНЕЦОВ НЕ ОБЯЗАТЕЛЬНА (владелец, 21.08). Бумага печатает две строки, но
+     заполняет их только семья с двойней, а гард «одна форма — один ребёнок» такую подачу
+     и вовсе отбивает. Требовать их у всех значило объявить неполными все одиночные формы. */
+  {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name'},
+  {id:'dob2',       p:2,t:'text',x:892,y:130,w:301,h:36,fk:'dob',ph:'MM/DD/YYYY',date:1},
   {id:'development',p:2,t:'area',x:58,y:228,w:1150,h:22,r:1,alt:'na_dev',label:'Development concerns — a note or N/A'},
   {id:'na_dev',     p:2,t:'cb',  x:62,y:270},
   {id:'accommod',   p:2,t:'area',x:58,y:322,w:1150,h:38,r:1,alt:'na_acc',label:'Accommodations — a note or N/A'},
@@ -304,8 +307,27 @@ function stampReviewDate(i){
 
 window.__stampSigDates = stampSignatureDates;   // FKPad calls this after committing a signature
 function openParentPad(){ if(window.FKPad) FKPad.open('f_parent_sig',{name:(document.getElementById('f_p1_name')||{}).value||'',title:'Parent signature'}); }
+/* ⭐ СКАЗАТЬ ЗАРАНЕЕ, А НЕ ПОСЛЕ (v22). Родитель, отметивший «есть состояние здоровья»,
+   узнавал про план ухода письмом через несколько дней. Строка под самим вопросом
+   предупреждает в тот момент, когда он об этом думает, — и после отправки не будет
+   ощущения, что мы придумали требование задним числом. */
+function healthPlanNote(){
+  var y=document.getElementById('f_health_y'); if(!y) return;
+  var host=y.parentNode; if(!host) return;
+  var n=document.getElementById('fk-health-note');
+  if(y.checked){
+    if(!n){
+      n=document.createElement('div'); n.id='fk-health-note';
+      n.setAttribute('style','margin-top:6px;font:400 12.5px/1.45 Arial,sans-serif;color:#0f4c35;background:#e8f5ec;border-left:3px solid #0f4c35;padding:6px 9px;border-radius:4px');
+      n.textContent='After you submit, we\u2019ll ask you to complete a Health Care Plan (DCY 01236).';
+      host.appendChild(n);
+    }
+  } else if(n){ n.remove(); }
+}
+
 function gate(){
   syncImpliedAnswers();
+  healthPlanNote();
   var reqOk = requiredFilled();
   var parentSigned = hasInk('parent_sig');
   // The parent's siglock doubles as the sign affordance: blocked until required fields are

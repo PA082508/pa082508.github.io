@@ -434,7 +434,7 @@ function PA_APPLY(fd) {
 }
 
 window.FORMKIT_CONFIG = {
-  formType: 'medical', version: 'v1',
+  formType: 'medical', version: 'v1', formKey: 'dcy_01217',
   reset: resetForm, applyPrefill: PA_APPLY,
   collect: function () {
     if (!dateTouched) { var sd = document.getElementById('signedDate'); if (sd) sd.value = todayISO(); }
@@ -501,6 +501,17 @@ window.FORMKIT_CONFIG = {
 })();
 
 /* Restore center + cross-form autofill once form-kit has booted */
+/* Препарат приходит из плана ухода адресом (?med=): семья не набирает название заново
+   и не путает его написание — а разное написание одного лекарства это два разных
+   разрешения в записи. Клетку всё равно можно поправить рукой. */
+(function(){
+  var nm=new URLSearchParams(location.search).get('med');
+  if(!nm) return;
+  document.addEventListener('DOMContentLoaded',function(){
+    var el=document.getElementById('medName');
+    if(el&&!(el.value||'').trim()){ el.value=nm; el.dispatchEvent(new Event('input',{bubbles:true})); }
+  });
+})();
 document.addEventListener('DOMContentLoaded', function () {
   try {
     var r = JSON.parse(localStorage.getItem('pa_packet_profile'));

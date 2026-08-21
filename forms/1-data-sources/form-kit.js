@@ -164,7 +164,16 @@
   // next person. Until then one timer is correct.
   var PK_KEY = 'pa_packet_profile', PK_TTL = 24 * 60 * 60 * 1000;
   function pkLoad() { try { var r = JSON.parse(localStorage.getItem(PK_KEY)); if (!r || Date.now() - r.ts > PK_TTL) { localStorage.removeItem(PK_KEY); return null; } return r; } catch (_) { return null; } }
-  function pkWrite(data) { try { localStorage.setItem(PK_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch (_) {} }
+  /* `extra` несёт то, что живёт РЯДОМ с данными пакета — например, список следующих
+     форм цепочки. Без него любой вызов pkWrite стирал бы его молча. */
+  function pkWrite(data, extra) {
+    try {
+      var rec = { ts: Date.now(), data: data };
+      if (extra && extra.next) rec.next = extra.next;
+      else { var prev = pkLoad(); if (prev && prev.next) rec.next = prev.next; }
+      localStorage.setItem(PK_KEY, JSON.stringify(rec));
+    } catch (_) {}
+  }
   function fkFields() { return $$('[data-fk-field]'); }
   function savePacket() {
     var r = pkLoad() || { ts: Date.now(), data: {} };
@@ -435,6 +444,32 @@
    * пустую строку, которую бумага ей не адресовала, и не может отправить форму.
    *
    * ⛔ Условие спрашивается через isFilledSelf: рекурсии между условиями нет. */
+  /* ⭐ ПОДПИСЬ, КОТОРУЮ ЧИТАЕТ ЧЕЛОВЕК, А НЕ РАЗРАБОТЧИК (v22).
+   * В списке пропусков стояло `e.id` — то есть `ec2_rel_y` и `na_acc`. Родителю это не
+   * говорит ничего, и список, который нельзя прочесть, не лучше его отсутствия.
+   * Порядок поиска: явная подпись поля → aria → связанный <label> → текст родительской
+   * ячейки → и лишь в самом конце — прибранный идентификатор. */
+  function humanLabel(el) {
+    var v = el.getAttribute('data-label') || el.getAttribute('aria-label')
+         || el.getAttribute('placeholder') || '';
+    if (!v && el.id) {
+      var lab = document.querySelector('label[for="' + el.id + '"]');
+      if (lab) v = (lab.textContent || '').trim();
+    }
+    if (!v) {
+      var box = el.closest ? el.closest('td,th,li,.row,.cell,.field') : null;
+      if (box) v = (box.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 70);
+    }
+    if (!v) v = String(el.id || '').replace(/^f_/, '').replace(/[_-]+/g, ' ');
+    return v.replace(/\s*\*\s*$/, '').trim();
+  }
+
+  /* Показывать ли список пропусков. ⭐ ДО ПЕРВОГО SUBMIT — НЕТ.
+   * Список, висящий над пустой формой с первой секунды, это претензия к человеку,
+   * который ещё не начал: он объявляет незаполненным то, до чего родитель не дошёл.
+   * Пока считает только счётчик; список появляется, когда человек СКАЗАЛ «готово». */
+  var _submitTried = false;
+
   function requiredEls() {
     return $$('[data-required]').filter(function (e) {
       if (e.getAttribute('data-inactive')) return false;
@@ -480,10 +515,10 @@
       missing.forEach(function (e) {
         var key = e.getAttribute('data-fk-exclusive') || e.getAttribute('data-required-alt') || e.id;
         if (seen[key]) return; seen[key] = 1;
-        items.push({ el: e, label: e.getAttribute('data-label') || e.id });
+        items.push({ el: e, label: humanLabel(e) });
       });
       panel.innerHTML = '';
-      if (!items.length) { panel.style.display = 'none'; }
+      if (!items.length || !_submitTried) { panel.style.display = 'none'; }
       else {
         panel.style.display = '';
         var head = document.createElement('div');
@@ -497,6 +532,12 @@
             try { it.el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
             if (it.el.focus) try { it.el.focus(); } catch (_) {}
             fieldMsg(it.el, true);
+            /* Подсветка гаснет сама: метка «вот это» нужна на секунду, а оставшись,
+               она превращается в ещё одну красную клетку на форме. */
+            try {
+              it.el.classList.add('fk-flash');
+              setTimeout(function () { it.el.classList.remove('fk-flash'); }, 1600);
+            } catch (_) {}
           };
           panel.appendChild(a);
         });
@@ -1105,14 +1146,29 @@ document.addEventListener('click', function (e) {
      * ⛔ Это предложение, а не редирект: уводить человека со страницы, где он только что
      * подписался, значит отнимать у него возможность увидеть, что отправилось. */
     try {
+      /* Форма может назвать НЕСКОЛЬКО следующих: у плана ухода с тремя лекарствами —
+         три разрешения, по одному на препарат («одно разрешение = одно лекарство»). */
       var nx = CFG.nextForm ? CFG.nextForm() : null;
-      if (nx && nx.url) {
+      var list = !nx ? [] : (Array.isArray(nx) ? nx : [nx]);
+      list.filter(function (x) { return x && x.url; }).forEach(function (x) {
         var a = document.createElement('a');
-        a.href = nx.url; a.target = '_blank'; a.rel = 'noreferrer';
+        a.href = x.url; a.target = '_blank'; a.rel = 'noreferrer';
         a.setAttribute('data-fk-newform', '1');
-        a.textContent = nx.label || 'Next form';
+        a.textContent = x.label || 'Next form';
         a.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer;text-decoration:none');
         b.appendChild(a);
+      });
+      /* ⭐ ЗАКРЫЛ ВКЛАДКУ — ССЫЛКИ НЕ ПРОПАЛИ. Кладём их в память пакета этого
+         устройства, и страница набора семьи показывает их отдельными карточками.
+         Иначе цепочка живёт ровно до случайного закрытия вкладки. */
+      if (list.length) {
+        try {
+          var r2 = pkLoad() || { ts: Date.now(), data: {} };
+          r2.next = (r2.next || []).filter(function (o) {
+            return !list.some(function (x) { return x.url === o.url; });
+          }).concat(list.map(function (x) { return { url: x.url, label: x.label || 'Next form' }; }));
+          pkWrite(r2.data, r2);
+        } catch (_) {}
       }
     } catch (_) {}
     document.body.appendChild(b);
@@ -1235,16 +1291,19 @@ document.addEventListener('click', function (e) {
     if (!centerUuid()) { refuseNoCenter(); return; }   // #6 still absolute — but now it REFUSES OUT LOUD
     var missing = refreshCounter();
     if (missing.length) {
-      /* ⭐ ВЕДЁМ К СПИСКУ, А НЕ ТОЛЬКО К ПЕРВОМУ ПОЛЮ (v22). Прыжок к первому пропуску
-       * отвечает «где», но молчит «сколько ещё» — и человек чинит одно, жмёт Submit,
-       * получает прыжок ко второму, и так пока не бросит. Плашка называет все разом. */
+      /* ⭐ СПИСОК ПОЯВЛЯЕТСЯ ИМЕННО ЗДЕСЬ (v22). До нажатия человек видит только счётчик;
+       * нажав «готово», он вправе получить не упрёк, а перечень: что именно осталось,
+       * человеческими словами, и по клику — к каждому. Прыжок к первому пропуску
+       * отвечает «где» и молчит «сколько ещё»: человек чинит одно, жмёт снова, получает
+       * прыжок ко второму — и бросает, не зная, сколько их было. */
+      _submitTried = true;
+      refreshCounter();
       var panelEl = $('[data-formkit="missing-list"]');
       if (panelEl && panelEl.style.display !== 'none') {
         try { panelEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-      } else {
-        var f = firstMissing();
-        if (f) { (f.scrollIntoView || function () {}).call(f, { behavior: 'smooth', block: 'center' }); if (f.focus) f.focus(); fieldMsg(f, true); }
       }
+      var f = firstMissing();
+      if (f) { if (f.focus) try { f.focus(); } catch (_) {} fieldMsg(f, true); }
       status(missing.length + ' still unanswered — see the list', 'er');
       return;
     }
@@ -1655,6 +1714,8 @@ document.addEventListener('click', function (e) {
       + '.fk-toolbar button.fk-tb-submit.fk-tb-unarmed{background:#7f9c8e;border-color:#7f9c8e;cursor:pointer}'
       + '@keyframes fkFlash{0%,100%{background:#fef3c7}30%,60%{background:#fde68a;box-shadow:0 0 0 3px rgba(180,83,9,.35) inset}}'
       + '.fk-tb-banner.fk-flash{animation:fkFlash 1.1s ease-in-out 2}'
+      /* Подсветка клетки, к которой привёл список пропусков. */
+      + '.fk-flash:not(.fk-tb-banner){outline:3px solid #f59e0b !important;outline-offset:2px;border-radius:4px}'
       + '.fk-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10000;max-width:min(620px,92vw);'
       + 'background:#7f1d1d;color:#fff;border-radius:10px;padding:13px 17px;font:600 13.5px/1.5 Arial,sans-serif;'
       + 'box-shadow:0 8px 26px rgba(0,0,0,.3);cursor:pointer}'
