@@ -132,11 +132,11 @@
       "intakeMode": "paper_scan",
       "signer": "physician",
       "submissionType": "medical",
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "PENDING"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/DCY_01236_v1.html"
       },
-      "fallbackUrl": null,
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01236_v1.html",
       "perInstance": false,
       "history": [],
       "condition": "special_health_need"
@@ -150,11 +150,11 @@
       "submissionType": "medical",
       "perInstance": true,
       "expiryMonths": 12,
-      "current": null,
+      "current": "v1",
       "versions": {
-        "v1": "PENDING"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/DCY_01217_v1.html"
       },
-      "fallbackUrl": null,
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01217_v1.html",
       "history": [],
       "condition": "medication"
     },
