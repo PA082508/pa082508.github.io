@@ -1048,6 +1048,16 @@ document.addEventListener('click', function (e) {
     } catch (_) { return; }
     if (!data || typeof data !== 'object') return;    // истёкший токен → null, скажет linkStatusNotice
 
+    /* ⭐ ЦЕНТР У ИМЕННОЙ ССЫЛКИ БЕРЁТСЯ ОТ РЕБЁНКА (v23).
+     * До сих пор центр знал ТОЛЬКО адрес (?center=). Работало, потому что ссылку
+     * строит приложение и параметр всегда кладёт. Но правда о центре живёт у РЕБЁНКА:
+     * потеряйся параметр при копировании в письмо — форма упёрлась бы в «откройте
+     * ссылку своего центра», хотя токен всё это время знал ответ.
+     * ⛔ Переключить центр родитель по-прежнему не может: плашка только показывает. */
+    if (!centerUuid() && data.center_id) {
+      for (var cc in CENTERS) { if (CENTERS[cc] === data.center_id) { setResolvedCenter(cc); break; } }
+    }
+
     var filled = 0;
     fkFields().forEach(function (e) {
       var k = e.getAttribute('data-fk-field');
@@ -1171,6 +1181,35 @@ document.addEventListener('click', function (e) {
     var b = document.createElement('div'); b.className = 'fk-submitted-banner fk-print-hidden';
     b.setAttribute('style', 'position:sticky;bottom:0;left:0;right:0;z-index:9999;background:#0a7d46;color:#fff;padding:12px 16px;font:600 14px/1.4 Arial,sans-serif;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -2px 12px rgba(0,0,0,.18)');
     var txt = document.createElement('span'); txt.innerHTML = '✓ Submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. Need changes?';
+    /* Кнопка «ещё один ребёнок» появляется только там, где бланк объявил семейные
+       клетки: на форме без такого объявления переносить нечего и обещать нечего. */
+    if ((CFG.familyCells || []).length) {
+      var snap = familySnapshot();
+      var ac = document.createElement('button'); ac.type = 'button'; ac.setAttribute('data-fk-newform', '1');
+      ac.textContent = 'Fill this form for another child';
+      ac.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
+      ac.addEventListener('click', function () { anotherChild(snap); });
+      b.appendChild(ac);
+      /* ⭐ ИМЕННАЯ ССЫЛКА ЗНАЕТ БРАТЬЕВ И СЁСТЕР — но только тех, чьё родство ДОКАЗАНО
+         общим взрослым (get_prefill_siblings). Их форма откроется СВОИМ токеном, то есть
+         с их собственными данными, а не с нашей догадкой. Родства в записи нет — кнопки
+         нет, и работает обычная «ещё один ребёнок». */
+      var tkn = fkToken();
+      if (tkn) fetch(SUPA_URL + '/rest/v1/rpc/get_prefill_siblings', {
+        method: 'POST',
+        headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+        body: JSON.stringify({ p_token: tkn }),
+      }).then(function (r) { return r.ok ? r.json() : []; }).then(function (sibs) {
+        (sibs || []).forEach(function (sb) {
+          var a = document.createElement('a');
+          a.href = location.pathname + '?center=' + encodeURIComponent(centerCode()) + '&t=' + encodeURIComponent(sb.token);
+          a.setAttribute('data-fk-newform', '1');
+          a.textContent = 'Next: ' + sb.name;
+          a.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer;text-decoration:none');
+          b.appendChild(a);
+        });
+      }).catch(function () {});
+    }
     var nf = document.createElement('button'); nf.type = 'button'; nf.setAttribute('data-fk-newform', '1'); nf.textContent = 'Start a new form';
     nf.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
     nf.addEventListener('click', newForm);
@@ -1210,6 +1249,53 @@ document.addEventListener('click', function (e) {
     } catch (_) {}
     document.body.appendChild(b);
   }
+  /* ⭐⭐ «ЗАПОЛНИТЬ ЭТУ ЖЕ ФОРМУ НА ДРУГОГО РЕБЁНКА» (v23, заказ владельца 21.08).
+   *
+   * ПОВОД. Правило «одна форма — один ребёнок» верное, но для семьи с тремя детьми оно
+   * означает три раза набрать один и тот же адрес, тех же родителей и тех же экстренных.
+   * Гард запрещает вписать двоих; он не обязан делать вторую форму мучением.
+   *
+   * ⛔ ГРАНИЦА ПРОВЕДЕНА ПО СМЫСЛУ, А НЕ ПО УДОБСТВУ: переносим только СЕМЕЙНОЕ
+   * (родители, адрес, экстренные контакты с их «отдавать можно»), и НИКОГДА — детское
+   * (имя, дата рождения, первый день, здоровье, развитие, услуги, перевозка). Ответ про
+   * одного ребёнка, тихо перенесённый на другого и подписанный, — это ровно та беда, из-за
+   * которой совместные формы и запрещены.
+   * ⛔ Подпись НЕ переносится никогда: новая форма — новая подпись и новая дата. */
+  function familySnapshot() {
+    var fam = (CFG.familyCells || []), out = {};
+    fam.forEach(function (id) {
+      var el = document.getElementById(id) || document.getElementById('f_' + id);
+      if (!el) return;
+      out[id] = (el.type === 'checkbox') ? (el.checked ? 'Yes' : '') : (el.value || '');
+    });
+    return out;
+  }
+  function applyFamily(snap) {
+    Object.keys(snap || {}).forEach(function (id) {
+      var el = document.getElementById(id) || document.getElementById('f_' + id);
+      if (!el || !snap[id]) return;
+      if (el.type === 'checkbox') el.checked = true; else el.value = snap[id];
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+  function anotherChild(snap) {
+    var b = $('.fk-submitted-banner'); if (b) b.remove();
+    $$('input,select,textarea,button').forEach(function (el) { el.disabled = false; });
+    _submitted = false; _submitting = false;
+    IDEMP = newIdemp();                            // новая подача — новый ключ идемпотентности
+    try { if (CFG.reset) CFG.reset(); } catch (_) {}
+    $$('canvas[data-formkit="signature"]').forEach(function (c) { clearSig(c); });
+    applyFamily(snap);
+    /* Список пропусков снова прячется: человек начинает заново, и упрёк до первого
+       нажатия ему не адресован. */
+    _submitTried = false;
+    refreshCounter();
+    var f = document.getElementById('f_child_name') || document.getElementById('child_name');
+    if (f) { try { f.scrollIntoView({ behavior: 'smooth', block: 'center' }); f.focus(); } catch (_) {} }
+    status('New form — family details kept, the child\u2019s details are yours to fill', 'ok');
+  }
+
   function newForm() {
     var b = $('.fk-submitted-banner'); if (b) b.remove();
     $$('input,select,textarea,button').forEach(function (el) { el.disabled = false; });
