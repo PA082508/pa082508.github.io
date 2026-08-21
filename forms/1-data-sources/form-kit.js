@@ -386,12 +386,43 @@
   }
 
   // ── §1 Inline validation + "N remaining" counter ─────────────────────────────
-  function isFilled(el) {
+  /* Заполнено ли САМО поле, без учёта группы и альтернативы. */
+  function isFilledSelf(el) {
+    if (!el) return false;
     if (el.getAttribute('data-inactive')) return true; // hidden conditional → not required
     if (el.tagName === 'CANVAS') return hasInk(el);
     if (el.getAttribute('data-fk-choice')) return !!(el.querySelector('input') || {}).value;
     if (el.type === 'checkbox') return el.checked;
     return !!(el.value || '').trim();
+  }
+  /* ⭐⭐ ВОПРОС БЛАНКА — ЭТО ГРУППА, А НЕ КЛЕТКА (21.08, слово владельца).
+   *
+   * ПОВОД. Бумага DCY 01234 требует ВЫБОРА: permit/deny · yes/no · released ·
+   * «текст либо N/A». Кит же считал заполненной только ту клетку, на которой стоит
+   * флаг, — и пара «Yes/No» была бы закрыта лишь одним конкретным ответом. Поэтому
+   * флага не ставили вовсе, и формы уходили БЕЗ ОТВЕТА: замер 21.08 нашёл 38 подач,
+   * из них у Tristan Graves не отвечено про перевозку и услуги, и приём их принял.
+   *
+   * Две связки, и обе — про один вопрос, а не про одну клетку:
+   *   data-fk-exclusive="группа"  → закрыта, если отмечена ЛЮБАЯ клетка группы;
+   *   data-required-alt="id"      → закрыта, если заполнено поле ЛИБО его альтернатива
+   *                                 («примечание либо N/A»).
+   * ⛔ Рекурсии нет: альтернативу спрашиваем ТОЛЬКО через isFilledSelf. */
+  function isFilled(el) {
+    if (!el) return false;
+    if (el.getAttribute('data-inactive')) return true;
+    if (isFilledSelf(el)) return true;
+    var g = el.getAttribute('data-fk-exclusive');
+    if (g) {
+      var any = $$('[data-fk-exclusive="' + g + '"]').some(function (o) { return isFilledSelf(o); });
+      if (any) return true;
+    }
+    var alt = el.getAttribute('data-required-alt');
+    if (alt) {
+      var a = document.getElementById(alt) || document.getElementById('f_' + alt);
+      if (isFilledSelf(a)) return true;
+    }
+    return false;
   }
   function requiredEls() { return $$('[data-required]').filter(function (e) { return !e.getAttribute('data-inactive'); }); }
   // `msg` необязателен: без него — прежние слова «… is required». С ним поле может
@@ -418,6 +449,37 @@
     if (c) {
       c.textContent = missing.length ? (missing.length + ' required field' + (missing.length === 1 ? '' : 's') + ' remaining') : 'All required fields complete ✓';
       c.setAttribute('data-done', missing.length ? '0' : '1');
+    }
+    /* ⭐ ПЛАШКА НАЗЫВАЕТ ВОПРОСЫ ПОИМЁННО И ВЕДЁТ К КАЖДОМУ.
+     * Счётчик говорит СКОЛЬКО; родителю нужно ГДЕ. Одна строка «3 remaining» на форме в
+     * две страницы заставляет искать глазами — и человек подписывает как есть. */
+    var panel = $('[data-formkit="missing-list"]');
+    if (panel) {
+      var seen = {}, items = [];
+      missing.forEach(function (e) {
+        var key = e.getAttribute('data-fk-exclusive') || e.getAttribute('data-required-alt') || e.id;
+        if (seen[key]) return; seen[key] = 1;
+        items.push({ el: e, label: e.getAttribute('data-label') || e.id });
+      });
+      panel.innerHTML = '';
+      if (!items.length) { panel.style.display = 'none'; }
+      else {
+        panel.style.display = '';
+        var head = document.createElement('div');
+        head.className = 'fkml-head';
+        head.textContent = items.length + ' question' + (items.length === 1 ? '' : 's') + ' left unanswered';
+        panel.appendChild(head);
+        items.forEach(function (it) {
+          var a = document.createElement('button');
+          a.type = 'button'; a.className = 'fkml-item'; a.textContent = it.label;
+          a.onclick = function () {
+            try { it.el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+            if (it.el.focus) try { it.el.focus(); } catch (_) {}
+            fieldMsg(it.el, true);
+          };
+          panel.appendChild(a);
+        });
+      }
     }
     // Once nothing is missing, retract the "complete the highlighted fields" submit
     // error so it can't contradict the "All required fields complete ✓" counter.
@@ -1614,7 +1676,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 19,
+    KIT: 20,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
