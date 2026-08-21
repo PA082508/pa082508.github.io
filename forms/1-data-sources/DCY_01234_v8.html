@@ -52,6 +52,9 @@
     .siglock{display:none}.sigclear{display:none}.sig{background:transparent;border:none}
     @page{size:8.5in 11in;margin:0}
   }
+.fkml{margin:6px 0;padding:8px 10px;border:1.5px solid #fcd34d;background:#fffbeb;border-radius:8px;font:13px Arial,Helvetica,sans-serif;color:#92400e}
+.fkml-head{font-weight:700;margin-bottom:4px}
+.fkml-item{display:block;width:100%;text-align:left;background:none;border:none;padding:2px 0;color:#92400e;text-decoration:underline;cursor:pointer;font:inherit}
 </style>
 </head>
 <body>
@@ -67,6 +70,7 @@
   <button class="btn g" onclick="dcyReset()">✕ Clear</button>
   <span id="st" data-formkit="status"></span>
   <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+  <div data-formkit="missing-list" class="fkml fk-print-hidden" style="display:none"></div>
 </div>
 
 <div class="doc">
@@ -100,7 +104,7 @@ var FIELDS = [
   {id:'p1_work_ph', p:1,t:'text',x:658,y:705,w:550,h:28,tel:1},
 
   {id:'p2_na',      p:1,t:'cb',  x:60,y:787},
-  {id:'p2_name',    p:1,t:'text',x:180,y:777,w:438,h:32},
+  {id:'p2_name',    p:1,t:'text',x:180,y:777,w:438,h:32,r:1,alt:'p2_na',label:'Parent 2 — a name, or “no second parent”'},
   {id:'p2_phone',   p:1,t:'text',x:652,y:777,w:556,h:32,tel:1},
   {id:'p2_same',    p:1,t:'cb',  x:212,y:817},
   {id:'p2_address', p:1,t:'text',x:58,y:860,w:560,h:26},
@@ -119,25 +123,31 @@ var FIELDS = [
   {id:'ec2_phone',  p:1,t:'text',x:658,y:1140,w:550,h:20,tel:1},
   {id:'ec1_other',  p:1,t:'text',x:322,y:1190,w:316,h:22},
   {id:'ec2_other',  p:1,t:'text',x:922,y:1190,w:300,h:22},
-  {id:'ec1_rel_y',  p:1,t:'cb',  x:60,y:1274,excl:'ec1_rel'},
+  {id:'ec1_rel_y',  p:1,t:'cb',  x:60,y:1274,excl:'ec1_rel',r:1,label:'Emergency contact 1 — may the child be released'},
   {id:'ec1_rel_n',  p:1,t:'cb',  x:60,y:1297,excl:'ec1_rel'},
-  {id:'ec2_rel_y',  p:1,t:'cb',  x:661,y:1274,excl:'ec2_rel'},
+  /* Второй экстренный на бумаге помечен Optional: вопрос «отдавать ли ему ребёнка»
+     задаётся только когда он НАЗВАН. Пусто имя ⇒ второго контакта нет, и подтверждать
+     это отдельной галочкой семью не заставляют. ⛔ alt:'ec2_na' снят: «второго контакта
+     нет» не отвечает на вопрос о названном человеке. */
+  {id:'ec2_rel_y',  p:1,t:'cb',  x:661,y:1274,excl:'ec2_rel',r:1,when:'ec2_name',label:'Emergency contact 2 — may the child be released'},
   {id:'ec2_rel_n',  p:1,t:'cb',  x:661,y:1297,excl:'ec2_rel'},
-  {id:'health_y',   p:1,t:'cb',  x:60,y:1433,excl:'health'},
+  {id:'health_y',   p:1,t:'cb',  x:60,y:1433,excl:'health',r:1,label:'Health screening — yes or no'},
   {id:'health_n',   p:1,t:'cb',  x:60,y:1456,excl:'health'},
 
   // ── PAGE 2 ──────────────────────────────────────────────────────────────────
   {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name',r:1},
   {id:'dob2',       p:2,t:'text',x:892,y:130,w:301,h:36,fk:'dob',r:1,ph:'MM/DD/YYYY',date:1},
-  {id:'development',p:2,t:'area',x:58,y:228,w:1150,h:22},
+  {id:'development',p:2,t:'area',x:58,y:228,w:1150,h:22,r:1,alt:'na_dev',label:'Development concerns — a note or N/A'},
   {id:'na_dev',     p:2,t:'cb',  x:62,y:270},
-  {id:'accommod',   p:2,t:'area',x:58,y:322,w:1150,h:38},
+  {id:'accommod',   p:2,t:'area',x:58,y:322,w:1150,h:38,r:1,alt:'na_acc',label:'Accommodations — a note or N/A'},
   {id:'na_acc',     p:2,t:'cb',  x:62,y:372},
-  {id:'svc_y',      p:2,t:'cb',  x:64,y:452,excl:'svc'},
+  {id:'svc_y',      p:2,t:'cb',  x:64,y:452,excl:'svc',r:1,label:'Specialized services — yes or no'},
   {id:'svc_n',      p:2,t:'cb',  x:62,y:478,excl:'svc'},
-  {id:'svc_provider',p:2,t:'text',x:58,y:558,w:1150,h:16},
+  /* Провайдера спрашивают только у ответивших «услуги есть». При «нет» форма
+     проставляет N/A сама — это пересказ уже данного ответа, а не новое утверждение. */
+  {id:'svc_provider',p:2,t:'text',x:58,y:558,w:1150,h:16,r:1,alt:'na_svc',when:'svc_y',label:'Services provider — a name or N/A'},
   {id:'na_svc',     p:2,t:'cb',  x:62,y:581},
-  {id:'trans_yes',  p:2,t:'cb',  x:62,y:646,excl:'transport'},
+  {id:'trans_yes',  p:2,t:'cb',  x:62,y:646,excl:'transport',r:1,label:'Emergency transportation — permit or deny'},
   {id:'trans_no',   p:2,t:'cb',  x:62,y:751,excl:'transport'},
   {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
 
@@ -196,7 +206,12 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
     }
     el.id='f_'+f.id;
     if(f.fk) el.setAttribute('data-fk-field',f.fk);
-    if(f.r && f.t!=='sig'){ el.setAttribute('data-required',''); el.setAttribute('data-label',f.id); }
+    if(f.r && f.t!=='sig'){ el.setAttribute('data-required',''); el.setAttribute('data-label',f.label||f.id); }
+    /* ⭐ ВОПРОС-ВЫБОР: «примечание либо N/A» закрывается любой из двух клеток.
+       Пары Yes/No кит закрывает сам по data-fk-exclusive. */
+    if(f.alt) el.setAttribute('data-required-alt','f_'+f.alt);
+    /* Вопрос, который открывается предыдущим ответом (кит v21). */
+    if(f.when) el.setAttribute('data-required-when','f_'+f.when);
     host.appendChild(el);
     if(f.t==='text'||f.t==='area') el.addEventListener('input',gate);
     if(f.t==='cb') el.addEventListener('change',gate);
@@ -249,9 +264,17 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
 
 // ── Attestation-gate: signatures unlock only after the required gate closes; the
 //    Program acknowledgement (staff) unlocks only after the parent has signed. ──
+/* ⭐⭐ ОДИН ПРЕДИКАТ НА ОДИН ВОПРОС (v21).
+   Здесь стоял СВОЙ обход полей, и он не знал ни про пары Yes/No, ни про «текст либо
+   N/A», ни про условные вопросы: он требовал заполненной именно ту клетку, на которой
+   стоит флаг. Значит семья, ответившая «No» про перевозку, не смогла бы подписать
+   форму ВООБЩЕ — замок держал бы её на верном ответе. Два предиката одного вопроса
+   расходятся молча; спрашиваем кит, который считает пропуски для Submit. */
 function requiredFilled(){
-  return FIELDS.filter(function(f){return f.r && f.t!=='sig';})
-    .every(function(f){ return g(f.id)!==''; });
+  if(window.FormKit && FormKit.refreshCounter) return FormKit.refreshCounter().length===0;
+  /* Кита нет — форму всё равно нельзя ни проверить, ни отправить. Честнее держать
+     подпись закрытой, чем открыть её непроверенной. */
+  return false;
 }
 function hasInk(id){ var c=document.getElementById('f_'+id); return c && window.FormKit && FormKit.getSig && !!FormKit.getSig(c); }
 // ── "Date = signature stamp" canon (2026-07-24) ───────────────────────────────
@@ -282,6 +305,7 @@ function stampReviewDate(i){
 window.__stampSigDates = stampSignatureDates;   // FKPad calls this after committing a signature
 function openParentPad(){ if(window.FKPad) FKPad.open('f_parent_sig',{name:(document.getElementById('f_p1_name')||{}).value||'',title:'Parent signature'}); }
 function gate(){
+  syncImpliedAnswers();
   var reqOk = requiredFilled();
   var parentSigned = hasInk('parent_sig');
   // The parent's siglock doubles as the sign affordance: blocked until required fields are
@@ -294,6 +318,21 @@ function gate(){
   }
   var gLock=document.getElementById('lock_program_sig'); if(gLock) gLock.style.display = (reqOk && parentSigned) ? 'none':'flex';
   stampSignatureDates();
+}
+/* ⭐ ОТВЕТ, ПЕРЕСКАЗАННЫЙ ЗА СЕМЬЮ, ОБЯЗАН СНИМАТЬСЯ ВМЕСТЕ С ПОВОДОМ.
+   «Услуг нет» ⇒ N/A по провайдеру проставляется само: это пересказ уже данного ответа.
+   Но если семья передумает и отметит «услуги есть» — N/A снимается, иначе рядом с
+   названным провайдером осталась бы галочка «провайдера нет».
+   ⛔ Та же беда уже живая: у подачи Caleb Fife галочка «второго контакта нет» стоит
+   РЯДОМ с заполненным именем второго контакта. Пока имя названо — галочку снимаем. */
+function syncImpliedAnswers(){
+  var svcY=document.getElementById('f_svc_y'), svcN=document.getElementById('f_svc_n'), naSvc=document.getElementById('f_na_svc');
+  if(naSvc){
+    if(svcN&&svcN.checked&&!(svcY&&svcY.checked)) naSvc.checked=true;
+    if(svcY&&svcY.checked) naSvc.checked=false;
+  }
+  var ec2Name=document.getElementById('f_ec2_name'), ec2Na=document.getElementById('f_ec2_na');
+  if(ec2Na&&ec2Name&&(ec2Name.value||'').trim()) ec2Na.checked=false;
 }
 document.addEventListener('mouseup', function(){ setTimeout(gate,50); });
 document.addEventListener('touchend', function(){ setTimeout(gate,50); });
@@ -461,6 +500,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=19"></script>
+<script defer src="form-kit.js?v=21"></script>
 </body>
 </html>
