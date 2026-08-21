@@ -1959,6 +1959,10 @@ document.addEventListener('click', function (e) {
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
+    /* Состояние отправки — наружу ради РЕПЕТИЦИИ, тем же правом, что и armed(). Проба
+       обязана уметь спросить «форма ещё считает себя отправленной?»: без этого отказ
+       второй подачи выглядит одинаково при трёх разных причинах. Только чтение. */
+    submitState: function () { return { submitting: _submitting, submitted: _submitted }; },
     whyNotArmed: function () { return centerUuid() ? '' : unresolvedCenterText(); },
     // Exposed so a form's CFG.submit override can POST to its own dedicated
     // table without re-inlining the anon key (UX-only retrofit path).
