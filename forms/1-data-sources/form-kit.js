@@ -988,14 +988,57 @@ document.addEventListener('click', function (e) {
       e.dispatchEvent(new Event('change', { bubbles: true }));
       filled++;
     });
+    /* ⭐⭐ ПРЕЖНЯЯ ПРИНЯТАЯ ФОРМА — ЛУЧШИЙ ПРЕФИЛЛ (v22, №2).
+     * Канонические имена (выше) нужны там, где значение живёт на РАЗНЫХ бланках. У
+     * клетки `ec2_rel_y` такого имени быть не может — это было бы второе имя того же
+     * самого. Поэтому сервер кладёт мешок по КЛЮЧУ ФОРМЫ, а здесь он раскладывается
+     * ПО ИДЕНТИФИКАТОРАМ КЛЕТОК того же бланка.
+     *
+     * ⛔ Подписи, их даты, строки ежегодного пересмотра и пара близнецов вычищены НА
+     * СЕРВЕРЕ: чего нет в ответе, то не утечёт, даже если экран завтра ошибётся. Здесь
+     * тот же список стоит вторым замком — на случай старого сервера. */
+    var bag = (CFG.formKey && data._forms && data._forms[CFG.formKey]) || null;
+    var NEVER = ['parent_sig','program_sig','physician_sig','sponsor_sig','adult_sig',
+                 'parent_sig_dt','program_sig_dt','signature','signatures',
+                 'pg_rev_1','pg_rev_2','pg_rev_3','adm_rev_1','adm_rev_2','adm_rev_3',
+                 'pg_init_1','pg_init_2','pg_init_3','adm_init_1','adm_init_2','adm_init_3',
+                 'child_name2','dob2'];
+    if (bag) {
+      Object.keys(bag).forEach(function (k) {
+        if (k.charAt(0) === '_' || NEVER.indexOf(k) >= 0) return;
+        var v = bag[k];
+        if (v === null || v === undefined || typeof v === 'object') return;
+        var sv = String(v); if (!sv.trim()) return;
+        var el = document.getElementById(k) || document.getElementById('f_' + k);
+        if (!el || el.tagName === 'CANVAS') return;
+        if (el.getAttribute('data-fk-touched')) return;   // рука в этой сессии сильнее
+        if (el.type === 'checkbox') {
+          if (el.checked) return;
+          el.checked = (sv === 'true' || sv === 'Yes' || sv === 'on' || sv === '1');
+          if (!el.checked) return;
+        } else {
+          if ((el.value || '').trim()) return;            // канонический ключ уже лёг
+          el.value = fkShape(el, sv);
+        }
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        filled++;
+      });
+      refreshCounter();
+    }
+
     if (!filled) return;
 
     var b = document.createElement('div');
     b.className = 'fk-prefill-banner fk-print-hidden';
     b.setAttribute('style', 'position:sticky;top:0;z-index:9997;background:#e8f5ec;border-bottom:2px solid #0f4c35;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#0f4c35');
-    b.innerHTML = '<strong>We filled this in — please check.</strong> ' +
-      'We used what we already have for ' + ((data.child_name || 'your child') + '') +
-      '. Correct anything that changed, and complete the rest.';
+    /* ⭐ ПЛАШКА НАЗЫВАЕТ ИСТОЧНИК И ПРОСИТ ПОСМОТРЕТЬ. Форма, молча возвращающая
+     * прошлогодний ответ, учит подписывать не глядя — а прошлые ответы бывают и
+     * неверными (живой случай: лекарство вписано в графу «провайдер услуг»). */
+    b.innerHTML = '<strong>Please look this over before you sign.</strong> ' +
+      'We filled in what we already have for ' + ((data.child_name || 'your child') + '') +
+      (bag ? ', including your last form' : '') +
+      '. Anything that has changed since — change it here, and complete the rest.';
     document.body.insertBefore(b, document.body.firstChild);
   }
   /* fk:prefill:end */
@@ -1054,6 +1097,24 @@ document.addEventListener('click', function (e) {
     nf.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
     nf.addEventListener('click', newForm);
     b.appendChild(txt); b.appendChild(nf);
+    /* ⭐ ЦЕПОЧКА: ФОРМА МОЖЕТ НАЗВАТЬ СЛЕДУЮЩУЮ (v22).
+     * Родитель, ответивший «у ребёнка есть состояние здоровья», сейчас узнаёт про план
+     * ухода ПИСЬМОМ через несколько дней — то есть тогда, когда он уже не за формой.
+     * Ссылка сразу после отправки застаёт его на месте и несёт ТОТ ЖЕ токен, поэтому
+     * следующая форма тоже узнаёт ребёнка.
+     * ⛔ Это предложение, а не редирект: уводить человека со страницы, где он только что
+     * подписался, значит отнимать у него возможность увидеть, что отправилось. */
+    try {
+      var nx = CFG.nextForm ? CFG.nextForm() : null;
+      if (nx && nx.url) {
+        var a = document.createElement('a');
+        a.href = nx.url; a.target = '_blank'; a.rel = 'noreferrer';
+        a.setAttribute('data-fk-newform', '1');
+        a.textContent = nx.label || 'Next form';
+        a.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer;text-decoration:none');
+        b.appendChild(a);
+      }
+    } catch (_) {}
     document.body.appendChild(b);
   }
   function newForm() {
@@ -1173,7 +1234,20 @@ document.addEventListener('click', function (e) {
     // the letter. The bigger blocker is named on the first press, whenever it comes.
     if (!centerUuid()) { refuseNoCenter(); return; }   // #6 still absolute — but now it REFUSES OUT LOUD
     var missing = refreshCounter();
-    if (missing.length) { var f = firstMissing(); if (f) { (f.scrollIntoView || function () {}).call(f, { behavior: 'smooth', block: 'center' }); if (f.focus) f.focus(); fieldMsg(f, true); } status('Please complete the highlighted fields', 'er'); return; }
+    if (missing.length) {
+      /* ⭐ ВЕДЁМ К СПИСКУ, А НЕ ТОЛЬКО К ПЕРВОМУ ПОЛЮ (v22). Прыжок к первому пропуску
+       * отвечает «где», но молчит «сколько ещё» — и человек чинит одно, жмёт Submit,
+       * получает прыжок ко второму, и так пока не бросит. Плашка называет все разом. */
+      var panelEl = $('[data-formkit="missing-list"]');
+      if (panelEl && panelEl.style.display !== 'none') {
+        try { panelEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+      } else {
+        var f = firstMissing();
+        if (f) { (f.scrollIntoView || function () {}).call(f, { behavior: 'smooth', block: 'center' }); if (f.focus) f.focus(); fieldMsg(f, true); }
+      }
+      status(missing.length + ' still unanswered — see the list', 'er');
+      return;
+    }
     var data;
     try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status('Error: ' + e.message, 'er'); return; }
     if (!data) { status('Nothing to submit', 'er'); return; }
@@ -1697,7 +1771,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 21,
+    KIT: 22,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },

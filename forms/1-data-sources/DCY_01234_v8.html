@@ -88,7 +88,7 @@ var FIELDS = [
   {id:'first_day',  p:1,t:'text',x:938,y:255,w:270,h:34,r:1,ph:'MM/DD/YYYY',date:1},
   {id:'address',    p:1,t:'text',x:58,y:332,w:1150,h:32,fk:'street',r:1,addr:1},
   {id:'city',       p:1,t:'text',x:58,y:410,w:575,h:32,fk:'city',r:1},
-  {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1,ac:'address-level1'},
+  {id:'state',      p:1,t:'text',x:658,y:410,w:258,h:32,r:1,ac:'address-level1',fk:'state'},
   {id:'zip',        p:1,t:'text',x:948,y:410,w:248,h:32,fk:'zip',r:1},
 
   {id:'p1_name',    p:1,t:'text',x:58,y:485,w:560,h:32,fk:'parent_name',r:1},
@@ -403,6 +403,22 @@ function dcyReset(){
 // ── form-kit integration: reuse submit / status / counter / signature capture. ──
 window.FORMKIT_CONFIG = {
   formType:'dcy_01234', version:'v8', title:'Child Enrollment & Health (DCY 01234)', reset:dcyReset,
+  /* Ключ реестра: по нему кит берёт мешок прежней принятой формы (кит v22). */
+  formKey:'dcy_01234',
+  /* ⭐ ЦЕПОЧКА «Yes → план ухода» (v22).
+     Семья, ответившая «у ребёнка есть состояние здоровья», узнавала про план ухода
+     ПИСЬМОМ через несколько дней — когда она уже не за формой. Предлагаем сразу после
+     отправки и передаём ТОТ ЖЕ токен, чтобы вторая форма тоже узнала ребёнка.
+     ⛔ Только предложение: без «Yes» ссылки нет, и никакого редиректа. */
+  nextForm:function(){
+    var y=document.getElementById('f_health_y');
+    if(!y||!y.checked) return null;
+    var t=new URLSearchParams(location.search).get('t');
+    var c=new URLSearchParams(location.search).get('center');
+    var u='https://pa082508.github.io/forms/1-data-sources/DCY_01236_v1.html';
+    var q=[]; if(c)q.push('center='+encodeURIComponent(c)); if(t)q.push('t='+encodeURIComponent(t));
+    return { url:u+(q.length?'?'+q.join('&'):''), label:'Next: Health Care Plan (DCY 01236)' };
+  },
   collect:function(){
     var fd={ type:'dcy_01234', dcy_form:'01234', dcy_version:'v8', center_code:FormKit.centerCode() };
     FIELDS.forEach(function(f){ if(f.t!=='sig') fd[f.id]=g(f.id); });
@@ -500,6 +516,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=21"></script>
+<script defer src="form-kit.js?v=22"></script>
 </body>
 </html>
