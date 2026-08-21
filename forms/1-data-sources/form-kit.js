@@ -164,7 +164,16 @@
   // next person. Until then one timer is correct.
   var PK_KEY = 'pa_packet_profile', PK_TTL = 24 * 60 * 60 * 1000;
   function pkLoad() { try { var r = JSON.parse(localStorage.getItem(PK_KEY)); if (!r || Date.now() - r.ts > PK_TTL) { localStorage.removeItem(PK_KEY); return null; } return r; } catch (_) { return null; } }
-  function pkWrite(data) { try { localStorage.setItem(PK_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch (_) {} }
+  /* `extra` несёт то, что живёт РЯДОМ с данными пакета — например, список следующих
+     форм цепочки. Без него любой вызов pkWrite стирал бы его молча. */
+  function pkWrite(data, extra) {
+    try {
+      var rec = { ts: Date.now(), data: data };
+      if (extra && extra.next) rec.next = extra.next;
+      else { var prev = pkLoad(); if (prev && prev.next) rec.next = prev.next; }
+      localStorage.setItem(PK_KEY, JSON.stringify(rec));
+    } catch (_) {}
+  }
   function fkFields() { return $$('[data-fk-field]'); }
   function savePacket() {
     var r = pkLoad() || { ts: Date.now(), data: {} };
@@ -435,6 +444,32 @@
    * пустую строку, которую бумага ей не адресовала, и не может отправить форму.
    *
    * ⛔ Условие спрашивается через isFilledSelf: рекурсии между условиями нет. */
+  /* ⭐ ПОДПИСЬ, КОТОРУЮ ЧИТАЕТ ЧЕЛОВЕК, А НЕ РАЗРАБОТЧИК (v22).
+   * В списке пропусков стояло `e.id` — то есть `ec2_rel_y` и `na_acc`. Родителю это не
+   * говорит ничего, и список, который нельзя прочесть, не лучше его отсутствия.
+   * Порядок поиска: явная подпись поля → aria → связанный <label> → текст родительской
+   * ячейки → и лишь в самом конце — прибранный идентификатор. */
+  function humanLabel(el) {
+    var v = el.getAttribute('data-label') || el.getAttribute('aria-label')
+         || el.getAttribute('placeholder') || '';
+    if (!v && el.id) {
+      var lab = document.querySelector('label[for="' + el.id + '"]');
+      if (lab) v = (lab.textContent || '').trim();
+    }
+    if (!v) {
+      var box = el.closest ? el.closest('td,th,li,.row,.cell,.field') : null;
+      if (box) v = (box.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 70);
+    }
+    if (!v) v = String(el.id || '').replace(/^f_/, '').replace(/[_-]+/g, ' ');
+    return v.replace(/\s*\*\s*$/, '').trim();
+  }
+
+  /* Показывать ли список пропусков. ⭐ ДО ПЕРВОГО SUBMIT — НЕТ.
+   * Список, висящий над пустой формой с первой секунды, это претензия к человеку,
+   * который ещё не начал: он объявляет незаполненным то, до чего родитель не дошёл.
+   * Пока считает только счётчик; список появляется, когда человек СКАЗАЛ «готово». */
+  var _submitTried = false;
+
   function requiredEls() {
     return $$('[data-required]').filter(function (e) {
       if (e.getAttribute('data-inactive')) return false;
@@ -480,10 +515,10 @@
       missing.forEach(function (e) {
         var key = e.getAttribute('data-fk-exclusive') || e.getAttribute('data-required-alt') || e.id;
         if (seen[key]) return; seen[key] = 1;
-        items.push({ el: e, label: e.getAttribute('data-label') || e.id });
+        items.push({ el: e, label: humanLabel(e) });
       });
       panel.innerHTML = '';
-      if (!items.length) { panel.style.display = 'none'; }
+      if (!items.length || !_submitTried) { panel.style.display = 'none'; }
       else {
         panel.style.display = '';
         var head = document.createElement('div');
@@ -497,6 +532,12 @@
             try { it.el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
             if (it.el.focus) try { it.el.focus(); } catch (_) {}
             fieldMsg(it.el, true);
+            /* Подсветка гаснет сама: метка «вот это» нужна на секунду, а оставшись,
+               она превращается в ещё одну красную клетку на форме. */
+            try {
+              it.el.classList.add('fk-flash');
+              setTimeout(function () { it.el.classList.remove('fk-flash'); }, 1600);
+            } catch (_) {}
           };
           panel.appendChild(a);
         });
@@ -988,14 +1029,57 @@ document.addEventListener('click', function (e) {
       e.dispatchEvent(new Event('change', { bubbles: true }));
       filled++;
     });
+    /* ⭐⭐ ПРЕЖНЯЯ ПРИНЯТАЯ ФОРМА — ЛУЧШИЙ ПРЕФИЛЛ (v22, №2).
+     * Канонические имена (выше) нужны там, где значение живёт на РАЗНЫХ бланках. У
+     * клетки `ec2_rel_y` такого имени быть не может — это было бы второе имя того же
+     * самого. Поэтому сервер кладёт мешок по КЛЮЧУ ФОРМЫ, а здесь он раскладывается
+     * ПО ИДЕНТИФИКАТОРАМ КЛЕТОК того же бланка.
+     *
+     * ⛔ Подписи, их даты, строки ежегодного пересмотра и пара близнецов вычищены НА
+     * СЕРВЕРЕ: чего нет в ответе, то не утечёт, даже если экран завтра ошибётся. Здесь
+     * тот же список стоит вторым замком — на случай старого сервера. */
+    var bag = (CFG.formKey && data._forms && data._forms[CFG.formKey]) || null;
+    var NEVER = ['parent_sig','program_sig','physician_sig','sponsor_sig','adult_sig',
+                 'parent_sig_dt','program_sig_dt','signature','signatures',
+                 'pg_rev_1','pg_rev_2','pg_rev_3','adm_rev_1','adm_rev_2','adm_rev_3',
+                 'pg_init_1','pg_init_2','pg_init_3','adm_init_1','adm_init_2','adm_init_3',
+                 'child_name2','dob2'];
+    if (bag) {
+      Object.keys(bag).forEach(function (k) {
+        if (k.charAt(0) === '_' || NEVER.indexOf(k) >= 0) return;
+        var v = bag[k];
+        if (v === null || v === undefined || typeof v === 'object') return;
+        var sv = String(v); if (!sv.trim()) return;
+        var el = document.getElementById(k) || document.getElementById('f_' + k);
+        if (!el || el.tagName === 'CANVAS') return;
+        if (el.getAttribute('data-fk-touched')) return;   // рука в этой сессии сильнее
+        if (el.type === 'checkbox') {
+          if (el.checked) return;
+          el.checked = (sv === 'true' || sv === 'Yes' || sv === 'on' || sv === '1');
+          if (!el.checked) return;
+        } else {
+          if ((el.value || '').trim()) return;            // канонический ключ уже лёг
+          el.value = fkShape(el, sv);
+        }
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        filled++;
+      });
+      refreshCounter();
+    }
+
     if (!filled) return;
 
     var b = document.createElement('div');
     b.className = 'fk-prefill-banner fk-print-hidden';
     b.setAttribute('style', 'position:sticky;top:0;z-index:9997;background:#e8f5ec;border-bottom:2px solid #0f4c35;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#0f4c35');
-    b.innerHTML = '<strong>We filled this in — please check.</strong> ' +
-      'We used what we already have for ' + ((data.child_name || 'your child') + '') +
-      '. Correct anything that changed, and complete the rest.';
+    /* ⭐ ПЛАШКА НАЗЫВАЕТ ИСТОЧНИК И ПРОСИТ ПОСМОТРЕТЬ. Форма, молча возвращающая
+     * прошлогодний ответ, учит подписывать не глядя — а прошлые ответы бывают и
+     * неверными (живой случай: лекарство вписано в графу «провайдер услуг»). */
+    b.innerHTML = '<strong>Please look this over before you sign.</strong> ' +
+      'We filled in what we already have for ' + ((data.child_name || 'your child') + '') +
+      (bag ? ', including your last form' : '') +
+      '. Anything that has changed since — change it here, and complete the rest.';
     document.body.insertBefore(b, document.body.firstChild);
   }
   /* fk:prefill:end */
@@ -1054,6 +1138,39 @@ document.addEventListener('click', function (e) {
     nf.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
     nf.addEventListener('click', newForm);
     b.appendChild(txt); b.appendChild(nf);
+    /* ⭐ ЦЕПОЧКА: ФОРМА МОЖЕТ НАЗВАТЬ СЛЕДУЮЩУЮ (v22).
+     * Родитель, ответивший «у ребёнка есть состояние здоровья», сейчас узнаёт про план
+     * ухода ПИСЬМОМ через несколько дней — то есть тогда, когда он уже не за формой.
+     * Ссылка сразу после отправки застаёт его на месте и несёт ТОТ ЖЕ токен, поэтому
+     * следующая форма тоже узнаёт ребёнка.
+     * ⛔ Это предложение, а не редирект: уводить человека со страницы, где он только что
+     * подписался, значит отнимать у него возможность увидеть, что отправилось. */
+    try {
+      /* Форма может назвать НЕСКОЛЬКО следующих: у плана ухода с тремя лекарствами —
+         три разрешения, по одному на препарат («одно разрешение = одно лекарство»). */
+      var nx = CFG.nextForm ? CFG.nextForm() : null;
+      var list = !nx ? [] : (Array.isArray(nx) ? nx : [nx]);
+      list.filter(function (x) { return x && x.url; }).forEach(function (x) {
+        var a = document.createElement('a');
+        a.href = x.url; a.target = '_blank'; a.rel = 'noreferrer';
+        a.setAttribute('data-fk-newform', '1');
+        a.textContent = x.label || 'Next form';
+        a.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer;text-decoration:none');
+        b.appendChild(a);
+      });
+      /* ⭐ ЗАКРЫЛ ВКЛАДКУ — ССЫЛКИ НЕ ПРОПАЛИ. Кладём их в память пакета этого
+         устройства, и страница набора семьи показывает их отдельными карточками.
+         Иначе цепочка живёт ровно до случайного закрытия вкладки. */
+      if (list.length) {
+        try {
+          var r2 = pkLoad() || { ts: Date.now(), data: {} };
+          r2.next = (r2.next || []).filter(function (o) {
+            return !list.some(function (x) { return x.url === o.url; });
+          }).concat(list.map(function (x) { return { url: x.url, label: x.label || 'Next form' }; }));
+          pkWrite(r2.data, r2);
+        } catch (_) {}
+      }
+    } catch (_) {}
     document.body.appendChild(b);
   }
   function newForm() {
@@ -1173,7 +1290,23 @@ document.addEventListener('click', function (e) {
     // the letter. The bigger blocker is named on the first press, whenever it comes.
     if (!centerUuid()) { refuseNoCenter(); return; }   // #6 still absolute — but now it REFUSES OUT LOUD
     var missing = refreshCounter();
-    if (missing.length) { var f = firstMissing(); if (f) { (f.scrollIntoView || function () {}).call(f, { behavior: 'smooth', block: 'center' }); if (f.focus) f.focus(); fieldMsg(f, true); } status('Please complete the highlighted fields', 'er'); return; }
+    if (missing.length) {
+      /* ⭐ СПИСОК ПОЯВЛЯЕТСЯ ИМЕННО ЗДЕСЬ (v22). До нажатия человек видит только счётчик;
+       * нажав «готово», он вправе получить не упрёк, а перечень: что именно осталось,
+       * человеческими словами, и по клику — к каждому. Прыжок к первому пропуску
+       * отвечает «где» и молчит «сколько ещё»: человек чинит одно, жмёт снова, получает
+       * прыжок ко второму — и бросает, не зная, сколько их было. */
+      _submitTried = true;
+      refreshCounter();
+      var panelEl = $('[data-formkit="missing-list"]');
+      if (panelEl && panelEl.style.display !== 'none') {
+        try { panelEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+      }
+      var f = firstMissing();
+      if (f) { if (f.focus) try { f.focus(); } catch (_) {} fieldMsg(f, true); }
+      status(missing.length + ' still unanswered — see the list', 'er');
+      return;
+    }
     var data;
     try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status('Error: ' + e.message, 'er'); return; }
     if (!data) { status('Nothing to submit', 'er'); return; }
@@ -1581,6 +1714,8 @@ document.addEventListener('click', function (e) {
       + '.fk-toolbar button.fk-tb-submit.fk-tb-unarmed{background:#7f9c8e;border-color:#7f9c8e;cursor:pointer}'
       + '@keyframes fkFlash{0%,100%{background:#fef3c7}30%,60%{background:#fde68a;box-shadow:0 0 0 3px rgba(180,83,9,.35) inset}}'
       + '.fk-tb-banner.fk-flash{animation:fkFlash 1.1s ease-in-out 2}'
+      /* Подсветка клетки, к которой привёл список пропусков. */
+      + '.fk-flash:not(.fk-tb-banner){outline:3px solid #f59e0b !important;outline-offset:2px;border-radius:4px}'
       + '.fk-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:10000;max-width:min(620px,92vw);'
       + 'background:#7f1d1d;color:#fff;border-radius:10px;padding:13px 17px;font:600 13.5px/1.5 Arial,sans-serif;'
       + 'box-shadow:0 8px 26px rgba(0,0,0,.3);cursor:pointer}'
@@ -1697,7 +1832,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 21,
+    KIT: 22,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },

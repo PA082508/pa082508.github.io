@@ -526,6 +526,27 @@ function PA_APPLY(fd){
 
 window.FORMKIT_CONFIG={
   formType:'medical',version:'v1',reset:resetForm,applyPrefill:PA_APPLY,
+  formKey:'dcy_01236',
+  /* ⭐ ОДНО РАЗРЕШЕНИЕ = ОДНО ЛЕКАРСТВО (канон 21.08). План ухода называет до трёх
+     препаратов — значит и разрешений три, по одному на каждый, с своей дозой и своим
+     сроком. Ссылка на каждое даётся сразу после отправки и несёт ТОТ ЖЕ токен, чтобы
+     форма узнала ребёнка.
+     ⛔ Не редирект и не замок: семья может принести бумагу от врача вместо этого. */
+  nextForm:function(){
+    var q=new URLSearchParams(location.search);
+    var t=q.get('t'), c=q.get('center');
+    var base='https://pa082508.github.io/forms/1-data-sources/DCY_01217_v1.html';
+    var out=[];
+    [1,2,3].forEach(function(i){
+      var el=document.getElementById('med'+i+'Name');
+      var nm=el&&(el.value||'').trim();
+      if(!nm) return;
+      var p=[]; if(c)p.push('center='+encodeURIComponent(c)); if(t)p.push('t='+encodeURIComponent(t));
+      p.push('med='+encodeURIComponent(nm));
+      out.push({ url:base+'?'+p.join('&'), label:'Next: Medication Authorization for '+nm });
+    });
+    return out;
+  },
   collect:function(){
     if(!dateTouched){var sd=$id('signedDate');if(sd)sd.value=todayISO();}
     var medications=[1,2,3].map(function(i){return {name:val('med'+i+'Name'),dosage:val('med'+i+'Dosage'),time:val('med'+i+'Time'),administer_when_symptoms_present:chk('med'+i+'Symptoms')};}).filter(function(m){return m.name||m.dosage||m.time||m.administer_when_symptoms_present;});
@@ -632,6 +653,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=21"></script>
+<script defer src="form-kit.js?v=22"></script>
 </body>
 </html>
