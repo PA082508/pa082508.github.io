@@ -2101,6 +2101,37 @@ document.addEventListener('click', function (e) {
      ⚠️ ЧЕГО ЭТО НЕ ДЕЛАЕТ: обёртка не отправляет ничего сама (submit отменяется), не
      меняет раскладку (обычный блок без position/transform — абсолютные наложения
      считаются от прежнего предка) и не трогает бланки, где <form> вдруг появится. */
+  /* ── МЕРЫ ПРОТИВ АВТО-READER, ВТОРОЙ ЗАХОД ──────────────────────────────────
+     ⛔ ТЕОРИЯ v30 НЕ ПОДТВЕРДИЛАСЬ, И ЭТО ИЗМЕРЕНО ЖИВЫМ iPhone ВЛАДЕЛЬЦА: обёртки в
+     <form> НЕ ХВАТИЛО — Fee Agreement и Parent Responsibilities по-прежнему открываются
+     в Reader.
+     ⭐ ЗАМЕР ПОМЕНЯЛ ДИАГНОЗ. У Fee Agreement 52 поля ввода и самый длинный прогон прозы
+     543 знака; у Parent Responsibilities — 5 полей и 349. Ни один извлекатель статей не
+     выбрал бы страницу с полусотней полей. Значит дело, скорее всего, НЕ в разметке, а в
+     ПОСЕЙТОВОЙ НАСТРОЙКЕ Safari «Use Reader Automatically»: включённая однажды, она
+     открывает в Reader ВСЕ страницы домена, что бы мы ни правили.
+     ⚠️ Поэтому здесь — не «починка», а СНИЖЕНИЕ ПОХОЖЕСТИ НА СТАТЬЮ: дёшево, безвредно и
+     помогает, если настройка ни при чём. Настоящую проверку делает владелец: Aa →
+     Website Settings → снять «Use Reader Automatically».
+     ⛔ ЧЕГО НЕ ДЕЛАЕМ: не режем текст на куски ради обмана эвристики — документ о деньгах
+     должен читаться как документ, а не как набор обрывков. */
+  function deReader() {
+    var f = document.querySelector('form[data-fk-shell]') || document.body;
+    if (!f) return;
+    // Контейнер объявляет себя формой и для машин, и для доступности.
+    f.setAttribute('role', 'form');
+    f.setAttribute('aria-label', (CFG.title || document.title || 'Form') + ' — fillable form');
+    // ⛔ <article>/<main> — прямые подсказки «это статья». Ни один бланк их не носит по
+    // делу; если попались, снимаем ЯРЛЫК, а не содержимое.
+    ['article', 'main'].forEach(function (tag) {
+      $$(tag).forEach(function (n) {
+        var d = document.createElement('div');
+        d.className = n.className; d.innerHTML = n.innerHTML;
+        if (n.parentNode) n.parentNode.replaceChild(d, n);
+      });
+    });
+  }
+
   function wrapInForm() {
     if (document.querySelector('form[data-fk-shell]')) return;
     if (document.querySelector('form')) return;      // бланк принёс свою — не вмешиваемся
@@ -2118,6 +2149,7 @@ document.addEventListener('click', function (e) {
 
   function boot() {
     wrapInForm();      // ПЕРВЫМ, до тулбара
+    deReader();        // и сразу — снять признаки статьи
     injectFavicon();
     if (!samplesOn()) purgeSamples();   // conserved: a shelf minted before the flip does not survive it
     stripCenterPickers();   // #6 — before anything can read or show a picker
@@ -2163,12 +2195,11 @@ document.addEventListener('click', function (e) {
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
     /* v29 — бамп под текст денежного договора, кит не менялся. v30 — обёртка в <form>.
-       v31 — бамп под блок согласия на фото в Start_Form_v2; сам кит снова не менялся,
-       номер поднят ради согласия чисел у 39 включений и файла.
-       ⚠️ ВЕТКА ЗАЩИТЫ ОТ READER НЕ СЛИТА ЦЕЛИКОМ, А ПЕРЕНЕСЕНА ОДНОЙ ПРАВКОЙ: она родилась
-       ДО поправки владельца к тексту договора, и слияние молча вернуло бы предложение,
-       переписанное часом раньше. Перенесена только обёртка. */
-    KIT: 31,
+       v31 — блок согласия на фото в Start_Form_v2.
+       v32 — ВТОРОЙ ЗАХОД ПРОТИВ АВТО-READER: role="form" + aria на контейнере и снятие
+       ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
+       живом iPhone владельца — подробности у deReader(). */
+    KIT: 32,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
