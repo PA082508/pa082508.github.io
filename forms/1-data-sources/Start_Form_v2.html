@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ⚠️ ВЕРСИЮ В ЗАПИСЬ О ПОДАЧЕ КИТ БЕРЁТ ОТСЮДА, а не из FORMKIT_CONFIG.version. Без неё
+     он падает на имя файла по шаблону `_vN.html`: здесь оно совпадает, но совпадение — не
+     контракт. Переименуют файл — и запись начнёт врать молча. -->
+<meta name="fk-form-version" content="v2">
+<title>Play Academy — Fee Agreement</title>
+<!-- FORM REGISTRY: slug=start_form · version=v2 · Rev. 07/2026 · requiringOrg=Internal · signer=parent · intakeMode=online|kiosk
+
+     v2 (2026-07-27) — ONE form, FOUR variants. Sources (our own documents, forms/3-library/our-documents/):
+       standard    → "Fee Agreement.docx"
+       infant      → "Infant Agreement.docx"          (title: Infant Fee Agreement)
+       school_age  → "School Age Agreement.docx"      (title: School Age Fee Agreement)
+       voucher     → "Voucher Agreement.docx"         (title: CARETAKER/PROVIDER Fee Agreement)
+     The voucher variant is OUR agreement quoting ODJFS rules 5101:2-16-39(L) and
+     5101:2-16-35(K)(1) — it is NOT a state-issued blank, so it is ours to render.
+
+     WHAT THE VARIANT SWITCHES — four blocks only (everything else is shared, never duplicated):
+       (a) registration fee   (b) payment terms   (c) delinquency   (d) responsibility tail
+     Every variant block is <… data-variant="…"> and one pass of applyVariant() shows/hides it.
+
+     AMOUNTS ARE NOT IN THE TEXT. They come from enroll-registry.json → fees, effective-dated,
+     resolved on the DATE OF SIGNING, and the applied set is snapshotted into the record. If the
+     registry can't be reached the form falls back to the snapshot baked in below and says so in
+     the record (fees_applied.source='builtin') — a blank amount on a money agreement is worse
+     than a stale one, but the record must never lie about where the number came from.
+
+     AUTHORIZED DEPARTURES FROM THE SOURCE DOCX (owner's word 2026-07-27, not typo fixes —
+     recorded so the printed sheet's differences from paper stay countable):
+       · the "Card (e-receipt)" method checkbox is removed (it was v1's, not the docx's);
+       · "or credit card through Smart Care" is removed from the Forms-of-payment sentence.
+     Payment-rule WORDING is otherwise FROZEN pending counsel — see the blocking section in
+     docs/compliance/lawyer-memo.md. Do not touch those sentences.
+
+     SIGNATURES: parent + administration, DRAW ONLY (DCY: an e-signature may not be a typed
+     name — docs/compliance/e-signature.md). Dates beside them are STAMPS set at the moment of
+     signing, read-only, cleared with the signature. Administration unlocks after the parent signs.
+-->
+<style>
+  :root{ --green:#1e4d36; --green-soft:#eaf3ec; --line:#333; --accent:#b31b4e; }
+  *{box-sizing:border-box}
+  body{font-family:Georgia,'Times New Roman',serif;color:#111;margin:0;background:#f4f4f0}
+  .page{max-width:820px;margin:14px auto;background:#fff;padding:34px 44px;border:1px solid #ccc}
+  /* Office panels (screen-only) */
+  .center-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .center-tabs button{padding:8px 18px;border:1px solid var(--green);background:#fff;color:var(--green);cursor:pointer;font-family:inherit;font-size:14px;border-radius:6px}
+  .center-tabs button.active{background:var(--green);color:#fff}
+  /* Variant bar (screen-only): the packet link normally decides; this is the override. */
+  .vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;background:#eef4f0;border:1px solid #bcd3c5;border-radius:8px;padding:9px 12px}
+  .vbar .lbl{font-size:12.5px;font-weight:bold;color:#2a5a42}
+  .vbtn{font-family:inherit;font-size:13px;padding:5px 13px;border:1px solid var(--green);background:#fff;color:var(--green);border-radius:6px;cursor:pointer}
+  .vbtn.on{background:var(--green);color:#fff}
+  .vbar .from-link{font-size:11.5px;color:#4a6b58}
+  /* Header */
+  .hdr{display:grid;grid-template-columns:1fr 260px 1fr;align-items:center;gap:10px;border-bottom:3px double var(--green);padding-bottom:10px}
+  .hdr .left{font-size:13px}
+  .hdr .left .org{font-weight:bold;font-size:16px;color:var(--green)}
+  .hdr .right{font-size:13px;text-align:right}
+  .logo{width:250px;height:90px;display:flex;align-items:center;justify-content:center}
+  .logo img{max-width:100%;max-height:100%}
+  h1{font-family:'Copperplate','Trajan Pro',Georgia,serif;letter-spacing:3px;text-align:center;color:var(--green);font-size:22px;margin:14px 0 4px}
+  .subtitle{text-align:center;font-size:12px;color:#555;margin-bottom:14px}
+  /* Fields */
+  .row{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-end;margin:8px 0}
+  .f{display:flex;align-items:flex-end;gap:6px}
+  .f label{font-size:13.5px;white-space:nowrap}
+  .f input[type=text],.f input[type=date],.f input[type=email],.f input[type=tel],.f input[type=time]{
+    border:none;border-bottom:1px solid var(--line);font-family:inherit;font-size:14px;padding:2px 4px;background:transparent;min-width:60px}
+  .wide{flex:1}
+  .sec{margin-top:16px}
+  .sec h2{font-size:14px;color:var(--green);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--green);padding-bottom:2px;margin:0 0 8px}
+  /* Child rows 1..N */
+  .kidrow{position:relative}
+  .kidrm{font-size:10.5px;border:1px solid #bbb;background:#fff;border-radius:4px;cursor:pointer;color:#a33;padding:1px 6px}
+  .addkid{font-family:inherit;font-size:12.5px;padding:5px 12px;border:1px dashed var(--green);background:#fff;color:var(--green);border-radius:6px;cursor:pointer;margin-top:4px}
+  @media print{ .kidrm,.addkid{display:none} }
+  table.sched{border-collapse:collapse;margin:4px 0}
+  table.sched td{padding:3px 10px;font-size:13.5px}
+  /* The schedule pairs days into two columns (Mon+Thu on one row) — a paper layout,
+     747px wide. On a phone that pushed the WHOLE page sideways, so every field shifted
+     under the thumb. Wide content scrolls inside its own box; the page body never does. */
+  .schedwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  @media print{ .schedwrap{overflow:visible} }
+  @media (max-width: 640px){
+    .page{padding:18px 14px;margin:8px auto;border-left:none;border-right:none}
+    .hdr{grid-template-columns:1fr;text-align:left;gap:6px}
+    .hdr .right{text-align:left}
+    .logo{width:170px;height:60px}
+    input[type=text],input[type=date],input[type=time],input[type=email],input[type=tel]{max-width:100%}
+    .schedwrap{overflow-x:visible}
+    /* Stacking alone put the week out of order — the rows pair Mon+Thu, Tue+Fri, so a
+       vertical read came out Mon · Thu · Tue · Fri · Wed. display:contents + order restores Mon→Fri. */
+    table.sched{display:flex;flex-direction:column;gap:0}
+    table.sched tbody{display:contents}
+    table.sched tr{display:contents}
+    table.sched td{display:flex;align-items:center;gap:6px;padding:1px 0}
+    table.sched tr:nth-child(1) td:nth-child(-n+3){order:1}
+    table.sched tr:nth-child(2) td:nth-child(-n+3){order:2}
+    table.sched tr:nth-child(3) td{order:3}
+    table.sched tr:nth-child(1) td:nth-child(n+4){order:4}
+    table.sched tr:nth-child(2) td:nth-child(n+4){order:5}
+    table.sched td:nth-child(1),table.sched td:nth-child(4){font-weight:700;margin-top:9px;padding-left:0 !important}
+    table.sched td:empty{display:none}
+    table.sched input[type=time]{flex:1 1 auto;min-width:0}
+    .f{flex-wrap:wrap;min-width:0}
+    .f label{white-space:normal}
+    .f input[type=text],.f input[type=date],.f input[type=email],.f input[type=tel]{flex:1 1 140px;min-width:0}
+    .row,.row>*{min-width:0}
+  }
+  .cb{display:inline-flex;align-items:center;gap:5px;font-size:13px;margin-right:14px}
+  .cb input{width:15px;height:15px}
+  /* Referral box */
+  .referral{border:2px solid var(--accent);border-radius:10px;background:#fdf2f6;padding:12px 16px;margin:16px 0}
+  .referral h3{margin:0 0 6px;color:var(--accent);font-size:15px}
+  .referral .promise{font-style:italic;font-size:12.5px;color:#7a1338;margin-top:6px}
+  .referral .others{margin-top:8px;font-size:12.5px;color:#444}
+  /* Fee box */
+  .feebox{border:1.5px solid var(--green);border-radius:8px;padding:12px 16px;margin:10px 0;background:var(--green-soft)}
+  .terms{font-size:12.5px;line-height:1.55;margin:10px 0}
+  .terms b{color:#000}
+  .terms p{margin:0 0 10px}
+  /* Signatures */
+  .sigrow{display:flex;gap:40px;margin-top:26px}
+  .sig{flex:1}
+  .sig .line{border-bottom:1px solid var(--line);height:34px}
+  .sigpad{border-bottom:1px solid var(--line);width:100%;height:70px;touch-action:none;cursor:crosshair}
+  .sigpad.locked{cursor:not-allowed;background:#f4f4f4}
+  .sigclear{font-size:10.5px;border:1px solid #bbb;background:#fff;border-radius:4px;cursor:pointer;color:#a33;margin-left:8px}
+  .siglockmsg{font-size:11px;color:#8a6d1e}
+  @media print{.sigclear,.siglockmsg{display:none}}
+  .sig .cap{font-size:12.5px;margin-top:3px}
+  .sig .esign{font-size:10.5px;color:#777}
+  .stampdate{border:none;border-bottom:1px solid var(--line);font-family:inherit;font-size:14px;padding:2px 4px;background:transparent;width:150px}
+  .stampdate[readonly]{background:#f7f7f5}
+  /* Office use */
+  .office{border:1px dashed #888;padding:10px 14px;margin-top:18px;background:#fafafa;font-size:13px}
+  .office h3{margin:0 0 6px;font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:#555}
+  footer{margin-top:20px;font-size:10.5px;color:#666;display:flex;justify-content:space-between;border-top:1px solid #ddd;padding-top:6px}
+  .print-btn{position:fixed;right:18px;top:18px;background:var(--green);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:14px;cursor:pointer}
+  @media print{.center-tabs,.vbar,.print-btn{display:none} body{background:#fff} .page{border:none;margin:0;max-width:100%}}
+</style>
+</head>
+<body>
+<div data-formkit="toolbar"></div>
+<div class="page">
+
+  <!-- VARIANT BAR — screen only. The packet link normally carries ?variant=; this bar is the
+       office/kiosk override. The record keeps BOTH the variant and how it was chosen. -->
+  <div class="vbar" id="vbar">
+    <span class="lbl">Agreement type:</span>
+    <button type="button" class="vbtn" data-v="standard">Fee Agreement</button>
+    <button type="button" class="vbtn" data-v="infant">Infant</button>
+    <button type="button" class="vbtn" data-v="school_age">School Age</button>
+    <button type="button" class="vbtn" data-v="voucher">Caretaker / Provider (voucher)</button>
+    <span class="from-link" id="vfrom"></span>
+  </div>
+
+  <!-- OFFICE SETUP: служебная панель (скрыта при печати). Родитель ЦЕНТР НЕ ВЫБИРАЕТ —
+       форма универсальная, каждый садик выдаёт её за свою: центр фиксируется здесь
+       сотрудником (или настройкой киоск-устройства), суммы вписываются ДО передачи родителю.
+       Registration fee ОСТАЁТСЯ (v1), но больше не начинается с вшитых 75.00: поле
+       ЗАСЕВАЕТСЯ ставкой из конфига по варианту, а стойка может его перебить для этой
+       семьи (скидка/льгота). Запись хранит обе величины — ставку конфига и напечатанную. -->
+  <div class="center-tabs" id="setup" style="flex-wrap:wrap;align-items:center;background:#fffbe6;border:1px dashed #b8a24a;border-radius:8px;padding:10px 12px">
+    <span style="width:100%;display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#7a6a1e;background:#fff3c4;border:1px solid #b8a24a;border-radius:999px;padding:2px 8px;white-space:nowrap">Office use only — completed by the center</span><span style="font-size:12.5px;font-weight:bold;color:#7a6a1e">Not for the parent to fill. The center comes from the packet link/QR; the fees are seeded from the registry.</span></span>
+    <span style="font-size:13px;margin-left:14px">Registration fee $</span>
+    <input type="text" id="setup-regfee" data-fk-field="reg_fee" value="" style="width:60px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <span style="font-size:13px;margin-left:14px" data-variant="standard infant school_age">Weekly tuition $</span>
+    <input type="text" id="setup-tuition" data-fk-field="weekly_tuition" value="" placeholder="0.00" data-variant="standard infant school_age" style="width:70px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <span style="font-size:13px;margin-left:14px" data-variant="voucher">Weekly co-pay $</span>
+    <input type="text" id="setup-copay" value="" placeholder="0.00" data-variant="voucher" style="width:70px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <span style="font-size:11.5px;margin-left:14px;color:#7a6a1e" id="feesrc"></span>
+  </div>
+
+  <div class="hdr">
+    <div class="left">
+            <div><a href="https://www.playacademyusa.com">www.playacademyusa.com</a></div>
+      <div id="c-addr1"></div>
+      <div id="c-addr2"></div>
+    </div>
+    <div class="logo"><img src="pa-logo.png" alt="Play Academy" onerror="this.style.display='none'"><!-- лого из БД (asset cacfp-receipt) --></div>
+    <div class="right">
+      <div id="c-phone"></div>
+      <div id="c-fax"></div>
+      <div id="c-emaillbl" style="display:none">E-mail:</div>
+      <div id="c-email"></div>
+    </div>
+  </div>
+
+  <!-- Title is the SOURCE document's own title for the chosen variant (print 1:1). -->
+  <h1 id="doctitle">Fee Agreement</h1>
+  <div class="subtitle">This form starts your child's enrollment. Registration is confirmed when the registration fee is paid.</div>
+
+  <!-- CHILDREN — 1..N -->
+  <div class="sec">
+    <h2>Child / Children</h2>
+    <div id="kids">
+      <div class="row kidrow" data-kid="1">
+        <div class="f wide"><label>Child's Name</label><input type="text" id="child1_name" name="child1_name" data-fk-field="child1_name" data-required data-label="Child's name" style="width:240px"></div>
+        <div class="f"><label>DOB</label><input type="date" id="child1_dob" name="child1_dob" data-fk-field="child1_dob" data-required data-label="Child's date of birth"></div>
+        <div class="f"><label>Desired Start Date</label><input type="date" id="child1_start_date" name="child1_start_date" data-required data-label="Desired start date"></div>
+      </div>
+      <!-- v1 shipped TWO child rows; both stay exactly as they were (the second optional).
+           «+ Add another child» appends the third and beyond — 1..N is a widening of v1,
+           never a removal of it. -->
+      <div class="row kidrow" data-kid="2">
+        <div class="f wide"><label>Child's Name</label><input type="text" id="child2_name" name="child2_name" data-fk-field="child2_name" style="width:240px"></div>
+        <div class="f"><label>DOB</label><input type="date" id="child2_dob" name="child2_dob" data-fk-field="child2_dob"></div>
+        <div class="f"><label>Desired Start Date</label><input type="date" id="child2_start_date" name="child2_start_date"></div>
+      </div>
+    </div>
+    <button type="button" class="addkid" id="addkid">+ Add another child</button>
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="expected_child" name="expected_child"><label for="expected_child"><b>Expecting a child</b> — reserve a future spot; expected month:</label></span>
+      <div class="f"><input type="text" id="expected_month" name="expected_month" placeholder="e.g. Nov 2026" style="width:110px"></div>
+      <span class="cb" style="margin-left:22px"><input type="checkbox" id="sibling_enrolled" name="sibling_enrolled"><label for="sibling_enrolled">A sibling already attends Play Academy</label></span>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="sec">
+    <h2>Planned Schedule of Attendance</h2>
+    <div class="schedwrap">
+    <table class="sched">
+      <tr><td>Monday</td><td>from <input type="time" id="mon_from" name="mon_from"></td><td>to <input type="time" id="mon_to" name="mon_to"></td>
+          <td style="padding-left:30px">Thursday</td><td>from <input type="time" id="thu_from" name="thu_from"></td><td>to <input type="time" id="thu_to" name="thu_to"></td></tr>
+      <tr><td>Tuesday</td><td>from <input type="time" id="tue_from" name="tue_from"></td><td>to <input type="time" id="tue_to" name="tue_to"></td>
+          <td style="padding-left:30px">Friday</td><td>from <input type="time" id="fri_from" name="fri_from"></td><td>to <input type="time" id="fri_to" name="fri_to"></td></tr>
+      <tr><td>Wednesday</td><td>from <input type="time" id="wed_from" name="wed_from"></td><td>to <input type="time" id="wed_to" name="wed_to"></td><td colspan="3"></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- REFERRAL -->
+  <div class="referral">
+    <h3>⭐ Were you referred by a Play Academy family or staff member?</h3>
+    <div class="row">
+      <div class="f wide"><label>Write their name — <b>they'll receive a tuition credit</b> as our thank-you:</label></div>
+    </div>
+    <div class="row"><div class="f wide"><label>Referred by</label><input type="text" id="referred_by" name="referred_by" style="width:320px"></div></div>
+    <div class="promise">And when <b>you</b> refer a family later — you'll receive the same credit. Credits are applied after the referred child's first month of attendance.</div>
+    <div class="others">If not referred — how did you find us?
+      <span class="cb"><input type="checkbox" id="src_google" name="src_google">Google</span>
+      <span class="cb"><input type="checkbox" id="src_social" name="src_social">Social media</span>
+      <span class="cb"><input type="checkbox" id="src_droveby" name="src_droveby">Drove by</span>
+      <span class="cb"><input type="checkbox" id="src_other" name="src_other">Other:</span>
+      <input type="text" id="src_other_text" name="src_other_text" style="border:none;border-bottom:1px solid #999;width:130px">
+    </div>
+  </div>
+
+  <!-- (a) REGISTRATION FEE — amounts from the registry, never typed into the text -->
+  <div class="feebox">
+    <div class="row">
+      <div class="f"><label><b>The registration fee (nonrefundable<span data-variant="voucher"> and due every September</span>) — $<span id="regfee-txt">—</span> per family</b>, paid on</label><input type="date" id="reg_fee_paid_on" name="reg_fee_paid_on"></div>
+      <div class="f"><label>Method:</label>
+        <span class="cb"><input type="checkbox" id="pay_cash" name="pay_cash">Cash</span>
+        <span class="cb"><input type="checkbox" id="pay_check" name="pay_check">Check #</span><input type="text" id="check_no" name="check_no" style="width:80px">
+      </div>
+    </div>
+    <div class="row" data-variant="infant">
+      <div class="f"><label><b>&amp; Infant waiting fee (will be credited when infant's 1st day at the center) — $<span data-fee="infant_waiting_deposit">—</span></b></label></div>
+    </div>
+    <div class="row" data-variant="voucher">
+      <div class="f"><label><b>Weekly co-pay</b> $</label><input type="text" id="copay_amount" name="copay_amount" style="width:80px"></div>
+    </div>
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="deferred_deposit" name="deferred_deposit"><label for="deferred_deposit"><b>Deferred start:</b> first-week tuition deposit collected, $</label></span>
+      <input type="text" id="deposit_amount" name="deposit_amount" style="width:70px">
+      <div class="f"><label>Staff who received payment</label><input type="text" id="fee_received_by" name="fee_received_by" style="width:170px"></div>
+    </div>
+
+  </div>
+
+  <div class="terms">
+    <!-- (b) PAYMENT TERMS -->
+    <p data-variant="standard school_age">
+      <b>The tuition of</b> $<input type="text" id="tuition_amount" name="tuition_amount" style="border:none;border-bottom:1px solid #333;width:80px">,
+      payable at least one week in advance. Payment is due by Wednesday of the preceding week. Forms of payment: cash, check
+      or money order to the office or automatic withdrawal. To avoid late fees,
+      we recommend that you do automatic withdrawal (checking account) which is free of charge for your convenience.
+    </p>
+    <p data-variant="infant">
+      <b>The tuition</b> $<input type="text" id="tuition_amount_infant" name="tuition_amount_infant" style="border:none;border-bottom:1px solid #333;width:80px">,
+      payable at least one week in advance.
+    </p>
+    <p data-variant="voucher">
+      Payment is due by Wednesday of each week. <b>If payment is not made on time each week, your child/ren will not be able to
+      attend Play Academy.</b> Absentee days are required to be paid out of pocket if exceeds those reimbursed by the County Agency
+      up to <span data-fee="absentee_days_per_half_year">—</span> per child during each six-month period
+      (Jan 1st&nbsp;– June 30 and July 1st&nbsp;– Dec 31st of each year).
+    </p>
+
+    <!-- RESPONSIBILITY — shared line, variant tail -->
+    <p>
+      I, <input type="text" id="payer_name" name="payer_name" data-fk-field="payer_name" autocomplete="name" data-required data-label="Name of the person responsible for fees" style="border:none;border-bottom:1px solid #333;width:280px">,
+      am responsible for paying Play Academy the above fees for
+      <span data-variant="standard school_age">my child/ren on agreed basis. <b>Tuition fees are not subject to pro-ration for illness, holidays, or emergency closure of the center. Payment is due even if your child is not here for the week.</b></span>
+      <span data-variant="infant">my child on agreed basis.</span>
+      <span data-variant="voucher">my children on a weekly basis. <b>I am responsible for using the swipe tablet to check in and check out all attendance for each child.</b></span>
+    </p>
+
+    <!-- (c) DELINQUENCY -->
+    <p data-variant="standard school_age">
+      If a payment is past due and arrangements have not been made to make a payment, you will be charged a late fee of
+      <b>$<span data-fee="late_fee_per_day">—</span> per day</b>. I further understand that my child may not start care in the new billing
+      cycle without payment of outstanding fees from the previous billing cycle, unless arrangements to pay delinquent payments
+      and fees were made. The arrangements must be satisfactory to the parent/guardian and Play Academy.
+    </p>
+    <p data-variant="infant">
+      I further understand that my child may not start care in the new billing cycle without payment of outstanding fees from the
+      previous billing cycle, unless arrangements to pay delinquent payments and fees were made. The arrangements must be
+      satisfactory to the parent/guardian and Play Academy.
+    </p>
+    <p data-variant="voucher">
+      According to Rule 5101:2-16-39 (L), when an assigned copayment is delinquent more than two weeks from the date established
+      in the written copayment agreement, the provider shall submit a record of the delinquent copayment to the ODJFS no later
+      than three weeks from the date the copayment was due.
+    </p>
+    <p data-variant="voucher">
+      I further understand, according to rules 5101:2-16-35 (K)(1), ineligibility for child care benefits shall continue if
+      delinquent co-payments are owed to the Play Academy, unless satisfactory arrangements are made to pay. Arrangements to pay
+      delinquent co-payments and fees must be satisfactory to both the parent/guardians and Play Academy.
+    </p>
+
+    <p>
+      <span class="cb"><input type="checkbox" id="consent_contact" name="consent_contact" checked></span>
+      I agree to be contacted at the phone/e-mail provided, and to receive documents and receipts electronically.
+      <br>
+      By signing this document, I agree to abide by these terms.
+    </p>
+  </div>
+
+  <!-- CONTACTS -->
+  <div class="sec">
+    <h2>Parent / Guardian Contacts</h2>
+    <div class="row">
+      <div class="f wide"><label>Parent name</label><input type="text" id="parent1_name" name="parent1_name" data-fk-field="parent_name" data-required data-label="Parent/Guardian name" style="width:220px"></div>
+      <div class="f"><label>Phone</label><input type="tel" id="parent1_phone" name="parent1_phone" data-fk-field="phone_day" data-required data-label="Parent phone" style="width:130px"></div>
+      <div class="f wide"><label>E-mail</label><input type="email" id="parent1_email" name="parent1_email" data-fk-field="parent_email" data-required data-label="Parent e-mail" style="width:200px"></div>
+    </div>
+    <div class="row">
+      <div class="f wide"><label>Second contact</label><input type="text" id="parent2_name" name="parent2_name" style="width:220px"></div>
+      <div class="f"><label>Phone</label><input type="tel" id="parent2_phone" name="parent2_phone" style="width:130px"></div>
+    </div>
+  </div>
+
+  <!-- SIGNATURES — draw only, both. The source pairs the parent's signature with a phone
+       number and the administration's with a date; the parent's date is added as a stamp
+       (a signature carries its own date — canon 2026-07-24). -->
+  <div class="sigrow">
+    <div class="sig"><canvas class="sigpad" id="sig-parent" data-fk-adopt data-formkit="signature" data-required data-label="Parent/Guardian signature" width="360" height="70"></canvas><div class="cap">Parent / Guardian signature — sign with finger or mouse <button type="button" class="sigclear" onclick="clearSigAndStamp('sig-parent')">✕ clear</button></div></div>
+    <div class="sig"><div class="line" style="border:none"><input type="tel" id="parent_sig_phone" name="parent_sig_phone" style="border:none;border-bottom:1px solid var(--line);font-family:inherit;font-size:14px;padding:2px 4px;background:transparent;width:150px"></div><div class="cap">phone number</div></div>
+    <div class="sig"><div class="line" style="border:none"><input type="text" id="parent_sig_date" class="stampdate" readonly tabindex="-1"></div><div class="cap">Date</div></div>
+  </div>
+  <div class="sigrow">
+    <div class="sig"><canvas class="sigpad locked" id="sig-admin" data-formkit="signature" width="360" height="70"></canvas><div class="cap">Play Academy Administration <button type="button" class="sigclear" onclick="clearSigAndStamp('sig-admin')">✕ clear</button> <span class="siglockmsg" id="adminlock">— unlocks after the parent signs</span></div></div>
+    <div class="sig"><div class="line" style="border:none"><input type="text" id="admin_sig_date" class="stampdate" readonly tabindex="-1"></div><div class="cap">date</div></div>
+  </div>
+
+  <!-- OFFICE USE -->
+  <div class="office">
+    <h3>Office use — scan this form into the system the same day</h3>
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="office_waitlist" name="office_waitlist">Entered to waiting list, start date confirmed</span>
+      <span class="cb"><input type="checkbox" id="office_prospect" name="office_prospect">No payment — prospects list</span>
+      <div class="f"><label>Receipt #</label><input type="text" id="receipt_no" name="receipt_no" style="width:110px"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Form: start_form · <b>v2</b> · <span id="foot-variant">standard</span> · Rev. 07/2026 · Play Academy Inc.</span>
+    <span id="c-foot"></span>
+  </footer>
+</div>
+
+<script>
+/* Fee Agreement (start_form v2) — form-specific config only; shared behaviour = form-kit.js. */
+
+var CENTERS = {
+  ridge: {addr1:'28930 Ridge Rd.', addr2:'Wickliffe, OH 44092', phone:'C: 440-520-0031', fax:'F: 440-494-7093', email:'playacademy3@gmail.com', foot:'Ridge · Wickliffe, OH'},
+  pearl: {addr1:'6285 Pearl Rd. #30', addr2:'Parma Heights, OH 44130', phone:'C: 440-884-7529', fax:'', email:'playacademy2@gmail.com', foot:'Pearl · Parma Heights, OH'},
+  alpha: {addr1:'201 Alpha Park', addr2:'Highland Heights, OH 44143', phone:'C: 440-460-0600', fax:'', email:'playacademyinfo@gmail.com', foot:'Alpha · Highland Heights, OH'}
+};
+
+/* ── Variants ───────────────────────────────────────────────────────────────
+   Titles are the SOURCE documents' own titles — the printed page must match the
+   docx it replaces, word for word. */
+var VARIANTS = {
+  standard:   { title:'Fee Agreement',                     reg:'reg_fee' },
+  infant:     { title:'Infant Fee Agreement',              reg:'reg_fee' },
+  school_age: { title:'School Age Fee Agreement',          reg:'reg_fee_school_age' },
+  voucher:    { title:'CARETAKER/PROVIDER Fee Agreement',  reg:'reg_fee_voucher' }
+};
+var VARIANT = 'standard', VARIANT_SOURCE = 'default';
+
+/* ── Fees: effective-dated config ───────────────────────────────────────────
+   Source of truth is enroll-registry.json → fees.defaults (org-wide; rates are the same
+   at all three centers — a per-center override block is added only if they diverge).
+   BUILTIN is the snapshot baked into this edition: used only if the registry cannot be
+   read, and the record then says so. A blank amount on a money agreement is worse than a
+   stale one; a record that hides which it was is worse than both. */
+// ONLINE PAYMENT WAS CONSIDERED AND REMOVED (owner, 2026-07-27). A Zelle block briefly lived
+// here — recipient, amount due, a generated memo line, a self-declaration. It is gone whole:
+// the form is a DOCUMENT, not a payment system. The registration fee is paid at the desk, in
+// cash or by check, and the "Forms of payment" text is the source docx's, with nothing of ours
+// added to it. See docs/specs/2026-07-27-fee-agreement-variant-form.md.
+var BUILTIN_FEES = { from:'2026-01-01', reg_fee:75.00, reg_fee_school_age:25.00, reg_fee_voucher:25.00,
+                     infant_waiting_deposit:150.00, late_fee_per_day:5.00, absentee_days_per_half_year:10 };
+var FEES = null, FEES_SOURCE = 'builtin';
+
+function el(id){ return document.getElementById(id); }
+function g(id){ var e=el(id); return e ? (e.value||'').trim() : ''; }
+function gc(id){ var e=el(id); return !!(e && e.checked); }
+function $$(sel){ return [].slice.call(document.querySelectorAll(sel)); }
+function money(v){ return (v===null||v===undefined||v==='') ? '—' : Number(v).toFixed(2); }
+
+/* Pick the row effective on the DATE OF SIGNING — not on the date this file was built.
+   A rate change is a NEW row with a new `from`; the old row is never edited, so an
+   agreement signed last month still prints last month's number. */
+function resolveFees(rows, onISO){
+  if (!rows || !rows.length) return null;
+  var hit = null;
+  rows.forEach(function(r){
+    if (!r || !r.from) return;
+    if (r.from <= onISO && (!r.to || onISO < r.to)) hit = r;
+  });
+  return hit;
+}
+function todayISO(){ return (window.FormKit && FormKit.todayISO) ? FormKit.todayISO() : new Date().toISOString().slice(0,10); }
+
+/* OFFICE SETUP (v1 mechanic, kept): staff sees the amount before handing the form over.
+   The registration-fee box is SEEDED from the config for the current variant, and the
+   center may still overwrite it for this family. Once touched, a variant switch or a
+   late-arriving registry no longer overwrites what the staff typed. */
+var REGFEE_TOUCHED = false;
+function seedRegFee(){
+  var f = FEES || BUILTIN_FEES;
+  var regKey = (VARIANTS[VARIANT]||VARIANTS.standard).reg;
+  var box = el('setup-regfee');
+  if (box && !REGFEE_TOUCHED) box.value = money(f[regKey]);
+  syncFees();
+}
+/* The printed amount is whatever stands in the office box (seeded from config). */
+function syncFees(){
+  var box = el('setup-regfee'), txt = el('regfee-txt');
+  if (txt) txt.textContent = (box && box.value.trim()) ? box.value.trim() : '—';
+  var tu = el('setup-tuition');
+  if (tu && tu.value) ['tuition_amount','tuition_amount_infant'].forEach(function(id){ var e=el(id); if (e && !e.value) e.value = tu.value; });
+}
+
+function paintFees(){
+  var f = FEES || BUILTIN_FEES;
+  $$('[data-fee]').forEach(function(n){
+    var k = n.getAttribute('data-fee');
+    if (k === 'absentee_days_per_half_year') { n.textContent = (f[k]==null?'—':String(f[k])); return; }
+    n.textContent = money(f[k]);
+  });
+  seedRegFee();
+  var src = el('feesrc');
+  if (src) src.textContent = 'Fees: ' + (FEES_SOURCE==='registry' ? ('registry, effective ' + (f.from||'?')) : 'built-in snapshot (registry unreachable)');
+}
+
+function loadFees(){
+  return fetch('../../enroll-registry.json?t='+Date.now(), {cache:'no-store'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){
+      var rows = reg && reg.fees && reg.fees.defaults;
+      var hit = resolveFees(rows, todayISO());
+      if (hit) { FEES = hit; FEES_SOURCE = 'registry'; }
+    })
+    .catch(function(){ /* keep the built-in snapshot */ })
+    .then(function(){ paintFees(); });
+}
+
+/* ── Variant switching ─────────────────────────────────────────────────────── */
+function applyVariant(v, source){
+  if (!VARIANTS[v]) v = 'standard';
+  VARIANT = v; if (source) VARIANT_SOURCE = source;
+  $$('[data-variant]').forEach(function(n){
+    var list = (n.getAttribute('data-variant')||'').split(/\s+/);
+    n.style.display = list.indexOf(v) >= 0 ? '' : 'none';
+  });
+  $$('.vbtn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-v')===v); });
+  el('doctitle').textContent = VARIANTS[v].title;
+  document.title = 'Play Academy — ' + VARIANTS[v].title;
+  el('foot-variant').textContent = v;
+  paintFees();                                   // the registration fee differs per variant
+  if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+}
+
+/* ── Children 1..N ─────────────────────────────────────────────────────────── */
+var kidSeq = 2;   /* v1's two rows are always on the page; added rows start at 3 */
+function addKid(){
+  kidSeq++;
+  var n = kidSeq;
+  var row = document.createElement('div');
+  row.className = 'row kidrow'; row.setAttribute('data-kid', String(n));
+  row.innerHTML =
+    '<div class="f wide"><label>Child\'s Name</label><input type="text" id="child'+n+'_name" style="width:240px"></div>' +
+    '<div class="f"><label>DOB</label><input type="date" id="child'+n+'_dob"></div>' +
+    '<div class="f"><label>Desired Start Date</label><input type="date" id="child'+n+'_start_date"></div>' +
+    '<button type="button" class="kidrm">✕</button>';
+  row.querySelector('.kidrm').addEventListener('click', function(){
+    row.parentNode.removeChild(row);
+    if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+  });
+  el('kids').appendChild(row);
+  var first = row.querySelector('input'); if (first) first.focus();
+}
+function kids(){
+  return $$('#kids .kidrow').map(function(r){
+    var n = r.getAttribute('data-kid');
+    return { name: g('child'+n+'_name'), dob: g('child'+n+'_dob')||null, start_date: g('child'+n+'_start_date')||null };
+  }).filter(function(c){ return c.name; });
+}
+
+/* ── Signature date stamps ─────────────────────────────────────────────────────
+   A date beside a signature is a STAMP: set at the moment of signing, read-only, cleared
+   with the signature, bound 1:1 to its own stroke (canon 2026-07-24). Both pads are
+   DRAW-ONLY — there is no typed rail on this form (docs/compliance/e-signature.md). */
+var PAIRS = [ {sig:'sig-parent', date:'parent_sig_date'}, {sig:'sig-admin', date:'admin_sig_date'} ];
+function inked(id){ try { return !!(window.FormKit && FormKit.getSig && FormKit.getSig(id)); } catch(_) { return false; } }
+function todayUS(){ var t=new Date(); return ('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
+function stampAll(){
+  PAIRS.forEach(function(p){
+    var dt = el(p.date); if (!dt) return;
+    dt.value = inked(p.sig) ? (dt.value || todayUS()) : '';
+  });
+  lockAdmin();
+}
+function clearSigAndStamp(id){
+  if (window.FormKit) FormKit.clearSig(id);
+  stampAll();
+  if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+}
+/* The administration signs after the parent — the same order as the program slot on DCY 01234. */
+function lockAdmin(){
+  var c = el('sig-admin'); if (!c) return;
+  var open = inked('sig-parent');
+  c.classList.toggle('locked', !open);
+  c.style.pointerEvents = open ? '' : 'none';
+  var m = el('adminlock'); if (m) m.style.display = open ? 'none' : '';
+}
+
+function paintCenter(){
+  var c = CENTERS[window.FormKit ? FormKit.centerCode() : ''];
+  if (!c) return;                       // unresolved → header stays blank, never guesses
+  el('c-addr1').textContent = c.addr1;
+  el('c-addr2').textContent = c.addr2;
+  el('c-phone').textContent = c.phone;
+  el('c-fax').textContent   = c.fax;
+  el('c-foot').textContent  = c.foot;
+  if (c.email) { el('c-emaillbl').style.display=''; el('c-email').innerHTML = '<a href="mailto:'+c.email+'">'+c.email+'</a>'; }
+}
+
+function startReset(){
+  $$('#kids .kidrow').forEach(function(r){ if (['1','2'].indexOf(r.getAttribute('data-kid')) < 0) r.parentNode.removeChild(r); });
+  kidSeq = 2;
+  ['child1_name','child1_dob','child1_start_date','child2_name','child2_dob','child2_start_date','expected_month','referred_by','src_other_text',
+   'reg_fee_paid_on','check_no','deposit_amount','fee_received_by','tuition_amount','tuition_amount_infant',
+   'copay_amount','payer_name','parent1_name','parent1_phone','parent1_email','parent2_name','parent2_phone',
+   'parent_sig_phone','receipt_no','setup-tuition','setup-copay'].forEach(function(id){ var e=el(id); if(e) e.value=''; });
+  ['expected_child','sibling_enrolled','src_google','src_social','src_droveby','src_other','pay_cash',
+   'pay_check','deferred_deposit','office_waitlist','office_prospect'].forEach(function(id){ var e=el(id); if(e) e.checked=false; });
+  ['mon','tue','wed','thu','fri'].forEach(function(d){ ['from','to'].forEach(function(k){ var e=el(d+'_'+k); if(e) e.value=''; }); });
+  var cc = el('consent_contact'); if (cc) cc.checked = true;
+  if (window.FormKit) { FormKit.clearSig('sig-parent'); FormKit.clearSig('sig-admin'); }
+  REGFEE_TOUCHED = false; seedRegFee();      // back to the config rate for the next family
+  stampAll();
+  if (window.FormKit) { FormKit.status('Form cleared',''); FormKit.refreshCounter(); }
+}
+
+function sched(){
+  var o = {};
+  ['mon','tue','wed','thu','fri'].forEach(function(d){
+    var f = g(d+'_from'), t = g(d+'_to');
+    if (f || t) o[d] = { from: f || null, to: t || null };
+  });
+  return o;
+}
+
+window.FORMKIT_CONFIG = {
+  formType:'start_form', version:'v2', title:'Fee Agreement', reset:startReset,
+  /* No custom submit → the kit's default channel: submit_enrollment_form,
+     p_submission_type='start_form' → Enrollment Inbox, center_id from ?center=. */
+  collect:function(){
+    var f = FEES || BUILTIN_FEES;
+    var regKey = (VARIANTS[VARIANT]||VARIANTS.standard).reg;
+    var kk = kids();
+    return {
+      formData:{
+        type:'start_form',
+        variant: VARIANT,
+        variant_source: VARIANT_SOURCE,
+        variant_title: VARIANTS[VARIANT].title,
+        center_code: FormKit.centerCode(),
+        center_name: FormKit.centerName(),
+        child_name:  (kk[0]||{}).name || '',      /* Inbox/Review read child_name */
+        children: kk,
+        expected_child: gc('expected_child'), expected_month: g('expected_month'),
+        sibling_enrolled: gc('sibling_enrolled'),
+        schedule: sched(),
+        referred_by: g('referred_by'),
+        found_us: { google:gc('src_google'), social:gc('src_social'), drove_by:gc('src_droveby'),
+                    other:gc('src_other'), other_text:g('src_other_text') },
+        /* v1 field kept: the registration fee AS PRINTED on this family's copy (the office
+           box, seeded from the config and overridable at the desk). */
+        registration_fee: (el('setup-regfee')||{}).value || '',
+        /* The config rates AS RESOLVED at signing — snapshotted into the record. The config
+           may move later; this agreement was signed about these numbers. If the two differ,
+           the desk overrode the rate for this family, and both are readable a year later. */
+        fees_applied: {
+          registration_fee: f[regKey],
+          infant_waiting_deposit: (VARIANT==='infant') ? f.infant_waiting_deposit : null,
+          late_fee_per_day: (VARIANT==='standard'||VARIANT==='school_age') ? f.late_fee_per_day : null,
+          absentee_days_per_half_year: (VARIANT==='voucher') ? f.absentee_days_per_half_year : null,
+          effective_from: f.from || null,
+          source: FEES_SOURCE
+        },
+        reg_fee_paid_on: g('reg_fee_paid_on')||null,
+        payment_method: { cash:gc('pay_cash'), check:gc('pay_check'), check_no:g('check_no') },
+        deferred_deposit: gc('deferred_deposit'), deposit_amount: g('deposit_amount'),
+        fee_received_by: g('fee_received_by'),
+        tuition_amount: (VARIANT==='infant') ? g('tuition_amount_infant') : g('tuition_amount'),
+        copay_amount: (VARIANT==='voucher') ? g('copay_amount') : '',
+        payer_name: g('payer_name'),
+        consent_contact: gc('consent_contact'),
+        parent_name: g('parent1_name'), parent_phone: g('parent1_phone'), parent_email: g('parent1_email'),
+        parent2_name: g('parent2_name'), parent2_phone: g('parent2_phone'),
+        parent_sig_phone: g('parent_sig_phone'),
+        office: { waitlist:gc('office_waitlist'), prospects:gc('office_prospect'), receipt_no:g('receipt_no') },
+        signature_method: 'drawn',                 /* draw only — no typed rail on this form */
+        signature_typed_value: '',
+        parent_signature_date: g('parent_sig_date')||null,
+        admin_signature_date: g('admin_sig_date')||null,
+        terms_version:'Rev. 07/2026'
+      },
+      signatures:{ parent_sig: FormKit.getSig('sig-parent'), admin_sig: FormKit.getSig('sig-admin') },
+      signatureDate: todayISO()
+    };
+  }
+};
+
+document.addEventListener('DOMContentLoaded', function(){
+  /* Runs AFTER the deferred kit's boot(), so centerCode() is already resolved. */
+  paintCenter();
+
+  /* Variant: the packet link decides (?variant=), the bar is the office override. */
+  var q = new URLSearchParams(location.search);
+  var fromUrl = (q.get('variant')||'').trim();
+  if (VARIANTS[fromUrl]) { applyVariant(fromUrl, 'url'); el('vfrom').textContent = '— set by the link'; }
+  else applyVariant('standard', 'default');
+  $$('.vbtn').forEach(function(b){
+    b.addEventListener('click', function(){ applyVariant(b.getAttribute('data-v'), 'picker'); el('vfrom').textContent = '— changed at the center'; });
+  });
+
+  el('addkid').addEventListener('click', addKid);
+
+  /* Office setup prefills the parent-visible amount fields (v1 mechanic, kept). */
+  var rf = el('setup-regfee');
+  if (rf) rf.addEventListener('input', function(){ REGFEE_TOUCHED = true; syncFees(); });
+  var tu = el('setup-tuition');
+  if (tu) tu.addEventListener('input', function(){
+    ['tuition_amount','tuition_amount_infant'].forEach(function(id){ var e=el(id); if (e && !e.value) e.value = tu.value; });
+  });
+  var cp = el('setup-copay');
+  if (cp) cp.addEventListener('input', function(){ var e=el('copay_amount'); if (e && !e.value) e.value = cp.value; });
+
+  /* Signature stamps ride on the same pointer events the kit's pads use. */
+  /* ⛔ ГЛАВНЫЙ ПУТЬ ЭТОЙ ФОРМЫ — НЕ РИСОВАНИЕ, А УСВОЕНИЕ ОБРАЗЦА. Канва родителя несёт
+     data-fk-adopt: подпись приезжает с полки ПРОГРАММНО, и никакого mouseup при этом не
+     происходит. На одних mouseup/touchend штамп даты не встал бы, а слот администрации не
+     отпёрся бы — форма молча выглядела бы неподписанной у семьи, которая её подписала.
+     Кит шлёт на канву `fk:ink` и при усвоении, и при площадке; слушаем его. */
+  document.addEventListener('fk:ink', function(){ setTimeout(stampAll, 10); }, true);
+  document.addEventListener('mouseup', function(){ setTimeout(stampAll, 60); });
+  document.addEventListener('touchend', function(){ setTimeout(stampAll, 60); });
+  stampAll();
+
+  loadFees();
+});
+</script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its
+   failure. If FormKit isn't up in ~4s (or form-kit.js errors), auto-retry the script once
+   with a cache-bust; if still down, show a reload banner. Self-clears on success; never prints. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=28"></script>
+
+</body>
+</html>
