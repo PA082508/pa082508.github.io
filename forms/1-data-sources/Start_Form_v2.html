@@ -88,11 +88,11 @@
   .derived{margin-top:8px;font-size:13px;color:#0f4c35;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:7px 10px}
   .depositbox{margin-top:10px;border:1.5px solid #b8a24a;border-radius:10px;padding:12px 14px;background:#fffdf3}
   .deposit-amount{font-weight:800;font-size:15px;margin-bottom:6px}
-  .owner-slot{background:#fff7ed;border:1px dashed #ea9a3e;border-radius:8px;padding:9px 11px;color:#8a4b00;font-size:13px}
   .initrow{display:flex;align-items:center;gap:8px;margin-top:8px}
   .initrow label{font-size:12px;color:#555;font-weight:700}
   input.initials{width:64px;text-transform:uppercase;letter-spacing:2px;text-align:center;
                  border:1px solid #999;border-radius:6px;padding:5px 6px;font-family:inherit}
+  .ackhead{font-weight:700;font-size:13px;margin-top:14px}
   .acks .ack{margin:12px 0;padding-left:12px;border-left:3px solid #d8d8d8}
   .echannel{margin:14px 0;padding:11px 13px;border:1px solid #c9d0de;border-radius:10px;background:#f8fafc}
   .schedblock{margin:10px 0 16px}
@@ -101,7 +101,7 @@
   table.sched2 td{padding:3px 8px;font-size:13px;white-space:nowrap}
   table.sched2 td.d{font-weight:700;width:96px}
   table.sched2 td.p2{padding-left:18px}
-  @media print{ .owner-slot{border-style:solid} .derived{background:#fff} }
+  @media print{ .derived{background:#fff} }
   @media(max-width:640px){ table.sched2 td{white-space:normal;font-size:12.5px;padding:2px 4px} }
   table.sched{border-collapse:collapse;margin:4px 0}
   table.sched td{padding:3px 10px;font-size:13.5px}
@@ -253,12 +253,18 @@
          документ обязан сказать об этом там же, где семья ставит галочку, а не абзацем ниже.
          Блок появляется только при «Expecting a child» и уносит с собой расписание. -->
     <div class="depositbox" id="expecting-box" style="display:none">
-      <div class="deposit-amount">Waiting-list deposit — $<span data-fee="infant_waiting_deposit">—</span></div>
+      <div class="deposit-amount">Spot-hold deposit — $<span data-fee="infant_waiting_deposit">—</span></div>
       <!-- ⛔ ТЕКСТ ВЛАДЕЛЬЦА ЗДЕСЬ НЕ ВЫДУМАН И НЕ ПОДСТАВЛЕН. Это условие о деньгах:
            написать его «примерно похоже» значит подписать семью под нашей выдумкой. Слот
            ждёт дословной формулировки; до неё форма НЕ ВЫКЛАДЫВАЕТСЯ. -->
-      <p class="owner-slot" data-owner-text="expecting_deposit">
-        ⏳ Текст владельца о депозите за резерв места — ожидается дословно.
+      <!-- Текст владельца, скрин 22.08. Сумма НЕ вписана в предложение: она приходит из
+           реестра и стои́т строкой выше — иначе смена ставки правила бы договорный абзац. -->
+      <p>
+        To reserve a future spot for an expected child, a deposit of
+        $<span data-fee="infant_waiting_deposit">—</span> is collected together with the
+        registration fee. When the child starts care, the deposit is applied as a credit
+        toward the first weeks of tuition. If the child does not start, the deposit is
+        non-refundable.
       </p>
       <div class="initrow">
         <label for="init_deposit">Initials</label>
@@ -342,7 +348,8 @@
     <p>
       Absentee days beyond those reimbursed by the County Agency — up to
       <b><span data-fee="absentee_days_per_half_year">—</span> per child</b> during each six-month period
-      (January 1 – June 30 and July 1 – December 31) — are paid out of pocket.
+      (January 1 – June 30 and July 1 – December 31 of each year — calendar half-years) —
+      are paid out of pocket.
     </p>
     <p>
       I am responsible for using the <b>swipe tablet to check in and check out</b> all attendance for
@@ -364,7 +371,7 @@
          отдают «Number Not Found». Для сравнения 5180:2-12-25 и chapter-5180:2-12 открываются
          — значит дело не в способе запроса. Ссылка на правило, которого нельзя открыть, хуже
          её отсутствия: выглядит проверяемой и не проверяется. -->
-    <p class="rulesref">These terms follow the <b>Ohio publicly funded child care (PFCC) rules</b>.</p>
+    <p class="rulesref">These terms are set out <b>under Ohio PFCC rules</b>.</p>
 
     <div class="initrow">
       <label for="init_voucher">Initials</label>
@@ -382,26 +389,36 @@
          перенесены из docx 27.07 и с тех пор заморожены (спека, «ПАУЗА НА ТЕКСТЕ ПРАВИЛ
          ОПЛАТЫ»): это обязательство по оплате, то есть часть договора. Своими словами такое
          не пишется. -->
-    <p class="owner-slot" data-owner-text="payment_terms">
-      ⏳ Текст владельца об условиях оплаты — ожидается дословно.
+    <!-- Текст владельца, скрин 22.08. ⚠️ Карта возвращена СЛОВОМ ВЛАДЕЛЬЦА: 27.07 её сняли
+         вместе со Smart Care, теперь она названа заново — «in our parent app», со сбором,
+         который платит родитель. Это правка правила, а не списка методов, и она сделана
+         владельцем прямо. -->
+    <p>
+      <b>Tuition payments.</b> Tuition is due in advance — no later than Monday of the week
+      being paid. (Example: tuition for the week of March 9 is due by Monday, March 9.)
+      Accepted forms of payment: cash, check, money order, automatic bank withdrawal, or
+      credit card in our parent app (card payments carry a processing fee, paid by the
+      parent). To avoid late fees, we recommend automatic bank withdrawal (from your
+      checking account) — it is free of charge.
     </p>
 
     <!-- ⭐ ТРИ ПОДТВЕРЖДЕНИЯ С ИНИЦИАЛАМИ. Подпись внизу говорит «я подписал документ»;
          инициалы против пункта говорят «я прочитал ИМЕННО ЭТО». Разница видна ровно тогда,
          когда семья приходит с «мне этого не объясняли». -->
+    <div class="ackhead">Each line below is initialed by the parent.</div>
     <div class="acks" id="acks">
       <div class="ack">
-        <p class="owner-slot" data-owner-text="ack_1">⏳ Подтверждение 1 — текст владельца.</p>
+        <p>I have reviewed the current tuition rates.</p>
         <div class="initrow"><label for="init_ack1">Initials</label>
           <input type="text" id="init_ack1" maxlength="4" class="initials" data-init-for="ack_1" data-required data-label="Initials for the first acknowledgement"></div>
       </div>
       <div class="ack">
-        <p class="owner-slot" data-owner-text="ack_2">⏳ Подтверждение 2 — текст владельца.</p>
+        <p>I am responsible for paying tuition for my child(ren) at Play Academy as set out above. Tuition is not adjusted or prorated for illness, holidays, or emergency closures, and is due in full even for weeks my child does not attend.</p>
         <div class="initrow"><label for="init_ack2">Initials</label>
           <input type="text" id="init_ack2" maxlength="4" class="initials" data-init-for="ack_2" data-required data-label="Initials for the second acknowledgement"></div>
       </div>
       <div class="ack">
-        <p class="owner-slot" data-owner-text="ack_3">⏳ Подтверждение 3 — текст владельца.</p>
+        <p>A late fee of $<span data-fee="late_fee_per_day">—</span> per day applies to overdue balances. I understand that my child cannot begin a new billing cycle with an unpaid balance from the previous cycle, unless a payment arrangement has been approved by Play Academy in writing.</p>
         <div class="initrow"><label for="init_ack3">Initials</label>
           <input type="text" id="init_ack3" maxlength="4" class="initials" data-init-for="ack_3" data-required data-label="Initials for the third acknowledgement"></div>
       </div>
