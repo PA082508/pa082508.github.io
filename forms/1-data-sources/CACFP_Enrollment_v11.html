@@ -168,13 +168,46 @@ function PA_APPLY(fd){var S=function(id,v){var e=document.getElementById(id);if(
      выводить его из часов нельзя. Семья отвечает сама.
      ⛔ И НЕ ЗАТИРАЕМ УЖЕ ВВЕДЁННОЕ: если человек начал заполнять, его буквы главнее нашей
      подстановки. */
-  if(fd._schedule)DAYS.forEach(function(d){var x=fd._schedule[d];if(!x)return;
-    var box=document.getElementById('cb_'+d); if(box&&!box.checked)box.checked=true;
-    [['arr1',x.arr1],['dep1',x.dep1],['arr2',x.arr2],['dep2',x.dep2]].forEach(function(pair){
-      var e=document.getElementById('f_'+d+'_'+pair[0]);
-      if(e&&!e.value&&pair[1])e.value=String(pair[1]).slice(0,5);   // 'HH:MM:SS' → 'HH:MM'
+  /* ⛔ ДВЕ ЛОВУШКИ ЗДЕСЬ, ОБЕ ПОЙМАНЫ ПРОБОЙ ДО СЕМЬИ.
+     1. СЛОВАРИ ДНЕЙ РАЗНЫЕ: бланк зовёт дни коротко (mon/wed/sat), носитель и префилл —
+        полными словами; tue и thu слишком легко спутать, чтобы сокращать их в материале.
+     2. КЛЕТКИ ВРЕМЕНИ — ЭТО <select> С ШАГОМ 15 МИНУТ в 12-часовом виде («7:30 am»), а не
+        поле ввода. Подстановка «07:30» не совпала бы ни с одним вариантом и оставила бы
+        клетку пустой — форма выглядела бы просто незаполненной.
+     ⭐ Перевод стои́т НА ГРАНИЦЕ, где материал входит в бланк, а не размазан по обоим.
+     ⛔ И САМОЕ ВАЖНОЕ: время не на четверти часа этот бланк ПРЕДСТАВИТЬ НЕ МОЖЕТ. Округлять
+        молча нельзя — это чужое расписание под подписью семьи. Клетка остаётся пустой, а
+        строка над таблицей НАЗЫВАЕТ, что не поместилось, и просит выбрать ближайшее. */
+  var LONGDAY={mon:'monday',tue:'tuesday',wed:'wednesday',thu:'thursday',fri:'friday',sat:'saturday',sun:'sunday'};
+  function toOption(t){
+    if(!t) return null;
+    var m=/^(\d{1,2}):(\d{2})/.exec(String(t)); if(!m) return null;
+    var h=+m[1], mi=+m[2];
+    if(mi%15!==0) return null;                       // не на четверти — бланк такого не знает
+    var ap=h>=12?'pm':'am', hh=h%12; if(hh===0) hh=12;
+    return hh+':'+('0'+mi).slice(-2)+' '+ap;
+  }
+  if(fd._schedule){
+    var missed=[];
+    DAYS.forEach(function(d){
+      var x=fd._schedule[LONGDAY[d]]; if(!x) return;
+      var box=document.getElementById('cb_'+d); if(box&&!box.checked)box.checked=true;
+      [['arr1',x.arr1],['dep1',x.dep1],['arr2',x.arr2],['dep2',x.dep2]].forEach(function(pair){
+        if(!pair[1]) return;
+        var e=document.getElementById('f_'+d+'_'+pair[0]); if(!e||e.value) return;
+        var opt=toOption(pair[1]);
+        if(opt && [].some.call(e.options,function(o){return o.text===opt;})) { e.value=opt; return; }
+        missed.push(LONGDAY[d].slice(0,3)+' '+String(pair[1]).slice(0,5));
+      });
     });
-  })}
+    if(missed.length){
+      var note=document.getElementById('sched_note');
+      if(!note){ note=document.createElement('div'); note.id='sched_note';
+        note.style.cssText='margin:8px 0;padding:8px 10px;border:1px solid #ea9a3e;border-radius:8px;background:#fff7ed;color:#8a4b00;font:600 12.5px Arial,sans-serif';
+        document.body.insertBefore(note, document.body.firstChild); }
+      note.textContent='These times from your signed schedule are not offered on this form — please pick the nearest: '+missed.join(', ');
+    }
+  }}
 window.FORMKIT_CONFIG={
   formType:'cacfp_enrollment',version:'v11',title:'CACFP Enrollment',expiry:'12 mo',reset:clear_,applyPrefill:PA_APPLY,
   collect:function(){
@@ -212,7 +245,7 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=33"></script>
+<script defer src="form-kit.js?v=34"></script>
 <style>
   .fkpad-trigger{font:inherit;font-size:12px;font-weight:700;padding:6px 14px;border:1px solid #0f4c35;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .fkpad-done{font-size:11px;color:#0f4c35;font-weight:700;margin-left:8px;background:#fff;padding:1px 5px;border-radius:4px}
