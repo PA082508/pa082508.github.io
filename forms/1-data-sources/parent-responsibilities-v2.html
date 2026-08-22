@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Parent Responsibilities — Play Academy</title>
-<meta name="fk-form-version" content="v1">
+<!-- ⚠️ ВЕРСИЮ В ЗАПИСЬ О ПОДАЧЕ БЕРЁТ ОТСЮДА, а не из FORMKIT_CONFIG.version:
+     кит спрашивает этот meta, а при его отсутствии — имя файла по шаблону `_vN.html`
+     (через ПОДЧЁРК; наше имя через дефис под него не подходит). Строка version ниже —
+     для человека; разойдись они, запись о подаче скажет то, что здесь. -->
+<meta name="fk-form-version" content="v2">
 <link rel="stylesheet" href="form-kit.css">
 <style>
   /* ===================================================================
@@ -141,6 +145,12 @@ function gate(){
 }
 document.addEventListener('input', function(){ setTimeout(gate,30) }, true);
 document.addEventListener('change', function(){ setTimeout(gate,30) }, true);
+/* ⭐ ПОДПИСЬ СООБЩАЕТ О СЕБЕ САМА. Кит после «Use signature» шлёт на канву `fk:ink` —
+   это ЕДИНСТВЕННЫЙ надёжный сигнал. До этой строки замок гас лишь потому, что палец,
+   отпущенный над кнопкой площадки, попутно поднимал общий mouseup; мышью-без-отпускания,
+   стилусом или программной подписью замок оставался поверх уже поставленной подписи и
+   продолжал звать «Tap to sign». Родитель читал бы это как «не подписалось». */
+document.addEventListener('fk:ink', function(){ setTimeout(gate,10) }, true);
 document.addEventListener('mouseup', function(){ setTimeout(gate,50) });
 document.addEventListener('touchend', function(){ setTimeout(gate,50) });
 document.addEventListener('DOMContentLoaded', gate);
@@ -157,7 +167,7 @@ function PA_APPLY(fd){
 }
 
 window.FORMKIT_CONFIG = {
-  formType:'parent_responsibilities', version:'v1',
+  formType:'parent_responsibilities', version:'v2',
   title:'Parent Responsibilities', formKey:'parent_responsibilities',
   reset:resetForm, applyPrefill:PA_APPLY,
   /* Семейные клетки — чтобы «ещё один ребёнок» не заставлял набирать имя родителя заново. */
