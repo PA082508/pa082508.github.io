@@ -32,7 +32,6 @@
   .sigbox { position:relative; margin-top:8px; }
   canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
   .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
-  #typed_sig { font-family:'Segoe Script','Brush Script MT',cursive; font-size:26px; color:#111; }
   #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
   #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
 </style>
@@ -89,21 +88,15 @@
     <div class="ack" id="ackline"></div>
 
     <label class="f">Electronic Signature *</label>
-    <div class="sigtabs">
-      <button type="button" class="sigtab on" id="tab_draw" onclick="sigMode('draw')">✍️ Draw</button>
-      <button type="button" class="sigtab" id="tab_type" onclick="sigMode('type')">⌨️ Type</button>
-    </div>
+    <!-- ⛔ ПЕРЕКЛЮЧАТЕЛЬ «Type» УДАЛЁН 22.08 (канон 27.07: только живая подпись).
+         ⭐ Набранное имя не подпись, а утверждение о ней: его может ввести кто угодно, кто
+         знает, как зовут родителя, — а нарисованная линия принадлежит руке. На бумаге о
+         ребёнке разница между «я подписал» и «кто-то написал моё имя» стоит дороже удобства.
+         ⚠️ Слот «Type» был запасным путём стандарта усвоения подписи; запасной путь снят
+         вместе с переключателем — образец по-прежнему усваивается, но рисуется рукой. -->
     <div class="sigbox" id="draw_box">
       <canvas id="sig" data-fk-mint="staff" data-fk-mint-name="#employee_name" width="700" height="90" data-formkit="signature" data-required data-label="Electronic signature"></canvas>
       <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
-    </div>
-    <div id="type_box" style="display:none">
-      <input type="text" id="typed_sig" placeholder="Type your full name as your signature" autocomplete="off">
-      <div class="tf-faces" style="display:flex;gap:6px;margin-top:8px">
-        <button type="button" data-tf="0" onclick="setTypedFace(0)" style="font-family:'Snell Roundhand','Savoye LET',cursive;font-size:22px;line-height:1;padding:2px 14px;border:2px solid #0f4c35;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer">Abc</button>
-        <button type="button" data-tf="1" onclick="setTypedFace(1)" style="font-family:'Bradley Hand','Segoe Script',cursive;font-size:22px;line-height:1;padding:2px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer">Abc</button>
-        <button type="button" data-tf="2" onclick="setTypedFace(2)" style="font-family:'Noteworthy','Marker Felt',cursive;font-size:22px;line-height:1;padding:2px 14px;border:1px solid #c0d8c0;border-radius:8px;background:#fff;color:#0f4c35;cursor:pointer">Abc</button>
-      </div>
     </div>
     <div class="note">Your electronic signature has the same legal effect as a handwritten one. You may request a paper copy at any time.</div>
   </fieldset>
@@ -114,7 +107,6 @@
    Signature mint is role-scoped ("staff") — the staff sample is NEVER offered on parent
    forms and vice-versa (role-scoped adoption is added to form-kit in the staff заход build). */
 function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
-var SIG_METHOD='draw';
 var ORG_NAME='Play Academy, Inc.';
 
 function refreshAck(){
@@ -135,49 +127,22 @@ function applyOrg(org){
 }
 // 3 script faces (canon "type OR draw"), matching the app CountersignField.
 var TYPED_FACES=["'Snell Roundhand','Savoye LET','Apple Chancery',cursive","'Bradley Hand','Segoe Script','Brush Script MT',cursive","'Noteworthy','Marker Felt','Trebuchet MS',cursive"];
-var TYPED_FACE=0;
-function renderTyped(){
-  var c=document.getElementById('sig'); var ctx=c.getContext('2d');
-  ctx.clearRect(0,0,c.width,c.height);
-  var t=g('typed_sig');
-  if(t){ ctx.fillStyle='#111'; ctx.textBaseline='middle'; ctx.textAlign='left';
-    var s=Math.floor(c.height*0.55),pad=14; ctx.font=s+'px '+TYPED_FACES[TYPED_FACE];
-    while(ctx.measureText(t).width>c.width-pad*2 && s>10){ s-=2; ctx.font=s+'px '+TYPED_FACES[TYPED_FACE]; }
-    ctx.fillText(t, pad, c.height/2); }
-  c.dispatchEvent(new Event('fk:ink',{bubbles:true}));
-  if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}   /* type stamps the date */
-}
-function setTypedFace(i){ TYPED_FACE=i;
-  var box=document.getElementById('type_box'); if(box)[].forEach.call(box.querySelectorAll('[data-tf]'),function(b){ b.style.border=(+b.getAttribute('data-tf')===i)?'2px solid #0f4c35':'1px solid #c0d8c0'; });
-  renderTyped();
-}
-function sigMode(m){
-  SIG_METHOD=m;
-  document.getElementById('tab_draw').classList.toggle('on', m==='draw');
-  document.getElementById('tab_type').classList.toggle('on', m==='type');
-  document.getElementById('draw_box').style.display = m==='draw' ? '' : 'none';
-  document.getElementById('type_box').style.display = m==='type' ? '' : 'none';
-  FormKit.clearSig('sig');
-  if(m==='type') renderTyped();
-  else if(window.__stampSigDates) try{ window.__stampSigDates(); }catch(_){}   /* switching to draw clears the date */
-}
 function consentReset(){
-  ['employee_name','position','typed_sig'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
-  FormKit.clearSig('sig'); sigMode('draw'); refreshAck();
+  ['employee_name','position'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  FormKit.clearSig('sig'); refreshAck();
   var sd=document.getElementById('signed_date'); if(sd) sd.value='';  /* stamp clears on reset */
   if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
 }
 window.FORMKIT_CONFIG = {
   formType:'staff_consent', version:'v2', reset:consentReset,
   collect:function(){
-    if(SIG_METHOD==='type') renderTyped();
     var sigDate=g('signed_date')||FormKit.todayISO();
     var fd={
       type:'staff_consent', center_code:FormKit.centerCode(),
       consent_title:'Staff Consent for Electronic Signatures', consent_version:'v2',
       staff_name:g('employee_name'), position:g('position'),
-      signature_method: SIG_METHOD==='type' ? 'typed' : 'drawn',
-      signature_typed_value: SIG_METHOD==='type' ? g('typed_sig') : ''
+      signature_method: 'drawn',
+      signature_typed_value: ''
     };
     return { formData:fd, signatures:{ staff_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
   },
@@ -186,7 +151,6 @@ window.FORMKIT_CONFIG = {
 document.addEventListener('DOMContentLoaded',function(){
   /* signed_date is a signature STAMP — set on signing, not on load (see stamp block) */
   var pn=document.getElementById('employee_name'); if(pn) pn.addEventListener('input', refreshAck);
-  var ts=document.getElementById('typed_sig'); if(ts) ts.addEventListener('input', renderTyped);
   refreshAck();
   fetch('../../enroll-registry.json?t='+Date.now(),{cache:'no-store'})
     .then(function(r){ return r.ok ? r.json() : null; })
@@ -219,7 +183,7 @@ setTimeout(function(){up()?clear():retry();},4000);
 <script defer src="form-kit.js?v=31"></script>
 <script>
 /* Date = signature stamp (canon 2026-07-24): the signed date is auto-set at the moment of
-   signing — draw OR type (typed_sig renders onto the canvas) — read-only, cleared with the
+   signing — DRAW ONLY (канон 27.07) — read-only, cleared with the
    signature, bound 1:1. No gate() here, so we add listeners. Data dates are untouched. */
 (function(){
   var PAIRS=[{sig:'sig',date:'signed_date'}];  /* typed renders onto the canvas → inked() covers both modes */
