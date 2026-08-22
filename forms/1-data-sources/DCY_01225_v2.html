@@ -201,11 +201,39 @@ function resetForm(){
   gate(); if(window.FormKit&&FormKit.status) FormKit.status('Cleared','');
 }
 
-/* Префилл из пакета: имя ребёнка и школа-назначение приходят единым пакетом семьи. */
+/* Префилл из пакета: имя ребёнка приходит единым пакетом семьи. */
 function PA_APPLY(fd){
   var S=function(id,v){var e=document.getElementById('f_'+id); if(e&&v!=null&&!e.value) e.value=v};
   S('child_name', fd.child_name);
 }
+
+/* ⭐ ЧТО ЗАПОЛНЯЕМ ЗА СЕМЬЮ, А ЧТО НЕТ (слово владельца 21–22.08).
+ *
+ * Заполняем то, что и так знаем сами: возит центр — значит «provider vehicle and driver»;
+ * разрешение даётся сегодня — значит сегодняшняя дата. Имя ребёнка приходит пакетом.
+ *
+ * ⛔ ВОДУ И КАТЕГОРИЮ КРЕСЛА НЕ ТРОГАЕМ. Это ответы родителя о безопасности ребёнка:
+ * «нет», поставленное нами и подписанное семьёй, было бы нашим ответом за её подписью.
+ *
+ * ⚠️ И НАЗВАНИЕ ШКОЛЫ МЫ НЕ ЗНАЕМ. В записи его нет ни у одного ребёнка — значит вписать
+ * можно только подсказку в пустую клетку, а не значение. Выдумать «Wickliffe Elementary»
+ * за семью значило бы отправить ребёнка по адресу, которого никто не называл. */
+(function prefillForSchool(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var m=document.getElementById('f_mode_provider');
+    if(m && !m.checked){ m.checked=true; m.dispatchEvent(new Event('change',{bubbles:true})); }
+    var d=document.getElementById('f_permission_date');
+    if(d && !d.value){
+      var t=new Date();
+      d.value=('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear();
+      d.dispatchEvent(new Event('input',{bubbles:true}));
+    }
+    var dest=document.getElementById('f_destinations');
+    if(dest && !dest.value) dest.placeholder='your child\u2019s school';
+    if(window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+    gate();
+  });
+})();
 
 window.FORMKIT_CONFIG = {
   formType:'dcy_01225', version:'v2', title:'Routine Trip Permission (DCY 01225)',
