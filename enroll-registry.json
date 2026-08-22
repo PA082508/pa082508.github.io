@@ -467,16 +467,25 @@
     "parent_responsibilities": {
       "slug": "parent_responsibilities",
       "title": "Parent Responsibilities",
-      "kind": "document",
+      "kind": "signature",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Parent%20Responsibilities.docx"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Parent%20Responsibilities.docx",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/parent-responsibilities-v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Parent%20Responsibilities.docx",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/parent-responsibilities-v2.html",
       "perInstance": false,
-      "history": []
+      "history": [
+        {
+          "at": "2026-08-22",
+          "note": "v2: kit-path fillable. Policy text taken VERBATIM from the owner’s Parent Responsibilities.docx; the .docx stays as v1 history. Was rendered as a \"Fill & sign\" card over a Word file that could not be filled or signed. Файл и строка version в бланке названы v2 так же, как ключ реестра: запись о подаче несёт version, и «v1» в ней резолвился бы в .docx — не тот носитель."
+        }
+      ],
+      "signer": "parent",
+      "intakeMode": "online",
+      "submissionType": "parent_responsibilities"
     },
     "topical_product_consent": {
       "slug": "topical_product_consent",

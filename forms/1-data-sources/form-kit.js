@@ -98,12 +98,19 @@
   // The old text ("open this from your center's packet link or QR") misdiagnoses the
   // commonest case out loud: the parent DID open it from the packet link — the link
   // carried a centre this build of the form does not know. Name what was seen.
-  function unresolvedCenterText() {
+  /* ⚠️ ДО НАЖАТИЯ И ПОСЛЕ — РАЗНЫЕ СЛОВА. «Nothing was sent» на только что открытой форме
+     сообщает о несостоявшейся отправке, которой не было: человек ничего не нажимал.
+     Такая плашка либо пугает, либо (чаще) не читается вовсе как относящаяся к делу — и
+     тогда родитель заполняет всю форму, чтобы упереться в отказ в конце. До нажатия
+     плашка ПРЕДУПРЕЖДАЕТ, после — ОБЪЯСНЯЕТ, что подача не ушла. */
+  function unresolvedCenterText(tried) {
     var c = urlCenterParam();
+    var lead = tried ? '⚠ Nothing was sent. ' : '⚠ ';
     return c
-      ? '⚠ Nothing was sent. This form does not recognise the center “' + c + '” in your link. '
+      ? lead + 'This form does not recognise the center “' + c + '” in your link. '
         + 'Your answers are still here on this device — ask the center for a current packet link or QR and open the form again.'
-      : "⚠ Nothing was sent. This form has no center — open it from your center's packet link or QR, and your answers will still be here.";
+      : lead + "This form has no center — open this form from your center's packet link or QR, "
+        + 'and your answers will still be here.';
   }
   // ОТКАЗ ВСЛУХ — один способ на все отказы submit'а. Тихий отказ (только строка в
   // тулбаре) родитель принимает за отправку: он нажал, ничего не изменилось, страница
@@ -120,11 +127,19 @@
       try { _tbBanner.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
     }
   }
-  function refuseNoCenter() { refuseAloud(unresolvedCenterText()); }
+  function refuseNoCenter() { _centerTried = true; refuseAloud(unresolvedCenterText(true)); }
 
   // ── Center resolution (NO visible picker — ?center= / kiosk / embed only) ────
   var _center = '', _onCenter = [];   // _onCenter: run once the center resolves (no live picker)
-  function centerCode() { return _center || CFG.centerCode || ''; }
+  var _centerTried = false;           // нажимал ли человек Submit — от этого зависят слова плашки
+  /* ⛔ УМОЛЧАНИЯ НЕТ, И ВЗЯТЬСЯ ЕМУ НЕОТКУДА. Здесь стояло `|| CFG.centerCode` — тихая
+     запасная дверь: объяви бланк в своём конфиге любой центр, и форма без ?center= и без
+     токена показала бы чужую плашку, включила бы Submit и подала бы в чужой центр.
+     Замер 22.08: `centerCode:` не объявлен НИ ОДНИМ из 38 бланков и не приходит из embed —
+     дверь стояла открытой и никем не использовалась. Убрана.
+     ⭐ Центр приходит ровно из трёх мест, и каждое НАЗЫВАЕТ его вслух: ?center= в адресе,
+     PA_KIOSK на стойке, embed-inject от приложения. Четвёртого — «по умолчанию» — нет. */
+  function centerCode() { return _center; }
   function centerUuid() { return CENTERS[centerCode()] || null; }
 
   // ── Signature pads (auto-init every [data-formkit="signature"]) ──────────────
@@ -162,8 +177,31 @@
   // window.PA_KIOSK anywhere. When a shared-tablet kiosk lands, the sample's TTL
   // must be split from the data TTL, or a day-old signature is offered to the
   // next person. Until then one timer is correct.
-  var PK_KEY = 'pa_packet_profile', PK_TTL = 24 * 60 * 60 * 1000;
-  function pkLoad() { try { var r = JSON.parse(localStorage.getItem(PK_KEY)); if (!r || Date.now() - r.ts > PK_TTL) { localStorage.removeItem(PK_KEY); return null; } return r; } catch (_) { return null; } }
+  /* ⭐⭐ СРОК ПАМЯТИ = СРОК ССЫЛКИ: СЕМЬ ДНЕЙ (поправка владельца 22.08).
+   *
+   * Сутки были слишком коротки — семья заполняет пакет не в один присест. Бессрочно
+   * тоже неверно: это чужой адрес и чужая подпись на устройстве, которое может оказаться
+   * общим.
+   *
+   * ⭐ СЕМЬ ДНЕЙ ВЗЯТЫ НЕ С ПОТОЛКА: ровно столько живёт именная ссылка
+   * (`mint_prefill_token`). Один срок на две вещи, которые семья видит как одно — «пока
+   * моя ссылка работает, моя работа не пропадёт». Разойдись они, и родитель на восьмой
+   * день открыл бы живую ссылку с пустой формой либо мёртвую ссылку с сохранёнными
+   * ответами; и то и другое читается как поломка.
+   *
+   * ⛔ КОНСТАНТА ОДНА. Срок в чистке и срок в плашке обязаны быть одним числом: два
+   * числа об одном сроке разойдутся на первой же правке — и разойдутся молча. */
+  var PK_KEY = 'pa_packet_profile';
+  var PK_TTL = 7 * 24 * 60 * 60 * 1000;
+  /* ⚠️ Образец подписи живёт ТЕМ ЖЕ сроком: одна константа — одно обещание человеку. */
+  var SIG_TTL = PK_TTL;
+  function pkLoad() {
+    try {
+      var r = JSON.parse(localStorage.getItem(PK_KEY));
+      if (!r || Date.now() - r.ts > PK_TTL) { localStorage.removeItem(PK_KEY); return null; }
+      return r;
+    } catch (_) { return null; }
+  }
   /* `extra` несёт то, что живёт РЯДОМ с данными пакета — например, список следующих
      форм цепочки. Без него любой вызов pkWrite стирал бы его молча. */
   function pkWrite(data, extra) {
@@ -253,7 +291,7 @@
   function sigSampleLoad(scope) {
     if (!samplesOn()) return null;                                // conserved: the shelf is not read
     scope = scope || SIG_SCOPE_DEFAULT;
-    function read(k) { try { var r = JSON.parse(localStorage.getItem(k)); if (!r || !r.png || Date.now() - r.ts > PK_TTL) return null; return r; } catch (_) { return null; } }
+    function read(k) { try { var r = JSON.parse(localStorage.getItem(k)); if (!r || !r.png || Date.now() - r.ts > SIG_TTL) return null; return r; } catch (_) { return null; } }
     var r = read(sigSampleKey(scope));
     // Legacy bridge: pre-scope kits wrote ONE unscoped key. Only a parent form could
     // ever have minted into it (Staff Consent was never live), so honour it for the
@@ -1431,30 +1469,32 @@ document.addEventListener('click', function (e) {
     try { window.scrollTo(0, 0); } catch (e) {}
   }
   // ── Session-life notice ──────────────────────────────────────────────────────
-  // The kit keeps your answers AND signature on THIS device for PK_TTL (24h), so a
+  // The kit keeps your answers AND signature on THIS device for PK_TTL (7 days), so a
   // family can fill the packet across the day. Tell them plainly: nothing is on a
   // server until Submit; a different phone or browser starts empty; after the day
   // it clears. Shown once per TTL window — the packet's later forms in the same
   // sitting stay quiet (flag carries the same 24h life as the data it describes).
+  /* ⭐ ПЛАШКА ГОВОРИТ ЧИСЛО ИЗ ТОЙ ЖЕ КОНСТАНТЫ, что и чистка. Написать срок словами
+   * значило бы завести второе число об одном сроке — и оно разойдётся первым же. */
   var NOTICE_KEY = 'pa_fk_notice_ts';
   function sessionNotice() {
     try { var ts = +localStorage.getItem(NOTICE_KEY); if (ts && Date.now() - ts < PK_TTL) return; } catch (_) {}
     if ($('.fk-life-notice')) return;
-    var hrs = Math.round(PK_TTL / 3600000);
+    var days = Math.round(PK_TTL / 86400000);
     var b = document.createElement('div'); b.className = 'fk-life-notice fk-print-hidden';
     b.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;background:#fef3c7;color:#92400e;padding:11px 16px;font:600 13px/1.45 Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.12)');
     var txt = document.createElement('span');
-    txt.innerHTML = '⏳ This form saves your answers and signature <strong>on this device for ' + hrs + ' hours</strong>, so you can finish later — but on the same phone and browser. Nothing is sent to the center until you press Submit. After ' + hrs + ' hours, or on a different device, it starts fresh.';
+    txt.innerHTML = '⏳ Your answers and signature are kept <strong>on this device for ' + days
+      + ' days</strong>, so you can finish later — on the same phone and browser. Nothing is sent to '
+      + 'the center until you press Submit. After that, or on a different device, it starts fresh.';
     var ok = document.createElement('button'); ok.type = 'button'; ok.textContent = 'Got it';
     ok.setAttribute('style', 'background:#92400e;color:#fff;border:none;border-radius:8px;padding:7px 15px;font:700 12px Arial,sans-serif;cursor:pointer;flex:none');
     ok.addEventListener('click', function () { b.remove(); });
     b.appendChild(txt); b.appendChild(ok);
     document.body.insertBefore(b, document.body.firstChild);
-    // Mark seen on SHOW, not on dismiss — the packet index (parent-forms.html)
-    // shares this exact key, so whichever surface the parent hits first (usually
-    // the index) shows it once and every later form stays quiet for the window.
     try { localStorage.setItem(NOTICE_KEY, String(Date.now())); } catch (_) {}
   }
+
   /* fk:one-child:start — ОДНО ПОЛЕ = ОДИН РЕБЁНОК, ВКЛЮЧАЯ БЛИЗНЕЦОВ ───────────
    *
    * ⭐ ПРЕЦЕДЕНТ RIFE, 14.08. Семья отправила DCY 01234 и e-sign consent, вписав в
@@ -1644,7 +1684,11 @@ document.addEventListener('click', function (e) {
         // the form works standalone here, and offer to reopen it in a real tab.
         document.documentElement.classList.remove('pa-embed');
         st.active = false;
-        var center = q.get('center'); if (center) setResolvedCenter(center); else try { resolveCenter(); } catch (_) {}
+        /* ⚠️ РАНЬШЕ ЛЮБОЙ непустой ?center= съедал остальные пути: `setResolvedCenter`
+           молча отвергал неизвестный код, а ветка else уже не выполнялась — и стойка
+           (PA_KIOSK) оставалась неопрошенной. Теперь решает ОДИН разбор — resolveCenter,
+           который и проверяет код, и знает порядок источников. */
+        try { resolveCenter(); } catch (_) {}
         var bar = document.createElement('div'); bar.className = 'fk-print-hidden';
         bar.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#8a6d00;color:#fff;padding:10px 16px;font:600 13px/1.4 Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap');
         var msg = document.createElement('span'); msg.textContent = "This form couldn't load inside the app — you can complete it here, or open it in your browser.";
@@ -1976,7 +2020,7 @@ document.addEventListener('click', function (e) {
     var chip = $('[data-formkit="center-chip"]');
     var code = centerCode(), info = CENTERS_INFO[code], has = !!centerUuid();
     if (chip) { if (info) { chip.textContent = '📍 ' + info.name.replace(/^Play Academy\s+/, ''); chip.style.display = ''; } else { chip.style.display = 'none'; } }
-    if (_tbBanner) { _tbBanner.style.display = has ? 'none' : ''; if (!has) _tbBanner.textContent = unresolvedCenterText(); }
+    if (_tbBanner) { _tbBanner.style.display = has ? 'none' : ''; if (!has) _tbBanner.textContent = unresolvedCenterText(_centerTried); }
     // Finding #6 is enforced in submit() — no centre resolved, no write, ever. The
     // button nevertheless stays ENABLED: a disabled button eats the click and answers
     // nothing, which is how a fully-filled, fully-signed form went four presses with no
@@ -2031,7 +2075,7 @@ document.addEventListener('click', function (e) {
     (CFG.special || []).forEach(function (b) { var el = tbBtn('fk-tb-special', b.label); if (b.onClick) el.addEventListener('click', b.onClick); row.appendChild(el); });
     var st = document.createElement('span'); st.id = 'st'; st.className = 'fk-tb-status'; st.setAttribute('data-formkit', 'status'); row.appendChild(st);
     _tbBanner = document.createElement('div'); _tbBanner.className = 'fk-tb-banner fk-print-hidden';
-    _tbBanner.textContent = "⚠ Please open this form from your center's packet link or QR.";
+    _tbBanner.textContent = unresolvedCenterText(false);   // один источник слов, не второй текст рядом
     tb.insertBefore(row, tb.firstChild); tb.insertBefore(brand, row); tb.appendChild(_tbBanner);
     _tbSubmit = bSubmit;
     refreshToolbarCenter(); refreshCounter();
@@ -2082,7 +2126,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 26,
+    KIT: 28,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },

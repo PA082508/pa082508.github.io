@@ -109,7 +109,15 @@
 <script>
 (function () {
   'use strict';
-  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 24 * 60 * 60 * 1000;   // 24h — match form-kit PK_TTL (2026-07-17)
+  /* ⛔ ЭТА СТРОКА ОБЕЩАЛА ТО, ЧЕГО НЕ ДЕЛАЛА. Здесь стояло 24 часа с комментарием
+     «match form-kit PK_TTL», и ровно до правки v27 это было правдой. Кит переехал на семь
+     дней — комментарий остался, а число нет: витрина стирала память семьи через сутки,
+     плашка на этой же странице обещала семь дней, а кит их держал. Три места, две правды.
+     ⭐ Срок здесь и PK_TTL в ките — ОДНО обещание человеку: «пока жива твоя ссылка, жива
+     твоя работа». Меняется — меняется в обоих, и число в плашке считается из константы,
+     а не пишется рукой. */
+  var PACKET_KEY = 'cacfp_packet_v1', PACKET_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  var PACKET_TTL_DAYS = Math.round(PACKET_TTL_MS / 86400000);
   var CENTER_NAMES = { ridge: 'Wickliffe', pearl: 'Parma Heights', alpha: 'Highland Heights' };
   var SET_TITLES = { starter: 'Welcome — enrollment packet', toddler_preschool: 'Enrollment packet', infant: 'Infant enrollment packet', admission: 'Admission packet', staff: 'Welcome to the team' };
   // Audience branding: the packet declares audience:'staff' and the page stops talking
@@ -137,7 +145,11 @@
     try { var ts = +localStorage.getItem(KEY); if (ts && Date.now() - ts < TTL) return; } catch (e) {}
     var bar = document.createElement('div'); bar.className = 'lifebar';
     var span = document.createElement('span');
-    span.innerHTML = '⏳ Your answers and signature are kept <strong>on this device for 24 hours</strong>, so you can finish later — on the same phone and browser. Nothing is sent to the center until you press <strong>Submit</strong> on a form. After a day, or on a different device, it starts fresh.';
+    /* ⛔ v27: срока больше нет — и плашки о нём тоже. Осталось то, что осталось правдой:
+       ответы живут на ЭТОМ устройстве, и до Submit центр их не видит. */
+    /* ⭐ Семь дней — ровно столько живёт именная ссылка: один срок на две вещи, которые
+       семья видит как одно. Число здесь и в ките берётся из одной константы. */
+    span.innerHTML = '⏳ Your answers and signature are kept <strong>on this device for ' + PACKET_TTL_DAYS + ' days</strong>, so you can finish later — on the same phone and browser. Nothing is sent to the center until you press <strong>Submit</strong> on a form. After that, or on a different device, it starts fresh.';
     var x = document.createElement('button'); x.type = 'button'; x.className = 'lx'; x.textContent = 'Got it';
     x.addEventListener('click', function () { bar.parentNode && bar.parentNode.removeChild(bar); });
     bar.appendChild(span); bar.appendChild(x);
@@ -333,16 +345,34 @@
         var b = document.createElement('div'); b.id = 'fk-before';
         b.setAttribute('style','background:#f2f7f4;border:1.5px solid #cfe0d5;border-radius:10px;'
           + 'padding:11px 14px;margin:0 0 14px;font:13.5px/1.55 Arial,sans-serif;color:#14281f');
-        b.innerHTML = '<b>Before you start.</b> Start with the first form — it signs the rest for you. '
-          + 'Your answers stay on this phone for 24 hours, so you can finish later. '
-          + 'Some papers appear only after you tell us they are needed. '
+        b.innerHTML =
+            '<b>Before you start.</b> Work down the list in order — the first form signs the rest for you. '
+          + 'Your answers stay on this phone for ' + PACKET_TTL_DAYS + ' days, so you can stop and come back. '
           + '<button type="button" id="fk-more" style="background:none;border:none;color:#0f4c35;'
           + 'text-decoration:underline;cursor:pointer;font:inherit;padding:0">Read more</button>'
+          /* ⭐ МНОГОДЕТНЫМ — ОТДЕЛЬНЫМ БЛОКОМ, А НЕ СТРОКОЙ В АБЗАЦЕ. Мать троих читает
+             «одна форма на ребёнка» как «заполнить всё трижды с нуля» и откладывает
+             пакет. Выделенный блок говорит второе предложение сразу: заново — только
+             детское. */
+          + '<div style="margin-top:9px;padding:9px 11px;background:#fff;border:1.5px solid #0f4c35;'
+          + 'border-radius:8px"><b>More than one child?</b> One form per child — twins too. '
+          + 'After you sign a form, press <b>“Fill this form for another child”</b>: your address, '
+          + 'phones and emergency contacts carry over, only the child’s own details are blank. '
+          /* ⚠️ ИСКЛЮЧЕНИЕ НАЗЫВАЕТСЯ ИСКЛЮЧЕНИЕМ. «Одна форма на ребёнка» и «одна на семью»
+             в соседних строках без слова «exception» читаются как противоречие, и семья
+             выбирает то, что короче. */
+          + 'Every form is one per child — <b>with one exception</b>: the Income Eligibility '
+          + 'Application (IEA) is <b>one per family</b>. It comes last; list all your children '
+          + 'on it.</div>'
+          /* ⚠️ Про здоровье — здесь же: иначе семья узнаёт о второй бумаге после подписи. */
+          + '<div style="margin-top:7px">If you tell us a child has a health condition or takes a '
+          + 'medicine, the matching papers appear in this list by themselves. For a medicine, '
+          + '<b>photograph the pharmacy label</b> — with it no separate note from the doctor is needed.</div>'
           + '<div id="fk-more-body" style="display:none;margin-top:8px;color:#33403a">'
-          + 'One form is filled for one child — twins included. After you sign a form you can press '
-          + '“Fill this form for another child”: the family details carry over, the child’s do not. '
-          + 'If you tell us a child has a health condition or takes a medicine, the matching paper is '
-          + 'added to this list for you. Nothing is sent to the center until you press Submit on a form.'
+          + 'Order: consent first, then the enrolment form for each child, then anything the answers '
+          + 'add, and the income form last. Nothing is sent to the center until you press Submit on a '
+          + 'form — a half-filled form is yours alone until then. Papers marked “Read” need no '
+          + 'signature; papers marked “Print &amp; bring back” are filled by hand and handed in.'
           + '</div>';
         var listEl = document.getElementById('list');
         listEl.parentNode.insertBefore(b, listEl);
@@ -459,7 +489,17 @@
           + '<div class="right"><span class="miniqr" title="Scan / share this form"><canvas></canvas></span>'
           + (link ? '<a class="open" target="_blank" rel="noreferrer">Open</a>' : '') + '</div>';
         card.querySelector('.t').textContent = label;
-        card.querySelector('.d').textContent = note;
+        /* ⭐ ТА ЖЕ ФРАЗА НА САМОЙ КАРТОЧКЕ. Родитель, дошедший до формы дохода через час
+           после рамки, её уже не помнит — а ошибётся он именно здесь, заполнив её на
+           каждого ребёнка. */
+        /* ⭐ ТА ЖЕ ФРАЗА НА САМОЙ КАРТОЧКЕ, И ПЕРВОЙ. Родитель, дошедший до формы дохода
+           через час после рамки, её уже не помнит — а ошибётся он именно здесь, заполнив
+           её на каждого ребёнка. Дописываем к тексту реестра, а не заменяем его: там своя
+           правда (срок 12 месяцев), и терять её незачем. */
+        card.querySelector('.d').textContent = s.key === 'iea'
+          ? 'One per family — not one per child. List all your children on it.'
+            + (note ? ' ' + note : '')
+          : note;
         if (link) { card.querySelector('.open').href = openHref; }
         list.appendChild(card);
         if (link) {

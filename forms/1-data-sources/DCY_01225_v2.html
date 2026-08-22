@@ -190,6 +190,12 @@ function gate(){
   }
   stampSigDate();
 }
+/* ⭐ ПОДПИСЬ СООБЩАЕТ О СЕБЕ САМА. Кит после «Use signature» шлёт на канву `fk:ink` —
+   это ЕДИНСТВЕННЫЙ надёжный сигнал. До этой строки замок гас лишь потому, что палец,
+   отпущенный над кнопкой площадки, попутно поднимал общий mouseup; мышью-без-отпускания,
+   стилусом или программной подписью замок оставался поверх уже поставленной подписи и
+   продолжал звать «Tap to sign». Родитель читал бы это как «не подписалось». */
+document.addEventListener('fk:ink', function(){ setTimeout(gate,10) }, true);
 document.addEventListener('mouseup', function(){ setTimeout(gate,50) });
 document.addEventListener('touchend', function(){ setTimeout(gate,50) });
 
@@ -254,6 +260,6 @@ window.FORMKIT_CONFIG = {
   }
 };
 </script>
-<script src="form-kit.js?v=26"></script>
+<script src="form-kit.js?v=28"></script>
 </body>
 </html>
