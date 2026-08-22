@@ -135,11 +135,21 @@ var FIELDS = [
   {id:'health_n',   p:1,t:'cb',  x:60,y:1456,excl:'health'},
 
   // ── PAGE 2 ──────────────────────────────────────────────────────────────────
-  /* ⛔ ПАРА БЛИЗНЕЦОВ НЕ ОБЯЗАТЕЛЬНА (владелец, 21.08). Бумага печатает две строки, но
-     заполняет их только семья с двойней, а гард «одна форма — один ребёнок» такую подачу
-     и вовсе отбивает. Требовать их у всех значило объявить неполными все одиночные формы. */
-  {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,fk:'child_name'},
-  {id:'dob2',       p:2,t:'text',x:892,y:130,w:301,h:36,fk:'dob',ph:'MM/DD/YYYY',date:1},
+  /* ⭐⭐ ЭТО ШАПКА ВТОРОЙ СТРАНИЦЫ, А НЕ ВТОРОЙ РЕБЁНОК (замер 22.08, кит v26).
+     Я год читал эти клетки как «пару близнецов» — неверно: у всех 46 живых подач имя здесь
+     равно имени ТОГО ЖЕ ребёнка, расхождений ноль. Бумага просто повторяет имя и дату
+     наверху второго листа, чтобы страница не потерялась.
+
+     ⛔ ЦЕНА ОШИБКИ БЫЛА ЖИВОЙ. Пока это были обычные поля с каноническим именем, память
+     пакета устройства подставляла в них ПОСЛЕДНЕЕ введённое на телефоне — то есть данные
+     ПРЕДЫДУЩЕГО ребёнка: у Liam Napier на стр. 2 стояла дата рождения его сестры. Трое из
+     сорока шести.
+
+     ПОЧИНКА: шапка — ЗЕРКАЛО стр. 1. Ввода нет, канонического имени нет (значит ни память
+     пакета, ни префилл сюда не дотянутся), значение приходит только из своих же клеток
+     страницы 1. Расхождение стало НЕПРЕДСТАВИМЫМ, а не «поймаем на приёме». */
+  {id:'child_name2',p:2,t:'text',x:58,y:130,w:800,h:36,mirror:'child_name'},
+  {id:'dob2',       p:2,t:'text',x:892,y:130,w:301,h:36,mirror:'dob'},
   {id:'development',p:2,t:'area',x:58,y:228,w:1150,h:22,r:1,alt:'na_dev',label:'Development concerns — a note or N/A'},
   {id:'na_dev',     p:2,t:'cb',  x:62,y:270},
   {id:'accommod',   p:2,t:'area',x:58,y:322,w:1150,h:38,r:1,alt:'na_acc',label:'Accommodations — a note or N/A'},
@@ -213,6 +223,16 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       if(f.addr){ el.setAttribute('data-fk-address','1'); el.setAttribute('data-fk-addr-state','f_state'); } // initAddress: city/zip via fk, state explicit
     }
     el.id='f_'+f.id;
+    if(f.mirror){
+      /* Зеркало: не вводится, не подсказывается, не попадает в счётчик обязательных. */
+      el.readOnly=true; el.tabIndex=-1;
+      el.setAttribute('data-fk-mirror','f_'+f.mirror);
+      el.setAttribute('aria-readonly','true');
+      el.style.background='rgba(240,244,241,0.55)';
+      el.style.borderBottomColor='#b8c2bb';
+      el.style.color='#333';
+      el.title='Copied from page 1 — the same child';
+    }
     if(f.fk) el.setAttribute('data-fk-field',f.fk);
     if(f.r && f.t!=='sig'){ el.setAttribute('data-required',''); el.setAttribute('data-label',f.label||f.id); }
     /* ⭐ ВОПРОС-ВЫБОР: «примечание либо N/A» закрывается любой из двух клеток.
@@ -347,6 +367,7 @@ function healthPlanNote(){
 }
 
 function gate(){
+  mirrorPage2();
   syncImpliedAnswers();
   healthPlanNote();
   schoolBlock();
@@ -434,6 +455,19 @@ function revealByFacts(){
   }
 }
 document.addEventListener('input', function(e){ if(e.target&&/^f_(dob|first_day)$/.test(e.target.id||'')) revealByFacts() });
+
+/* ⭐ ЗЕРКАЛО ОБНОВЛЯЕТСЯ ОТ ИСТОЧНИКА, А НЕ НАОБОРОТ. Одно значение — один носитель;
+   вторая клетка лишь показывает его на своём листе. */
+function mirrorPage2(){
+  document.querySelectorAll('[data-fk-mirror]').forEach(function(el){
+    var src=document.getElementById(el.getAttribute('data-fk-mirror'));
+    if(!src) return;
+    var v=(src.value||'').trim();
+    if(el.value!==v){ el.value=v; }
+  });
+}
+document.addEventListener('input', mirrorPage2, true);
+document.addEventListener('change', mirrorPage2, true);
 
 document.addEventListener('mouseup', function(){ setTimeout(gate,50); });
 document.addEventListener('touchend', function(){ setTimeout(gate,50); });
@@ -634,6 +668,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=25"></script>
+<script defer src="form-kit.js?v=26"></script>
 </body>
 </html>

@@ -2082,7 +2082,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 25,
+    KIT: 26,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
