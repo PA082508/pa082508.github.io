@@ -160,7 +160,21 @@ function calcAge(){var d=g('f_dob');if(!d)return;var b=new Date(d),n=new Date(),
 function fmtPhone(e){var d=e.value.replace(/\D/g,'').slice(0,10);e.value=d.length>6?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):d.length>3?'('+d.slice(0,3)+') '+d.slice(3):d}
 function ctrPick(){var e=document.getElementById('ctr');if(!e)return;e.classList.remove('need');if(e.value){var f=document.getElementById('f_center');if(f&&!f.value.trim())f.value=e.options[e.selectedIndex].text}if(window.FormKit)FormKit.savePacket()}
 function clear_(){document.querySelectorAll('[id^=f_]').forEach(function(e){if(e.tagName!=='CANVAS')e.value=''});document.querySelectorAll('[id^=cb_]').forEach(function(e){e.checked=false});if(window.FormKit)FormKit.clearSig('f_parent_sig');var x=document.getElementById('exp');if(x)x.textContent='';if(window.FormKit)FormKit.status('Cleared','')}
-function PA_APPLY(fd){var S=function(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v},C=function(id,v){var e=document.getElementById(id);if(e)e.checked=!!v};S('f_center',fd.center_name);S('f_child_name',fd.child_name);S('f_dob',fd.birthdate);if(fd.birthdate)calcAge();S('f_phone',fd.day_phone);if(fd.mailing){S('f_street',fd.mailing.street);S('f_city',fd.mailing.city);S('f_zip',fd.mailing.zip)}S('f_parent_name',fd.parent_name);S('f_parent_dob',fd.parent_birthdate);S('f_parent_email',fd.parent_email);C('cb_varies',fd.schedule_varies);if(fd.schedule)DAYS.forEach(function(d){var x=fd.schedule[d];if(!x)return;C('cb_'+d,x.in_care);S('f_'+d+'_arr1',x.arr1);S('f_'+d+'_dep1',x.dep1);S('f_'+d+'_arr2',x.arr2);S('f_'+d+'_dep2',x.dep2);if(x.meals)MEALS.forEach(function(m){C('cb_'+d+'_'+m,x.meals[m])})})}
+function PA_APPLY(fd){var S=function(id,v){var e=document.getElementById(id);if(e&&v!=null)e.value=v},C=function(id,v){var e=document.getElementById(id);if(e)e.checked=!!v};S('f_center',fd.center_name);S('f_child_name',fd.child_name);S('f_dob',fd.birthdate);if(fd.birthdate)calcAge();S('f_phone',fd.day_phone);if(fd.mailing){S('f_street',fd.mailing.street);S('f_city',fd.mailing.city);S('f_zip',fd.mailing.zip)}S('f_parent_name',fd.parent_name);S('f_parent_dob',fd.parent_birthdate);S('f_parent_email',fd.parent_email);C('cb_varies',fd.schedule_varies);if(fd.schedule)DAYS.forEach(function(d){var x=fd.schedule[d];if(!x)return;C('cb_'+d,x.in_care);S('f_'+d+'_arr1',x.arr1);S('f_'+d+'_dep1',x.dep1);S('f_'+d+'_arr2',x.arr2);S('f_'+d+'_dep2',x.dep2);if(x.meals)MEALS.forEach(function(m){C('cb_'+d+'_'+m,x.meals[m])})});
+  /* ⭐ РАСПИСАНИЕ ИЗ НОСИТЕЛЯ ДНЕЙ (`_schedule`, ключ с подчёркиванием — это материал, а не
+     поле бланка). Приезжает семь дней и ОБЕ пары времён: впервые без сжатия — раньше
+     носитель умел Пн–Пт и одну пару, и школьник «утром и после школы» в него не помещался.
+     ⛔ ПРИЁМЫ ПИЩИ НЕ ТРОГАЕМ: какие из них в этот день — отдельный вопрос бланка, и
+     выводить его из часов нельзя. Семья отвечает сама.
+     ⛔ И НЕ ЗАТИРАЕМ УЖЕ ВВЕДЁННОЕ: если человек начал заполнять, его буквы главнее нашей
+     подстановки. */
+  if(fd._schedule)DAYS.forEach(function(d){var x=fd._schedule[d];if(!x)return;
+    var box=document.getElementById('cb_'+d); if(box&&!box.checked)box.checked=true;
+    [['arr1',x.arr1],['dep1',x.dep1],['arr2',x.arr2],['dep2',x.dep2]].forEach(function(pair){
+      var e=document.getElementById('f_'+d+'_'+pair[0]);
+      if(e&&!e.value&&pair[1])e.value=String(pair[1]).slice(0,5);   // 'HH:MM:SS' → 'HH:MM'
+    });
+  })}
 window.FORMKIT_CONFIG={
   formType:'cacfp_enrollment',version:'v11',title:'CACFP Enrollment',expiry:'12 mo',reset:clear_,applyPrefill:PA_APPLY,
   collect:function(){
@@ -198,7 +212,7 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=32"></script>
+<script defer src="form-kit.js?v=33"></script>
 <style>
   .fkpad-trigger{font:inherit;font-size:12px;font-weight:700;padding:6px 14px;border:1px solid #0f4c35;border-radius:8px;background:#0f4c35;color:#fff;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}
   .fkpad-done{font-size:11px;color:#0f4c35;font-weight:700;margin-left:8px;background:#fff;padding:1px 5px;border-radius:4px}
