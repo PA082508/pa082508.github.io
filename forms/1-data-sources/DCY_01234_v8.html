@@ -327,6 +327,16 @@ function healthPlanNote(){
   var host=y.parentNode; if(!host) return;
   var n=document.getElementById('fk-health-note');
   if(y.checked){
+    /* ⭐ Окно — ПОСЛЕ ответа, не при загрузке: пока родитель не поставил «Yes» сам,
+       говорить не о чем. Префилл прошлогодней формы окна не поднимает — за это отвечает
+       флаг «тронуто рукой в этой сессии». */
+    if(window.FormKit&&FormKit.tell&&y.getAttribute('data-fk-touched')){
+      FormKit.tell('health_plan','Please complete the Health Care Plan (DCY 01236)',
+        'You told us this child has a health condition, so we need one more paper. '
+        + 'You will find it in your packet below — and we will open it for you right after '
+        + 'you sign this form.');
+      if(FormKit.reveal) FormKit.reveal('dcy_01236');
+    }
     if(!n){
       n=document.createElement('div'); n.id='fk-health-note';
       n.setAttribute('style','margin-top:6px;font:400 12.5px/1.45 Arial,sans-serif;color:#0f4c35;background:#e8f5ec;border-left:3px solid #0f4c35;padding:6px 9px;border-radius:4px');
@@ -564,6 +574,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=23"></script>
+<script defer src="form-kit.js?v=24"></script>
 </body>
 </html>

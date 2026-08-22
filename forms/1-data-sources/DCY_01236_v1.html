@@ -604,6 +604,23 @@ window.FORMKIT_CONFIG={
   }
 };
 
+/* ⭐ ОКНО ПРО РАЗРЕШЕНИЕ — по одному на НАЗВАННЫЙ препарат (кит v24).
+   Родитель, вписавший лекарство в план ухода, узнаёт про отдельную бумагу здесь и
+   сейчас, а не письмом через три дня. Окно говорится один раз на препарат. */
+document.addEventListener('DOMContentLoaded',function(){
+  [1,2,3].forEach(function(i){
+    var el=document.getElementById('med'+i+'Name'); if(!el) return;
+    el.addEventListener('blur',function(){
+      var nm=(el.value||'').trim(); if(!nm) return;
+      if(!(window.FormKit&&FormKit.tell)) return;
+      FormKit.tell('med_'+nm.toLowerCase(),'Please complete the Medication Authorization (DCY 01217)',
+        'You named a medicine — ' + nm + '. Each medicine needs its own signed permission '
+        + 'before we may give it. You will find the form in your packet, and we will open it '
+        + 'for you right after you sign this plan.');
+      if(FormKit.reveal) FormKit.reveal('dcy_01217', nm);
+    });
+  });
+});
 document.addEventListener('DOMContentLoaded',function(){
   /* Administration-log rows (print fidelity) */
   var body=$id('logRows');
@@ -653,6 +670,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=23"></script>
+<script defer src="form-kit.js?v=24"></script>
 </body>
 </html>
