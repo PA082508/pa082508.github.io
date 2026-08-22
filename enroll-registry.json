@@ -445,14 +445,19 @@
       "kind": "document",
       "section": "our_documents",
       "requiringOrg": "Play Academy",
-      "current": "v2",
+      "current": "v3",
       "versions": {
         "v1": "https://pa082508.github.io/forms/3-library/our-documents/Child%20Release%20Authorization.docx",
-        "v2": "https://pa082508.github.io/forms/1-data-sources/Child_Release_Authorization_v2.html"
+        "v2": "https://pa082508.github.io/forms/1-data-sources/Child_Release_Authorization_v2.html",
+        "v3": "https://pa082508.github.io/forms/1-data-sources/Child_Release_Authorization_v3.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Child_Release_Authorization_v2.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Child_Release_Authorization_v3.html",
       "perInstance": false,
       "history": [
+        {
+          "at": "2026-08-22",
+          "note": "v3: блок фото/видео УДАЛЁН — согласие переехало в денежный договор (Start_Form_v2, кит v31), где оно уровнями, с инициалами и отдельным флагом отказа. Одно согласие — одно место: пока их было два, у ребёнка могло стоять «разрешено» на одной бумаге и «не отмечено» на другой. Пять слотов «имя + родство» заменены ДВУМЯ полными: имя · телефон · отношение. Лучше два человека, которых мы узнаём, чем пять, которых не узнаём; «+ add» нет нарочно — третьего добавляют на стойке, где человека видно живьём. Порт: source=named_by_parent и granted_pickup ЯВНО, а не выводится из наличия строки. Подпись — только Draw: переключатель «Type» снят (канон 27.07), дата — автоматический штамп."
+        },
         {
           "at": "2026-07-12",
           "note": "Stage 2 (DARK): Child_Release_Authorization_v2.html — pure form-kit kit-form (no overlay); pickup list ×5 + comments + photo/video consent + adoption signature; form-speed DoD full; submission_type=child_release_authorization → children Inbox."
