@@ -171,6 +171,7 @@
       var rec = { ts: Date.now(), data: data };
       if (extra && extra.next) rec.next = extra.next;
       else { var prev = pkLoad(); if (prev && prev.next) rec.next = prev.next; }
+      var pv = pkLoad(); if (pv && pv.reveal) rec.reveal = pv.reveal;
       localStorage.setItem(PK_KEY, JSON.stringify(rec));
     } catch (_) {}
   }
@@ -1174,6 +1175,70 @@ document.addEventListener('click', function (e) {
     } catch (_) {}
   }
 
+  /* ⭐⭐ ОКНО «GOT IT» — ДЛЯ ТОГО, КТО ПРОЛИСТЫВАЕТ (v24, заказ владельца 21.08).
+   *
+   * Строка под вопросом — для того, кто читает форму. Переход после Submit — для того,
+   * кто дошёл до конца. Окно — для третьего: он листает и не читает ни строки. Это три
+   * РАЗНЫХ человека, а не три способа сказать одно.
+   *
+   * ПЯТЬ ПРАВИЛ, без которых окно станет помехой (все — по слову владельца):
+   *  ① один раз на ответ: снял и снова поставил «Yes» — окна больше нет. Окно,
+   *    выскакивающее дважды, учит закрывать не читая;
+   *  ② не блокирует: «Got it», крестик, клик по фону, Esc — четыре выхода. Модальное
+   *    окно без выхода на телефоне означает брошенную форму;
+   *  ③ только при «Yes» (и при названном лекарстве). «Не спрашивали» — не повод;
+   *  ④ ПОСЛЕ ответа, а не при загрузке — даже если ответ приехал префиллом: окно на
+   *    старте это крик в пустоту, семья ещё ничего не сказала;
+   *  ⑤ фокус возвращается туда, откуда ушёл. */
+  var _saidOnce = {};
+  function fkTell(key, title, text) {
+    if (_saidOnce[key]) return;                 // ① один раз на ответ
+    _saidOnce[key] = true;
+    var back = document.activeElement;          // ⑤ куда вернуть фокус
+    var ov = document.createElement('div');
+    ov.className = 'fk-tell-ov fk-print-hidden';
+    ov.setAttribute('style', 'position:fixed;inset:0;z-index:10000;background:rgba(15,32,24,.55);'
+      + 'display:flex;align-items:center;justify-content:center;padding:18px');
+    var box = document.createElement('div');
+    box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true');
+    box.setAttribute('style', 'background:#fff;border-radius:14px;max-width:430px;width:100%;'
+      + 'padding:20px 22px 18px;font:400 14px/1.55 Arial,sans-serif;color:#14281f;'
+      + 'box-shadow:0 18px 50px rgba(0,0,0,.35)');
+    box.innerHTML = '<div style="font:700 16px/1.35 Arial,sans-serif;color:#0f4c35;margin-bottom:8px"></div>'
+      + '<div class="fk-tell-body"></div>'
+      + '<div style="margin-top:16px;text-align:right"><button type="button" class="fk-tell-ok" '
+      + 'style="font:700 14px Arial,sans-serif;background:#0f4c35;color:#fff;border:none;'
+      + 'border-radius:9px;padding:10px 22px;cursor:pointer">Got it</button></div>';
+    box.firstChild.textContent = title;
+    box.querySelector('.fk-tell-body').textContent = text;
+    ov.appendChild(box); document.body.appendChild(ov);
+    function close() {                          // ② четыре выхода
+      ov.remove();
+      document.removeEventListener('keydown', esc, true);
+      try { if (back && back.focus) back.focus(); } catch (_) {}
+    }
+    function esc(e) { if (e.key === 'Escape') close(); }
+    box.querySelector('.fk-tell-ok').addEventListener('click', close);
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    document.addEventListener('keydown', esc, true);
+    try { box.querySelector('.fk-tell-ok').focus(); } catch (_) {}
+  }
+
+  /* ⭐ ЧТО СЕМЬЯ УЖЕ СКАЗАЛА — ПАМЯТЬ ПАКЕТА. По ней страница набора показывает
+   * условные формы (план ухода, разрешение) и НЕ показывает их всем подряд. */
+  function fkReveal(key, extra) {
+    try {
+      var r = pkLoad() || { ts: Date.now(), data: {} };
+      r.reveal = r.reveal || {};
+      if (extra) {
+        r.reveal[key] = Array.isArray(r.reveal[key]) ? r.reveal[key] : [];
+        if (r.reveal[key].indexOf(extra) < 0) r.reveal[key].push(extra);
+      } else if (!r.reveal[key]) r.reveal[key] = true;
+      var rec = { ts: Date.now(), data: r.data, next: r.next, reveal: r.reveal };
+      localStorage.setItem(PK_KEY, JSON.stringify(rec));
+    } catch (_) {}
+  }
+
   function lockForm(ref) {
     _submitted = true;
     $$('input,select,textarea,button').forEach(function (el) { if (!el.hasAttribute('data-fk-newform')) el.disabled = true; });
@@ -1955,10 +2020,12 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 23,
+    KIT: 24,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
+    /* Форма объявляет условие выполненным: окно + память пакета одним вызовом. */
+    tell: fkTell, reveal: fkReveal,
     /* Состояние отправки — наружу ради РЕПЕТИЦИИ, тем же правом, что и armed(). Проба
        обязана уметь спросить «форма ещё считает себя отправленной?»: без этого отказ
        второй подачи выглядит одинаково при трёх разных причинах. Только чтение. */

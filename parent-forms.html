@@ -303,6 +303,24 @@
           : (only.length ? 'Your forms' : (SET_TITLES[setName] || pk.title || 'Enrollment packet')));
       try { console.debug('[packet]', setName, '· center', center, '· only', only, '· forms', slots.map(function (s) { return s.key; })); } catch (e) {}
 
+      /* ⭐⭐ УСЛОВНЫЕ ФОРМЫ ПОКАЗЫВАЮТСЯ, КОГДА СЕМЬЯ ОТВЕТИЛА (v24, слово владельца 21.08).
+       * План ухода нужен ребёнку с состоянием здоровья, разрешение — тому, кому дают
+       * лекарство. Показанные ВСЕМ, они собрали бы пустые заполнения от семей, которым
+       * не нужны, и научили бы половину пакета «просто подписать всё».
+       * ⛔ Условие живёт в РЕЕСТРЕ (`condition`), ответ — в памяти пакета (`reveal`),
+       * а страница их только соединяет: второго списка условий здесь не заводится. */
+      var REVEAL = (function(){ try { var r=JSON.parse(localStorage.getItem('pa_packet_profile'));
+        return (r && r.reveal) || {}; } catch(e){ return {}; } })();
+      var CONDITIONAL = { dcy_01236:'special_health_need', dcy_01217:'medication' };
+      (function addRevealed(){
+        Object.keys(CONDITIONAL).forEach(function (key) {
+          if (!REVEAL[key]) return;                       // семья про это не говорила
+          if (slots.some(function (s) { return s.key === key; })) return;   // уже в наборе
+          var f = reg.forms[key]; if (!f || !f.current) return;             // тёмную не зовём
+          slots.push(gate({ key: key, note: 'Added because of what you told us on the enrolment form.' }));
+        });
+      })();
+
       var list = document.getElementById('list'), n = 0;
       slots.forEach(function (s) {
         var form = reg.forms[s.key] || {};
@@ -338,6 +356,20 @@
           return;
         }
         var kind = src.kind || (s.keep ? 'keep' : (s.pending || s.handout ? 'director' : 'signature'));
+        /* ⚠️ ЧИТАТЬ, А НЕ ЗАПОЛНЯТЬ. Карточка «Fill & sign» над файлом .docx/.pdf — это
+           обещание, которого документ не выполнит: родитель нажмёт «Open» и получит файл,
+           который нечем ни заполнить, ни подписать. Вид карточки берём у САМОГО адреса. */
+        var _u0 = verUrl(src.versions && src.current && src.versions[src.current]) || src.fallbackUrl || '';
+        /* Проверяем ЛЮБОЙ вид, кроме уже объявленных keep/director: в реестре у таких
+           записей стоит kind:'document', и он не разбирался ни одной веткой — карточка
+           молча уезжала в «Fill & sign». Вид берём у адреса: файл — значит читать. */
+        var _asFile = kind !== 'keep' && kind !== 'director' && !s.pending && !s.handout
+            && /\.(docx?|pdf|xlsx?)(\?|$)/i.test(_u0);
+        /* ⭐ РАЗЛИЧАЕМ ПО ПОДПИСАНТУ, А НЕ ПО ЯРЛЫКУ ВИДА. `kind:'document'` в реестре
+           значит «это документ ведомства», а не «читать»: у 01225 он тоже стоит, а бумагу
+           надо заполнить и вернуть. Отличает их `signer`: если форму кто-то подписывает —
+           её приносят обратно. */
+        if (_asFile) { kind = 'keep'; s._fileKind = src.signer ? 'return' : 'read'; }
         var url = verUrl(src.versions && src.current && src.versions[src.current]) || src.fallbackUrl || null;
         if (url === 'PENDING') url = null;
         var card = document.createElement('div');
@@ -353,7 +385,19 @@
             + '<div class="btnrow"><a class="btn dl" download>Download</a><a class="btn pr" target="_blank" rel="noreferrer">Print</a></div></div>'
             + '<div class="right"><span class="miniqr" title="Scan to open"><canvas></canvas></span></div>';
           card.querySelector('.t').textContent = label;
-          card.querySelector('.d').textContent = note || 'No signature needed — save or print for your information.';
+          /* ⚠️ ТРИ РАЗНЫЕ БУМАГИ — ТРИ РАЗНЫХ ОБЕЩАНИЯ. «Keep for your records» верно для
+             справочника; для бумаги, которую надо заполнить рукой и вернуть, оно врёт
+             ровно так же, как врало «Fill & sign» над файлом. */
+          if (s._fileKind === 'read') {
+            card.querySelector('.badge').textContent = 'Read';
+            card.querySelector('.d').textContent = note || 'For your information — nothing to sign.';
+          } else if (s._fileKind === 'return') {
+            card.querySelector('.badge').textContent = 'Print & bring back';
+            card.querySelector('.d').textContent = note
+              || 'Print it, fill it in by hand and bring it to the center — this one is not fillable online yet.';
+          } else {
+            card.querySelector('.d').textContent = note || 'No signature needed — save or print for your information.';
+          }
           card.querySelector('.dl').href = fileLink; card.querySelector('.pr').href = fileLink;
           list.appendChild(card);
           drawQR(card.querySelector('.miniqr canvas'), qrLink, 46);
