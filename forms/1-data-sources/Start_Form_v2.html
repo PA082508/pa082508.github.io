@@ -442,11 +442,18 @@
          после сведения вариантов `!voucher` и `infant` СХОДЯТСЯ НА ОДНОЙ СЕМЬЕ (частная
          оплата + младенец), и «on agreed basis» печаталось дважды. При четырёх вариантах
          они были взаимоисключающими, и это не всплывало. -->
-    <p data-when="!voucher">
-      I am responsible for paying Play Academy the above fees for my child/ren on an agreed
-      basis. <b>Tuition fees are not subject to pro-ration for illness, holidays, or emergency
-      closure of the center.</b>
-    </p>
+    <!-- ⛔ АБЗАЦ СНЯТ ПО СКРИНУ ВЛАДЕЛЬЦА 22.08 — И ЭТО НЕ ОШИБКА РЕНДЕРА.
+         Замер живой страницы: точная фраза встречалась РОВНО ОДИН РАЗ. Дубль был не в
+         разметке, а в СМЫСЛЕ: подтверждение (2), под которым родитель ставит инициалы,
+         говорит то же самое другими словами — «I am responsible for paying tuition for my
+         child(ren)… Tuition is not adjusted or prorated for illness, holidays, or emergency
+         closures». На бумаге это читается как напечатанное дважды, и владелец прочёл именно
+         так.
+         ⭐ ОСТАВЛЕН ТОТ, ПОД КОТОРЫМ СТОЯТ ИНИЦИАЛЫ: подпись внизу говорит «я подписал
+         документ», инициалы против пункта — «я прочитал ИМЕННО ЭТО». Из двух одинаковых по
+         смыслу условий выживает то, что доказуемо прочитано.
+         ⚠️ У ВАУЧЕРА свой абзац остаётся: там обязанность другая (отмечаться на планшете),
+         и в подтверждениях её нет. -->
     <p data-when="voucher">
       I am responsible for paying Play Academy the above fees for my children on a weekly
       basis. <b>I am responsible for using the swipe tablet to check in and check out all
@@ -1136,7 +1143,7 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=31"></script>
+<script defer src="form-kit.js?v=32"></script>
 
 </body>
 </html>
