@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parent Responsibilities — Play Academy</title>
+<meta name="fk-form-version" content="v1">
+<link rel="stylesheet" href="form-kit.css">
+<style>
+  /* ===================================================================
+     PARENT RESPONSIBILITIES — kit-path fillable (v1, 22.08.2026).
+     ⭐ Текст политик взят ДОСЛОВНО из Parent Responsibilities.docx владельца
+     (извлечён из word/document.xml, без пересказа и без правки формулировок):
+     это правила центра, и переписывать их своими словами мы не вправе.
+     ⛔ Раньше карточка вела на сам .docx: родитель нажимал «Open» и получал файл
+     Word, который нечем ни заполнить, ни подписать. Теперь это форма.
+     =================================================================== */
+  *{box-sizing:border-box}
+  body{margin:0;background:#e8ece9;font:15px/1.6 Arial,Helvetica,sans-serif;color:#14281f}
+  .sheet{max-width:8.5in;margin:16px auto;background:#fff;padding:0.5in 0.6in;
+    box-shadow:0 2px 10px rgba(0,0,0,.2)}
+  h1{font-size:19pt;text-align:center;margin:0 0 4px;color:#0f4c35}
+  .center{text-align:center;font-size:11pt;color:#4b5563;margin-bottom:16px}
+  ol{margin:0 0 18px 20px;padding:0}
+  ol li{margin-bottom:9px;line-height:1.5}
+  .ack{background:#f2f7f4;border:1.5px solid #cfe0d5;border-radius:9px;padding:11px 13px;margin-bottom:16px}
+  .ack label{display:flex;gap:9px;align-items:flex-start;font-weight:700;cursor:pointer}
+  .ack input{width:19px;height:19px;margin-top:2px;accent-color:#0f4c35;flex:none}
+  .row{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px}
+  .fld{flex:1 1 240px}
+  .fld label{display:block;font-size:12.5px;font-weight:700;color:#0f4c35;margin-bottom:3px}
+  input.f{width:100%;font:inherit;border:none;border-bottom:1.5px solid #0f4c35;
+    background:rgba(255,253,150,.35);padding:5px 6px;outline:none}
+  input.f:focus{background:rgba(255,246,120,.75)}
+  input.f[readonly]{background:rgba(240,244,241,.6);border-bottom-color:#b8c2bb;color:#333}
+  canvas.sig{width:100%;height:92px;border:1.5px dashed #0f4c35;border-radius:6px;
+    background:rgba(210,235,255,.3);display:block;touch-action:none}
+  .siglock{position:relative;margin-top:-92px;height:92px;display:flex;align-items:center;
+    justify-content:center;background:rgba(90,107,96,.9);color:#fff;font:700 12.5px Arial;
+    border-radius:6px;z-index:5;text-align:center;padding:6px}
+  .foot{margin-top:20px;font-size:10pt;color:#6b7280;display:flex;justify-content:space-between}
+  @media print{
+    body{background:#fff}.sheet{box-shadow:none;margin:0;max-width:none}
+    .ack{background:transparent;border:1px solid #000}
+    input.f{background:transparent;border-bottom:1px solid #000}
+    canvas.sig{border:none;background:transparent}.siglock{display:none!important}
+    @page{size:8.5in 11in;margin:0.5in}
+  }
+.fkml{margin:6px 0;padding:8px 10px;border:1.5px solid #fcd34d;background:#fffbeb;border-radius:8px;font:13px Arial;color:#92400e}
+.fkml-head{font-weight:700;margin-bottom:4px}
+.fkml-item{display:block;width:100%;text-align:left;background:none;border:none;padding:2px 0;color:#92400e;text-decoration:underline;cursor:pointer;font:inherit}
+</style>
+</head>
+<body>
+<div data-formkit="missing-list" class="fkml fk-print-hidden" style="display:none"></div>
+
+<div class="sheet">
+  <h1>Parent Responsibilities</h1>
+  <div class="center" data-fk-center-name></div>
+
+  <ol>
+    <li>Make arrangements to pick up your child if they are sick, running a fever, or show any symptoms that we feel would require them to go home. Do not bring them back to the center until they are fever free for 24 hours without being on medication. Some exceptions can be made for this rule. Please check with the Director or the lead teacher.</li>
+    <li>Notify the center if you change your phone numbers or your address.</li>
+    <li>Pay all fees on time. Fees are due one week in advance.</li>
+    <li>Complete all required forms on time. Most of our forms are only good for one year. It is your responsibility to get the forms updated in a timely manner when asked to by the administration. Please schedule your child’s yearly examination in a timely manner. Ask the Director for a Child Medical Statement so that they can update the child’s records.</li>
+    <li>Notify the center if your child is going to be late or absent.</li>
+    <li>Inform your child’s teacher about the child’s like and dislikes, fears, habits, and positive influences in his/her life.</li>
+    <li>Notify the center if anyone other than the designated person is going to pick up your child. We will not release them to someone that we do not know, without a written note, phone call. We will also ask to see identification.</li>
+    <li>Contact the Director if you have any questions or concerns.</li>
+    <li>Check your child’s cubby for information about the program, notes from teachers, and other interests.</li>
+    <li>Attend your child’s annual parent teacher conference.</li>
+  </ol>
+
+  <div class="ack">
+    <label>
+      <input type="checkbox" id="f_agree" data-required data-label="I have read and agree">
+      <span>I have read and agree to the Parent Responsibilities above.</span>
+    </label>
+  </div>
+
+  <div class="row">
+    <div class="fld">
+      <label for="f_parent_name">Parent / guardian name</label>
+      <input class="f" type="text" id="f_parent_name" data-fk-field="parent_name"
+             autocomplete="name" data-required data-label="Parent name">
+    </div>
+    <div class="fld">
+      <label for="f_child_name">Child’s name</label>
+      <input class="f" type="text" id="f_child_name" data-fk-field="child_name"
+             autocomplete="name" data-required data-label="Child name">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="fld" style="flex:2 1 380px">
+      <label for="f_parent_sig">Parent signature</label>
+      <canvas class="sig" id="f_parent_sig" data-formkit="signature" data-fk-adopt
+              data-required data-label="Parent signature" width="760" height="92"></canvas>
+      <div class="siglock" id="lock_parent_sig" data-fk-pad="f_parent_sig">Complete the required fields first</div>
+    </div>
+    <div class="fld">
+      <label for="f_sig_date">Date</label>
+      <input class="f" type="text" id="f_sig_date" readonly>
+    </div>
+  </div>
+
+  <div class="foot"><span>Play Academy — Parent Responsibilities</span><span>Rev. 2026</span></div>
+</div>
+
+<script>
+function g(id){var e=document.getElementById(id);return e?(e.type==='checkbox'?(e.checked?'Yes':''):(e.value||'').trim()):''}
+
+/* Дата рядом с подписью — ШТАМП: ставится в момент подписи, только чтение, гаснет вместе
+   с подписью (канон 24.07). */
+function fmtToday(){var t=new Date();
+  return ('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear()}
+function stampSigDate(){
+  var dt=document.getElementById('f_sig_date'); if(!dt) return;
+  var signed=window.FormKit&&FormKit.getSig&&FormKit.getSig('f_parent_sig');
+  dt.readOnly=true; dt.value = signed ? (dt.value||fmtToday()) : '';
+}
+window.__stampSigDates = stampSigDate;
+
+function requiredFilled(){
+  /* Один предикат на один вопрос — спрашиваем кит; подпись сама себя не стережёт. */
+  if(window.FormKit&&FormKit.refreshCounter)
+    return FormKit.refreshCounter().filter(function(e){return e.tagName!=='CANVAS'}).length===0;
+  return false;
+}
+function gate(){
+  var ok=requiredFilled();
+  var signed=window.FormKit&&FormKit.getSig&&!!FormKit.getSig('f_parent_sig');
+  var lock=document.getElementById('lock_parent_sig');
+  if(lock){
+    if(signed){ lock.style.display='none'; lock.onclick=null }
+    else if(!ok){ lock.style.display='flex'; lock.textContent='Complete the required fields first'; lock.onclick=null }
+    else { lock.style.display='flex'; lock.textContent='✍ Tap to sign — draw big';
+           lock.onclick=function(){ if(window.FKPad) FKPad.open('f_parent_sig',{title:'Parent signature'}) } }
+  }
+  stampSigDate();
+}
+document.addEventListener('input', function(){ setTimeout(gate,30) }, true);
+document.addEventListener('change', function(){ setTimeout(gate,30) }, true);
+document.addEventListener('mouseup', function(){ setTimeout(gate,50) });
+document.addEventListener('touchend', function(){ setTimeout(gate,50) });
+document.addEventListener('DOMContentLoaded', gate);
+
+function resetForm(){
+  ['f_parent_name','f_child_name','f_sig_date'].forEach(function(i){var e=document.getElementById(i); if(e)e.value=''});
+  var a=document.getElementById('f_agree'); if(a)a.checked=false;
+  if(window.FormKit) FormKit.clearSig('f_parent_sig');
+  gate(); if(window.FormKit&&FormKit.status) FormKit.status('Cleared','');
+}
+function PA_APPLY(fd){
+  var S=function(id,v){var e=document.getElementById(id); if(e&&v!=null&&!e.value) e.value=v};
+  S('f_child_name', fd.child_name); S('f_parent_name', fd.parent_name);
+}
+
+window.FORMKIT_CONFIG = {
+  formType:'parent_responsibilities', version:'v1',
+  title:'Parent Responsibilities', formKey:'parent_responsibilities',
+  reset:resetForm, applyPrefill:PA_APPLY,
+  /* Семейные клетки — чтобы «ещё один ребёнок» не заставлял набирать имя родителя заново. */
+  familyCells:['parent_name'],
+  collect:function(){
+    return {
+      formData:{
+        type:'parent_responsibilities',
+        center_code:FormKit.centerCode(),
+        center_name:(document.querySelector('[data-fk-center-name]')||{}).textContent||'',
+        child_name:g('f_child_name'),
+        parent_name:g('f_parent_name'),
+        /* ⭐ СОГЛАСИЕ — ОТДЕЛЬНАЯ КЛЕТКА, А НЕ ВЫВОД ИЗ ПОДПИСИ. Подпись говорит «это я»,
+           галочка — «я прочитал и согласен»; это два разных утверждения, и правило центра
+           требует именно второго. */
+        agreed:g('f_agree')==='Yes',
+        signature_method:'drawn'
+      },
+      signatures:{ parent_sig: FormKit.getSig('f_parent_sig') },
+      signatureDate:g('f_sig_date')||null
+    };
+  }
+};
+</script>
+<script src="form-kit.js?v=27"></script>
+</body>
+</html>

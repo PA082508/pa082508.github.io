@@ -137,7 +137,9 @@
     try { var ts = +localStorage.getItem(KEY); if (ts && Date.now() - ts < TTL) return; } catch (e) {}
     var bar = document.createElement('div'); bar.className = 'lifebar';
     var span = document.createElement('span');
-    span.innerHTML = '⏳ Your answers and signature are kept <strong>on this device for 24 hours</strong>, so you can finish later — on the same phone and browser. Nothing is sent to the center until you press <strong>Submit</strong> on a form. After a day, or on a different device, it starts fresh.';
+    /* ⛔ v27: срока больше нет — и плашки о нём тоже. Осталось то, что осталось правдой:
+       ответы живут на ЭТОМ устройстве, и до Submit центр их не видит. */
+    span.innerHTML = '⏳ Your answers and signature are kept <strong>on this phone</strong>, so you can finish later — on the same phone and browser. Nothing is sent to the center until you press <strong>Submit</strong> on a form.';
     var x = document.createElement('button'); x.type = 'button'; x.className = 'lx'; x.textContent = 'Got it';
     x.addEventListener('click', function () { bar.parentNode && bar.parentNode.removeChild(bar); });
     bar.appendChild(span); bar.appendChild(x);
@@ -333,16 +335,29 @@
         var b = document.createElement('div'); b.id = 'fk-before';
         b.setAttribute('style','background:#f2f7f4;border:1.5px solid #cfe0d5;border-radius:10px;'
           + 'padding:11px 14px;margin:0 0 14px;font:13.5px/1.55 Arial,sans-serif;color:#14281f');
-        b.innerHTML = '<b>Before you start.</b> Start with the first form — it signs the rest for you. '
-          + 'Your answers stay on this phone for 24 hours, so you can finish later. '
-          + 'Some papers appear only after you tell us they are needed. '
+        b.innerHTML =
+            '<b>Before you start.</b> Work down the list in order — the first form signs the rest for you. '
+          + 'Your answers stay on this phone, so you can stop and come back. '
           + '<button type="button" id="fk-more" style="background:none;border:none;color:#0f4c35;'
           + 'text-decoration:underline;cursor:pointer;font:inherit;padding:0">Read more</button>'
+          /* ⭐ МНОГОДЕТНЫМ — ОТДЕЛЬНЫМ БЛОКОМ, А НЕ СТРОКОЙ В АБЗАЦЕ. Мать троих читает
+             «одна форма на ребёнка» как «заполнить всё трижды с нуля» и откладывает
+             пакет. Выделенный блок говорит второе предложение сразу: заново — только
+             детское. */
+          + '<div style="margin-top:9px;padding:9px 11px;background:#fff;border:1.5px solid #0f4c35;'
+          + 'border-radius:8px"><b>More than one child?</b> One form per child — twins too. '
+          + 'After you sign a form, press <b>“Fill this form for another child”</b>: your address, '
+          + 'phones and emergency contacts carry over, only the child’s own details are blank. '
+          + 'The income form is different — it is <b>one per family</b>, and it goes last.</div>'
+          /* ⚠️ Про здоровье — здесь же: иначе семья узнаёт о второй бумаге после подписи. */
+          + '<div style="margin-top:7px">If you tell us a child has a health condition or takes a '
+          + 'medicine, the matching papers appear in this list by themselves. For a medicine, '
+          + '<b>photograph the pharmacy label</b> — with it no separate note from the doctor is needed.</div>'
           + '<div id="fk-more-body" style="display:none;margin-top:8px;color:#33403a">'
-          + 'One form is filled for one child — twins included. After you sign a form you can press '
-          + '“Fill this form for another child”: the family details carry over, the child’s do not. '
-          + 'If you tell us a child has a health condition or takes a medicine, the matching paper is '
-          + 'added to this list for you. Nothing is sent to the center until you press Submit on a form.'
+          + 'Order: consent first, then the enrolment form for each child, then anything the answers '
+          + 'add, and the income form last. Nothing is sent to the center until you press Submit on a '
+          + 'form — a half-filled form is yours alone until then. Papers marked “Read” need no '
+          + 'signature; papers marked “Print &amp; bring back” are filled by hand and handed in.'
           + '</div>';
         var listEl = document.getElementById('list');
         listEl.parentNode.insertBefore(b, listEl);

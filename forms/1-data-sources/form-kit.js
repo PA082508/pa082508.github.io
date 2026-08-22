@@ -162,8 +162,20 @@
   // window.PA_KIOSK anywhere. When a shared-tablet kiosk lands, the sample's TTL
   // must be split from the data TTL, or a day-old signature is offered to the
   // next person. Until then one timer is correct.
-  var PK_KEY = 'pa_packet_profile', PK_TTL = 24 * 60 * 60 * 1000;
-  function pkLoad() { try { var r = JSON.parse(localStorage.getItem(PK_KEY)); if (!r || Date.now() - r.ts > PK_TTL) { localStorage.removeItem(PK_KEY); return null; } return r; } catch (_) { return null; } }
+  /* ⭐⭐ ОТВЕТЫ БОЛЬШЕ НЕ ПРОПАДАЮТ ПО ЧАСАМ (v27, слово владельца 22.08).
+   *
+   * Сутки были компромиссом: семья заполняет пакет не в один присест, но и держать её
+   * данные вечно на общем устройстве не хотелось. Ограничение снято — и убрана САМА
+   * ЧИСТКА, а не только плашка о ней. ⛔ Иначе вышло бы худшее: экран молчит про срок,
+   * а память всё равно стирается наутро, и родитель второй раз набирает адрес, не
+   * понимая почему.
+   *
+   * ⚠️ У ПОДПИСИ СРОК ОСТАЛСЯ, И ЭТО НАРОЧНО. Данные пакета — это адрес и телефоны той
+   * же семьи; образец подписи — чужая рука, которой можно подписать чужую бумагу. Разный
+   * риск — разный срок. */
+  var PK_KEY = 'pa_packet_profile';
+  var SIG_TTL = 24 * 60 * 60 * 1000;          // только образец подписи
+  function pkLoad() { try { return JSON.parse(localStorage.getItem(PK_KEY)) || null; } catch (_) { return null; } }
   /* `extra` несёт то, что живёт РЯДОМ с данными пакета — например, список следующих
      форм цепочки. Без него любой вызов pkWrite стирал бы его молча. */
   function pkWrite(data, extra) {
@@ -253,7 +265,7 @@
   function sigSampleLoad(scope) {
     if (!samplesOn()) return null;                                // conserved: the shelf is not read
     scope = scope || SIG_SCOPE_DEFAULT;
-    function read(k) { try { var r = JSON.parse(localStorage.getItem(k)); if (!r || !r.png || Date.now() - r.ts > PK_TTL) return null; return r; } catch (_) { return null; } }
+    function read(k) { try { var r = JSON.parse(localStorage.getItem(k)); if (!r || !r.png || Date.now() - r.ts > SIG_TTL) return null; return r; } catch (_) { return null; } }
     var r = read(sigSampleKey(scope));
     // Legacy bridge: pre-scope kits wrote ONE unscoped key. Only a parent form could
     // ever have minted into it (Staff Consent was never live), so honour it for the
@@ -1436,25 +1448,13 @@ document.addEventListener('click', function (e) {
   // server until Submit; a different phone or browser starts empty; after the day
   // it clears. Shown once per TTL window — the packet's later forms in the same
   // sitting stay quiet (flag carries the same 24h life as the data it describes).
+  /* ⛔ ПЛАШКА «24 ЧАСА» СНЯТА (v27). Ограничение снято вместе с чисткой памяти, а
+   * сообщать о сроке, которого больше нет, — это врать в спину прежнему решению.
+   * Функция оставлена пустой нарочно: её зовут два места, и вырезать вызовы значило бы
+   * тронуть пути, к этой правке не относящиеся. Появится новый срок — здесь и вернётся. */
   var NOTICE_KEY = 'pa_fk_notice_ts';
-  function sessionNotice() {
-    try { var ts = +localStorage.getItem(NOTICE_KEY); if (ts && Date.now() - ts < PK_TTL) return; } catch (_) {}
-    if ($('.fk-life-notice')) return;
-    var hrs = Math.round(PK_TTL / 3600000);
-    var b = document.createElement('div'); b.className = 'fk-life-notice fk-print-hidden';
-    b.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;background:#fef3c7;color:#92400e;padding:11px 16px;font:600 13px/1.45 Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.12)');
-    var txt = document.createElement('span');
-    txt.innerHTML = '⏳ This form saves your answers and signature <strong>on this device for ' + hrs + ' hours</strong>, so you can finish later — but on the same phone and browser. Nothing is sent to the center until you press Submit. After ' + hrs + ' hours, or on a different device, it starts fresh.';
-    var ok = document.createElement('button'); ok.type = 'button'; ok.textContent = 'Got it';
-    ok.setAttribute('style', 'background:#92400e;color:#fff;border:none;border-radius:8px;padding:7px 15px;font:700 12px Arial,sans-serif;cursor:pointer;flex:none');
-    ok.addEventListener('click', function () { b.remove(); });
-    b.appendChild(txt); b.appendChild(ok);
-    document.body.insertBefore(b, document.body.firstChild);
-    // Mark seen on SHOW, not on dismiss — the packet index (parent-forms.html)
-    // shares this exact key, so whichever surface the parent hits first (usually
-    // the index) shows it once and every later form stays quiet for the window.
-    try { localStorage.setItem(NOTICE_KEY, String(Date.now())); } catch (_) {}
-  }
+  function sessionNotice() { /* v27: срока нет — говорить не о чем */ }
+
   /* fk:one-child:start — ОДНО ПОЛЕ = ОДИН РЕБЁНОК, ВКЛЮЧАЯ БЛИЗНЕЦОВ ───────────
    *
    * ⭐ ПРЕЦЕДЕНТ RIFE, 14.08. Семья отправила DCY 01234 и e-sign consent, вписав в
@@ -2082,7 +2082,7 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 26,
+    KIT: 27,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
