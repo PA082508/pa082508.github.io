@@ -162,20 +162,31 @@
   // window.PA_KIOSK anywhere. When a shared-tablet kiosk lands, the sample's TTL
   // must be split from the data TTL, or a day-old signature is offered to the
   // next person. Until then one timer is correct.
-  /* ⭐⭐ ОТВЕТЫ БОЛЬШЕ НЕ ПРОПАДАЮТ ПО ЧАСАМ (v27, слово владельца 22.08).
+  /* ⭐⭐ СРОК ПАМЯТИ = СРОК ССЫЛКИ: СЕМЬ ДНЕЙ (поправка владельца 22.08).
    *
-   * Сутки были компромиссом: семья заполняет пакет не в один присест, но и держать её
-   * данные вечно на общем устройстве не хотелось. Ограничение снято — и убрана САМА
-   * ЧИСТКА, а не только плашка о ней. ⛔ Иначе вышло бы худшее: экран молчит про срок,
-   * а память всё равно стирается наутро, и родитель второй раз набирает адрес, не
-   * понимая почему.
+   * Сутки были слишком коротки — семья заполняет пакет не в один присест. Бессрочно
+   * тоже неверно: это чужой адрес и чужая подпись на устройстве, которое может оказаться
+   * общим.
    *
-   * ⚠️ У ПОДПИСИ СРОК ОСТАЛСЯ, И ЭТО НАРОЧНО. Данные пакета — это адрес и телефоны той
-   * же семьи; образец подписи — чужая рука, которой можно подписать чужую бумагу. Разный
-   * риск — разный срок. */
+   * ⭐ СЕМЬ ДНЕЙ ВЗЯТЫ НЕ С ПОТОЛКА: ровно столько живёт именная ссылка
+   * (`mint_prefill_token`). Один срок на две вещи, которые семья видит как одно — «пока
+   * моя ссылка работает, моя работа не пропадёт». Разойдись они, и родитель на восьмой
+   * день открыл бы живую ссылку с пустой формой либо мёртвую ссылку с сохранёнными
+   * ответами; и то и другое читается как поломка.
+   *
+   * ⛔ КОНСТАНТА ОДНА. Срок в чистке и срок в плашке обязаны быть одним числом: два
+   * числа об одном сроке разойдутся на первой же правке — и разойдутся молча. */
   var PK_KEY = 'pa_packet_profile';
-  var SIG_TTL = 24 * 60 * 60 * 1000;          // только образец подписи
-  function pkLoad() { try { return JSON.parse(localStorage.getItem(PK_KEY)) || null; } catch (_) { return null; } }
+  var PK_TTL = 7 * 24 * 60 * 60 * 1000;
+  /* ⚠️ Образец подписи живёт ТЕМ ЖЕ сроком: одна константа — одно обещание человеку. */
+  var SIG_TTL = PK_TTL;
+  function pkLoad() {
+    try {
+      var r = JSON.parse(localStorage.getItem(PK_KEY));
+      if (!r || Date.now() - r.ts > PK_TTL) { localStorage.removeItem(PK_KEY); return null; }
+      return r;
+    } catch (_) { return null; }
+  }
   /* `extra` несёт то, что живёт РЯДОМ с данными пакета — например, список следующих
      форм цепочки. Без него любой вызов pkWrite стирал бы его молча. */
   function pkWrite(data, extra) {
@@ -1443,17 +1454,31 @@ document.addEventListener('click', function (e) {
     try { window.scrollTo(0, 0); } catch (e) {}
   }
   // ── Session-life notice ──────────────────────────────────────────────────────
-  // The kit keeps your answers AND signature on THIS device for PK_TTL (24h), so a
+  // The kit keeps your answers AND signature on THIS device for PK_TTL (7 days), so a
   // family can fill the packet across the day. Tell them plainly: nothing is on a
   // server until Submit; a different phone or browser starts empty; after the day
   // it clears. Shown once per TTL window — the packet's later forms in the same
   // sitting stay quiet (flag carries the same 24h life as the data it describes).
-  /* ⛔ ПЛАШКА «24 ЧАСА» СНЯТА (v27). Ограничение снято вместе с чисткой памяти, а
-   * сообщать о сроке, которого больше нет, — это врать в спину прежнему решению.
-   * Функция оставлена пустой нарочно: её зовут два места, и вырезать вызовы значило бы
-   * тронуть пути, к этой правке не относящиеся. Появится новый срок — здесь и вернётся. */
+  /* ⭐ ПЛАШКА ГОВОРИТ ЧИСЛО ИЗ ТОЙ ЖЕ КОНСТАНТЫ, что и чистка. Написать срок словами
+   * значило бы завести второе число об одном сроке — и оно разойдётся первым же. */
   var NOTICE_KEY = 'pa_fk_notice_ts';
-  function sessionNotice() { /* v27: срока нет — говорить не о чем */ }
+  function sessionNotice() {
+    try { var ts = +localStorage.getItem(NOTICE_KEY); if (ts && Date.now() - ts < PK_TTL) return; } catch (_) {}
+    if ($('.fk-life-notice')) return;
+    var days = Math.round(PK_TTL / 86400000);
+    var b = document.createElement('div'); b.className = 'fk-life-notice fk-print-hidden';
+    b.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;background:#fef3c7;color:#92400e;padding:11px 16px;font:600 13px/1.45 Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.12)');
+    var txt = document.createElement('span');
+    txt.innerHTML = '⏳ Your answers and signature are kept <strong>on this device for ' + days
+      + ' days</strong>, so you can finish later — on the same phone and browser. Nothing is sent to '
+      + 'the center until you press Submit. After that, or on a different device, it starts fresh.';
+    var ok = document.createElement('button'); ok.type = 'button'; ok.textContent = 'Got it';
+    ok.setAttribute('style', 'background:#92400e;color:#fff;border:none;border-radius:8px;padding:7px 15px;font:700 12px Arial,sans-serif;cursor:pointer;flex:none');
+    ok.addEventListener('click', function () { b.remove(); });
+    b.appendChild(txt); b.appendChild(ok);
+    document.body.insertBefore(b, document.body.firstChild);
+    try { localStorage.setItem(NOTICE_KEY, String(Date.now())); } catch (_) {}
+  }
 
   /* fk:one-child:start — ОДНО ПОЛЕ = ОДИН РЕБЁНОК, ВКЛЮЧАЯ БЛИЗНЕЦОВ ───────────
    *
