@@ -401,6 +401,7 @@
     if (!el) return false;
     if (el.getAttribute('data-inactive')) return true; // hidden conditional → not required
     if (el.tagName === 'CANVAS') return hasInk(el);
+    if (el.hasAttribute('data-fk-photo')) return !!el.getAttribute('data-fk-photo-value');
     if (el.getAttribute('data-fk-choice')) return !!(el.querySelector('input') || {}).value;
     if (el.type === 'checkbox') return el.checked;
     return !!(el.value || '').trim();
@@ -1226,6 +1227,66 @@ document.addEventListener('click', function (e) {
 
   /* ⭐ ЧТО СЕМЬЯ УЖЕ СКАЗАЛА — ПАМЯТЬ ПАКЕТА. По ней страница набора показывает
    * условные формы (план ухода, разрешение) и НЕ показывает их всем подряд. */
+  /* ⭐ ФОТО-КЛЕТКА: снимок как ответ формы (v25).
+   *
+   * ПОВОД — аптечная этикетка: правило (B)(1)(e) отменяет отдельные инструкции врача,
+   * если на упаковке есть полное имя ребёнка, точная доза и указания. Значит снимок
+   * этикетки — не «приложение к форме», а САМ ОТВЕТ, и жить он должен там же, где
+   * остальные ответы.
+   *
+   * ⚠️ УМЕНЬШАЕМ ПЕРЕД ОТПРАВКОЙ. Телефон снимает 4 МБ; такой ответ не дойдёт по плохой
+   * связи у стойки, а этикетка читается и в 1400 точках. Лучше снимок, который дошёл,
+   * чем оригинал, который не отправился.
+   * ⛔ Ничего не отправляем в момент съёмки: фотография уходит ВМЕСТЕ с формой, одной
+   * подписью — иначе снимок остался бы у нас без согласия, которого ещё не давали. */
+  function initPhotoCells() {
+    $$('[data-fk-photo]').forEach(function (host) {
+      if (host.__fkPhoto) return; host.__fkPhoto = true;
+      var inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = 'image/*'; inp.setAttribute('capture', 'environment');
+      inp.style.display = 'none';
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'fk-photo-btn';
+      btn.textContent = host.getAttribute('data-fk-photo-label') || '📷 Take a photo';
+      btn.setAttribute('style', 'font:700 13px Arial,sans-serif;background:#0f4c35;color:#fff;'
+        + 'border:none;border-radius:9px;padding:9px 16px;cursor:pointer');
+      var prev = document.createElement('img');
+      prev.setAttribute('style', 'display:none;max-width:260px;max-height:180px;margin-top:8px;'
+        + 'border:1px solid #cfe0d5;border-radius:8px');
+      var drop = document.createElement('button');
+      drop.type = 'button'; drop.textContent = 'Remove'; drop.style.display = 'none';
+      drop.setAttribute('style', 'display:none;font:600 12px Arial,sans-serif;background:none;'
+        + 'border:none;color:#b00020;text-decoration:underline;cursor:pointer;margin-left:10px');
+      btn.addEventListener('click', function () { inp.click(); });
+      drop.addEventListener('click', function () {
+        host.removeAttribute('data-fk-photo-value'); prev.style.display = 'none';
+        drop.style.display = 'none'; btn.textContent = host.getAttribute('data-fk-photo-label') || '📷 Take a photo';
+        refreshCounter();
+      });
+      inp.addEventListener('change', function () {
+        var f = inp.files && inp.files[0]; if (!f) return;
+        var img = new Image();
+        img.onload = function () {
+          var max = 1400, k = Math.min(1, max / Math.max(img.width, img.height));
+          var c = document.createElement('canvas');
+          c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          host.setAttribute('data-fk-photo-value', c.toDataURL('image/jpeg', 0.7));
+          prev.src = host.getAttribute('data-fk-photo-value');
+          prev.style.display = ''; drop.style.display = '';
+          btn.textContent = '📷 Retake';
+          host.setAttribute('data-fk-touched', '1');
+          refreshCounter();
+        };
+        img.src = URL.createObjectURL(f);
+      });
+      host.appendChild(btn); host.appendChild(drop); host.appendChild(inp); host.appendChild(prev);
+    });
+  }
+  function photoValue(id) {
+    var h = document.getElementById(id); return h ? (h.getAttribute('data-fk-photo-value') || '') : '';
+  }
+
   function fkReveal(key, extra) {
     try {
       var r = pkLoad() || { ts: Date.now(), data: {} };
@@ -1983,6 +2044,7 @@ document.addEventListener('click', function (e) {
     $$('[data-formkit="signature"]').forEach(function (c) { initSig(c); initAdopt(c); });
     initConditionals(); initValidation(); initTooltips(); initChoices();
     initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates(); initAddress(); initExclusive();
+    try { initPhotoCells(); } catch (_) {}
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // resolve center (embed does its own)
     initToolbar();                                         // unified toolbar — brand + center chip / banner
     var sub = $('[data-formkit="submit"]'); if (sub) sub.addEventListener('click', function (e) { e.preventDefault(); submit(); });
@@ -2020,12 +2082,12 @@ document.addEventListener('click', function (e) {
     // ⚠️ Стояло 12, пока включения ушли на v15: рехерсал спрашивал «тот ли билд» и
     // получал ответ трёхнедельной давности. Число обязано подниматься ВМЕСТЕ с ?v=
     // во всех включениях — проба пола версий теперь требует этого прямо.
-    KIT: 24,
+    KIT: 25,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
     /* Форма объявляет условие выполненным: окно + память пакета одним вызовом. */
-    tell: fkTell, reveal: fkReveal,
+    tell: fkTell, reveal: fkReveal, photo: photoValue,
     /* Состояние отправки — наружу ради РЕПЕТИЦИИ, тем же правом, что и armed(). Проба
        обязана уметь спросить «форма ещё считает себя отправленной?»: без этого отказ
        второй подачи выглядит одинаково при трёх разных причинах. Только чтение. */

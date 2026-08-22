@@ -311,13 +311,46 @@
        * а страница их только соединяет: второго списка условий здесь не заводится. */
       var REVEAL = (function(){ try { var r=JSON.parse(localStorage.getItem('pa_packet_profile'));
         return (r && r.reveal) || {}; } catch(e){ return {}; } })();
-      var CONDITIONAL = { dcy_01236:'special_health_need', dcy_01217:'medication' };
+      var CONDITIONAL = { dcy_01236:'special_health_need', dcy_01217:'medication',
+        dcy_01218:'infant', infant_meals:'infant', fluid_milk:'special_diet',
+        dcy_01225:'school_age' };
       (function addRevealed(){
         Object.keys(CONDITIONAL).forEach(function (key) {
           if (!REVEAL[key]) return;                       // семья про это не говорила
           if (slots.some(function (s) { return s.key === key; })) return;   // уже в наборе
           var f = reg.forms[key]; if (!f || !f.current) return;             // тёмную не зовём
           slots.push(gate({ key: key, note: 'Added because of what you told us on the enrolment form.' }));
+        });
+      })();
+
+      /* ⭐ РАМКА «BEFORE YOU START». Родитель открывает набор из десяти карточек и не
+       * знает главного: с чего начать, сколько это займёт и что можно бросить на
+       * середине. Три фразы наверху отвечают на это раньше, чем он начнёт гадать.
+       * ⛔ Не «инструкция»: длинный текст в начале читают ещё реже, чем формы. */
+      (function beforeYouStart(){
+        var host = document.querySelector('.wrap') || document.body;
+        if (document.getElementById('fk-before')) return;
+        var b = document.createElement('div'); b.id = 'fk-before';
+        b.setAttribute('style','background:#f2f7f4;border:1.5px solid #cfe0d5;border-radius:10px;'
+          + 'padding:11px 14px;margin:0 0 14px;font:13.5px/1.55 Arial,sans-serif;color:#14281f');
+        b.innerHTML = '<b>Before you start.</b> Start with the first form — it signs the rest for you. '
+          + 'Your answers stay on this phone for 24 hours, so you can finish later. '
+          + 'Some papers appear only after you tell us they are needed. '
+          + '<button type="button" id="fk-more" style="background:none;border:none;color:#0f4c35;'
+          + 'text-decoration:underline;cursor:pointer;font:inherit;padding:0">Read more</button>'
+          + '<div id="fk-more-body" style="display:none;margin-top:8px;color:#33403a">'
+          + 'One form is filled for one child — twins included. After you sign a form you can press '
+          + '“Fill this form for another child”: the family details carry over, the child’s do not. '
+          + 'If you tell us a child has a health condition or takes a medicine, the matching paper is '
+          + 'added to this list for you. Nothing is sent to the center until you press Submit on a form.'
+          + '</div>';
+        var listEl = document.getElementById('list');
+        listEl.parentNode.insertBefore(b, listEl);
+        document.getElementById('fk-more').addEventListener('click', function(){
+          var m = document.getElementById('fk-more-body');
+          var open = m.style.display !== 'none';
+          m.style.display = open ? 'none' : '';
+          this.textContent = open ? 'Read more' : 'Show less';
         });
       })();
 

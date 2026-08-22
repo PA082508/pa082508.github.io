@@ -374,6 +374,44 @@
 </div>
 
 <link rel="stylesheet" href="form-kit.css">
+<div id="fk-extra" class="fk-print-hidden" style="max-width:8.5in;margin:10px auto;padding:12px 16px;
+     background:#f2f7f4;border:1.5px solid #cfe0d5;border-radius:10px;font:13.5px/1.5 Arial,sans-serif;color:#14281f">
+  <div style="font-weight:700;color:#0f4c35;margin-bottom:8px">A few questions from the center</div>
+  <!-- ⭐ ЭТИ ТРИ ВОПРОСА НЕ ПЕЧАТАЮТСЯ: на бланке штата их нет, и дорисовывать чужую
+       форму мы не вправе. Но правило требует ответов, а спросить их больше негде. -->
+
+  <!-- (B)(1)(e): этикетка ОТМЕНЯЕТ отдельные инструкции врача, если несёт три вещи. -->
+  <div style="margin-bottom:12px">
+    <label for="f_label_photo" style="display:block;font-weight:600;margin-bottom:4px">
+      Photo of the pharmacy label</label>
+    <div style="font-size:12px;color:#4b5563;margin-bottom:6px">
+      For prescription medicine: a photo of the label on the original container, showing the
+      child’s full name, the exact dose and the directions. With it, no separate note from the
+      doctor is needed.</div>
+    <div id="f_label_photo" data-fk-photo data-fk-photo-label="📷 Photograph the label"></div>
+  </div>
+
+  <!-- (C)(1): первую дозу дают дома. Экстренные выведены правилом. -->
+  <div style="margin-bottom:12px">
+    <div style="font-weight:600;margin-bottom:4px">Has the child taken this medication before?</div>
+    <label style="margin-right:18px"><input type="checkbox" id="f_taken_before_y" data-fk-exclusive="taken"
+      data-required data-label="Has the child taken this medication before"> Yes</label>
+    <label><input type="checkbox" id="f_taken_before_n" data-fk-exclusive="taken"> No</label>
+    <div id="fk-firstdose" style="display:none;margin-top:6px;font-size:12.5px;color:#92400e;
+      background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;padding:6px 9px">
+      The first dose is given at home. We may not give a medicine a child has never taken —
+      unless it is an emergency medicine such as an inhaler or an epinephrine injector.</div>
+  </div>
+
+  <!-- (D)(2): школьник может носить экстренное лекарство сам — только с документом. -->
+  <div>
+    <label><input type="checkbox" id="f_may_carry">
+      This school-age child may carry this emergency medication</label>
+    <div style="font-size:12px;color:#4b5563;margin-top:3px">
+      Ohio allows it only when the center has this permission on file.</div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    DCY 01217 medical — form-specific config only.
@@ -433,6 +471,20 @@ function PA_APPLY(fd) {
   mirror();
 }
 
+/* ⭐ ПЛАШКА «ПЕРВАЯ ДОЗА — ДОМА» (OAC 5180:2-12-25 (C)(1)).
+   ⚠️ У этой формы gc() читает id БЕЗ приставки f_ — так устроены её родные клетки; наши
+   новые несут f_, значит и звать их надо полным именем.
+   ⛔ Живёт на ВЕРХНЕМ уровне: первая редакция уехала внутрь функции, которая выходит
+   раньше времени без ?med= в адресе, и плашка не появлялась ни разу. */
+function firstDoseNote(){
+  var n=document.getElementById('fk-firstdose'); if(!n) return;
+  n.style.display = gc('f_taken_before_n') ? '' : 'none';
+}
+document.addEventListener('change', function(e){
+  if(e.target && /taken_before/.test(e.target.id||'')) firstDoseNote();
+});
+document.addEventListener('DOMContentLoaded', firstDoseNote);
+
 window.FORMKIT_CONFIG = {
   formType: 'medical', version: 'v1', formKey: 'dcy_01217',
   reset: resetForm, applyPrefill: PA_APPLY,
@@ -460,7 +512,11 @@ window.FORMKIT_CONFIG = {
       side_effects:                g('sideEffects'),
       side_effects_see_attached:   gc('sideEffectsSeeAttached'),
       physician_date_of_signature: g('signedDate') || null,
-      physician_phone:             g('physicianPhone')
+      physician_phone:             g('physicianPhone'),
+      /* Ответы центра — своими ключами, чтобы их нельзя было спутать с клетками бланка. */
+      pharmacy_label_photo:        (window.FormKit && FormKit.photo) ? FormKit.photo('f_label_photo') : '',
+      taken_before:                gc('f_taken_before_y') ? 'yes' : (gc('f_taken_before_n') ? 'no' : null),
+      may_carry_emergency:         gc('f_may_carry')
     };
     // Physician conditional: parent-only submissions route to the "awaiting physician" Inbox lane.
     fd.physician_signed   = !!sigs.physician_sig;
@@ -547,6 +603,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=24"></script>
+<script defer src="form-kit.js?v=25"></script>
 </body>
 </html>
