@@ -583,17 +583,21 @@
     },
     "start_form": {
       "slug": "start_form",
-      "title": "Registration Start Form",
+      "title": "Fee Agreement",
       "kind": "signature",
-      "current": "v1",
+      "current": "v2",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html",
         "v2": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v2.html",
       "intakeMode": "online|kiosk",
       "signer": "parent",
       "history": [
+        {
+          "at": "2026-08-22",
+          "note": "ФЛИП current v1 → v2 по сверке владельца с docx: «принято целиком, кроме одного предложения». Удалено «If a payment is past due… late fee of $5.00 per day» — оно дословно повторяло подтверждение (c), под которым родитель ставит инициалы; одно условие, сказанное дважды, — повод для спора о том, какая формулировка главная. ⚠️ ТУТ ЖЕ НАЙДЕНО И СНЯТО: после сведения вариантов блоки !voucher и infant сходятся на одной семье (частная оплата + младенец), и остаток абзаца печатался ДВАЖДЫ; блок infant был копией и удалён. v1 остаётся историческим."
+        },
         {
           "at": "2026-08-22",
           "note": "ТЕКСТЫ ВЛАДЕЛЬЦА ВСТАВЛЕНЫ ДОСЛОВНО (скрины 22.08): депозит за резерв места, условия оплаты, три подтверждения с инициалами, денежный блок ваучера. Четыре варианта СВЕДЕНЫ в одну форму — переключают факты (ДР · ходит в школу · ждём ребёнка · платит округ), панель выбора и ?variant= сняты. ОТВЕТЫ ВЛАДЕЛЬЦА: отсутствия считаются по КАЛЕНДАРНЫМ полугодиям; Caretaker/Provider — НАШ бланк, не госформа, поэтому рендерим сами. ⚠️ Карта возвращена в способы оплаты словом владельца (27.07 её снимали вместе со Smart Care): «credit card in our parent app», сбор платит родитель. Номера правил в тексте не стоя́т — глава 5180:2-16 на codes.ohio.gov отсутствует целиком (замер 22.08 браузерным UA, контроль: 5180:2-12-25 открывается); стои́т ссылка «under Ohio PFCC rules». ⛔ current остаётся v1: флип — отдельное слово, сверка с docx за владельцем."
@@ -947,7 +951,7 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "label": "Registration Start Form",
+          "label": "Fee Agreement",
           "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid."
         },
         {
@@ -1050,7 +1054,7 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "label": "Registration Start Form",
+          "label": "Fee Agreement",
           "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
@@ -1171,7 +1175,7 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "label": "Registration Start Form",
+          "label": "Fee Agreement",
           "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
