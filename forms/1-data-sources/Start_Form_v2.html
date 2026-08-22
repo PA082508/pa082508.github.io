@@ -92,6 +92,13 @@
   .initrow label{font-size:12px;color:#555;font-weight:700}
   input.initials{width:64px;text-transform:uppercase;letter-spacing:2px;text-align:center;
                  border:1px solid #999;border-radius:6px;padding:5px 6px;font-family:inherit}
+  .photobox{border:1.5px solid #c9d0de;border-radius:10px;padding:12px 14px;background:#f8fafc;margin-top:14px}
+  .photointro{font-size:13.5px;line-height:1.55;margin:0 0 10px}
+  .photolevels{display:flex;flex-direction:column;gap:7px}
+  .photolevels .lvl{font-size:13.5px;display:flex;align-items:flex-start;gap:8px;cursor:pointer}
+  .photolevels .lvl input{margin-top:2px}
+  .photolevels .lvl.locked{opacity:.45;cursor:not-allowed}
+  .photolevels .decline{margin-top:4px;padding-top:8px;border-top:1px dashed #c9d0de;font-weight:700}
   .ackhead{font-weight:700;font-size:13px;margin-top:14px}
   .acks .ack{margin:12px 0;padding-left:12px;border-left:3px solid #d8d8d8}
   .echannel{margin:14px 0;padding:11px 13px;border:1px solid #c9d0de;border-radius:10px;background:#f8fafc}
@@ -497,6 +504,34 @@
     </div>
   </div>
 
+  <!-- PHOTO AND VIDEO CONSENT — текст владельца 22.08, дословно.
+       ⭐ ТРИ УРОВНЯ — ТРИ РАЗНЫХ РАЗРЕШЕНИЯ, А НЕ ГРАДУСЫ ОДНОГО. Родитель, согласный
+       показывать ребёнка своей семье в приложении, не обязан соглашаться на рекламу.
+       ⛔ НИЧЕГО НЕ ОТМЕЧЕНО ЗАРАНЕЕ, и пустая галочка означает НЕТ по этому пункту —
+       так и написано в самом тексте, чтобы согласие не добывалось невнимательностью.
+       ⛔ ОТКАЗ ВЗАИМОИСКЛЮЧАЮЩИЙ: при выборе снимает и запирает три верхних; любой уровень
+       снимает его сам. Одновременно они не стоя́т — и это же стережёт замок базы. -->
+  <div class="sec photobox">
+    <h2>Photo and video consent</h2>
+    <p class="photointro">
+      Play Academy may take photos and videos of children for classroom documentation and to
+      share with parents in the parent app. For any other use, we ask your permission — check
+      each use you allow. Leaving a box unchecked means no for that use. Your child's name is
+      never published with an image. You may withdraw this consent at any time in writing.
+    </p>
+    <div class="photolevels">
+      <label class="lvl"><input type="checkbox" id="photo_parent_app" class="photo-level"> Parent app only (family of the child)</label>
+      <label class="lvl"><input type="checkbox" id="photo_public"     class="photo-level"> Public: center website and social media</label>
+      <label class="lvl"><input type="checkbox" id="photo_ads"        class="photo-level"> Advertising and printed materials</label>
+      <label class="lvl decline"><input type="checkbox" id="photo_decline"> I do not consent to any use beyond classroom documentation.</label>
+    </div>
+    <div class="initrow">
+      <label for="init_photo">Parent initials</label>
+      <input type="text" id="init_photo" maxlength="4" class="initials"
+             data-required data-label="Initials for the photo and video consent">
+    </div>
+  </div>
+
   <!-- SIGNATURES — draw only, both. The source pairs the parent's signature with a phone
        number and the administration's with a date; the parent's date is added as a stamp
        (a signature carries its own date — canon 2026-07-24). -->
@@ -813,6 +848,29 @@ function buildScheds(){
   host.innerHTML = list.map(function(c){ return schedTable(c.seq, c.name); }).join('');
   $$('#scheds .schedblock').forEach(function(b, i){ b.setAttribute('data-kid', list[i].seq); });
 }
+/* ── ФОТО: ТРИ УРОВНЯ И ОТКАЗ ───────────────────────────────────────────────
+   ⛔ ВЗАИМОИСКЛЮЧЕНИЕ ДЕЛАЕТСЯ ОБОИМИ КОНЦАМИ, а не одним. Отметил отказ — три уровня
+   снимаются и запираются; отметил любой уровень — отказ снимается сам. Односторонняя
+   проверка оставила бы состояние, в котором родитель «отказывается» и «разрешает рекламу»
+   одновременно, и документ спорил бы сам с собой.
+   ⭐ ЗАПЕРТО, А НЕ СПРЯТАНО: уровни видно, и видно, что они выключены отказом. Спрятанное
+   читается как «такого выбора нет». */
+function refreshPhoto(){
+  var dec = el('photo_decline');
+  var lv  = $$('.photo-level');
+  if (!dec) return;
+  if (dec.checked) lv.forEach(function(c){ c.checked = false; });
+  lv.forEach(function(c){
+    c.disabled = dec.checked;
+    var box = c.closest('.lvl'); if (box) box.classList.toggle('locked', dec.checked);
+  });
+}
+function onPhotoLevel(){
+  var dec = el('photo_decline');
+  if (dec && $$('.photo-level').some(function(c){ return c.checked; })) dec.checked = false;
+  refreshPhoto();
+}
+
 /* C — «ждём ребёнка»: блок депозита показать, расписание убрать. */
 function refreshExpecting(){
   var box = el('expecting-box'); if (box) box.style.display = gc('expected_child') ? '' : 'none';
@@ -889,6 +947,7 @@ function startReset(){
   ['mon','tue','wed','thu','fri'].forEach(function(d){ ['from','to'].forEach(function(k){ var e=el(d+'_'+k); if(e) e.value=''; }); });
   var cc = el('consent_contact'); if (cc) cc.checked = true;
   if (window.FormKit) { FormKit.clearSig('sig-parent'); FormKit.clearSig('sig-admin'); }
+  refreshPhoto();
   REGFEE_TOUCHED = false; seedRegFee();      // back to the config rate for the next family
   stampAll();
   if (window.FormKit) { FormKit.status('Form cleared',''); FormKit.refreshCounter(); }
@@ -967,6 +1026,15 @@ window.FORMKIT_CONFIG = {
                                   : { consented:false, email:null },
         /* Инициалы против каждого пункта: подпись говорит «я подписал», инициалы —
            «я прочитал ИМЕННО ЭТО». */
+        /* ⭐ ОТКАЗ ПИШЕТСЯ ОТДЕЛЬНЫМ ФАКТОМ, а не выводится из трёх пустых: «не спрашивали»
+           и «прямо отказал» — разные вещи, и различать их должен носитель, а не читатель. */
+        photo_consent: {
+          parent_app: gc('photo_parent_app'),
+          public: gc('photo_public'),
+          ads: gc('photo_ads'),
+          decline: gc('photo_decline'),
+          initials: g('init_photo') || null
+        },
         acknowledgements: {
           ack_1: g('init_ack1') || null,
           ack_2: g('init_ack2') || null,
@@ -1014,9 +1082,11 @@ document.addEventListener('DOMContentLoaded', function(){
         refreshDerived(); refreshExpecting();
       }
       if (t.id === 'econsent' || t.id === 'parent1_email') refreshEConsent();
+      if (t.id === 'photo_decline') refreshPhoto();
+      if (t.classList && t.classList.contains('photo-level')) onPhotoLevel();
     }, true);
   });
-  refreshDerived(); refreshExpecting(); refreshEConsent();
+  refreshDerived(); refreshExpecting(); refreshEConsent(); refreshPhoto();
 
   /* Office setup prefills the parent-visible amount fields (v1 mechanic, kept). */
   var rf = el('setup-regfee');
@@ -1066,7 +1136,7 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=30"></script>
+<script defer src="form-kit.js?v=31"></script>
 
 </body>
 </html>
