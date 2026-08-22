@@ -363,20 +363,24 @@
     "dcy_01225": {
       "slug": "dcy_01225",
       "title": "DCY 01225 — Routine Trip Permission (Rev. 6/2025)",
-      "kind": "document",
+      "kind": "signature",
       "section": "dcy",
       "requiringOrg": "ODJFS/DCY",
-      "current": "v1",
+      "current": "v2",
       "versions": {
         "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225%20Routine%20Trip.PDF",
         "v2": "https://pa082508.github.io/forms/1-data-sources/DCY_01225_v2.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/DCY-01225%20Routine%20Trip.PDF",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01225_v2.html",
       "perInstance": false,
       "history": [
         {
           "at": "2026-08-21",
           "note": "v2: kit-path overlay over the official Rev. 6/2025 scan. PDF v1 kept as history. DARK until the word — coordinates await a 1:1 paper sverka."
+        },
+        {
+          "at": "2026-08-22",
+          "note": "current → v2 after the owner checked the overlay against the paper 1:1. PDF v1 stays as history."
         }
       ],
       "submissionType": "dcy_01225",
