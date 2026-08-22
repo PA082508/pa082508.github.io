@@ -587,18 +587,36 @@
       "kind": "signature",
       "current": "v1",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html"
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html",
+        "v2": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v2.html"
       },
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Start_Form_v1.html",
       "intakeMode": "online|kiosk",
       "signer": "parent",
       "history": [
         {
+          "at": "2026-08-22",
+          "note": "ТЕКСТЫ ВЛАДЕЛЬЦА ВСТАВЛЕНЫ ДОСЛОВНО (скрины 22.08): депозит за резерв места, условия оплаты, три подтверждения с инициалами, денежный блок ваучера. Четыре варианта СВЕДЕНЫ в одну форму — переключают факты (ДР · ходит в школу · ждём ребёнка · платит округ), панель выбора и ?variant= сняты. ОТВЕТЫ ВЛАДЕЛЬЦА: отсутствия считаются по КАЛЕНДАРНЫМ полугодиям; Caretaker/Provider — НАШ бланк, не госформа, поэтому рендерим сами. ⚠️ Карта возвращена в способы оплаты словом владельца (27.07 её снимали вместе со Smart Care): «credit card in our parent app», сбор платит родитель. Номера правил в тексте не стоя́т — глава 5180:2-16 на codes.ohio.gov отсутствует целиком (замер 22.08 браузерным UA, контроль: 5180:2-12-25 открывается); стои́т ссылка «under Ohio PFCC rules». ⛔ current остаётся v1: флип — отдельное слово, сверка с docx за владельцем."
+        },
+        {
+          "at": "2026-08-22",
+          "note": "РАЗМОРОЖЕНО издание v2 (построено 27.07, заморожено 06.08 коммитом e287a87 — парковка, чтобы не смести чужой заход в общий реестр). Одна форма, ЧЕТЫРЕ варианта: standard / infant / school_age / voucher, переключаются data-variant и одним проходом applyVariant; скелет один, копий нет. Суммы вынесены из текста в реестр (fees, эффективные по дате подписи; применённый набор — снимком в записи). Дети 1..N. Даты подписей — штампы. Источники: четыре наших docx в forms/3-library/our-documents/. ⚠️ ПРИ РАЗМОРОЗКЕ ПОЧИНЕНО: штамп даты и отпирание слота администрации висели на mouseup/touchend, а подпись родителя на этой форме приезжает С ПОЛКИ ПРОГРАММНО (data-fk-adopt) — mouseup не случается, и форма молча выглядела бы неподписанной у семьи, которая её подписала. Теперь слушается fk:ink. Кит подтянут v13 → v28, версия объявлена meta fk-form-version. ⛔ current ОСТАЁТСЯ v1: флип — отдельное слово."
+        },
+        {
           "at": "2026-07-15",
           "note": "FLIP → v1 on Nikolay's «поля ок». Mockup taken into the kit (2ee96b7/48e90bb): centre tabs removed (finding #6), Ridge-hardcoded header replaced by ?center= with blank honest degradation, logo → shared pa-logo.png (161KB→24KB). 9 required; OFFICE SETUP badged, never required, director-prefilled via session packet. Channel submit_enrollment_form, submission_type=start_form. OPEN (not blockers): Alpha e-mail unconfirmed, pearl/alpha fax empty."
         }
       ],
-      "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid. (Описание карточки для случая, когда форма не объявлена ни одним набором: витрина синтезирует слот из forms{} и берёт label/note отсюда. Канон формы-двери.)"
+      "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid. (Описание карточки для случая, когда форма не объявлена ни одним набором: витрина синтезирует слот из forms{} и берёт label/note отсюда. Канон формы-двери.)",
+      "variants": {
+        "single": "Fee Agreement"
+      },
+      "sources": {
+        "standard": "forms/3-library/our-documents/Fee Agreement.docx",
+        "infant": "forms/3-library/our-documents/Infant Agreement.docx",
+        "school_age": "forms/3-library/our-documents/School Age Agreement.docx",
+        "voucher": "forms/3-library/our-documents/Voucher Agreement.docx"
+      }
     },
     "parents_book": {
       "slug": "parents_book",
@@ -1287,5 +1305,20 @@
     "https://www.playacademyusa.com",
     "https://menumaker-app.vercel.app",
     "http://localhost:5173"
-  ]
+  ],
+  "fees": {
+    "_note": "Ставки денежного договора (start_form / Fee Agreement). ЭФФЕКТИВНЫ ПО ДАТЕ: форма резолвит строку на ДАТУ ПОДПИСИ и кладёт применённый набор снимком в запись. Смена ставки = НОВАЯ строка с новым from (и to у прежней); прежнюю не редактируем — иначе подписанный в прошлом договор начнёт печататься сегодняшней суммой. Org-wide: ставки едины для Ridge/Pearl/Alpha (Николай, 27.07.2026). Если разойдутся — добавляется блок \"centers\" с перекрытием по-полю, форма к этому готова.",
+    "defaults": [
+      {
+        "from": "2026-01-01",
+        "to": null,
+        "reg_fee": 75.0,
+        "reg_fee_school_age": 25.0,
+        "reg_fee_voucher": 25.0,
+        "infant_waiting_deposit": 150.0,
+        "late_fee_per_day": 5.0,
+        "absentee_days_per_half_year": 10
+      }
+    ]
+  }
 }

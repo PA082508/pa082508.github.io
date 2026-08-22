@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- ⚠️ ВЕРСИЮ В ЗАПИСЬ О ПОДАЧЕ КИТ БЕРЁТ ОТСЮДА, а не из FORMKIT_CONFIG.version. Без неё
+     он падает на имя файла по шаблону `_vN.html`: здесь оно совпадает, но совпадение — не
+     контракт. Переименуют файл — и запись начнёт врать молча. -->
+<meta name="fk-form-version" content="v2">
+<title>Play Academy — Fee Agreement</title>
+<!-- FORM REGISTRY: slug=start_form · version=v2 · Rev. 07/2026 · requiringOrg=Internal · signer=parent · intakeMode=online|kiosk
+
+     v2 (2026-07-27) — ONE form, FOUR variants. Sources (our own documents, forms/3-library/our-documents/):
+       standard    → "Fee Agreement.docx"
+       infant      → "Infant Agreement.docx"          (title: Infant Fee Agreement)
+       school_age  → "School Age Agreement.docx"      (title: School Age Fee Agreement)
+       voucher     → "Voucher Agreement.docx"         (title: CARETAKER/PROVIDER Fee Agreement)
+     ⛔ НОМЕРА ПРАВИЛ УБРАНЫ ИЗ ТЕКСТА (22.08). Стояли 5101:2-16-39(L) и 5101:2-16-35(K)(1);
+     глава перенумерована 5101:2 → 5180:2 (DCY, 02.01.2025), а новые номера открыть на
+     codes.ohio.gov НЕ УДАЛОСЬ — публикатор отвечает «rule not found».
+     ⭐ Ссылка на правило, которого нельзя открыть, хуже отсутствия ссылки: она выглядит
+     проверяемой и не проверяется. Смысл абзацев сохранён дословно, ушли только номера;
+     вернутся, когда номер будет подтверждён открытым текстом.
+     ⚠️ ОТКРЫТО: не государственный ли это бланк — см. вопрос владельцу в показе.
+
+     ⭐ 22.08: ЧЕТЫРЁХ ВАРИАНТОВ БОЛЬШЕ НЕТ — одна форма, блоки включаются ФАКТАМИ
+     (дата рождения · ходит в школу · ждём ребёнка · платит округ). Историческая заметка
+     о том, что переключал вариант:
+       (a) registration fee   (b) payment terms   (c) delinquency   (d) responsibility tail
+     Every variant block is <… data-when="!voucher"> and one pass of applyVariant() shows/hides it.
+
+     AMOUNTS ARE NOT IN THE TEXT. They come from enroll-registry.json → fees, effective-dated,
+     resolved on the DATE OF SIGNING, and the applied set is snapshotted into the record. If the
+     registry can't be reached the form falls back to the snapshot baked in below and says so in
+     the record (fees_applied.source='builtin') — a blank amount on a money agreement is worse
+     than a stale one, but the record must never lie about where the number came from.
+
+     AUTHORIZED DEPARTURES FROM THE SOURCE DOCX (owner's word 2026-07-27, not typo fixes —
+     recorded so the printed sheet's differences from paper stay countable):
+       · the "Card (e-receipt)" method checkbox is removed (it was v1's, not the docx's);
+       · "or credit card through Smart Care" is removed from the Forms-of-payment sentence.
+     Payment-rule WORDING is otherwise FROZEN pending counsel — see the blocking section in
+     docs/compliance/lawyer-memo.md. Do not touch those sentences.
+
+     SIGNATURES: parent + administration, DRAW ONLY (DCY: an e-signature may not be a typed
+     name — docs/compliance/e-signature.md). Dates beside them are STAMPS set at the moment of
+     signing, read-only, cleared with the signature. Administration unlocks after the parent signs.
+-->
+<style>
+  :root{ --green:#1e4d36; --green-soft:#eaf3ec; --line:#333; --accent:#b31b4e; }
+  *{box-sizing:border-box}
+  body{font-family:Georgia,'Times New Roman',serif;color:#111;margin:0;background:#f4f4f0}
+  .page{max-width:820px;margin:14px auto;background:#fff;padding:34px 44px;border:1px solid #ccc}
+  /* Office panels (screen-only) */
+  .center-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .center-tabs button{padding:8px 18px;border:1px solid var(--green);background:#fff;color:var(--green);cursor:pointer;font-family:inherit;font-size:14px;border-radius:6px}
+  .center-tabs button.active{background:var(--green);color:#fff}
+  /* Variant bar (screen-only): the packet link normally decides; this is the override. */
+  .vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;background:#eef4f0;border:1px solid #bcd3c5;border-radius:8px;padding:9px 12px}
+  .vbar .lbl{font-size:12.5px;font-weight:bold;color:#2a5a42}
+  .vbtn{font-family:inherit;font-size:13px;padding:5px 13px;border:1px solid var(--green);background:#fff;color:var(--green);border-radius:6px;cursor:pointer}
+  .vbtn.on{background:var(--green);color:#fff}
+  .vbar .from-link{font-size:11.5px;color:#4a6b58}
+  /* Header */
+  .hdr{display:grid;grid-template-columns:1fr 260px 1fr;align-items:center;gap:10px;border-bottom:3px double var(--green);padding-bottom:10px}
+  .hdr .left{font-size:13px}
+  .hdr .left .org{font-weight:bold;font-size:16px;color:var(--green)}
+  .hdr .right{font-size:13px;text-align:right}
+  .logo{width:250px;height:90px;display:flex;align-items:center;justify-content:center}
+  .logo img{max-width:100%;max-height:100%}
+  h1{font-family:'Copperplate','Trajan Pro',Georgia,serif;letter-spacing:3px;text-align:center;color:var(--green);font-size:22px;margin:14px 0 4px}
+  .subtitle{text-align:center;font-size:12px;color:#555;margin-bottom:14px}
+  /* Fields */
+  .row{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:flex-end;margin:8px 0}
+  .f{display:flex;align-items:flex-end;gap:6px}
+  .f label{font-size:13.5px;white-space:nowrap}
+  .f input[type=text],.f input[type=date],.f input[type=email],.f input[type=tel],.f input[type=time]{
+    border:none;border-bottom:1px solid var(--line);font-family:inherit;font-size:14px;padding:2px 4px;background:transparent;min-width:60px}
+  .wide{flex:1}
+  .sec{margin-top:16px}
+  .sec h2{font-size:14px;color:var(--green);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--green);padding-bottom:2px;margin:0 0 8px}
+  /* Child rows 1..N */
+  .kidrow{position:relative}
+  .kidrm{font-size:10.5px;border:1px solid #bbb;background:#fff;border-radius:4px;cursor:pointer;color:#a33;padding:1px 6px}
+  .addkid{font-family:inherit;font-size:12.5px;padding:5px 12px;border:1px dashed var(--green);background:#fff;color:var(--green);border-radius:6px;cursor:pointer;margin-top:4px}
+  @media print{ .kidrm,.addkid{display:none} }
+  /* Новые блоки v2.1 */
+  .derived{margin-top:8px;font-size:13px;color:#0f4c35;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:7px 10px}
+  .depositbox{margin-top:10px;border:1.5px solid #b8a24a;border-radius:10px;padding:12px 14px;background:#fffdf3}
+  .deposit-amount{font-weight:800;font-size:15px;margin-bottom:6px}
+  .initrow{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .initrow label{font-size:12px;color:#555;font-weight:700}
+  input.initials{width:64px;text-transform:uppercase;letter-spacing:2px;text-align:center;
+                 border:1px solid #999;border-radius:6px;padding:5px 6px;font-family:inherit}
+  .ackhead{font-weight:700;font-size:13px;margin-top:14px}
+  .acks .ack{margin:12px 0;padding-left:12px;border-left:3px solid #d8d8d8}
+  .echannel{margin:14px 0;padding:11px 13px;border:1px solid #c9d0de;border-radius:10px;background:#f8fafc}
+  .schedblock{margin:10px 0 16px}
+  .schedname{font-weight:800;font-size:14px;margin-bottom:4px}
+  table.sched2{border-collapse:collapse;width:100%}
+  table.sched2 td{padding:3px 8px;font-size:13px;white-space:nowrap}
+  table.sched2 td.d{font-weight:700;width:96px}
+  table.sched2 td.p2{padding-left:18px}
+  @media print{ .derived{background:#fff} }
+  @media(max-width:640px){ table.sched2 td{white-space:normal;font-size:12.5px;padding:2px 4px} }
+  table.sched{border-collapse:collapse;margin:4px 0}
+  table.sched td{padding:3px 10px;font-size:13.5px}
+  /* The schedule pairs days into two columns (Mon+Thu on one row) — a paper layout,
+     747px wide. On a phone that pushed the WHOLE page sideways, so every field shifted
+     under the thumb. Wide content scrolls inside its own box; the page body never does. */
+  .schedwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  @media print{ .schedwrap{overflow:visible} }
+  @media (max-width: 640px){
+    .page{padding:18px 14px;margin:8px auto;border-left:none;border-right:none}
+    .hdr{grid-template-columns:1fr;text-align:left;gap:6px}
+    .hdr .right{text-align:left}
+    .logo{width:170px;height:60px}
+    input[type=text],input[type=date],input[type=time],input[type=email],input[type=tel]{max-width:100%}
+    .schedwrap{overflow-x:visible}
+    /* Stacking alone put the week out of order — the rows pair Mon+Thu, Tue+Fri, so a
+       vertical read came out Mon · Thu · Tue · Fri · Wed. display:contents + order restores Mon→Fri. */
+    table.sched{display:flex;flex-direction:column;gap:0}
+    table.sched tbody{display:contents}
+    table.sched tr{display:contents}
+    table.sched td{display:flex;align-items:center;gap:6px;padding:1px 0}
+    table.sched tr:nth-child(1) td:nth-child(-n+3){order:1}
+    table.sched tr:nth-child(2) td:nth-child(-n+3){order:2}
+    table.sched tr:nth-child(3) td{order:3}
+    table.sched tr:nth-child(1) td:nth-child(n+4){order:4}
+    table.sched tr:nth-child(2) td:nth-child(n+4){order:5}
+    table.sched td:nth-child(1),table.sched td:nth-child(4){font-weight:700;margin-top:9px;padding-left:0 !important}
+    table.sched td:empty{display:none}
+    table.sched input[type=time]{flex:1 1 auto;min-width:0}
+    .f{flex-wrap:wrap;min-width:0}
+    .f label{white-space:normal}
+    .f input[type=text],.f input[type=date],.f input[type=email],.f input[type=tel]{flex:1 1 140px;min-width:0}
+    .row,.row>*{min-width:0}
+  }
+  .cb{display:inline-flex;align-items:center;gap:5px;font-size:13px;margin-right:14px}
+  .cb input{width:15px;height:15px}
+  /* Referral box */
+  .referral{border:2px solid var(--accent);border-radius:10px;background:#fdf2f6;padding:12px 16px;margin:16px 0}
+  .referral h3{margin:0 0 6px;color:var(--accent);font-size:15px}
+  .referral .promise{font-style:italic;font-size:12.5px;color:#7a1338;margin-top:6px}
+  .referral .others{margin-top:8px;font-size:12.5px;color:#444}
+  /* Fee box */
+  .feebox{border:1.5px solid var(--green);border-radius:8px;padding:12px 16px;margin:10px 0;background:var(--green-soft)}
+  .terms{font-size:12.5px;line-height:1.55;margin:10px 0}
+  .terms b{color:#000}
+  .terms p{margin:0 0 10px}
+  /* Signatures */
+  .sigrow{display:flex;gap:40px;margin-top:26px}
+  .sig{flex:1}
+  .sig .line{border-bottom:1px solid var(--line);height:34px}
+  .sigpad{border-bottom:1px solid var(--line);width:100%;height:70px;touch-action:none;cursor:crosshair}
+  .sigpad.locked{cursor:not-allowed;background:#f4f4f4}
+  .sigclear{font-size:10.5px;border:1px solid #bbb;background:#fff;border-radius:4px;cursor:pointer;color:#a33;margin-left:8px}
+  .siglockmsg{font-size:11px;color:#8a6d1e}
+  @media print{.sigclear,.siglockmsg{display:none}}
+  .sig .cap{font-size:12.5px;margin-top:3px}
+  .sig .esign{font-size:10.5px;color:#777}
+  .stampdate{border:none;border-bottom:1px solid var(--line);font-family:inherit;font-size:14px;padding:2px 4px;background:transparent;width:150px}
+  .stampdate[readonly]{background:#f7f7f5}
+  /* Office use */
+  .office{border:1px dashed #888;padding:10px 14px;margin-top:18px;background:#fafafa;font-size:13px}
+  .office h3{margin:0 0 6px;font-size:12.5px;text-transform:uppercase;letter-spacing:1px;color:#555}
+  footer{margin-top:20px;font-size:10.5px;color:#666;display:flex;justify-content:space-between;border-top:1px solid #ddd;padding-top:6px}
+  .print-btn{position:fixed;right:18px;top:18px;background:var(--green);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:14px;cursor:pointer}
+  @media print{.center-tabs,.vbar,.print-btn{display:none} body{background:#fff} .page{border:none;margin:0;max-width:100%}}
+</style>
+</head>
+<body>
+<div data-formkit="toolbar"></div>
+<div class="page">
+
+  <!-- ⛔ ПАНЕЛЬ ВЫБОРА ВАРИАНТА СНЯТА ЦЕЛИКОМ. Она спрашивала «какой у вас договор?» у
+       семьи, пришедшей узнать именно это, и ошибалась молча, если ссылку прислали не ту.
+       Договор один; что в нём включится — решают факты, которые семья и так вписывает. -->
+  <!-- OFFICE SETUP: служебная панель (скрыта при печати). Родитель ЦЕНТР НЕ ВЫБИРАЕТ —
+       форма универсальная, каждый садик выдаёт её за свою: центр фиксируется здесь
+       сотрудником (или настройкой киоск-устройства), суммы вписываются ДО передачи родителю.
+       Registration fee ОСТАЁТСЯ (v1), но больше не начинается с вшитых 75.00: поле
+       ЗАСЕВАЕТСЯ ставкой из конфига по варианту, а стойка может его перебить для этой
+       семьи (скидка/льгота). Запись хранит обе величины — ставку конфига и напечатанную. -->
+  <!-- ⛔ РОДИТЕЛЬ ЭТОЙ ПАНЕЛИ НЕ ВИДИТ ВОВСЕ. Прежде она стояла на экране у всех с подписью
+       «Office use only» — то есть просила семью не смотреть туда, куда смотреть некуда.
+       Панель появляется ТОЛЬКО на служебном входе: ?office=1 либо киоск (PA_KIOSK).
+       ⭐ Это не секрет, а адресность: суммы на ней — рабочие цифры стойки, и родителю они
+       говорят ровно то, что он и так прочтёт в договоре, зато сбивают с толку. -->
+  <div class="center-tabs" id="setup" style="display:none;flex-wrap:wrap;align-items:center;background:#fffbe6;border:1px dashed #b8a24a;border-radius:8px;padding:10px 12px">
+    <span style="width:100%;display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-weight:700;color:#7a6a1e;background:#fff3c4;border:1px solid #b8a24a;border-radius:999px;padding:2px 8px;white-space:nowrap">Office use only — completed by the center</span><span style="font-size:12.5px;font-weight:bold;color:#7a6a1e">Not for the parent to fill. The center comes from the packet link/QR; the fees are seeded from the registry.</span></span>
+    <span style="font-size:13px;margin-left:14px">Registration fee $</span>
+    <input type="text" id="setup-regfee" data-fk-field="reg_fee" value="" style="width:60px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <span style="font-size:13px;margin-left:14px" data-when="!voucher">Weekly tuition $</span>
+    <input type="text" id="setup-tuition" data-fk-field="weekly_tuition" value="" placeholder="0.00" data-when="!voucher" style="width:70px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <span style="font-size:13px;margin-left:14px" data-when="voucher">Weekly co-pay $</span>
+    <input type="text" id="setup-copay" value="" placeholder="0.00" data-when="voucher" style="width:70px;border:1px solid #b8a24a;border-radius:4px;padding:3px 5px;font-family:inherit">
+    <span style="font-size:11.5px;margin-left:14px;color:#7a6a1e" id="feesrc"></span>
+  </div>
+
+  <div class="hdr">
+    <div class="left">
+            <div><a href="https://www.playacademyusa.com">www.playacademyusa.com</a></div>
+      <div id="c-addr1"></div>
+      <div id="c-addr2"></div>
+    </div>
+    <div class="logo"><img src="pa-logo.png" alt="Play Academy" onerror="this.style.display='none'"><!-- лого из БД (asset cacfp-receipt) --></div>
+    <div class="right">
+      <div id="c-phone"></div>
+      <div id="c-fax"></div>
+      <div id="c-emaillbl" style="display:none">E-mail:</div>
+      <div id="c-email"></div>
+    </div>
+  </div>
+
+  <!-- Title is the SOURCE document's own title for the chosen variant (print 1:1). -->
+  <h1 id="doctitle">Fee Agreement</h1>
+  <div class="subtitle">This form starts your child's enrollment. Registration is confirmed when the registration fee is paid.</div>
+
+  <!-- CHILDREN — 1..N -->
+  <!-- ⭐ ОДНА СТРОКА-ОБРАЗЕЦ, ОСТАЛЬНЫЕ ДОБАВЛЯЮТСЯ. Прежние ДВЕ жёстких строки говорили
+       семье «детей у вас двое», а третьего приходилось искать кнопкой. Теперь форма ничего
+       не предполагает: одна строка на старте, «+ Add another child» без верхнего предела.
+       ⛔ Строка «A sibling already attends» СНЯТА: она спрашивала о том, что система знает
+       лучше семьи, и ни на что в документе не влияла. -->
+  <div class="sec">
+    <h2>Child / Children</h2>
+    <div id="kids">
+      <div class="row kidrow" data-kid="1">
+        <div class="f wide"><label>Child's Name</label><input type="text" id="child1_name" name="child1_name" data-fk-field="child1_name" data-required data-label="Child's name" style="width:240px"></div>
+        <div class="f"><label>DOB</label><input type="date" id="child1_dob" name="child1_dob" data-fk-field="child1_dob" data-required data-label="Child's date of birth"></div>
+        <div class="f"><label>Desired Start Date</label><input type="date" id="child1_start_date" name="child1_start_date" data-required data-label="Desired start date"></div>
+        <div class="f"><label>&nbsp;</label><span class="cb"><input type="checkbox" id="child1_school"><label for="child1_school">attends school</label></span></div>
+      </div>
+    </div>
+    <button type="button" class="addkid" id="addkid">+ Add another child</button>
+
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="expected_child" name="expected_child"><label for="expected_child"><b>Expecting a child</b> — reserve a future spot; expected month:</label></span>
+      <div class="f"><input type="text" id="expected_month" name="expected_month" placeholder="e.g. Nov 2026" style="width:110px"></div>
+    </div>
+
+    <!-- ⭐ ПЛАТИТ ЛИ ЗА УХОД ОКРУГ — ЭТО ФАКТ О СЕМЬЕ, А НЕ О РЕБЁНКЕ, и из детей он не
+         выводится ничем. Поэтому спрашивается прямо и ровно один раз; всё остальное
+         (младенец / дошкольник / школьник) форма выводит сама из дат рождения. -->
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="publicly_funded" name="publicly_funded"><label for="publicly_funded">Our child care is paid through a <b>county voucher</b> (publicly funded child care)</label></span>
+    </div>
+
+    <div class="derived" id="derived-note"></div>
+
+    <!-- ⭐ ОЖИДАЕМЫЙ РЕБЁНОК — ЭТО ДЕПОЗИТ, А НЕ ГАЛОЧКА. Место резервируется деньгами, и
+         документ обязан сказать об этом там же, где семья ставит галочку, а не абзацем ниже.
+         Блок появляется только при «Expecting a child» и уносит с собой расписание. -->
+    <div class="depositbox" id="expecting-box" style="display:none">
+      <div class="deposit-amount">Spot-hold deposit — $<span data-fee="infant_waiting_deposit">—</span></div>
+      <!-- ⛔ ТЕКСТ ВЛАДЕЛЬЦА ЗДЕСЬ НЕ ВЫДУМАН И НЕ ПОДСТАВЛЕН. Это условие о деньгах:
+           написать его «примерно похоже» значит подписать семью под нашей выдумкой. Слот
+           ждёт дословной формулировки; до неё форма НЕ ВЫКЛАДЫВАЕТСЯ. -->
+      <!-- Текст владельца, скрин 22.08. Сумма НЕ вписана в предложение: она приходит из
+           реестра и стои́т строкой выше — иначе смена ставки правила бы договорный абзац. -->
+      <p>
+        To reserve a future spot for an expected child, a deposit of
+        $<span data-fee="infant_waiting_deposit">—</span> is collected together with the
+        registration fee. When the child starts care, the deposit is applied as a credit
+        toward the first weeks of tuition. If the child does not start, the deposit is
+        non-refundable.
+      </p>
+      <div class="initrow">
+        <label for="init_deposit">Initials</label>
+        <input type="text" id="init_deposit" maxlength="4" class="initials" data-init-for="expecting_deposit">
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <!-- ⭐ РАСПИСАНИЕ У КАЖДОГО РЕБЁНКА СВОЁ. Одна сетка на семью врала ровно там, где семьи
+       чаще всего разные: дошкольник ходит целый день, школьник — до и после школы. Отсюда
+       и «два блока» сами собой: блоков столько, сколько детей.
+       ⭐ ДВЕ ПАРЫ ВРЕМЁН В ДНЕ — тот же случай школьника: утро и вечер, а между ними школа.
+       Вторая пара пустая у всех, кому она не нужна, и молчит в печати.
+       ⛔ СЕМЬ ДНЕЙ, А НЕ ПЯТЬ: центр работает и в выходные, а прежняя маска Пн–Пт делала
+       субботу непредставимой — семья писала её в поля буднего дня. -->
+  <div class="sec" id="sched-sec">
+    <h2>Planned Schedule of Attendance</h2>
+    <div id="scheds"></div>
+  </div>
+
+  <!-- REFERRAL -->
+  <div class="referral">
+    <h3>⭐ Were you referred by a Play Academy family or staff member?</h3>
+    <div class="row">
+      <div class="f wide"><label>Write their name — <b>they'll receive a tuition credit</b> as our thank-you:</label></div>
+    </div>
+    <div class="row"><div class="f wide"><label>Referred by</label><input type="text" id="referred_by" name="referred_by" style="width:320px"></div></div>
+    <div class="promise">And when <b>you</b> refer a family later — you'll receive the same credit. Credits are applied after the referred child's first month of attendance.</div>
+    <div class="others">If not referred — how did you find us?
+      <span class="cb"><input type="checkbox" id="src_google" name="src_google">Google</span>
+      <span class="cb"><input type="checkbox" id="src_social" name="src_social">Social media</span>
+      <span class="cb"><input type="checkbox" id="src_droveby" name="src_droveby">Drove by</span>
+      <span class="cb"><input type="checkbox" id="src_other" name="src_other">Other:</span>
+      <input type="text" id="src_other_text" name="src_other_text" style="border:none;border-bottom:1px solid #999;width:130px">
+    </div>
+  </div>
+
+  <!-- (a) ДЕНЬГИ. Два блока, взаимоисключающих: частная оплата и ваучер. Переключает
+       ОДНА галочка «платит округ» — потому что это два разных плательщика с разными
+       сроками и разными обязанностями, а не два оформления одного и того же. -->
+
+  <!-- ЧАСТНАЯ ОПЛАТА -->
+  <div class="feebox" data-when="!voucher">
+    <div class="row">
+      <div class="f"><label><b>The registration fee (nonrefundable) — $<span id="regfee-txt">—</span> per family</b>, paid on</label><input type="date" id="reg_fee_paid_on" name="reg_fee_paid_on"></div>
+      <div class="f"><label>Method:</label>
+        <span class="cb"><input type="checkbox" id="pay_cash" name="pay_cash">Cash</span>
+        <span class="cb"><input type="checkbox" id="pay_check" name="pay_check">Check #</span><input type="text" id="check_no" name="check_no" style="width:80px">
+      </div>
+    </div>
+    <div class="row" data-when="infant">
+      <div class="f"><label><b>&amp; Infant waiting fee (will be credited when infant's 1st day at the center) — $<span data-fee="infant_waiting_deposit">—</span></b></label></div>
+    </div>
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="deferred_deposit" name="deferred_deposit"><label for="deferred_deposit"><b>Deferred start:</b> first-week tuition deposit collected, $</label></span>
+      <input type="text" id="deposit_amount" name="deposit_amount" style="width:70px">
+      <div class="f"><label>Staff who received payment</label><input type="text" id="fee_received_by" name="fee_received_by" style="width:170px"></div>
+    </div>
+  </div>
+
+  <!-- ВАУЧЕР (PFCC / Title XX) — по скану владельца.
+       ⭐ ЗДЕСЬ ДРУГОЙ ПЛАТЕЛЬЩИК, И ОТСЮДА ВСЁ ОСТАЛЬНОЕ: свой взнос и свой срок (сентябрь),
+       свой день недели (понедельник), свои правила отсутствий и обязанность отмечаться на
+       планшете. Сложить это с частной оплатой в один абзац значило бы получить документ,
+       верный ни для кого. -->
+  <div class="feebox voucherbox" data-when="voucher">
+    <div class="row">
+      <div class="f"><label><b>The registration fee — $<span id="regfee-txt-v">—</span> per family, nonrefundable, due every September</b>, paid on</label><input type="date" id="v_fee_paid_on" name="v_fee_paid_on"></div>
+      <div class="f"><label>Check #</label><input type="text" id="v_check_no" name="v_check_no" style="width:90px"></div>
+    </div>
+    <!-- ⛔ Со-платёж — цифра округа, не семьи: поле служебное и родителю не показывается. -->
+    <div class="row officeonly" data-office="1">
+      <div class="f"><label><b>Weekly co-pay</b> $ <span class="officebadge">office use</span></label><input type="text" id="copay_amount" name="copay_amount" style="width:80px"></div>
+    </div>
+
+    <p>
+      Payment is due <b>by Monday of each week</b>. If payment is not made on time each week,
+      your child/ren will not be able to attend Play Academy that week.
+    </p>
+    <p>
+      Absentee days beyond those reimbursed by the County Agency — up to
+      <b><span data-fee="absentee_days_per_half_year">—</span> per child</b> during each six-month period
+      (January 1 – June 30 and July 1 – December 31 of each year — calendar half-years) —
+      are paid out of pocket.
+    </p>
+    <p>
+      I am responsible for using the <b>swipe tablet to check in and check out</b> all attendance for
+      each child.
+    </p>
+    <p>
+      When an assigned copayment is delinquent more than two weeks from the date established in the
+      written copayment agreement, the provider submits a record of the delinquent copayment to the
+      County Agency no later than three weeks from the date the copayment was due.
+    </p>
+    <p>
+      I further understand that ineligibility for child care benefits continues while delinquent
+      co-payments are owed to Play Academy, unless satisfactory arrangements are made to pay.
+      Arrangements to pay delinquent co-payments and fees must be satisfactory to both the
+      parent/guardian and Play Academy.
+    </p>
+    <!-- ⛔ НОМЕРОВ ПРАВИЛ ЗДЕСЬ НЕТ, И ЭТО ЗАМЕР, А НЕ ЛЕНЬ. Проверено 22.08 прямым запросом
+         с браузерным UA: 5180:2-16 (вся глава), 5180:2-16-02, -09, -39 и старые 5101:2-16-*
+         отдают «Number Not Found». Для сравнения 5180:2-12-25 и chapter-5180:2-12 открываются
+         — значит дело не в способе запроса. Ссылка на правило, которого нельзя открыть, хуже
+         её отсутствия: выглядит проверяемой и не проверяется. -->
+    <p class="rulesref">These terms are set out <b>under Ohio PFCC rules</b>.</p>
+
+    <div class="initrow">
+      <label for="init_voucher">Initials</label>
+      <input type="text" id="init_voucher" maxlength="4" class="initials" data-init-for="voucher_terms">
+      <span class="inithint">I have read the voucher payment terms above</span>
+    </div>
+  </div>
+
+  <div class="terms">
+    <!-- (b) PAYMENT TERMS -->
+    <!-- ⛔ «The tuition of $____» СНЯТО. Сумма недельной платы не пишется в договор рукой
+         родителя: она принадлежит центру, живёт в конфиге и приходит из него. Строка, куда
+         семья вписывает собственную цену, — приглашение к спору, а не условие.
+         ⛔ ТЕКСТ ПРАВИЛ ОПЛАТЫ ЖДЁТ ДОСЛОВНОЙ ФОРМУЛИРОВКИ ВЛАДЕЛЬЦА. Прежние абзацы были
+         перенесены из docx 27.07 и с тех пор заморожены (спека, «ПАУЗА НА ТЕКСТЕ ПРАВИЛ
+         ОПЛАТЫ»): это обязательство по оплате, то есть часть договора. Своими словами такое
+         не пишется. -->
+    <!-- Текст владельца, скрин 22.08. ⚠️ Карта возвращена СЛОВОМ ВЛАДЕЛЬЦА: 27.07 её сняли
+         вместе со Smart Care, теперь она названа заново — «in our parent app», со сбором,
+         который платит родитель. Это правка правила, а не списка методов, и она сделана
+         владельцем прямо. -->
+    <p>
+      <b>Tuition payments.</b> Tuition is due in advance — no later than Monday of the week
+      being paid. (Example: tuition for the week of March 9 is due by Monday, March 9.)
+      Accepted forms of payment: cash, check, money order, automatic bank withdrawal, or
+      credit card in our parent app (card payments carry a processing fee, paid by the
+      parent). To avoid late fees, we recommend automatic bank withdrawal (from your
+      checking account) — it is free of charge.
+    </p>
+
+    <!-- ⭐ ТРИ ПОДТВЕРЖДЕНИЯ С ИНИЦИАЛАМИ. Подпись внизу говорит «я подписал документ»;
+         инициалы против пункта говорят «я прочитал ИМЕННО ЭТО». Разница видна ровно тогда,
+         когда семья приходит с «мне этого не объясняли». -->
+    <div class="ackhead">Each line below is initialed by the parent.</div>
+    <div class="acks" id="acks">
+      <div class="ack">
+        <p>I have reviewed the current tuition rates.</p>
+        <div class="initrow"><label for="init_ack1">Initials</label>
+          <input type="text" id="init_ack1" maxlength="4" class="initials" data-init-for="ack_1" data-required data-label="Initials for the first acknowledgement"></div>
+      </div>
+      <div class="ack">
+        <p>I am responsible for paying tuition for my child(ren) at Play Academy as set out above. Tuition is not adjusted or prorated for illness, holidays, or emergency closures, and is due in full even for weeks my child does not attend.</p>
+        <div class="initrow"><label for="init_ack2">Initials</label>
+          <input type="text" id="init_ack2" maxlength="4" class="initials" data-init-for="ack_2" data-required data-label="Initials for the second acknowledgement"></div>
+      </div>
+      <div class="ack">
+        <p>A late fee of $<span data-fee="late_fee_per_day">—</span> per day applies to overdue balances. I understand that my child cannot begin a new billing cycle with an unpaid balance from the previous cycle, unless a payment arrangement has been approved by Play Academy in writing.</p>
+        <div class="initrow"><label for="init_ack3">Initials</label>
+          <input type="text" id="init_ack3" maxlength="4" class="initials" data-init-for="ack_3" data-required data-label="Initials for the third acknowledgement"></div>
+      </div>
+    </div>
+
+    <!-- RESPONSIBILITY — shared line, variant tail -->
+    <!-- ⛔ «I, ______,» СНЯТО. Имя ответственного за оплату уже стои́т в блоке родителя и
+         под подписью; третья строка для того же имени — не строгость, а лишний способ
+         разойтись: вписали Марию, подписала Анна, и документ спорит сам с собой.
+         Имя подставляется из блока родителя и печатается как текст. -->
+    <p>
+      I, <b id="payer_print">—</b>,
+      am responsible for paying Play Academy the above fees for
+      <span data-when="!voucher">my child/ren on agreed basis. <b>Tuition fees are not subject to pro-ration for illness, holidays, or emergency closure of the center. Payment is due even if your child is not here for the week.</b></span>
+      <span data-when="infant">my child on agreed basis.</span>
+      <span data-when="voucher">my children on a weekly basis. <b>I am responsible for using the swipe tablet to check in and check out all attendance for each child.</b></span>
+    </p>
+
+    <!-- ⭐ СОГЛАСИЕ НА ЭЛЕКТРОННУЮ СВЯЗЬ — ЭТО ВЫБОР КАНАЛА, А НЕ ГАЛОЧКА «я не против».
+         Пока его нет, счёт и напоминание уходят бумагой, и семья ждёт их из ящика. Поэтому
+         спрашиваем прямо и записываем адрес, на который согласились: согласие без адреса —
+         согласие ни на что. -->
+    <div class="echannel">
+      <span class="cb"><input type="checkbox" id="econsent" name="econsent"><label for="econsent">
+        <b>Yes — send my invoices, receipts and notices by e-mail</b> to the address below.
+        I understand I can ask for paper at any time.</label></span>
+      <div class="f wide" id="econsent-addr" style="display:none">
+        <label>E-mail for billing</label>
+        <input type="email" id="econsent_email" name="econsent_email" autocomplete="email" style="width:280px">
+      </div>
+    </div>
+
+    <!-- (c) DELINQUENCY -->
+    <p data-when="!voucher">
+      If a payment is past due and arrangements have not been made to make a payment, you will be charged a late fee of
+      <b>$<span data-fee="late_fee_per_day">—</span> per day</b>. I further understand that my child may not start care in the new billing
+      cycle without payment of outstanding fees from the previous billing cycle, unless arrangements to pay delinquent payments
+      and fees were made. The arrangements must be satisfactory to the parent/guardian and Play Academy.
+    </p>
+    <p data-when="infant">
+      I further understand that my child may not start care in the new billing cycle without payment of outstanding fees from the
+      previous billing cycle, unless arrangements to pay delinquent payments and fees were made. The arrangements must be
+      satisfactory to the parent/guardian and Play Academy.
+    </p>
+
+    <p>
+      <span class="cb"><input type="checkbox" id="consent_contact" name="consent_contact" checked></span>
+      I agree to be contacted at the phone/e-mail provided, and to receive documents and receipts electronically.
+      <br>
+      By signing this document, I agree to abide by these terms.
+    </p>
+  </div>
+
+  <!-- CONTACTS -->
+  <div class="sec">
+    <h2>Parent / Guardian Contacts</h2>
+    <div class="row">
+      <div class="f wide"><label>Parent name</label><input type="text" id="parent1_name" name="parent1_name" data-fk-field="parent_name" data-required data-label="Parent/Guardian name" style="width:220px"></div>
+      <div class="f"><label>Phone</label><input type="tel" id="parent1_phone" name="parent1_phone" data-fk-field="phone_day" data-required data-label="Parent phone" style="width:130px"></div>
+      <div class="f wide"><label>E-mail</label><input type="email" id="parent1_email" name="parent1_email" data-fk-field="parent_email" data-required data-label="Parent e-mail" style="width:200px"></div>
+    </div>
+    <div class="row">
+      <div class="f wide"><label>Second contact</label><input type="text" id="parent2_name" name="parent2_name" style="width:220px"></div>
+      <div class="f"><label>Phone</label><input type="tel" id="parent2_phone" name="parent2_phone" style="width:130px"></div>
+    </div>
+  </div>
+
+  <!-- SIGNATURES — draw only, both. The source pairs the parent's signature with a phone
+       number and the administration's with a date; the parent's date is added as a stamp
+       (a signature carries its own date — canon 2026-07-24). -->
+  <div class="sigrow">
+    <div class="sig"><canvas class="sigpad" id="sig-parent" data-fk-adopt data-formkit="signature" data-required data-label="Parent/Guardian signature" width="360" height="70"></canvas><div class="cap">Parent / Guardian signature — sign with finger or mouse <button type="button" class="sigclear" onclick="clearSigAndStamp('sig-parent')">✕ clear</button></div></div>
+    <div class="sig"><div class="line" style="border:none"><input type="tel" id="parent_sig_phone" name="parent_sig_phone" style="border:none;border-bottom:1px solid var(--line);font-family:inherit;font-size:14px;padding:2px 4px;background:transparent;width:150px"></div><div class="cap">phone number</div></div>
+    <div class="sig"><div class="line" style="border:none"><input type="text" id="parent_sig_date" class="stampdate" readonly tabindex="-1"></div><div class="cap">Date</div></div>
+  </div>
+  <div class="sigrow">
+    <div class="sig"><canvas class="sigpad locked" id="sig-admin" data-formkit="signature" width="360" height="70"></canvas><div class="cap">Play Academy Administration <button type="button" class="sigclear" onclick="clearSigAndStamp('sig-admin')">✕ clear</button> <span class="siglockmsg" id="adminlock">— unlocks after the parent signs</span></div></div>
+    <div class="sig"><div class="line" style="border:none"><input type="text" id="admin_sig_date" class="stampdate" readonly tabindex="-1"></div><div class="cap">date</div></div>
+  </div>
+
+  <!-- OFFICE USE -->
+  <div class="office">
+    <h3>Office use — scan this form into the system the same day</h3>
+    <div class="row">
+      <span class="cb"><input type="checkbox" id="office_waitlist" name="office_waitlist">Entered to waiting list, start date confirmed</span>
+      <span class="cb"><input type="checkbox" id="office_prospect" name="office_prospect">No payment — prospects list</span>
+      <div class="f"><label>Receipt #</label><input type="text" id="receipt_no" name="receipt_no" style="width:110px"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Form: start_form · <b>v2</b> · <span id="foot-variant">standard</span> · Rev. 07/2026 · Play Academy Inc.</span>
+    <span id="c-foot"></span>
+  </footer>
+</div>
+
+<script>
+/* Fee Agreement (start_form v2) — form-specific config only; shared behaviour = form-kit.js. */
+
+var CENTERS = {
+  ridge: {addr1:'28930 Ridge Rd.', addr2:'Wickliffe, OH 44092', phone:'C: 440-520-0031', fax:'F: 440-494-7093', email:'playacademy3@gmail.com', foot:'Ridge · Wickliffe, OH'},
+  pearl: {addr1:'6285 Pearl Rd. #30', addr2:'Parma Heights, OH 44130', phone:'C: 440-884-7529', fax:'', email:'playacademy2@gmail.com', foot:'Pearl · Parma Heights, OH'},
+  alpha: {addr1:'201 Alpha Park', addr2:'Highland Heights, OH 44143', phone:'C: 440-460-0600', fax:'', email:'playacademyinfo@gmail.com', foot:'Alpha · Highland Heights, OH'}
+};
+
+/* ── ОДНА ФОРМА, ФАКТЫ ВМЕСТО ВАРИАНТОВ (владелец, 22.08) ──────────────────────
+   ⭐ ЧЕТЫРЁХ ДОКУМЕНТОВ БОЛЬШЕ НЕТ. Были standard / infant / school_age / voucher —
+   четыре титула и четыре набора абзацев. Три из них отличались ровно суммой взноса и
+   парой строк, то есть были не разными договорами, а одним договором с разными фактами.
+   Теперь факт и переключает: дата рождения, признак школы, ожидание ребёнка, ваучер.
+   ⛔ ЧТО ОСТАЛОСЬ РАЗНЫМ ПО СУЩЕСТВУ — денежный блок при ваучере: там другой плательщик
+   (округ), другой срок (понедельник), свои правила отсутствий и обязанность отмечаться на
+   планшете. Это не «вариант оформления», это другие обязательства, и они живут отдельным
+   блоком, который включает ОДНА галочка.
+   ⚠️ Ключ реестра и submission_type не меняются: форма одна и была одна. */
+/* ── Fees: effective-dated config ───────────────────────────────────────────
+   Source of truth is enroll-registry.json → fees.defaults (org-wide; rates are the same
+   at all three centers — a per-center override block is added only if they diverge).
+   BUILTIN is the snapshot baked into this edition: used only if the registry cannot be
+   read, and the record then says so. A blank amount on a money agreement is worse than a
+   stale one; a record that hides which it was is worse than both. */
+// ONLINE PAYMENT WAS CONSIDERED AND REMOVED (owner, 2026-07-27). A Zelle block briefly lived
+// here — recipient, amount due, a generated memo line, a self-declaration. It is gone whole:
+// the form is a DOCUMENT, not a payment system. The registration fee is paid at the desk, in
+// cash or by check, and the "Forms of payment" text is the source docx's, with nothing of ours
+// added to it. See docs/specs/2026-07-27-fee-agreement-variant-form.md.
+var BUILTIN_FEES = { from:'2026-01-01', reg_fee:75.00, reg_fee_school_age:25.00, reg_fee_voucher:25.00,
+                     infant_waiting_deposit:150.00, late_fee_per_day:5.00, absentee_days_per_half_year:10 };
+var FEES = null, FEES_SOURCE = 'builtin';
+
+function el(id){ return document.getElementById(id); }
+function g(id){ var e=el(id); return e ? (e.value||'').trim() : ''; }
+function gc(id){ var e=el(id); return !!(e && e.checked); }
+function $$(sel){ return [].slice.call(document.querySelectorAll(sel)); }
+function money(v){ return (v===null||v===undefined||v==='') ? '—' : Number(v).toFixed(2); }
+
+/* Pick the row effective on the DATE OF SIGNING — not on the date this file was built.
+   A rate change is a NEW row with a new `from`; the old row is never edited, so an
+   agreement signed last month still prints last month's number. */
+function resolveFees(rows, onISO){
+  if (!rows || !rows.length) return null;
+  var hit = null;
+  rows.forEach(function(r){
+    if (!r || !r.from) return;
+    if (r.from <= onISO && (!r.to || onISO < r.to)) hit = r;
+  });
+  return hit;
+}
+function todayISO(){ return (window.FormKit && FormKit.todayISO) ? FormKit.todayISO() : new Date().toISOString().slice(0,10); }
+
+/* OFFICE SETUP (v1 mechanic, kept): staff sees the amount before handing the form over.
+   The registration-fee box is SEEDED from the config for the current variant, and the
+   center may still overwrite it for this family. Once touched, a variant switch or a
+   late-arriving registry no longer overwrites what the staff typed. *//* The printed amount is whatever stands in the office box (seeded from config). */
+
+
+function loadFees(){
+  return fetch('../../enroll-registry.json?t='+Date.now(), {cache:'no-store'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){
+      var rows = reg && reg.fees && reg.fees.defaults;
+      var hit = resolveFees(rows, todayISO());
+      if (hit) { FEES = hit; FEES_SOURCE = 'registry'; }
+    })
+    .catch(function(){ /* keep the built-in snapshot */ })
+    .then(function(){ paintFees(); });
+}
+
+/* ── Variant switching ─────────────────────────────────────────────────────── */
+function applyVariant(v, source){
+  if (!VARIANTS[v]) v = 'standard';
+  VARIANT = v; if (source) VARIANT_SOURCE = source;
+  $$('[data-variant]').forEach(function(n){
+    var list = (n.getAttribute('data-variant')||'').split(/\s+/);
+    n.style.display = list.indexOf(v) >= 0 ? '' : 'none';
+  });
+  $$('.vbtn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-v')===v); });
+  el('doctitle').textContent = VARIANTS[v].title;
+  document.title = 'Play Academy — ' + VARIANTS[v].title;
+  el('foot-variant').textContent = v;
+  paintFees();                                   // the registration fee differs per variant
+  if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+}
+
+/* ── Children 1..N ─────────────────────────────────────────────────────────── */
+var kidSeq = 2;   /* v1's two rows are always on the page; added rows start at 3 */
+function addKid(){
+  kidSeq++;
+  var n = kidSeq;
+  var row = document.createElement('div');
+  row.className = 'row kidrow'; row.setAttribute('data-kid', String(n));
+  row.innerHTML =
+    '<div class="f wide"><label>Child\'s Name</label><input type="text" id="child'+n+'_name" style="width:240px"></div>' +
+    '<div class="f"><label>DOB</label><input type="date" id="child'+n+'_dob"></div>' +
+    '<div class="f"><label>Desired Start Date</label><input type="date" id="child'+n+'_start_date"></div>' +
+    '<button type="button" class="kidrm">✕</button>';
+  row.querySelector('.kidrm').addEventListener('click', function(){
+    row.parentNode.removeChild(row);
+    if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+  });
+  el('kids').appendChild(row);
+  var first = row.querySelector('input'); if (first) first.focus();
+}
+function kids(){
+  return $$('#kids .kidrow').map(function(r){
+    var n = r.getAttribute('data-kid');
+    return { name: g('child'+n+'_name'), dob: g('child'+n+'_dob')||null, start_date: g('child'+n+'_start_date')||null };
+  }).filter(function(c){ return c.name; });
+}
+
+
+var DOC_TITLE = 'Fee Agreement';
+var OFFICE_MODE = false;   /* ?office=1 либо киоск */
+
+/* Ставка взноса выводится из фактов, а не из выбранного варианта. */
+function regFeeKey(){
+  if (gc('publicly_funded')) return 'reg_fee_voucher';
+  var named = namedKids();
+  var schoolOnly = named.length > 0 && named.every(function(c){
+    return childCategory(c.dob, c.start_date, c.attends_school) === 'school_age';
+  });
+  return schoolOnly ? 'reg_fee_school_age' : 'reg_fee';
+}
+
+var INFANT_MONTHS = 18;      /* младше — младенец */
+
+function monthsBetween(from, to){
+  if (!from || !to) return null;
+  var a = new Date(from), b = new Date(to);
+  if (isNaN(+a) || isNaN(+b)) return null;
+  return (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth()) - (b.getDate() < a.getDate() ? 1 : 0);
+}
+
+/* Категория ОДНОГО ребёнка на его дату старта. ЧИСТАЯ. */
+function childCategory(dob, startDate, attendsSchool){
+  var m = monthsBetween(dob, startDate || todayISO());
+  if (m === null) return null;                       /* нет даты — не гадаем */
+  if (m < INFANT_MONTHS) return 'infant';
+  /* ⛔ ВОЗРАСТ НЕ ПЕРЕСПРАШИВАЕТ РОДИТЕЛЯ. Здесь стояло «и не младше пяти лет» — и
+     четырёхлетний, которого семья отметила как ходящего в школу, считался дошкольником
+     вопреки прямому ответу. Ohio знает и пятилетний детский сад, и досрочное зачисление;
+     кто ходит в школу, знает семья, а не наша таблица порогов. */
+  if (attendsSchool) return 'school_age';
+  return 'standard';
+}
+function todayISO(){ var d=new Date(); return d.toISOString().slice(0,10); }
+
+/* ⛔ ЭТО БОЛЬШЕ НЕ «ВЫБОР ВАРИАНТА», А ЧТЕНИЕ ФАКТОВ. Возвращает набор признаков, которыми
+   форма показывает и прячет блоки. Ваучер стои́т отдельно от возрастов: округ платит за
+   уход, а не за возраст, и это факт о СЕМЬЕ. */
+function facts(){
+  var named = namedKids();
+  var cats = named.map(function(c){ return childCategory(c.dob, c.start_date, c.attends_school); }).filter(Boolean);
+  var expecting = gc('expected_child');
+  if (expecting) cats.push('infant');
+  return {
+    voucher:    gc('publicly_funded'),
+    infant:     cats.indexOf('infant') >= 0,
+    schoolOnly: cats.length > 0 && cats.every(function(c){ return c === 'school_age'; }),
+    expecting:  expecting,
+    anyKids:    named.length > 0
+  };
+}
+
+/* Ставку на стойке можно перебить руками — тогда конфиг её больше не трогает. */
+var REGFEE_TOUCHED = false;
+function seedRegFee(){ paintFees(); }
+function syncFees(){
+  var box = el('setup-regfee'), a = el('regfee-txt'), b = el('regfee-txt-v');
+  var v = box && box.value ? box.value : money((FEES||BUILTIN_FEES)[regFeeKey()]);
+  if (a) a.textContent = v;
+  if (b) b.textContent = v;
+}
+
+/* ⭐ ОДНА ФУНКЦИЯ КРАСИТ ВСЕ СУММЫ. Их на листе четыре места (взнос частный, взнос
+   ваучерный, депозит, дни отсутствий), и второй способ подставить туда число однажды
+   разошёлся бы с первым — на денежном документе. */
+function paintFees(){
+  var f = FEES || BUILTIN_FEES;
+  var v = money(f[regFeeKey()]);
+  var a = el('regfee-txt'), b = el('regfee-txt-v');
+  if (a) a.textContent = v;
+  if (b) b.textContent = v;
+  $$('[data-fee]').forEach(function(n){
+    var k = n.getAttribute('data-fee');
+    n.textContent = (k === 'absentee_days_per_half_year') ? String(f[k]) : money(f[k]);
+  });
+  var box = el('setup-regfee');
+  if (box && !REGFEE_TOUCHED) box.value = v;
+}
+
+function refreshDerived(){
+  var f = facts();
+  /* Блоки показываются признаком, а не именем варианта. */
+  $$('[data-when]').forEach(function(n){
+    var need = (n.getAttribute('data-when')||'').split(/\s+/);
+    n.style.display = need.every(function(k){
+      return k.charAt(0) === '!' ? !f[k.slice(1)] : !!f[k];
+    }) ? '' : 'none';
+  });
+  /* ⭐ СЛУЖЕБНОЕ ПРЯЧЕТСЯ КАЖДЫЙ ПРОХОД, А НЕ ОДИН РАЗ ПРИ ЗАГРУЗКЕ. Один раз — значит
+     до первого же перерисовывания блока, после которого поле всплывает у родителя. */
+  $$('[data-office="1"]').forEach(function(n){ n.style.display = OFFICE_MODE ? '' : 'none'; });
+  var t = el('doctitle'); if (t) t.textContent = DOC_TITLE;
+  document.title = 'Play Academy — ' + DOC_TITLE;
+  paintFees();
+  var n = el('derived-note');
+  if (n) {
+    var why = f.voucher ? 'paid through a county voucher'
+            : f.schoolOnly ? 'school-age children only'
+            : f.infant ? 'a child under ' + INFANT_MONTHS + ' months'
+            : f.anyKids ? 'preschool age' : 'no dates yet';
+    n.innerHTML = 'Registration fee <b>$' + money((FEES||BUILTIN_FEES)[regFeeKey()]) +
+                  '</b> — from what you entered (' + why + ').';
+  }
+  buildScheds();
+  if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+}
+
+/* ── Children 1..N ─────────────────────────────────────────────────────────── */
+/* ⛔ ВЕРХНЕГО ПРЕДЕЛА НЕТ. Число детей в семье — не наше дело; форма, упирающаяся в
+   «больше нельзя», отправляет человека звонить в офис вместо того, чтобы заполниться. */
+var kidSeq = 1;
+function kidRowHTML(n){
+  return '<div class="f wide"><label>Child\'s Name</label><input type="text" id="child'+n+'_name" style="width:240px"></div>' +
+         '<div class="f"><label>DOB</label><input type="date" id="child'+n+'_dob"></div>' +
+         '<div class="f"><label>Desired Start Date</label><input type="date" id="child'+n+'_start_date"></div>' +
+         '<div class="f"><label>&nbsp;</label><span class="cb"><input type="checkbox" id="child'+n+'_school"><label for="child'+n+'_school">attends school</label></span></div>' +
+         '<button type="button" class="kidrm">✕</button>';
+}
+function addKid(){
+  kidSeq++;
+  var n = kidSeq;
+  var row = document.createElement('div');
+  row.className = 'row kidrow'; row.setAttribute('data-kid', String(n));
+  row.innerHTML = kidRowHTML(n);
+  row.querySelector('.kidrm').addEventListener('click', function(){
+    row.parentNode.removeChild(row);
+    refreshDerived();
+    if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+  });
+  el('kids').appendChild(row);
+  refreshDerived();
+  var first = row.querySelector('input'); if (first) first.focus();
+}
+function kids(){
+  return $$('#kids .kidrow').map(function(r){
+    var n = r.getAttribute('data-kid');
+    return { seq: n, name: g('child'+n+'_name'), dob: g('child'+n+'_dob')||null,
+             start_date: g('child'+n+'_start_date')||null, attends_school: gc('child'+n+'_school') };
+  });
+}
+/* Для записи — только названные дети: пустая строка не ребёнок. */
+function namedKids(){ return kids().filter(function(c){ return c.name; }); }
+
+/* ── Расписание: по ребёнку, семь дней, две пары времён ──────────────────────
+   ⭐ БЛОКОВ СТОЛЬКО, СКОЛЬКО ДЕТЕЙ. «Два блока при дошкольнике и школьнике» — частный
+   случай этого правила, а не отдельная ветка кода.
+   ⛔ ПРИ «ЖДЁМ РЕБЁНКА» И БЕЗ ДЕТЕЙ РАСПИСАНИЯ НЕТ ВОВСЕ: спрашивать часы посещения у
+   ребёнка, который ещё не родился, — значит требовать выдумки. */
+var DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+var DKEY = ['mon','tue','wed','thu','fri','sat','sun'];
+
+function schedTable(n, label){
+  var rows = DAYS.map(function(d, i){
+    var k = DKEY[i];
+    return '<tr><td class="d">'+d+'</td>' +
+      '<td>from <input type="time" id="c'+n+'_'+k+'_from"></td><td>to <input type="time" id="c'+n+'_'+k+'_to"></td>' +
+      '<td class="p2">and <input type="time" id="c'+n+'_'+k+'_from2"></td><td>to <input type="time" id="c'+n+'_'+k+'_to2"></td></tr>';
+  }).join('');
+  return '<div class="schedblock"><div class="schedname">'+ (label || ('Child '+n)) +'</div>' +
+         '<div class="schedwrap"><table class="sched2"><tbody>'+rows+'</tbody></table></div></div>';
+}
+function buildScheds(){
+  var host = el('scheds'); if (!host) return;
+  var sec = el('sched-sec');
+  var list = namedKids();
+  if (sec) sec.style.display = list.length ? '' : 'none';
+  var have = {};
+  $$('#scheds .schedblock').forEach(function(b){ have[b.getAttribute('data-kid')] = b; });
+  host.innerHTML = list.map(function(c){ return schedTable(c.seq, c.name); }).join('');
+  $$('#scheds .schedblock').forEach(function(b, i){ b.setAttribute('data-kid', list[i].seq); });
+}
+/* C — «ждём ребёнка»: блок депозита показать, расписание убрать. */
+function refreshExpecting(){
+  var box = el('expecting-box'); if (box) box.style.display = gc('expected_child') ? '' : 'none';
+  buildScheds();
+}
+
+/* E — согласие названо каналом: адрес спрашивается ровно тогда, когда согласие дано,
+   и засевается тем, что родитель уже написал о себе. */
+function refreshEConsent(){
+  var on = gc('econsent'), box = el('econsent-addr');
+  if (box) box.style.display = on ? '' : 'none';
+  var a = el('econsent_email'), p1 = el('parent1_email');
+  if (on && a && !a.value && p1 && p1.value) a.value = p1.value;
+}
+
+/* Имя ответственного печатается из блока родителя — второй строки для него больше нет. */
+function refreshPayer(){
+  var n = el('payer_print'); if (n) n.textContent = g('parent1_name') || '—';
+}
+
+function schedOf(n){
+  var out = {};
+  DKEY.forEach(function(k, i){
+    var a = g('c'+n+'_'+k+'_from'), b = g('c'+n+'_'+k+'_to'),
+        c = g('c'+n+'_'+k+'_from2'), d = g('c'+n+'_'+k+'_to2');
+    if (a || b || c || d) out[DAYS[i].toLowerCase()] = { from:a||null, to:b||null, from2:c||null, to2:d||null };
+  });
+  return out;
+}
+
+/* ── Signature date stamps ─────────────────────────────────────────────────────
+   A date beside a signature is a STAMP: set at the moment of signing, read-only, cleared
+   with the signature, bound 1:1 to its own stroke (canon 2026-07-24). Both pads are
+   DRAW-ONLY — there is no typed rail on this form (docs/compliance/e-signature.md). */
+var PAIRS = [ {sig:'sig-parent', date:'parent_sig_date'}, {sig:'sig-admin', date:'admin_sig_date'} ];
+function inked(id){ try { return !!(window.FormKit && FormKit.getSig && FormKit.getSig(id)); } catch(_) { return false; } }
+function todayUS(){ var t=new Date(); return ('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
+function stampAll(){
+  PAIRS.forEach(function(p){
+    var dt = el(p.date); if (!dt) return;
+    dt.value = inked(p.sig) ? (dt.value || todayUS()) : '';
+  });
+  lockAdmin();
+}
+function clearSigAndStamp(id){
+  if (window.FormKit) FormKit.clearSig(id);
+  stampAll();
+  if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+}
+/* The administration signs after the parent — the same order as the program slot on DCY 01234. */
+function lockAdmin(){
+  var c = el('sig-admin'); if (!c) return;
+  var open = inked('sig-parent');
+  c.classList.toggle('locked', !open);
+  c.style.pointerEvents = open ? '' : 'none';
+  var m = el('adminlock'); if (m) m.style.display = open ? 'none' : '';
+}
+
+function paintCenter(){
+  var c = CENTERS[window.FormKit ? FormKit.centerCode() : ''];
+  if (!c) return;                       // unresolved → header stays blank, never guesses
+  el('c-addr1').textContent = c.addr1;
+  el('c-addr2').textContent = c.addr2;
+  el('c-phone').textContent = c.phone;
+  el('c-fax').textContent   = c.fax;
+  el('c-foot').textContent  = c.foot;
+  if (c.email) { el('c-emaillbl').style.display=''; el('c-email').innerHTML = '<a href="mailto:'+c.email+'">'+c.email+'</a>'; }
+}
+
+function startReset(){
+  $$('#kids .kidrow').forEach(function(r){ if (['1','2'].indexOf(r.getAttribute('data-kid')) < 0) r.parentNode.removeChild(r); });
+  kidSeq = 2;
+  ['child1_name','child1_dob','child1_start_date','child2_name','child2_dob','child2_start_date','expected_month','referred_by','src_other_text',
+   'reg_fee_paid_on','check_no','deposit_amount','fee_received_by','tuition_amount','tuition_amount_infant',
+   'copay_amount','parent1_name','parent1_phone','parent1_email','parent2_name','parent2_phone',
+   'parent_sig_phone','receipt_no','setup-tuition','setup-copay'].forEach(function(id){ var e=el(id); if(e) e.value=''; });
+  ['expected_child','publicly_funded','src_google','src_social','src_droveby','src_other','pay_cash',
+   'pay_check','deferred_deposit','office_waitlist','office_prospect'].forEach(function(id){ var e=el(id); if(e) e.checked=false; });
+  ['mon','tue','wed','thu','fri'].forEach(function(d){ ['from','to'].forEach(function(k){ var e=el(d+'_'+k); if(e) e.value=''; }); });
+  var cc = el('consent_contact'); if (cc) cc.checked = true;
+  if (window.FormKit) { FormKit.clearSig('sig-parent'); FormKit.clearSig('sig-admin'); }
+  REGFEE_TOUCHED = false; seedRegFee();      // back to the config rate for the next family
+  stampAll();
+  if (window.FormKit) { FormKit.status('Form cleared',''); FormKit.refreshCounter(); }
+}
+
+function sched(){
+  var o = {};
+  ['mon','tue','wed','thu','fri'].forEach(function(d){
+    var f = g(d+'_from'), t = g(d+'_to');
+    if (f || t) o[d] = { from: f || null, to: t || null };
+  });
+  return o;
+}
+
+window.FORMKIT_CONFIG = {
+  formType:'start_form', version:'v2', title:'Fee Agreement', reset:startReset,
+  /* No custom submit → the kit's default channel: submit_enrollment_form,
+     p_submission_type='start_form' → Enrollment Inbox, center_id from ?center=. */
+  collect:function(){
+    var f = FEES || BUILTIN_FEES;
+    var regKey = regFeeKey();
+    var kk = kids();
+    return {
+      formData:{
+        type:'start_form',
+        /* ⭐ ЗАПИСЬ ХРАНИТ И ВЫВОД, И ОСНОВАНИЕ. «Вариант infant» без «потому что ребёнку
+           девять месяцев» через год не проверить, а проверять придётся: это денежный
+           договор. */
+        /* ⭐ ЗАПИСЬ ХРАНИТ ФАКТЫ, А НЕ ЯРЛЫК ВАРИАНТА: через год проверять будут их. */
+        facts: facts(),
+        document_title: DOC_TITLE,
+        center_code: FormKit.centerCode(),
+        center_name: FormKit.centerName(),
+        child_name:  (kk[0]||{}).name || '',      /* Inbox/Review read child_name */
+        children: kk,
+        expected_child: gc('expected_child'), expected_month: g('expected_month'),
+        publicly_funded: gc('publicly_funded'),
+        schedule: sched(),
+        referred_by: g('referred_by'),
+        found_us: { google:gc('src_google'), social:gc('src_social'), drove_by:gc('src_droveby'),
+                    other:gc('src_other'), other_text:g('src_other_text') },
+        /* v1 field kept: the registration fee AS PRINTED on this family's copy (the office
+           box, seeded from the config and overridable at the desk). */
+        registration_fee: (el('setup-regfee')||{}).value || '',
+        /* The config rates AS RESOLVED at signing — snapshotted into the record. The config
+           may move later; this agreement was signed about these numbers. If the two differ,
+           the desk overrode the rate for this family, and both are readable a year later. */
+        fees_applied: {
+          registration_fee: f[regKey],
+          infant_waiting_deposit: gc('expected_child') ? f.infant_waiting_deposit : null,
+          late_fee_per_day: gc('publicly_funded') ? null : f.late_fee_per_day,
+          absentee_days_per_half_year: gc('publicly_funded') ? f.absentee_days_per_half_year : null,
+          effective_from: f.from || null,
+          source: FEES_SOURCE
+        },
+        reg_fee_paid_on: g('reg_fee_paid_on')||null,
+        payment_method: { cash:gc('pay_cash'), check:gc('pay_check'), check_no:g('check_no') },
+        deferred_deposit: gc('deferred_deposit'), deposit_amount: g('deposit_amount'),
+        fee_received_by: g('fee_received_by'),
+        copay_amount: gc('publicly_funded') ? g('copay_amount') : '',
+        payer_name: g('parent1_name'),
+        /* Дети — каждый со СВОИМ расписанием: семь дней, две пары времён. */
+        children: namedKids().map(function(c){
+          return { name:c.name, dob:c.dob, start_date:c.start_date,
+                   attends_school:c.attends_school,
+                   category: childCategory(c.dob, c.start_date, c.attends_school),
+                   schedule: schedOf(c.seq) };
+        }),
+        expecting: gc('expected_child') ? { month: g('expected_month') || null,
+                                            deposit: (FEES||BUILTIN_FEES).infant_waiting_deposit,
+                                            initials: g('init_deposit') || null } : null,
+        publicly_funded: gc('publicly_funded'),
+        /* ⭐ СОГЛАСИЕ — ЭТО КАНАЛ. Пишем и выбор, и адрес: согласие без адреса — согласие
+           ни на что, и счёт всё равно уйдёт бумагой. */
+        e_channel: gc('econsent') ? { consented:true, email: g('econsent_email') || g('parent1_email') || null }
+                                  : { consented:false, email:null },
+        /* Инициалы против каждого пункта: подпись говорит «я подписал», инициалы —
+           «я прочитал ИМЕННО ЭТО». */
+        acknowledgements: {
+          ack_1: g('init_ack1') || null,
+          ack_2: g('init_ack2') || null,
+          ack_3: g('init_ack3') || null
+        },
+        consent_contact: gc('consent_contact'),
+        parent_name: g('parent1_name'), parent_phone: g('parent1_phone'), parent_email: g('parent1_email'),
+        parent2_name: g('parent2_name'), parent2_phone: g('parent2_phone'),
+        parent_sig_phone: g('parent_sig_phone'),
+        office: { waitlist:gc('office_waitlist'), prospects:gc('office_prospect'), receipt_no:g('receipt_no') },
+        signature_method: 'drawn',                 /* draw only — no typed rail on this form */
+        signature_typed_value: '',
+        parent_signature_date: g('parent_sig_date')||null,
+        admin_signature_date: g('admin_sig_date')||null,
+        terms_version:'Rev. 07/2026'
+      },
+      signatures:{ parent_sig: FormKit.getSig('sig-parent'), admin_sig: FormKit.getSig('sig-admin') },
+      signatureDate: todayISO()
+    };
+  }
+};
+
+document.addEventListener('DOMContentLoaded', function(){
+  /* Runs AFTER the deferred kit's boot(), so centerCode() is already resolved. */
+  paintCenter();
+
+  /* ⛔ ВАРИАНТ БОЛЬШЕ НЕ ВЫБИРАЕТСЯ — НИ ССЫЛКОЙ, НИ ПАНЕЛЬЮ. Он ВЫВОДИТСЯ из того, что
+     семья вписала: даты рождения, признак школы, «ждём ребёнка», ваучер. Прежние ?variant=
+     и панель на шапке спрашивали у семьи то, что форма знает сама, — и ошибались молча,
+     если ссылку прислали не ту. */
+  var q = new URLSearchParams(location.search);
+
+  /* F — служебная панель только на служебном входе. */
+  OFFICE_MODE = q.get('office') === '1' || !!(window.PA_KIOSK);
+  var setup = el('setup'); if (setup && OFFICE_MODE) setup.style.display = 'flex';
+
+  el('addkid').addEventListener('click', addKid);
+
+  /* Пересчёт варианта, расписаний и блоков — на любой правке того, из чего они выводятся. */
+  ['input','change'].forEach(function(ev){
+    document.addEventListener(ev, function(e){
+      var t = e.target; if (!t || !t.id) return;
+      if (/^child\d+_(dob|name|start_date|school)$/.test(t.id) ||
+          t.id === 'expected_child' || t.id === 'publicly_funded') {
+        refreshDerived(); refreshExpecting();
+      }
+      if (t.id === 'econsent' || t.id === 'parent1_email') refreshEConsent();
+      if (t.id === 'parent1_name') refreshPayer();
+    }, true);
+  });
+  refreshDerived(); refreshExpecting(); refreshEConsent(); refreshPayer();
+
+  /* Office setup prefills the parent-visible amount fields (v1 mechanic, kept). */
+  var rf = el('setup-regfee');
+  if (rf) rf.addEventListener('input', function(){ REGFEE_TOUCHED = true; syncFees(); });
+  var tu = el('setup-tuition');
+  if (tu) tu.addEventListener('input', function(){
+    ['tuition_amount','tuition_amount_infant'].forEach(function(id){ var e=el(id); if (e && !e.value) e.value = tu.value; });
+  });
+  var cp = el('setup-copay');
+  if (cp) cp.addEventListener('input', function(){ var e=el('copay_amount'); if (e && !e.value) e.value = cp.value; });
+
+  /* Signature stamps ride on the same pointer events the kit's pads use. */
+  /* ⛔ ГЛАВНЫЙ ПУТЬ ЭТОЙ ФОРМЫ — НЕ РИСОВАНИЕ, А УСВОЕНИЕ ОБРАЗЦА. Канва родителя несёт
+     data-fk-adopt: подпись приезжает с полки ПРОГРАММНО, и никакого mouseup при этом не
+     происходит. На одних mouseup/touchend штамп даты не встал бы, а слот администрации не
+     отпёрся бы — форма молча выглядела бы неподписанной у семьи, которая её подписала.
+     Кит шлёт на канву `fk:ink` и при усвоении, и при площадке; слушаем его. */
+  document.addEventListener('fk:ink', function(){ setTimeout(stampAll, 10); }, true);
+  document.addEventListener('mouseup', function(){ setTimeout(stampAll, 60); });
+  document.addEventListener('touchend', function(){ setTimeout(stampAll, 60); });
+  stampAll();
+
+  loadFees();
+});
+</script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, runs before the deferred form-kit.js and survives its
+   failure. If FormKit isn't up in ~4s (or form-kit.js errors), auto-retry the script once
+   with a cache-bust; if still down, show a reload banner. Self-clears on success; never prints. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=28"></script>
+
+</body>
+</html>
