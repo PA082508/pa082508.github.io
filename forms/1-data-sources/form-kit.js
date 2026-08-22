@@ -2196,11 +2196,12 @@ document.addEventListener('click', function (e) {
     // во всех включениях — проба пола версий теперь требует этого прямо.
     /* v29 — бамп под текст денежного договора, кит не менялся. v30 — обёртка в <form>.
        v31 — блок согласия на фото в Start_Form_v2.
+       v34 — перевод словаря дней на границе бланка CACFP (проба поймала: mon vs monday).
        v33 — бланк CACFP раскладывает расписание из носителя дней (_schedule); кит не менялся.
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 33,
+    KIT: 34,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
