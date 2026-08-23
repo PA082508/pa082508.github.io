@@ -572,7 +572,15 @@
 var CENTERS = {
   ridge: {addr1:'28930 Ridge Rd.', addr2:'Wickliffe, OH 44092', phone:'C: 440-520-0031', fax:'F: 440-494-7093', email:'playacademy3@gmail.com', foot:'Ridge · Wickliffe, OH'},
   pearl: {addr1:'6285 Pearl Rd. #30', addr2:'Parma Heights, OH 44130', phone:'C: 440-884-7529', fax:'', email:'playacademy2@gmail.com', foot:'Pearl · Parma Heights, OH'},
-  alpha: {addr1:'201 Alpha Park', addr2:'Highland Heights, OH 44143', phone:'C: 440-460-0600', fax:'', email:'playacademyinfo@gmail.com', foot:'Alpha · Highland Heights, OH'}
+  alpha: {addr1:'201 Alpha Park', addr2:'Highland Heights, OH 44143', phone:'C: 440-460-0600', fax:'', email:'playacademyinfo@gmail.com', foot:'Alpha · Highland Heights, OH'},
+  /* ⛔ ДЕМО-ЦЕНТР ДОЛЖЕН БЫТЬ В КНИГЕ, И ОН ОБЪЯВЛЯЕТ СЕБЯ ДЕМО (замер 23.08).
+     `zzdemo` опознавался КИТОМ (он есть в его карте кодов), но в адресной книге бланка
+     его не было — и форма, на которой снимают показы и гоняют пробы, печаталась БЕЗ
+     ШАПКИ. Мои собственные пробы шли на zzdemo и этого не увидели: смотрели на подпись
+     и отправку, а не на реквизиты.
+     ⚠️ Реквизиты ВЫМЫШЛЕННЫЕ и названы демонстрационными прямо в бумаге: демо-форма,
+     ушедшая в руки как настоящая, — хуже формы без шапки. */
+  zzdemo: {addr1:'DEMONSTRATION ONLY — not a real centre', addr2:'Sample Ave, Demo City, OH 00000', phone:'C: 000-000-0000', fax:'', email:'', foot:'ZZ Demo · demonstration only'}
 };
 
 /* ── ОДНА ФОРМА, ФАКТЫ ВМЕСТО ВАРИАНТОВ (владелец, 22.08) ──────────────────────
@@ -933,7 +941,21 @@ function lockAdmin(){
 
 function paintCenter(){
   var c = CENTERS[window.FormKit ? FormKit.centerCode() : ''];
-  if (!c) return;                       // unresolved → header stays blank, never guesses
+  /* ⛔ ПУСТАЯ ШАПКА ГОВОРИТ, А НЕ МОЛЧИТ (правка 23.08).
+     Здесь стояло «unresolved → header stays blank, never guesses» — не выдумывать чужой
+     центр верно, и это остаётся. Но МОЛЧАЛИВАЯ пустота на денежном договоре означает
+     бумагу, по которой не видно, кто вторая сторона: семья подписывает соглашение с
+     неназванным центром и не замечает пропажи, потому что пропажа выглядит как вёрстка.
+     ⭐ Не угадываем — НАЗЫВАЕМ состояние и говорим, что делать. */
+  if (!c) {
+    var a1 = el('c-addr1');
+    if (a1) {
+      a1.textContent = "Centre details will appear once this form is opened from your centre's link";
+      a1.style.color = '#8a4b00';
+      a1.style.fontStyle = 'italic';
+    }
+    return;
+  }
   el('c-addr1').textContent = c.addr1;
   el('c-addr2').textContent = c.addr2;
   el('c-phone').textContent = c.phone;
@@ -1143,7 +1165,7 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=34"></script>
+<script defer src="form-kit.js?v=35"></script>
 
 </body>
 </html>

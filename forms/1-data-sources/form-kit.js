@@ -1754,8 +1754,23 @@ document.addEventListener('click', function (e) {
       + '<div class="fk-center-meta"><div class="fk-center-name">' + info.name + '</div>'
       + '<div class="fk-center-contact">' + info.address + ' · ' + info.phone + '</div></div>';
   }
+  /* ⛔ КОД ЦЕНТРА ОПОЗНАЁТСЯ БЕЗ УЧЁТА РЕГИСТРА (v35, замер 23.08).
+     Ссылка `?center=RIDGE` теряла центр ЦЕЛИКОМ: `CENTERS['RIDGE']` — undefined, значит
+     шапка пуста, Submit заперт, и человек видит «откройте по ссылке своего центра», уже
+     открыв её. Заглавная буква приезжает из письма, из мессенджера, из набранного руками
+     адреса — и стоила бы семье формы.
+     ⭐ Нормализуем ВХОД, а не список: канонический ключ по-прежнему один и в нижнем
+     регистре; сравнение — по нему. */
+  function canonCenter(code) {
+    if (!code) return '';
+    var want = String(code).trim().toLowerCase();
+    if (CENTERS[want]) return want;
+    for (var k in CENTERS) if (k.toLowerCase() === want) return k;
+    return '';
+  }
   function setResolvedCenter(code) {
-    if (!code || !CENTERS[code]) return;
+    code = canonCenter(code);
+    if (!code) return;
     centerResolved = true; _center = code;
     refreshToolbarCenter();   // brand-header chip + enable Submit
     fillCenterFields();       // #6 — restore the printed Center name the picker used to supply
@@ -1763,8 +1778,8 @@ document.addEventListener('click', function (e) {
   }
   function resolveCenter() {
     // Priority: embed (handled in EMBED.boot) → ?center= → kiosk device → staff <select> fallback.
-    try { var c = new URLSearchParams(location.search).get('center'); if (c && CENTERS[c]) { setResolvedCenter(c); return; } } catch (_) {}
-    if (window.PA_KIOSK && window.PA_KIOSK.center && CENTERS[window.PA_KIOSK.center]) { setResolvedCenter(window.PA_KIOSK.center); return; }
+    try { var c = new URLSearchParams(location.search).get('center'); if (canonCenter(c)) { setResolvedCenter(c); return; } } catch (_) {}
+    if (window.PA_KIOSK && window.PA_KIOSK.center && canonCenter(window.PA_KIOSK.center)) { setResolvedCenter(window.PA_KIOSK.center); return; }
     // #6 — unresolved is a DEAD END by design: no picker fallback. Submit stays
     // disabled behind the "open this from your center's link or QR" banner. A
     // wrong-center filing is worse than a re-opened link.
@@ -2201,7 +2216,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 34,
+    KIT: 35,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
