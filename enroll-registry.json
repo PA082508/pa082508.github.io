@@ -618,7 +618,7 @@
       ],
       "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid. (Описание карточки для случая, когда форма не объявлена ни одним набором: витрина синтезирует слот из forms{} и берёт label/note отсюда. Канон формы-двери.)",
       "variants": {
-        "single": "Fee Agreement"
+        "single": "Registration & Fee Agreement"
       },
       "sources": {
         "standard": "forms/3-library/our-documents/Fee Agreement.docx",
@@ -956,7 +956,7 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "label": "Fee Agreement",
+          "label": "Registration & Fee Agreement",
           "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid."
         },
         {
@@ -1059,7 +1059,7 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "label": "Fee Agreement",
+          "label": "Registration & Fee Agreement",
           "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
@@ -1180,7 +1180,7 @@
         {
           "key": "start_form",
           "section": "mandatory",
-          "label": "Fee Agreement",
+          "label": "Registration & Fee Agreement",
           "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
