@@ -50,6 +50,16 @@
 </style>
 </head>
 <body>
+<!-- ⭐ ЧТО ПРОСТАВИЛ ЦЕНТР — СКАЗАНО СЛОВАМИ, А НЕ ТОЛЬКО СЕРЫМИ КЛЕТКАМИ.
+     Серое поле объясняет «нельзя менять», но не объясняет ЧТО и КЕМ утверждено.
+     Родитель подписывает документ — он должен прочесть его состав, а не догадаться. -->
+<div id="preset-note" style="display:none;max-width:1200px;margin:10px auto 0;padding:10px 14px;
+  background:#f2f7f4;border:1.5px solid #cfe0d5;border-radius:9px;font:13px/1.5 Arial,sans-serif;color:#14281f">
+  <b>Your center filled this in for the trip to and from school.</b>
+  The destination, the vehicle and both water questions are set by the center and shown greyed —
+  they print exactly as you see them. <b>Your part:</b> choose the car seat category, then sign and date.
+</div>
+
 <div data-formkit="missing-list" class="fkml fk-print-hidden" style="display:none"></div>
 <div class="doc"><div class="page p1" id="pg1"></div></div>
 
@@ -211,33 +221,83 @@ function resetForm(){
 function PA_APPLY(fd){
   var S=function(id,v){var e=document.getElementById('f_'+id); if(e&&v!=null&&!e.value) e.value=v};
   S('child_name', fd.child_name);
+  /* ⭐ Школа — ответ семьи на 01234, приходит тем же пакетом. Пришла — ставим и запираем. */
+  if(fd.school_name){
+    var d=document.getElementById('f_destinations');
+    if(d && !d.value){ d.value=fd.school_name; d.dispatchEvent(new Event('input',{bubbles:true})); lockCell('destinations'); }
+  }
 }
 
-/* ⭐ ЧТО ЗАПОЛНЯЕМ ЗА СЕМЬЮ, А ЧТО НЕТ (слово владельца 21–22.08).
+/* ⭐ ПРЕСЕТ «ШКОЛЬНАЯ ПЕРЕВОЗКА» — ЦЕНТР ВЫДАЁТ ФОРМУ ЗАПОЛНЕННОЙ (решения владельца 23.08).
  *
- * Заполняем то, что и так знаем сами: возит центр — значит «provider vehicle and driver»;
- * разрешение даётся сегодня — значит сегодняшняя дата. Имя ребёнка приходит пакетом.
+ * ⛔ СМЕНА КАНОНА 21.08 ПО ВОДЕ — ОСОЗНАННАЯ, И ОНА СУЖЕНИЕ, А НЕ ОТМЕНА. Прежде вода
+ * оставалась родителю: бланк вообще, маршрут неизвестен, спрашивать некого кроме семьи.
+ * В ШКОЛЬНОМ пресете маршрут НАЗВАН ЦЕНТРОМ — отвезти в школу и обратно. Вода на этом
+ * маршруте не вопрос к семье, а УТВЕРЖДЕНИЕ ЦЕНТРА О СОБСТВЕННОЙ ПОЕЗДКЕ, и отвечает за
+ * него тот, кто её организует. Для любого иного маршрута вода возвращается родителю.
+ * ⛔ КАТЕГОРИЯ КРЕСЛА ИЗ КАНОНА НЕ ВЫХОДИТ — её ставит родитель, как и было.
  *
- * ⛔ ВОДУ И КАТЕГОРИЮ КРЕСЛА НЕ ТРОГАЕМ. Это ответы родителя о безопасности ребёнка:
- * «нет», поставленное нами и подписанное семьёй, было бы нашим ответом за её подписью.
+ * ⛔ ЗАБЛОКИРОВАННОЕ ПЕЧАТАЕТСЯ И ВИДНО. Родитель должен видеть, что центр утверждает от
+ * его имени; спрятав клетки, мы получили бы подписанный документ, содержания которого
+ * подписавший не видел. Поэтому `readOnly`/`pointer-events`, а не `display:none`.
  *
- * ⚠️ И НАЗВАНИЕ ШКОЛЫ МЫ НЕ ЗНАЕМ. В записи его нет ни у одного ребёнка — значит вписать
- * можно только подсказку в пустую клетку, а не значение. Выдумать «Wickliffe Elementary»
- * за семью значило бы отправить ребёнка по адресу, которого никто не называл. */
-(function prefillForSchool(){
+ * ⭐ ШКОЛА ПРИХОДИТ ИЗ ОТВЕТА СЕМЬИ на 01234 (`school_name` рядом с `attends_school_age`),
+ * а не выдумывается нами. Не пришла — клетка остаётся пустой с подсказкой: отправить
+ * ребёнка по адресу, которого никто не называл, хуже пустой клетки.
+ *
+ * ⛔ ПРЕСЕТ ОБЪЯВЛЯЕТ СЕБЯ В ПОДАЧЕ (`preset:'school_transport'`). Через год никто не
+ * ответит, почему в подписанной бумаге стои́т «воды нет» и была ли это рука родителя. */
+var PRESET = null;
+
+function lockCell(id, on){
+  var e=document.getElementById('f_'+id); if(!e) return;
+  if(e.type==='checkbox'){ e.disabled=true; }
+  else { e.readOnly=true; }
+  e.style.background='#f3f5f4'; e.style.color='#6b7280'; e.style.cursor='not-allowed';
+  e.setAttribute('data-preset-locked','1');
+  e.setAttribute('title','Set by the center — cannot be changed here');
+}
+function setCb(id, on){
+  var e=document.getElementById('f_'+id); if(!e) return;
+  e.checked=!!on; e.dispatchEvent(new Event('change',{bubbles:true}));
+}
+
+function applySchoolTransportPreset(school){
+  PRESET='school_transport';
+  /* Транспорт: только «provider vehicle and driver». */
+  setCb('mode_provider', true);
+  ['mode_walk','mode_bus','mode_public','mode_parent'].forEach(function(id){ setCb(id,false); lockCell(id); });
+  lockCell('mode_provider'); lockCell('mode_other');
+  /* Вода — оба ответа «No», утверждением центра. */
+  setCb('water_n', true);  setCb('water_y', false);
+  setCb('wact_n',  true);  setCb('wact_y',  false);
+  ['water_y','water_n','wact_y','wact_n'].forEach(lockCell);
+  /* Куда возим — из ответа семьи на 01234. */
+  var dest=document.getElementById('f_destinations');
+  if(dest){
+    if(school){ dest.value=school; dest.dispatchEvent(new Event('input',{bubbles:true})); lockCell('destinations'); }
+    else { dest.placeholder='your child\u2019s school'; }
+  }
+  /* Дата выдачи — ЦЕНТРА, не подписи родителя. */
+  var d=document.getElementById('f_permission_date');
+  if(d && !d.value){
+    var t=new Date();
+    d.value=('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear();
+    d.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  lockCell('permission_date');
+  var note=document.getElementById('preset-note');
+  if(note) note.style.display='';
+  if(window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+  gate();
+}
+
+(function bootPreset(){
   document.addEventListener('DOMContentLoaded', function(){
-    var m=document.getElementById('f_mode_provider');
-    if(m && !m.checked){ m.checked=true; m.dispatchEvent(new Event('change',{bubbles:true})); }
-    var d=document.getElementById('f_permission_date');
-    if(d && !d.value){
-      var t=new Date();
-      d.value=('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear();
-      d.dispatchEvent(new Event('input',{bubbles:true}));
-    }
-    var dest=document.getElementById('f_destinations');
-    if(dest && !dest.value) dest.placeholder='your child\u2019s school';
-    if(window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
-    gate();
+    /* Школа приходит префиллом пакета (из 01234) либо ?school= в служебной ссылке. */
+    var school='';
+    try { school=new URLSearchParams(location.search).get('school')||''; } catch(_){}
+    applySchoolTransportPreset(school);
   });
 })();
 
@@ -250,6 +310,8 @@ window.FORMKIT_CONFIG = {
     /* Срок бланка — «valid for one year» ОТ ДАТЫ РОДИТЕЛЯ, а не от дня загрузки.
        Кладём его в подачу, чтобы карточка не пересчитывала его заново и не разошлась. */
     fd.valid_from = g('permission_date');
+    /* ⛔ ПРЕСЕТ ОБЪЯВЛЯЕТ СЕБЯ: без этого через год не ответить, чья рука поставила «воды нет». */
+    if(PRESET) fd.preset = PRESET;
     fd.mode_other = g('mode_other');
     fd.signature_method='drawn';
     return {
