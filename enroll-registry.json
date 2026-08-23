@@ -588,7 +588,7 @@
     },
     "start_form": {
       "slug": "start_form",
-      "title": "Fee Agreement",
+      "title": "Registration & Fee Agreement",
       "kind": "signature",
       "current": "v2",
       "versions": {
