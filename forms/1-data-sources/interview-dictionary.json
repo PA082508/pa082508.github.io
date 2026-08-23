@@ -1,0 +1,3630 @@
+{
+  "_canon": [
+    "СЛОВАРЬ ОПИСЫВАЕТ БЛАНКИ. НАБОР ИХ ВЫБИРАЕТ.",
+    "Интервью получает ЛЮБОЙ онлайн-набор форм — admission-пакет, кампания Set Builder,",
+    "волна дозаполнения, одиночная форма. Поэтому здесь НЕТ и не может быть ни одной ссылки",
+    "на packets.admission: порядок форм, гид дохода и «Fill for another child» — свойства",
+    "СОСТАВА admission, а не механизма (канон 23.08).",
+    "ИСКЛЮЧЕНИЕ: набор со start_form интервью не получает — форма-дверь сама устроена как",
+    "разговор с новой семьёй. Исключение ОДНОСТОРОННЕЕ: её строки словаря нужны, их читает",
+    "предзаполнение следующего набора.",
+    "КЛЮЧИ В БЛАНКАХ НЕ ПЕРЕИМЕНОВЫВАЮТСЯ. В базе 4470 подач со старыми ключами; переименовав,",
+    "мы разделили бы историю надвое. Словарь — прослойка, а не миграция.",
+    "Реестр приложения синхронизирован с витриной 23.08 — расхождение версий снято.",
+    "ПОПРАВКА 23.08: личные поля бланка staff (имя, почта, телефон, адрес, дата рождения) стояли на уровнях family/child — их смыслы были ошибочно склеены с родительскими. Сотрудник не есть parent1: уровень определяет, ЧТО ПЕРЕНОСИТСЯ между детьми семьи, и кадровым полям там места нет."
+  ],
+  "version": "1.0.0",
+  "measuredOn": "2026-08-23",
+  "measuredFrom": "pa082508.github.io — версии current на 23.08.2026",
+  "levels": {
+    "family": "переносится между детьми. Эталон периметра — 38 ключей familyCells бланка dcy_01234",
+    "child": "НЕ переносится никогда. Ответ про одного ребёнка на другом — прецедент Rife 14.08",
+    "household": "доходный блок IEA. Живёт ТОЛЬКО в подаче iea; в префилл не выдаётся никогда",
+    "staff": "кадровый контур. В семейном интервью не участвует"
+  },
+  "formatRules": {
+    "schedule": {
+      "problem": "ОДИН КЛЮЧ, ДВА ФОРМАТА. enroll: {mon:{in_care,arr1,dep1,arr2,dep2,meals}}. start_form: children[].schedule{monday:{from,to,from2,to2}}. Совпадающее имя обманчивее разного: маппинг по имени пройдёт и положит мусор.",
+      "canonical": "child.week = [{weekday:1..7, arr1, dep1, arr2, dep2}]",
+      "rules": [
+        "День — ТОЛЬКО ISO-номер. Ни mon, ни monday в каноне не живут; перевод на границе бланка (кит v34, LONGDAY).",
+        "Присутствие дня — по наличию строки, а не по флагу. in_care:false = отсутствие дня.",
+        "Приёмы пищи из enroll в child.week НЕ входят: это child.meals_claimed, у него читатель — заявка.",
+        "Вторая пара и выходные переливаются как есть: пятидневная маска их не вмещает, но это её ограничение, а не правда о ребёнке."
+      ]
+    },
+    "center_code": {
+      "problem": "ОТСУТСТВУЕТ В ДВУХ БЛАНКАХ. infant_meals и fluid_milk несут только center_name текстом.",
+      "rule": "center.id разрешается ТОЛЬКО из кода. Для этих двух бланков код подставляется из контекста подачи (токен/витрина знают центр); center_name остаётся отображаемым текстом и источником не становится.",
+      "forbids": "Матч центра по названию — §5.9: имя доказывается center_id."
+    }
+  },
+  "ieaNotes": {
+    "measuredFrom": "IEA_FY2026-27_v8.html — по бланку, не по живым подачам",
+    "adult": "ОБЪЕКТ из 11 полей: print_name, date, ssn_last4, no_ssn, day_phone, work_phone, street, city, state, zip, city_state_zip. Не строка и не синоним parent_name.",
+    "children": "МАССИВ детей семьи (name, age, dob, foster, case_no) — уровень FAMILY, а не child: это перечисление домохозяйства.",
+    "schedule_none": "жёстко null — заглушка, не поле расписания",
+    "typeMismatch": "бланк кладёт type='iea_fy2026_27', подача лежит как 'iea' — ещё одно подтверждение, что type в form_data не источник",
+    "paperOnlyKeys": "birthdate, child_name, day_phone, mailing, age, signature_date бланк НЕ кладёт — они приходят бумажным/OCR путём"
+  },
+  "exemptForms": {
+    "what_to_bring_infant": "лист для чтения, не форма — collect() нет",
+    "wic_information": "лист для чтения, не форма — collect() нет",
+    "safepass_parent_letter_ridge": "письмо семье, не форма — collect() нет",
+    "safepass_parent_addendum_ridge": "аддендум на подпись, разбираемых полей нет",
+    "dcy_01226": "PDF госбланка, кит его не несёт",
+    "dcy_01305": "PDF врача, заполняется вне витрины",
+    "center_parent_info": "docx-документ библиотеки",
+    "center_parent_information": "PDF-документ библиотеки",
+    "building_for_the_future": "docx для чтения",
+    "topical_product_consent": "docx, оцифровка не начата",
+    "sutq_family_needs_survey": "PDF-опрос, вне пакета",
+    "parents_book": "документ для чтения, подпись отдельным бланком parents_book_ack",
+    "dcy_01235": "не опубликован",
+    "school_enrollment_regular": "sameAs-алиас enroll — строки у цели",
+    "school_enrollment_fullday": "sameAs-алиас enroll — строки у цели"
+  },
+  "canonicals": {
+    "ack.agreed": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "ack.info_provided": {
+      "level": "family",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "ack.permission_medication": {
+      "level": "family",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "ack.permission_procedure": {
+      "level": "family",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "center.trained_staff": {
+      "level": "child",
+      "sourceFormats": [
+        "массив"
+      ]
+    },
+    "center.trainer.gave_care_instructions": {
+      "level": "child",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "center.trainer.gave_med_instructions": {
+      "level": "child",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "center.trainer.name": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "center.trainer.phone": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.accommodations": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.accommodations_absent": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.additional_info": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.age": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.avoid": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.avoid_absent": {
+      "level": "child",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "child.care_instructions": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.classroom": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.comments": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.development": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.development_absent": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.dob": {
+      "level": "child",
+      "sourceFormats": [
+        "дата YYYY-MM-DD | null",
+        "текст"
+      ],
+      "canonicalFormat": "дата YYYY-MM-DD | null",
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat."
+    },
+    "child.enrollment_expires": {
+      "level": "child",
+      "sourceFormats": [
+        "дата YYYY-MM-DD"
+      ]
+    },
+    "child.evacuation": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.expected": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.expected_month": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.extra_docs_attached": {
+      "level": "child",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "child.family_input": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.first_day": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.has_health_condition": {
+      "level": "child",
+      "sourceFormats": [
+        "булево",
+        "текст"
+      ],
+      "canonicalFormat": "булево (пара health_y/health_n и флаг no_special_condition сводятся к одному)",
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat."
+    },
+    "child.health_condition_text": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.health_signs": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.name": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.nap": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.nickname": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.precautions": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.receives_services": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.services_absent": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.services_provider": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.transport_by_center": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.transport_note": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.week": {
+      "level": "child",
+      "sourceFormats": [
+        "массив",
+        "текст"
+      ],
+      "canonicalFormat": "массив [{weekday:1..7, arr1, dep1, arr2, dep2}] — см. formatRules.schedule",
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat."
+    },
+    "child.week_absent": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.week_varies": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "child.weight": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.basis": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.disability": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.life_activity": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.milk_center_declines": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.milk_center_provides": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.milk_center_substitutes": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.milk_choice": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.omit": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.restriction": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.special_need": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.substitute": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "diet.value": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency1.may_not_pick_up": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency1.may_pick_up": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency1.name": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency1.phone": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency1.relation_other": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency2.absent": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency2.may_not_pick_up": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency2.may_pick_up": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency2.name": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency2.phone": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency2.relation_other": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "emergency_action.call_911": {
+      "level": "child",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "emergency_action.call_parent": {
+      "level": "child",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "emergency_action.other": {
+      "level": "child",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "emergency_action.other_text": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "family.children": {
+      "level": "family",
+      "sourceFormats": [
+        "массив",
+        "текст"
+      ],
+      "canonicalFormat": "массив имён детей семьи",
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat."
+    },
+    "family.found_us": {
+      "level": "family",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "family.publicly_funded": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "family.referred_by": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "family.siblings": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "home.address": {
+      "level": "family",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "home.address.city": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "home.address.state": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "home.address.street": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "home.address.zip": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "income.assistance_program": {
+      "level": "household",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "income.calculation": {
+      "level": "household",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "income.determination": {
+      "level": "household",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "income.ethnicity": {
+      "level": "household",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "income.household_members": {
+      "level": "household",
+      "sourceFormats": [
+        "массив"
+      ]
+    },
+    "income.race": {
+      "level": "household",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "income.signing_adult": {
+      "level": "household",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "income.waiver_declined": {
+      "level": "household",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.amount_per_feeding": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.bottle_warmed": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.feeding": {
+      "level": "child",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "infant.feeding_frequency": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.food_temperature": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.formula_choice": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.formula_name": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.formula_name_parent": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.formula_preparation": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.juice": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.security_items": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.sleep_hints": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.sleep_position": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.solid_foods": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.solids_choice": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.table_food": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "infant.uses_cup": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.child_may_carry": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.dose": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.dose_attached": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.expires": {
+      "level": "child",
+      "sourceFormats": [
+        "дата YYYY-MM-DD | null"
+      ]
+    },
+    "medication.if_unavailable": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.instructions": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.instructions_absent": {
+      "level": "child",
+      "sourceFormats": [
+        "булево"
+      ]
+    },
+    "medication.instructions_attached": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.label_photo": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.list": {
+      "level": "child",
+      "sourceFormats": [
+        "массив"
+      ]
+    },
+    "medication.log": {
+      "level": "child",
+      "sourceFormats": [
+        "массив"
+      ]
+    },
+    "medication.name": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.period": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.side_effects": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.side_effects_attached": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.taken_before": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "medication.times": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.address.city": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.address.same_as_child": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.address.state": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.address.street": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.address.zip": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.dob": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.email": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.employer": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.name": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.phone.cell": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.phone.day": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.phone.home": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent1.phone.work": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.absent": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.address.city": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.address.same_as_child": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.address.state": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.address.street": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.address.zip": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.email": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.employer": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.name": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.phone.cell": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.phone.home": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "parent2.phone.work": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "physician.name": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "physician.phone": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "pickup.authorized_people": {
+      "level": "family",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.ack_effective": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.address.city": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.address.state": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.address.street": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.address.zip": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.compliance": {
+      "level": "staff",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "staff.cook": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.desired_start": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.dob": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.driver": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.email": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.emergency_contact": {
+      "level": "staff",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "staff.first_name": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.handles_food": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.last_name": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.name": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.phone": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.prepares_food": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.role": {
+      "level": "staff",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "staff.signer_role": {
+      "level": "staff",
+      "sourceFormats": [
+        "константа"
+      ]
+    },
+    "staff.work_authorization": {
+      "level": "staff",
+      "sourceFormats": [
+        "объект"
+      ]
+    },
+    "trip.destination": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.mode.bus": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.mode.other": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.mode.parent": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.mode.provider": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.mode.public": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.mode.walk": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.seat.over4": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.seat.over8": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.seat.under4": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.water": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    },
+    "trip.water_activities": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
+    }
+  },
+  "forms": {
+    "enroll": {
+      "measuredVersion": "v11",
+      "rows": 11
+    },
+    "iea": {
+      "measuredVersion": "v8",
+      "rows": 9
+    },
+    "dcy_01234": {
+      "measuredVersion": "v8",
+      "rows": 56
+    },
+    "dcy_01236": {
+      "measuredVersion": "v1",
+      "rows": 29
+    },
+    "dcy_01217": {
+      "measuredVersion": "v1",
+      "rows": 18
+    },
+    "special_diet": {
+      "measuredVersion": "v2",
+      "rows": 21
+    },
+    "fluid_milk": {
+      "measuredVersion": "v2",
+      "rows": 7
+    },
+    "infant_meals": {
+      "measuredVersion": "v2",
+      "rows": 6
+    },
+    "usda_waiver": {
+      "measuredVersion": "v5",
+      "rows": 4
+    },
+    "staff": {
+      "measuredVersion": "v1",
+      "rows": 19
+    },
+    "parent_consent": {
+      "measuredVersion": "v5",
+      "rows": 2
+    },
+    "dcy_01218": {
+      "measuredVersion": "v2",
+      "rows": 20
+    },
+    "dcy_01225": {
+      "measuredVersion": "v2",
+      "rows": 15
+    },
+    "child_release_authorization": {
+      "measuredVersion": "v3",
+      "rows": 4
+    },
+    "parent_responsibilities": {
+      "measuredVersion": "v2",
+      "rows": 3
+    },
+    "transition_into_program": {
+      "measuredVersion": "v2",
+      "rows": 5
+    },
+    "start_form": {
+      "measuredVersion": "v2",
+      "rows": 8
+    },
+    "parents_book_ack": {
+      "measuredVersion": "v2",
+      "rows": 5
+    },
+    "staff_consent": {
+      "measuredVersion": "v2",
+      "rows": 2
+    },
+    "safepass_staff_ack": {
+      "measuredVersion": "v2",
+      "rows": 5
+    }
+  },
+  "rows": [
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "child_release_authorization",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.comments",
+      "level": "child",
+      "form": "child_release_authorization",
+      "key": "comments",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "child_release_authorization",
+      "key": "parent_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "pickup.authorized_people",
+      "level": "family",
+      "form": "child_release_authorization",
+      "key": "pickup",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.times",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "administration_times",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "date_of_birth",
+      "format": "дата YYYY-MM-DD | null"
+    },
+    {
+      "canonical": "medication.dose",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "dosage",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.dose_attached",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "dosage_see_attached",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.instructions",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "instructions",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.instructions_attached",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "instructions_see_attached",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.child_may_carry",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "may_carry_emergency",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.expires",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "medication_expiration_date",
+      "format": "дата YYYY-MM-DD | null"
+    },
+    {
+      "canonical": "medication.name",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "medication_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.period",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "period_of_time",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.label_photo",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "pharmacy_label_photo",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.label_photo",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "photo",
+      "format": "текст"
+    },
+    {
+      "canonical": "physician.phone",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "physician_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.side_effects",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "side_effects",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.side_effects_attached",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "side_effects_see_attached",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.taken_before",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "taken_before",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.weight",
+      "level": "child",
+      "form": "dcy_01217",
+      "key": "weight",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.additional_info",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "additional_info",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.amount_per_feeding",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "amount_per_feeding",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.bottle_warmed",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "bottle_warmed",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "dob",
+      "format": "дата YYYY-MM-DD | null"
+    },
+    {
+      "canonical": "infant.feeding",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "feeding",
+      "format": "объект"
+    },
+    {
+      "canonical": "infant.feeding_frequency",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "feeding_frequency",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.food_temperature",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "foods_temp",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.formula_preparation",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "formula_preparation",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.juice",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "juice",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.nap",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "nap_schedule",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.nickname",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "nickname",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.security_items",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "security_items",
+      "format": "текст"
+    },
+    {
+      "canonical": "family.siblings",
+      "level": "family",
+      "form": "dcy_01218",
+      "key": "siblings",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.sleep_hints",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "sleep_hints",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.sleep_position",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "sleep_position",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.solid_foods",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "solid_foods",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.precautions",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "special_precautions",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.table_food",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "table_food",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.uses_cup",
+      "level": "child",
+      "form": "dcy_01218",
+      "key": "uses_cup",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.destination",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "destinations",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.mode.bus",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "mode_bus",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.mode.other",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "mode_other",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.mode.parent",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "mode_parent",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.mode.provider",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "mode_provider",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.mode.public",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "mode_public",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.mode.walk",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "mode_walk",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.seat.over8",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "seat_8yr",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.seat.over4",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "seat_over4",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.seat.under4",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "seat_under4",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.water_activities",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "wact_n",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.water_activities",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "wact_y",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.water",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "water_n",
+      "format": "текст"
+    },
+    {
+      "canonical": "trip.water",
+      "level": "child",
+      "form": "dcy_01225",
+      "key": "water_y",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.accommodations",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "accommod",
+      "format": "текст"
+    },
+    {
+      "canonical": "home.address.street",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "address",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "child_name2",
+      "format": "текст"
+    },
+    {
+      "canonical": "home.address.city",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "city",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.development",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "development",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "dob",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "dob2",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency1.name",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec1_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency1.relation_other",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec1_other",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency1.phone",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec1_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency1.may_not_pick_up",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec1_rel_n",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency1.may_pick_up",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec1_rel_y",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency2.absent",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec2_na",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency2.name",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec2_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency2.relation_other",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec2_other",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency2.phone",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec2_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency2.may_not_pick_up",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec2_rel_n",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency2.may_pick_up",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "ec2_rel_y",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.first_day",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "first_day",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.has_health_condition",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "health_n",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.has_health_condition",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "health_y",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.accommodations_absent",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "na_acc",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.development_absent",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "na_dev",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.services_absent",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "na_svc",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.address.street",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_address",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.phone.cell",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_cell",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.address.city",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_city",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.email",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_email",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.phone.home",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.address.same_as_child",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_same",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.address.state",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_state",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.employer",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_work",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.phone.work",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_work_ph",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.address.zip",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p1_zip",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.address.street",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_address",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.phone.cell",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_cell",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.address.city",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_city",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.email",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_email",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.absent",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_na",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.name",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.phone.home",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.address.same_as_child",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_same",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.address.state",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_state",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.employer",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_work",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.phone.work",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_work_ph",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.address.zip",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "p2_zip",
+      "format": "текст"
+    },
+    {
+      "canonical": "home.address.state",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "state",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.receives_services",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "svc_n",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.services_provider",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "svc_provider",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.receives_services",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "svc_y",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.transport_note",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "trans_action",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.transport_by_center",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "trans_no",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.transport_by_center",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "trans_yes",
+      "format": "текст"
+    },
+    {
+      "canonical": "home.address.zip",
+      "level": "family",
+      "form": "dcy_01234",
+      "key": "zip",
+      "format": "текст"
+    },
+    {
+      "canonical": "emergency_action.call_911",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "action_call_911",
+      "format": "булево"
+    },
+    {
+      "canonical": "emergency_action.call_parent",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "action_call_parent",
+      "format": "булево"
+    },
+    {
+      "canonical": "emergency_action.other",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "action_other",
+      "format": "булево"
+    },
+    {
+      "canonical": "emergency_action.other_text",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "action_other_text",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.if_unavailable",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "actions_if_medication_not_available",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.avoid",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "activities_foods_to_avoid",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.avoid_absent",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "activities_to_avoid_not_applicable",
+      "format": "булево"
+    },
+    {
+      "canonical": "child.extra_docs_attached",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "additional_documentation_attached",
+      "format": "булево"
+    },
+    {
+      "canonical": "child.care_instructions",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "care_instructions",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "date_of_birth",
+      "format": "дата YYYY-MM-DD | null"
+    },
+    {
+      "canonical": "child.evacuation",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "evacuation_info",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.instructions",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "medication_instructions",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.instructions_absent",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "medication_instructions_not_applicable",
+      "format": "булево"
+    },
+    {
+      "canonical": "medication.log",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "medication_log",
+      "format": "массив"
+    },
+    {
+      "canonical": "medication.name",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "medication_log_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "medication.list",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "medications",
+      "format": "массив"
+    },
+    {
+      "canonical": "child.has_health_condition",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "no_special_condition",
+      "format": "булево"
+    },
+    {
+      "canonical": "ack.permission_medication",
+      "level": "family",
+      "form": "dcy_01236",
+      "key": "parent_attest_permission_medication",
+      "format": "булево"
+    },
+    {
+      "canonical": "ack.permission_procedure",
+      "level": "family",
+      "form": "dcy_01236",
+      "key": "parent_attest_permission_procedure",
+      "format": "булево"
+    },
+    {
+      "canonical": "ack.info_provided",
+      "level": "family",
+      "form": "dcy_01236",
+      "key": "parent_attest_provided_info",
+      "format": "булево"
+    },
+    {
+      "canonical": "center.trained_staff",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "program_staff",
+      "format": "массив"
+    },
+    {
+      "canonical": "child.health_signs",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "signs_symptoms",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.health_condition_text",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "special_chronic_health_condition",
+      "format": "текст"
+    },
+    {
+      "canonical": "center.trainer.name",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "trainer_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "center.trainer.phone",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "trainer_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "center.trainer.gave_care_instructions",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "trainer_provided_care_instructions",
+      "format": "булево"
+    },
+    {
+      "canonical": "center.trainer.gave_med_instructions",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "trainer_provided_med_instructions",
+      "format": "булево"
+    },
+    {
+      "canonical": "child.weight",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "weight",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.age",
+      "level": "child",
+      "form": "enroll",
+      "key": "age",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "enroll",
+      "key": "birthdate",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "enroll",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.phone.day",
+      "level": "family",
+      "form": "enroll",
+      "key": "day_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.enrollment_expires",
+      "level": "child",
+      "form": "enroll",
+      "key": "expires_on",
+      "format": "дата YYYY-MM-DD"
+    },
+    {
+      "canonical": "home.address",
+      "level": "family",
+      "form": "enroll",
+      "key": "mailing",
+      "format": "объект"
+    },
+    {
+      "canonical": "parent1.dob",
+      "level": "family",
+      "form": "enroll",
+      "key": "parent_birthdate",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.email",
+      "level": "family",
+      "form": "enroll",
+      "key": "parent_email",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "enroll",
+      "key": "parent_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.week",
+      "level": "child",
+      "form": "enroll",
+      "key": "schedule",
+      "format": "массив"
+    },
+    {
+      "canonical": "child.week_varies",
+      "level": "child",
+      "form": "enroll",
+      "key": "schedule_varies",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.milk_center_declines",
+      "level": "child",
+      "form": "fluid_milk",
+      "key": "center_declines",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.milk_center_provides",
+      "level": "child",
+      "form": "fluid_milk",
+      "key": "center_provides",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.milk_center_substitutes",
+      "level": "child",
+      "form": "fluid_milk",
+      "key": "center_substitutes",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "fluid_milk",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.restriction",
+      "level": "child",
+      "form": "fluid_milk",
+      "key": "dietary_need",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.milk_choice",
+      "level": "child",
+      "form": "fluid_milk",
+      "key": "parent_choice",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.value",
+      "level": "child",
+      "form": "fluid_milk",
+      "key": "value",
+      "format": "текст"
+    },
+    {
+      "canonical": "income.signing_adult",
+      "level": "household",
+      "form": "iea",
+      "key": "adult",
+      "format": "объект"
+    },
+    {
+      "canonical": "income.assistance_program",
+      "level": "household",
+      "form": "iea",
+      "key": "benefit",
+      "format": "объект"
+    },
+    {
+      "canonical": "family.children",
+      "level": "family",
+      "form": "iea",
+      "key": "children",
+      "format": "массив"
+    },
+    {
+      "canonical": "income.ethnicity",
+      "level": "household",
+      "form": "iea",
+      "key": "ethnicity",
+      "format": "объект"
+    },
+    {
+      "canonical": "income.calculation",
+      "level": "household",
+      "form": "iea",
+      "key": "helper",
+      "format": "объект"
+    },
+    {
+      "canonical": "income.household_members",
+      "level": "household",
+      "form": "iea",
+      "key": "household",
+      "format": "массив"
+    },
+    {
+      "canonical": "income.race",
+      "level": "household",
+      "form": "iea",
+      "key": "race",
+      "format": "объект"
+    },
+    {
+      "canonical": "child.week_absent",
+      "level": "child",
+      "form": "iea",
+      "key": "schedule_none",
+      "format": "текст"
+    },
+    {
+      "canonical": "income.determination",
+      "level": "household",
+      "form": "iea",
+      "key": "sponsor",
+      "format": "объект"
+    },
+    {
+      "canonical": "infant.formula_choice",
+      "level": "child",
+      "form": "infant_meals",
+      "key": "formula_choice",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.formula_name",
+      "level": "child",
+      "form": "infant_meals",
+      "key": "formula_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "infant_meals",
+      "key": "infant_birthdate",
+      "format": "дата YYYY-MM-DD | null"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "infant_meals",
+      "key": "infant_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.formula_name_parent",
+      "level": "child",
+      "form": "infant_meals",
+      "key": "parent_formula_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "infant.solids_choice",
+      "level": "child",
+      "form": "infant_meals",
+      "key": "solid_food_choice",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "parent_consent",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "parent_consent",
+      "key": "parent_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "ack.agreed",
+      "level": "child",
+      "form": "parent_responsibilities",
+      "key": "agreed",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "parent_responsibilities",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "parent_responsibilities",
+      "key": "parent_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "parents_book_ack",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "parents_book_ack",
+      "key": "parent_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "parents_book_ack",
+      "key": "print_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.name",
+      "level": "family",
+      "form": "parents_book_ack",
+      "key": "print_name2",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent2.absent",
+      "level": "family",
+      "form": "parents_book_ack",
+      "key": "second_parent_na",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.ack_effective",
+      "level": "staff",
+      "form": "safepass_staff_ack",
+      "key": "effective_date",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.first_name",
+      "level": "staff",
+      "form": "safepass_staff_ack",
+      "key": "first_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.last_name",
+      "level": "staff",
+      "form": "safepass_staff_ack",
+      "key": "last_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.signer_role",
+      "level": "staff",
+      "form": "safepass_staff_ack",
+      "key": "signer_role",
+      "format": "константа"
+    },
+    {
+      "canonical": "staff.name",
+      "level": "staff",
+      "form": "safepass_staff_ack",
+      "key": "staff_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "home.address.street",
+      "level": "family",
+      "form": "special_diet",
+      "key": "address",
+      "format": "текст"
+    },
+    {
+      "canonical": "physician.phone",
+      "level": "child",
+      "form": "special_diet",
+      "key": "authority_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "physician.name",
+      "level": "child",
+      "form": "special_diet",
+      "key": "authority_printed_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "special_diet",
+      "key": "birth_date",
+      "format": "дата YYYY-MM-DD | null"
+    },
+    {
+      "canonical": "parent1.phone.cell",
+      "level": "family",
+      "form": "special_diet",
+      "key": "cell_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "special_diet",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "home.address.city",
+      "level": "family",
+      "form": "special_diet",
+      "key": "city",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.basis",
+      "level": "child",
+      "form": "special_diet",
+      "key": "diet_basis",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.restriction",
+      "level": "child",
+      "form": "special_diet",
+      "key": "diet_restriction",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.disability",
+      "level": "child",
+      "form": "special_diet",
+      "key": "disability_desc",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.email",
+      "level": "family",
+      "form": "special_diet",
+      "key": "email",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.omit",
+      "level": "child",
+      "form": "special_diet",
+      "key": "foods_omitted",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.substitute",
+      "level": "child",
+      "form": "special_diet",
+      "key": "foods_substituted",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.phone.home",
+      "level": "family",
+      "form": "special_diet",
+      "key": "home_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.life_activity",
+      "level": "child",
+      "form": "special_diet",
+      "key": "major_life_activity",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "special_diet",
+      "key": "parent_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.special_need",
+      "level": "child",
+      "form": "special_diet",
+      "key": "special_need_desc",
+      "format": "текст"
+    },
+    {
+      "canonical": "home.address.state",
+      "level": "family",
+      "form": "special_diet",
+      "key": "state",
+      "format": "текст"
+    },
+    {
+      "canonical": "diet.value",
+      "level": "child",
+      "form": "special_diet",
+      "key": "value",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.phone.work",
+      "level": "family",
+      "form": "special_diet",
+      "key": "work_phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "home.address.zip",
+      "level": "family",
+      "form": "special_diet",
+      "key": "zip",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.address.street",
+      "level": "staff",
+      "form": "staff",
+      "key": "address",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.address.city",
+      "level": "staff",
+      "form": "staff",
+      "key": "city",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.compliance",
+      "level": "staff",
+      "form": "staff",
+      "key": "compliance",
+      "format": "объект"
+    },
+    {
+      "canonical": "staff.cook",
+      "level": "staff",
+      "form": "staff",
+      "key": "cook",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.desired_start",
+      "level": "staff",
+      "form": "staff",
+      "key": "desired_start_date",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.dob",
+      "level": "staff",
+      "form": "staff",
+      "key": "dob",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.driver",
+      "level": "staff",
+      "form": "staff",
+      "key": "driver",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.email",
+      "level": "staff",
+      "form": "staff",
+      "key": "email",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.emergency_contact",
+      "level": "staff",
+      "form": "staff",
+      "key": "emergency_contact",
+      "format": "объект"
+    },
+    {
+      "canonical": "staff.name",
+      "level": "staff",
+      "form": "staff",
+      "key": "full_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.handles_food",
+      "level": "staff",
+      "form": "staff",
+      "key": "handles_food",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.driver",
+      "level": "staff",
+      "form": "staff",
+      "key": "is_driver",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.phone",
+      "level": "staff",
+      "form": "staff",
+      "key": "phone",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.prepares_food",
+      "level": "staff",
+      "form": "staff",
+      "key": "prepares_food",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.role",
+      "level": "staff",
+      "form": "staff",
+      "key": "role",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.address.state",
+      "level": "staff",
+      "form": "staff",
+      "key": "state",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.address.street",
+      "level": "staff",
+      "form": "staff",
+      "key": "street",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.work_authorization",
+      "level": "staff",
+      "form": "staff",
+      "key": "work_authorization",
+      "format": "объект"
+    },
+    {
+      "canonical": "staff.address.zip",
+      "level": "staff",
+      "form": "staff",
+      "key": "zip",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.role",
+      "level": "staff",
+      "form": "staff_consent",
+      "key": "position",
+      "format": "текст"
+    },
+    {
+      "canonical": "staff.name",
+      "level": "staff",
+      "form": "staff_consent",
+      "key": "staff_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "start_form",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "family.children",
+      "level": "family",
+      "form": "start_form",
+      "key": "children",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.expected",
+      "level": "child",
+      "form": "start_form",
+      "key": "expected_child",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.expected_month",
+      "level": "child",
+      "form": "start_form",
+      "key": "expected_month",
+      "format": "текст"
+    },
+    {
+      "canonical": "family.found_us",
+      "level": "family",
+      "form": "start_form",
+      "key": "found_us",
+      "format": "объект"
+    },
+    {
+      "canonical": "family.publicly_funded",
+      "level": "family",
+      "form": "start_form",
+      "key": "publicly_funded",
+      "format": "текст"
+    },
+    {
+      "canonical": "family.referred_by",
+      "level": "family",
+      "form": "start_form",
+      "key": "referred_by",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.week",
+      "level": "child",
+      "form": "start_form",
+      "key": "schedule",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "transition_into_program",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.classroom",
+      "level": "child",
+      "form": "transition_into_program",
+      "key": "classroom",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.family_input",
+      "level": "child",
+      "form": "transition_into_program",
+      "key": "family_input",
+      "format": "текст"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "transition_into_program",
+      "key": "parent_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.first_day",
+      "level": "child",
+      "form": "transition_into_program",
+      "key": "start_date_full_time",
+      "format": "текст"
+    },
+    {
+      "canonical": "income.waiver_declined",
+      "level": "household",
+      "form": "usda_waiver",
+      "key": "attestation_declined",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "usda_waiver",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "family.children",
+      "level": "family",
+      "form": "usda_waiver",
+      "key": "children",
+      "format": "массив"
+    },
+    {
+      "canonical": "parent1.name",
+      "level": "family",
+      "form": "usda_waiver",
+      "key": "parent_name",
+      "format": "текст"
+    }
+  ],
+  "excluded": [
+    {
+      "form": "child_release_authorization",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "child_release_authorization",
+      "key": "doc_title",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "child_release_authorization",
+      "key": "doc_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "child_release_authorization",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "child_release_authorization",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "child_release_authorization",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "dcy_01217",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "dcy_01217",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "dcy_01217",
+      "key": "dcy_form",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "dcy_01217",
+      "key": "parent_signature_date",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01217",
+      "key": "physician_date_of_signature",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01217",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "dcy_01218",
+      "key": "caregiver_signature_date",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01218",
+      "key": "last_updated",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "dcy_01218",
+      "key": "parent_signature_date",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01218",
+      "key": "pending_caregiver_signature",
+      "reason": "служебный"
+    },
+    {
+      "form": "dcy_01218",
+      "key": "rule",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "dcy_01225",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "dcy_01225",
+      "key": "dcy_form",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "dcy_01225",
+      "key": "dcy_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "dcy_01225",
+      "key": "parent_sig_dt",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01225",
+      "key": "permission_date",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01225",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "adm_init_1",
+      "reason": "инициалы"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "adm_init_2",
+      "reason": "инициалы"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "adm_init_3",
+      "reason": "инициалы"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "adm_rev_1",
+      "reason": "дата ревизии"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "adm_rev_2",
+      "reason": "дата ревизии"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "adm_rev_3",
+      "reason": "дата ревизии"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "dcy_form",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "dcy_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "parent_sig_dt",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "pg_init_1",
+      "reason": "инициалы"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "pg_init_2",
+      "reason": "инициалы"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "pg_init_3",
+      "reason": "инициалы"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "pg_rev_1",
+      "reason": "дата ревизии"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "pg_rev_2",
+      "reason": "дата ревизии"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "pg_rev_3",
+      "reason": "дата ревизии"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "program_sig_dt",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01234",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "dcy_01236",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "dcy_01236",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "dcy_01236",
+      "key": "dcy_form",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "dcy_01236",
+      "key": "parent_signature_date",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01236",
+      "key": "physician_date_of_signature",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01236",
+      "key": "trainer_signature_date",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "dcy_01236",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "enroll",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "enroll",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "enroll",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "enroll",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "enroll",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "fluid_milk",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "fluid_milk",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "iea",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "iea",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "iea",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "iea",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "iea",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "infant_meals",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "infant_meals",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "parent_consent",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "parent_consent",
+      "key": "consent_title",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "parent_consent",
+      "key": "consent_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "parent_consent",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "parent_consent",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "parent_consent",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "parent_responsibilities",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "parent_responsibilities",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "parent_responsibilities",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "parent_responsibilities",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "ack_text_source",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "document_title",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "document_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "signature2_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "signed_date2",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "parents_book_ack",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "letter_key",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "letter_title",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "letter_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "name_source",
+      "reason": "служебный"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "package_key",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "package_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "safepass_staff_ack",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "special_diet",
+      "key": "authority_signature_img",
+      "reason": "подпись"
+    },
+    {
+      "form": "special_diet",
+      "key": "signed_date",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "staff",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "staff",
+      "key": "scans_pending",
+      "reason": "служебный"
+    },
+    {
+      "form": "staff",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "staff_consent",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "staff_consent",
+      "key": "consent_title",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "staff_consent",
+      "key": "consent_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "staff_consent",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "staff_consent",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "staff_consent",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "start_form",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "start_form",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "start_form",
+      "key": "document_title",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "start_form",
+      "key": "facts",
+      "reason": "служебный"
+    },
+    {
+      "form": "start_form",
+      "key": "kept",
+      "reason": "служебный"
+    },
+    {
+      "form": "start_form",
+      "key": "kitfk",
+      "reason": "служебный маркер кита"
+    },
+    {
+      "form": "start_form",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "transition_into_program",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "transition_into_program",
+      "key": "doc_title",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "transition_into_program",
+      "key": "doc_version",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "transition_into_program",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "transition_into_program",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "transition_into_program",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "usda_waiver",
+      "key": "attestation_text",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "usda_waiver",
+      "key": "center_code",
+      "reason": "адрес центра, не факт о человеке (но см. ловушку №2)"
+    },
+    {
+      "form": "usda_waiver",
+      "key": "center_name",
+      "reason": "производное от center_code; в infant_meals/fluid_milk — единственный носитель центра"
+    },
+    {
+      "form": "usda_waiver",
+      "key": "dcy_form",
+      "reason": "паспорт бланка"
+    },
+    {
+      "form": "usda_waiver",
+      "key": "signature_method",
+      "reason": "подпись"
+    },
+    {
+      "form": "usda_waiver",
+      "key": "signature_typed_value",
+      "reason": "подпись"
+    },
+    {
+      "form": "usda_waiver",
+      "key": "signed_date",
+      "reason": "дата подписи"
+    },
+    {
+      "form": "usda_waiver",
+      "key": "type",
+      "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    }
+  ],
+  "syncedOn": "2026-08-23"
+}

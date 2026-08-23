@@ -222,9 +222,11 @@ function PA_APPLY(fd){
   var S=function(id,v){var e=document.getElementById('f_'+id); if(e&&v!=null&&!e.value) e.value=v};
   S('child_name', fd.child_name);
   /* ⭐ Школа — ответ семьи на 01234, приходит тем же пакетом. Пришла — ставим и запираем. */
-  if(fd.school_name){
-    var d=document.getElementById('f_destinations');
-    if(d && !d.value){ d.value=fd.school_name; d.dispatchEvent(new Event('input',{bubbles:true})); lockCell('destinations'); }
+  /* ⭐ ШКОЛА ПРИШЛА ПАКЕТОМ — ЗНАЧИТ ЭТО ШКОЛЬНАЯ ПОЕЗДКА, и пресет включается ЗДЕСЬ.
+     Префилл приезжает после загрузки, поэтому решение о пресете принимается дважды: по
+     адресу (если школа названа ссылкой) и по пакету (если пришла ответом семьи). */
+  if(fd.school_name && PRESET!=='school_transport'){
+    applySchoolTransportPreset(fd.school_name);
   }
 }
 
@@ -292,12 +294,37 @@ function applySchoolTransportPreset(school){
   gate();
 }
 
+/* ⛔ ПРЕСЕТ ПРИМЕНЯЕТСЯ ТОЛЬКО К ШКОЛЬНОЙ ПОЕЗДКЕ. ПОЙМАНО ЖИВОЙ ЧИТКОЙ 23.08.
+   Первая редакция звала пресет НА КАЖДОМ открытии бланка — и общий 01225, выданный под
+   любой иной маршрут, приходил с водой, запертой в «No». Это прямое нарушение границы,
+   которую владелец назвал сам, вводя сужение канона: «только пресет school_transport; для
+   любого иного маршрута водные вопросы ВОЗВРАЩАЮТСЯ РОДИТЕЛЮ».
+   ⚠️ Цена ошибки — не косметика: центр утвердил бы «воды нет» на поездке, которой не
+   называл, и родитель подписал бы это, не имея возможности ответить иначе.
+   ⭐ ПРИЗНАК ПРЕСЕТА — НАЗВАННАЯ ШКОЛА либо явный ?preset=. Нет признака — бланк ведёт
+   себя ровно как до 23.08: возит центр (это мы знаем), дата сегодняшняя, а вода и кресло
+   остаются вопросами к родителю. */
+function plainPrefill(){
+  var m=document.getElementById('f_mode_provider');
+  if(m && !m.checked){ m.checked=true; m.dispatchEvent(new Event('change',{bubbles:true})); }
+  var d=document.getElementById('f_permission_date');
+  if(d && !d.value){
+    var t=new Date();
+    d.value=('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear();
+    d.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  var dest=document.getElementById('f_destinations');
+  if(dest && !dest.value) dest.placeholder='where your child is taken';
+  if(window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+  gate();
+}
+
 (function bootPreset(){
   document.addEventListener('DOMContentLoaded', function(){
-    /* Школа приходит префиллом пакета (из 01234) либо ?school= в служебной ссылке. */
-    var school='';
-    try { school=new URLSearchParams(location.search).get('school')||''; } catch(_){}
-    applySchoolTransportPreset(school);
+    var q=null, school='', preset='';
+    try { q=new URLSearchParams(location.search); school=q.get('school')||''; preset=q.get('preset')||''; } catch(_){}
+    if (school || preset==='school_transport') applySchoolTransportPreset(school);
+    else plainPrefill();
   });
 })();
 
