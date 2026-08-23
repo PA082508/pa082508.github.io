@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Play Academy — Enrolment</title>
+<!-- ⭐ ЭТО РЕЖИМ, А НЕ ВТОРАЯ ДВЕРЬ. Файл собран отдельно ТОЛЬКО ради показа: в работу
+     он въезжает как режим parent-forms.html (?mode=interview), у семьи остаётся одна
+     ссылка — та, что уже в письме. Вторая дверь означала бы второй адрес, второй набор
+     правил про центр и набор, и однажды они разошлись бы. -->
+<style>
+:root{--ink:#14281f;--mut:#5d6b63;--line:#d9e2dc;--green:#0f4c35;--gl:#f2f7f4;--amber:#8a4b00;--ab:#fffbeb;--al:#fde68a;--blue:#1e4d7b;--bb:#eef4fa}
+*{box-sizing:border-box}
+body{margin:0;background:#f6f8f6;color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:620px;margin:0 auto;padding:0 16px 60px}
+.bar{background:var(--green);color:#fff;padding:11px 16px;font-size:12.5px;font-weight:700;display:flex;justify-content:space-between;position:sticky;top:0;z-index:5}
+h1{font-size:21px;margin:18px 0 6px;letter-spacing:-.01em}
+h2{font-size:16px;margin:22px 0 8px;color:var(--green)}
+p{margin:0 0 10px}
+.sub{color:var(--mut);font-size:13px}
+.card{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;margin:10px 0}
+.card.g{background:var(--gl);border-color:#cfe0d5}
+.card.a{background:var(--ab);border-color:var(--al)}
+.card.b{background:var(--bb);border-color:#c9dcee}
+.q{border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;margin:9px 0;background:#fff}
+.q .lab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:700;margin-bottom:4px}
+.q input{font:inherit;font-size:14.5px;width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:#fff}
+.q.filled input{background:#f6faf7;border-color:#cfe0d5}
+.src{font-size:11px;color:var(--mut);margin-top:5px}
+.src b{color:var(--green)}
+.q.conf{border-color:var(--al);background:var(--ab)}
+.pick{display:block;width:100%;text-align:left;border:1.5px solid var(--al);background:#fff;border-radius:9px;padding:9px 11px;margin:6px 0;font:inherit;font-size:13.5px;cursor:pointer}
+.btn{display:block;width:100%;background:var(--green);color:#fff;border:0;border-radius:10px;padding:12px;font:inherit;font-size:15px;font-weight:700;margin-top:14px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--green);border:1.5px solid var(--green);margin-top:8px}
+.prog{height:7px;border-radius:4px;background:#e6ece8;overflow:hidden;margin:12px 0 4px}
+.prog i{display:block;height:100%;background:var(--green)}
+.row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #eef2ef;font-size:13.5px}
+.row:last-child{border-bottom:0}
+.st{font-size:11px;font-weight:700;white-space:nowrap}
+.ok{color:#0f7a4a}.next{color:var(--green)}.wait{color:#9aa5a0}.info{color:var(--amber)}
+blockquote{margin:0;padding:11px 14px;border-left:3px solid var(--green);background:#fbfcfb;font-style:italic;font-size:13.5px}
+.attrib{font-size:11.5px;color:var(--mut);margin-top:6px}
+.chip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--gl);color:var(--green);border:1px solid #cfe0d5}
+</style></head><body>
+<div class="bar"><span id="ctr">Play Academy</span><span id="step">Before you start</span></div>
+<div class="wrap"><div id="app"></div></div>
+
+<script src="interview-engine.js"></script>
+<script>
+/* ⛔ ДАННЫЕ ПОКАЗА — ВЫМЫШЛЕННАЯ СЕМЬЯ. Ни одного живого имени: Fenwick, Bramble Lane. */
+var DEMO = {
+  center: 'ridge',
+  base: ['parent_consent','dcy_01234','enroll','iea','child_release_authorization'],
+  children: [
+    { key:'odalys',  name:'Odalys',  facts:{ attendsSchool:true,  healthCondition:false } },
+    { key:'thistle', name:'Thistle', facts:{ infant:true, healthCondition:true, medication:true } }
+  ],
+  /* _forms как его отдаёт get_prefill — подписей и дохода в нём уже нет (блокеры). */
+  prefill: {
+    dcy_01234: { p1_name:'Marisol Fenwick', address:'4120 Alder Hollow Rd', city:'Bramble Lane',
+                 zip:'44092', p1_phone:'(216) 555-0148' },
+    parent_consent: { parent_name:'M. Fenwick-Quennell' }   /* ← расхождение имени, нарочно */
+  }
+};
+var DICT=null, REG=null, PLAN=null, STEP=0, ROUND=0;
+
+Promise.all([
+  fetch('interview-dictionary.json').then(function(r){return r.json()}),
+  fetch('../../enroll-registry.json').then(function(r){return r.json()})
+]).then(function(v){ DICT=v[0]; REG=v[1]; PLAN=PAInterview.planInterview({
+    dict:DICT, registry:REG, baseForms:DEMO.base, children:DEMO.children, prefill:DEMO.prefill });
+  render(); });
+
+function el(h){ var d=document.createElement('div'); d.innerHTML=h; return d.firstElementChild }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}) }
+
+/* ⭐ ВОПРОС С ОТВЕТОМ ПОМЕЧЕН ИСТОЧНИКОМ. Пустой — пуст. Спорный — выбор, а не наш ответ. */
+function qCard(a){
+  /* ⛔ ЯРЛЫК НЕСЁТ ПРЕФИКС СМЫСЛА. Срезав его, экран показывал два разных вопроса под
+     одним словом NAME — родителя и экстренного контакта. Одинаковая подпись под разными
+     вопросами хуже длинной. */
+  var label = a.canonical.replace(/[._]/g,' ');
+  if (a.state==='conflict'){
+    var opts = a.found.map(function(f){
+      return '<button class="pick">'+esc(f.value)+' <span class="sub">— from '+esc(f.form)+'</span></button>'}).join('');
+    return '<div class="q conf"><div class="lab">'+esc(label)+'</div>'
+      +'<p style="margin:0 0 6px;font-size:13.5px"><b>We have two answers on file.</b> Which one is correct today?</p>'
+      +opts+'<button class="pick">Neither — let me type it</button></div>';
+  }
+  if (a.state==='answered'){
+    return '<div class="q filled"><div class="lab">'+esc(label)+'</div>'
+      +'<input value="'+esc(a.value)+'">'
+      +'<div class="src">filled in from <b>'+esc(a.found.map(function(f){return f.form}).join(', '))+'</b></div></div>';
+  }
+  return '<div class="q"><div class="lab">'+esc(label)+'</div><input placeholder="—"></div>';
+}
+
+function render(){
+  var app=document.getElementById('app'), s=document.getElementById('step');
+  app.innerHTML='';
+  if (STEP===0){ s.textContent='Before you start'; app.appendChild(el(stage1())); return }
+  if (STEP===1){ s.textContent='About your family'; app.appendChild(el(familyBlock())); return }
+  if (STEP===2){ s.textContent='About '+PLAN.rounds[ROUND].name; app.appendChild(el(childBlock())); return }
+  if (STEP===3){ s.textContent='Income (IEA)'; app.appendChild(el(ieaBlock())); return }
+  s.textContent='Your packet'; app.appendChild(el(stage2()));
+}
+
+function stage1(){
+  var many = DEMO.base.length>1;
+  var counts = PLAN.familyQuestions.counts;
+  var covered = counts.answered/(counts.answered+counts.empty+counts.conflict||1);
+  /* §1д: абзац показывается ТОЛЬКО когда предзаполнение реально покрывает большинство. */
+  var already = covered>=0.5
+    ? '<div class="card b"><b>Already with us?</b><p class="sub" style="margin:4px 0 0">Most questions will '
+      +'come to you already answered — we filled them in from the forms you signed before. Just check that '
+      +'everything is still correct and move on. Only the questions we have no answer for will come empty. '
+      +'<b>Your signature is always fresh — we never carry it over.</b></p></div>'
+    : '<div class="card b"><b>Already with us?</b><p class="sub" style="margin:4px 0 0">Some of your answers '
+      +'are already filled in from the forms you signed before — check them and move on. The rest we have '
+      +'not been told yet. <b>Your signature is always fresh — we never carry it over.</b></p></div>';
+  return '<div><h1>Before you start</h1>'
+    +'<p>'+(many
+      ? 'There are <b>a number of forms</b> in this packet — but you do not fill them in by hand.'
+      : 'There is <b>one form</b> here — but you do not fill it in by hand.')+'</p>'
+    +'<p><b>Answer the questions first.</b> We ask you once about your family and about each child. Your '
+    +'answers then fill the forms in for you. All that is left is to <b>look each one over and sign it</b>.</p>'
+    +'<p class="sub">Your answers stay on this phone for <b>7 days</b>, so you can stop and come back.</p>'
+    + already
+    +'<div class="card"><b>More than one child?</b><p class="sub" style="margin:4px 0 0">One form per child — '
+    +'twins too. You answer the family questions once; after that we ask only about the next child.<br><br>'
+    +'Every form is one per child — <b>with one exception</b>: the Income Eligibility Application (IEA) is '
+    +'<b>one per family</b>. It comes last; list all your children on it.</p></div>'
+    +'<p class="sub" style="text-decoration:underline">Read more ▾</p>'
+    +'<button class="btn" onclick="STEP=1;render()">Start</button></div>';
+}
+
+function familyBlock(){
+  var q=PLAN.familyQuestions, c=q.counts, tot=c.answered+c.empty+c.conflict;
+  var body=q.family.slice(0,7).map(qCard).join('');
+  return '<div><div class="prog"><i style="width:20%"></i></div>'
+    +'<h1>About your family</h1><p class="sub">Asked once — it carries to every child.</p>'
+    +'<p class="sub"><span class="chip">'+c.answered+' already answered</span> '
+    +'<span class="chip">'+c.conflict+' to confirm</span> <span class="chip">'+c.empty+' new</span></p>'
+    +body+'<p class="sub">… '+(q.family.length-7)+' more family questions</p>'
+    +'<button class="btn" onclick="STEP=2;ROUND=0;render()">Next — about Odalys</button></div>';
+}
+
+function childBlock(){
+  var r=PLAN.rounds[ROUND];
+  var added=r.addedForms.length? '<div class="card a"><b>Because of your answers, we add:</b> '
+      +esc(r.addedForms.join(', '))+'</div>' : '';
+  var body=r.answers.child.slice(0,6).map(qCard).join('');
+  var next = ROUND+1<PLAN.rounds.length
+    ? '<button class="btn" onclick="ROUND=1;render()">Next — about '+esc(PLAN.rounds[1].name)+'</button>'
+    : '<button class="btn" onclick="STEP=3;render()">Next — income form</button>';
+  return '<div><div class="prog"><i style="width:'+(40+ROUND*20)+'%"></i></div>'
+    +'<h1>About '+esc(r.name)+'</h1>'
+    +'<p class="sub">Only this child. Nothing here carries to '
+    +esc(ROUND===0?PLAN.rounds[1].name:PLAN.rounds[0].name)+'.</p>'
+    + added + body
+    +'<p class="sub">… '+(r.answers.child.length-6)+' more questions about '+esc(r.name)+'</p>'+next+'</div>';
+}
+
+function ieaBlock(){
+  return '<div><div class="prog"><i style="width:85%"></i></div>'
+    +'<h1>Before the income questions</h1>'
+    +'<p class="sub">This is the letter the state sends with the form. We show it as written.</p>'
+    +'<blockquote>“Dear Parent or Guardian:<br><br>Please help us comply with the requirements of the '
+    +'U.S. Department of Agriculture’s Child and Adult Care Food Program (CACFP) by completing the attached '
+    +'income eligibility application for free and reduced-price meals. All information will be treated with '
+    +'strict confidentiality. The CACFP provides reimbursement to the child care center for healthy meals and '
+    +'snacks served to children enrolled in child care. The completion of the income eligibility application '
+    +'is optional.”</blockquote>'
+    +'<div class="attrib">— Ohio CACFP Income Eligibility Application, FY 2026–2027 — Household Letter</div>'
+    +'<p class="sub" style="text-decoration:underline;margin-top:8px">Read the full letter ▾</p>'
+    +'<div class="card g"><b>Does your household receive any of these?</b>'
+    +'<div class="row"><span>☑ Food Assistance (SNAP)</span><span class="st ok">case 1234567</span></div>'
+    +'<div class="row"><span>☐ Ohio Works First (OWF)</span><span></span></div>'
+    +'<div class="row"><span>☐ Neither of these</span><span></span></div></div>'
+    +'<div class="card b"><b>You are done with income.</b><p class="sub" style="margin:4px 0 0">With a case '
+    +'number we do not ask what you earn. Parts 1, 2 and 4 only.</p></div>'
+    +'<button class="btn" onclick="STEP=4;render()">Next — your packet</button></div>';
+}
+
+function stage2(){
+  var subs=PAInterview.planSubmissions(PLAN,{centerCode:DEMO.center,presets:{dcy_01225:'school_transport'}});
+  var byChild={};
+  subs.forEach(function(s){ (byChild[s.childKey||'__family']=byChild[s.childKey||'__family']||[]).push(s) });
+  var n=subs.length, signed=3;
+  var html='<div><h1>Your packet</h1><p><b>'+n+' forms to sign.</b></p>'
+    +'<p class="sub">Everything is filled in from your answers. Look each one over and sign it — you can '
+    +'stop and come back.</p><div class="prog"><i style="width:'+Math.round(signed/n*100)+'%"></i></div>'
+    +'<div class="sub" style="font-weight:800;color:var(--green)">Signed '+signed+' of '+n+'</div>';
+  var i=0;
+  PLAN.rounds.forEach(function(r){
+    html+='<h2>For '+esc(r.name)+'</h2><div class="card">';
+    (byChild[r.key]||[]).forEach(function(s){
+      i++; var st = i<=signed?'<span class="st ok">Signed</span>'
+        : i===signed+1?'<span class="st next">Next — tap to review and sign</span>'
+        : '<span class="st wait">Waiting</span>';
+      html+='<div class="row"><span>'+(i<=signed?'✓':i===signed+1?'→':'·')+' '+esc(s.form)
+        +(s.preset?' <span class="chip">'+esc(s.preset)+'</span>':'')+'</span>'+st+'</div>';
+    });
+    html+='</div>';
+  });
+  if (byChild.__family){
+    html+='<h2>For your family</h2><div class="card">';
+    byChild.__family.forEach(function(s){
+      html+='<div class="row"><span>· '+esc(s.form)+'</span><span class="st wait">Waiting</span></div>' });
+    html+='<p class="sub" style="margin:6px 0 0">One per family — lists all your children</p></div>';
+  }
+  html+='<div class="card a"><b>Signing happens on the form itself.</b><p class="sub" style="margin:4px 0 0">'
+    +'Each form opens filled in; you draw your signature on that form. The questionnaire is not a signature.'
+    +'</p></div></div>';
+  return html;
+}
+</script></body></html>
