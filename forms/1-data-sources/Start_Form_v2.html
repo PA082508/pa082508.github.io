@@ -569,19 +569,21 @@
 <script>
 /* Fee Agreement (start_form v2) — form-specific config only; shared behaviour = form-kit.js. */
 
-var CENTERS = {
-  ridge: {addr1:'28930 Ridge Rd.', addr2:'Wickliffe, OH 44092', phone:'C: 440-520-0031', fax:'F: 440-494-7093', email:'playacademy3@gmail.com', foot:'Ridge · Wickliffe, OH'},
-  pearl: {addr1:'6285 Pearl Rd. #30', addr2:'Parma Heights, OH 44130', phone:'C: 440-884-7529', fax:'', email:'playacademy2@gmail.com', foot:'Pearl · Parma Heights, OH'},
-  alpha: {addr1:'201 Alpha Park', addr2:'Highland Heights, OH 44143', phone:'C: 440-460-0600', fax:'', email:'playacademyinfo@gmail.com', foot:'Alpha · Highland Heights, OH'},
-  /* ⛔ ДЕМО-ЦЕНТР ДОЛЖЕН БЫТЬ В КНИГЕ, И ОН ОБЪЯВЛЯЕТ СЕБЯ ДЕМО (замер 23.08).
-     `zzdemo` опознавался КИТОМ (он есть в его карте кодов), но в адресной книге бланка
-     его не было — и форма, на которой снимают показы и гоняют пробы, печаталась БЕЗ
-     ШАПКИ. Мои собственные пробы шли на zzdemo и этого не увидели: смотрели на подпись
-     и отправку, а не на реквизиты.
-     ⚠️ Реквизиты ВЫМЫШЛЕННЫЕ и названы демонстрационными прямо в бумаге: демо-форма,
-     ушедшая в руки как настоящая, — хуже формы без шапки. */
-  zzdemo: {addr1:'DEMONSTRATION ONLY — not a real centre', addr2:'Sample Ave, Demo City, OH 00000', phone:'C: 000-000-0000', fax:'', email:'', foot:'ZZ Demo · demonstration only'}
-};
+/* ── АДРЕСНАЯ КНИГА — ПО ОДНОМУ ЦЕНТРУ, А НЕ ВСЕ СРАЗУ (правка 23.08) ───────────
+   ⛔ ЗДЕСЬ ЛЕЖАЛИ ВСЕ ТРИ ЦЕНТРА. Значит копия бланка, ушедшая семье Wickliffe, несла
+   в своём исходнике телефоны и почту Parma Heights и Highland Heights. Не «утечка
+   секрета» — контакты и так на сайте, — но в бумаге СЕМЬИ им места нет: на её договоре
+   должен стоять её центр и никто больше.
+   ⭐ МЕХАНИЗМ НА СТАТИЧЕСКОЙ ВИТРИНЕ: книга разложена по файлам `centers/<code>.json`,
+   и бланк тянет РОВНО ОДИН — тот, чей код разрешил кит. Другие в доставленную страницу
+   не попадают.
+   ⚠️ ЧЕСТНО О ГРАНИЦЕ: остальные файлы остаются доступны по прямому адресу — витрина
+   статическая, скрыть их нечем, и мы этого не обещаем. Выигрыш ровно один и настоящий:
+   в КОПИИ СЕМЬИ чужих контактов больше нет.
+   ⚠️ ЦЕНА: реквизиты приходят запросом. Не пришли — шапка показывает говорящую строку
+   v35, ту же, что и без центра. Молчаливой пустоты нет ни в одном исходе. */
+var CENTER_INFO = null;
+
 
 /* ── ОДНА ФОРМА, ФАКТЫ ВМЕСТО ВАРИАНТОВ (владелец, 22.08) ──────────────────────
    ⭐ ЧЕТЫРЁХ ДОКУМЕНТОВ БОЛЬШЕ НЕТ. Были standard / infant / school_age / voucher —
@@ -940,13 +942,12 @@ function lockAdmin(){
 }
 
 function paintCenter(){
-  var c = CENTERS[window.FormKit ? FormKit.centerCode() : ''];
-  /* ⛔ ПУСТАЯ ШАПКА ГОВОРИТ, А НЕ МОЛЧИТ (правка 23.08).
-     Здесь стояло «unresolved → header stays blank, never guesses» — не выдумывать чужой
-     центр верно, и это остаётся. Но МОЛЧАЛИВАЯ пустота на денежном договоре означает
-     бумагу, по которой не видно, кто вторая сторона: семья подписывает соглашение с
-     неназванным центром и не замечает пропажи, потому что пропажа выглядит как вёрстка.
-     ⭐ Не угадываем — НАЗЫВАЕМ состояние и говорим, что делать. */
+  var c = CENTER_INFO;
+  /* ⛔ ПУСТАЯ ШАПКА ГОВОРИТ, А НЕ МОЛЧИТ (v35).
+     «Never guesses» остаётся — чужой центр не выдумываем. Но молчаливая пустота на
+     ДЕНЕЖНОМ договоре означает бумагу, по которой не видно второй стороны: семья
+     подписывает соглашение с неназванным центром и не замечает пропажи, потому что
+     пропажа выглядит как вёрстка. */
   if (!c) {
     var a1 = el('c-addr1');
     if (a1) {
@@ -956,12 +957,25 @@ function paintCenter(){
     }
     return;
   }
-  el('c-addr1').textContent = c.addr1;
-  el('c-addr2').textContent = c.addr2;
-  el('c-phone').textContent = c.phone;
-  el('c-fax').textContent   = c.fax;
-  el('c-foot').textContent  = c.foot;
+  var a1 = el('c-addr1');
+  if (a1) { a1.style.color = ''; a1.style.fontStyle = ''; }
+  el('c-addr1').textContent = c.addr1 || '';
+  el('c-addr2').textContent = c.addr2 || '';
+  el('c-phone').textContent = c.phone || '';
+  el('c-fax').textContent   = c.fax || '';
+  el('c-foot').textContent  = c.foot || '';
   if (c.email) { el('c-emaillbl').style.display=''; el('c-email').innerHTML = '<a href="mailto:'+c.email+'">'+c.email+'</a>'; }
+}
+
+/* Тянем РОВНО ОДИН файл — центра, который разрешил кит. */
+function loadCenterInfo(){
+  var code = window.FormKit ? FormKit.centerCode() : '';
+  if (!code) { paintCenter(); return; }
+  fetch('centers/' + encodeURIComponent(code) + '.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ if (!r.ok) throw new Error('centre ' + r.status); return r.json(); })
+    .then(function(j){ CENTER_INFO = j; paintCenter(); })
+    /* ⛔ Не пришло — говорящая строка, а не тихая пустота. */
+    .catch(function(){ CENTER_INFO = null; paintCenter(); });
 }
 
 function startReset(){
@@ -1088,7 +1102,7 @@ window.FORMKIT_CONFIG = {
 
 document.addEventListener('DOMContentLoaded', function(){
   /* Runs AFTER the deferred kit's boot(), so centerCode() is already resolved. */
-  paintCenter();
+  loadCenterInfo();
 
   /* ⛔ ВАРИАНТ БОЛЬШЕ НЕ ВЫБИРАЕТСЯ — НИ ССЫЛКОЙ, НИ ПАНЕЛЬЮ. Он ВЫВОДИТСЯ из того, что
      семья вписала: даты рождения, признак школы, «ждём ребёнка», ваучер. Прежние ?variant=
@@ -1165,7 +1179,7 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=35"></script>
+<script defer src="form-kit.js?v=36"></script>
 
 </body>
 </html>

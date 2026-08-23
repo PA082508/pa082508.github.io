@@ -1785,7 +1785,33 @@ document.addEventListener('click', function (e) {
     // wrong-center filing is worse than a re-opened link.
   }
   var ACOMP = { child_name: 'name', parent_name: 'name', full_name: 'name', dob: 'bday', birthdate: 'bday', parent_birthdate: 'bday', street: 'street-address', address: 'street-address', city: 'address-level2', zip: 'postal-code', phone_day: 'tel', phone: 'tel', email: 'email', parent_email: 'email' };
-  function initAutocomplete() { $$('[data-fk-field]').forEach(function (e) { var k = e.getAttribute('data-fk-field'); if (ACOMP[k] && !e.getAttribute('autocomplete')) e.setAttribute('autocomplete', ACOMP[k]); }); }
+  /* ⛔ НА СЛУЖЕБНОМ УСТРОЙСТВЕ ПАМЯТЬ БРАУЗЕРА — ПРО СОТРУДНИКА, А НЕ ПРО СЕМЬЮ (v36).
+     Повод, найденный владельцем 23.08: на бланке в служебном браузере всплывал ЕГО
+     корпоративный ящик. В самой странице этого адреса нет вовсе — его предлагал Chrome,
+     потому что поле объявлено `autocomplete="email"`, а в браузере вошли под служебной
+     учёткой. Один тап по подсказке — и служебный ящик уезжает в договор, подписанный семьёй.
+     ⭐ РОДИТЕЛЬСКИЙ ПУТЬ НЕ ТРОГАЕМ: матери на своём телефоне подсказка — это скорость, и
+     наш же стандарт быстрого ввода её требует. Гасим только там, где устройство ОБЩЕЕ:
+     ?office=1 и киоск.
+     ⚠️ Гасим ТОЛЬКО контакты человека (имя · почта · телефон · адрес · дата рождения) —
+     то, что браузер помнит про своего владельца. */
+  var SHARED_DEVICE_OFF = ['name','email','tel','street-address','address-level1','address-level2','postal-code','bday'];
+  function onSharedDevice() {
+    if (window.PA_KIOSK) return true;
+    try { return new URLSearchParams(location.search).get('office') === '1'; } catch (_) { return false; }
+  }
+  function initAutocomplete() {
+    var shared = onSharedDevice();
+    $$('[data-fk-field]').forEach(function (e) {
+      var k = e.getAttribute('data-fk-field');
+      if (!ACOMP[k]) return;
+      if (shared && SHARED_DEVICE_OFF.indexOf(ACOMP[k]) >= 0) { e.setAttribute('autocomplete', 'off'); return; }
+      if (!e.getAttribute('autocomplete')) e.setAttribute('autocomplete', ACOMP[k]);
+    });
+    /* ⛔ ПОЛЯ БЕЗ data-fk-field ТОЖЕ ПОДСКАЗЫВАЮТ. Бланк объявляет type="email"/"tel"
+       напрямую, и браузеру этого достаточно — гасим и их. */
+    if (shared) $$('input[type="email"], input[type="tel"]').forEach(function (e) { e.setAttribute('autocomplete', 'off'); });
+  }
 
   // ── Phone mask (packet standard §5.2): (XXX) XXX-XXXX ────────────────────────
   // Auto-wires every type=tel input so display AND the value read into the
@@ -2216,7 +2242,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 35,
+    KIT: 36,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
