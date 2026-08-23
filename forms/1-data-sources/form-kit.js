@@ -191,14 +191,45 @@
    *
    * ⛔ КОНСТАНТА ОДНА. Срок в чистке и срок в плашке обязаны быть одним числом: два
    * числа об одном сроке разойдутся на первой же правке — и разойдутся молча. */
+  /* ── ПАМЯТЬ БЛАНКА: ЧЬЁ УСТРОЙСТВО — ТАКОЙ И СРОК (v37) ─────────────────────────
+     ⛔ СЕМЬ ДНЕЙ — ОБЕЩАНИЕ ТЕЛЕФОНУ СЕМЬИ, А НЕ СТОЙКЕ. На своём телефоне мать бросает
+     пакет на середине и возвращается вечером — память для этого и заведена. На ОБЩЕМ
+     устройстве (?office=1 / киоск) возвращаться некому: следующий, кто сядет, — ДРУГАЯ
+     СЕМЬЯ, и она увидит чужие имена, телефоны и адрес, а при неудаче — чужую подпись.
+
+     ⭐ ВЫБОР МЕХАНИЗМА: НЕ «не писать вовсе» и НЕ «чистить при Submit».
+     · «Не писать вовсе» ломает работу стойки: сотрудник заполняет за одну семью цепочку
+       из нескольких бланков, и перенос семейного между ними — ровно то, ради чего память
+       существует. Без неё семью пришлось бы вбивать заново на каждой бумаге.
+     · «Чистить при Submit» не закрывает главный случай: семья, БРОСИВШАЯ форму на
+       середине, ничего не отправляет — и всё введённое остаётся ждать следующего.
+       Плюс закрытие вкладки не ловится надёжно: убитая вкладка, разряд, отказ браузера.
+     ⭐ ПОЭТОМУ: на общем устройстве память живёт в `sessionStorage` — она есть ВНУТРИ
+     одного сидения (цепочка бланков работает) и умирает вместе со вкладкой, что бы с
+     той вкладкой ни случилось. А для случая «та же вкладка, следующая семья» — явная
+     кнопка «Start fresh for next family».
+     ⚠️ ОБРАЗЕЦ ПОДПИСИ ЖИВЁТ ТАМ ЖЕ: подпись, перенесённая на чужую бумагу, — худшее из
+     всего, что могла бы отдать эта память. */
+  function sharedDevice() {
+    if (window.PA_KIOSK) return true;
+    try { return new URLSearchParams(location.search).get('office') === '1'; } catch (_) { return false; }
+  }
+  var _sharedMem = null;
+  function mem() {
+    if (!sharedDevice()) return localStorage;
+    if (_sharedMem) return _sharedMem;
+    try { sessionStorage.setItem('__fk_probe', '1'); sessionStorage.removeItem('__fk_probe'); _sharedMem = sessionStorage; }
+    catch (_) { _sharedMem = localStorage; }   /* запрещён sessionStorage — не теряем работу стойки */
+    return _sharedMem;
+  }
   var PK_KEY = 'pa_packet_profile';
   var PK_TTL = 7 * 24 * 60 * 60 * 1000;
   /* ⚠️ Образец подписи живёт ТЕМ ЖЕ сроком: одна константа — одно обещание человеку. */
   var SIG_TTL = PK_TTL;
   function pkLoad() {
     try {
-      var r = JSON.parse(localStorage.getItem(PK_KEY));
-      if (!r || Date.now() - r.ts > PK_TTL) { localStorage.removeItem(PK_KEY); return null; }
+      var r = JSON.parse(mem().getItem(PK_KEY));
+      if (!r || Date.now() - r.ts > PK_TTL) { mem().removeItem(PK_KEY); return null; }
       return r;
     } catch (_) { return null; }
   }
@@ -210,7 +241,7 @@
       if (extra && extra.next) rec.next = extra.next;
       else { var prev = pkLoad(); if (prev && prev.next) rec.next = prev.next; }
       var pv = pkLoad(); if (pv && pv.reveal) rec.reveal = pv.reveal;
-      localStorage.setItem(PK_KEY, JSON.stringify(rec));
+      mem().setItem(PK_KEY, JSON.stringify(rec));
     } catch (_) {}
   }
   function fkFields() { return $$('[data-fk-field]'); }
@@ -228,9 +259,9 @@
     try {
       var k = new URLSearchParams(location.search).get('k'); if (!k) return;
       var SK = 'cacfp_packet_v1', o;
-      try { o = JSON.parse(localStorage.getItem(SK)) || {}; } catch (_) { o = {}; }
+      try { o = JSON.parse(mem().getItem(SK)) || {}; } catch (_) { o = {}; }
       o.ts = Date.now(); o.done = o.done || {}; o.done[k] = true;
-      localStorage.setItem(SK, JSON.stringify(o));
+      mem().setItem(SK, JSON.stringify(o));
     } catch (_) {}
   }
 
@@ -276,9 +307,10 @@
   // as empty as the claim we make about it.
   function purgeSamples() {
     try {
-      for (var i = localStorage.length - 1; i >= 0; i--) {
-        var k = localStorage.key(i);
-        if (k && k.indexOf(SIG_SAMPLE_PREFIX) === 0) localStorage.removeItem(k);
+      var M = mem();
+      for (var i = M.length - 1; i >= 0; i--) {
+        var k = M.key(i);
+        if (k && k.indexOf(SIG_SAMPLE_PREFIX) === 0) M.removeItem(k);
       }
     } catch (_) {}
   }
@@ -286,12 +318,12 @@
   function sigSampleKey(scope) { return SIG_SAMPLE_PREFIX + ':' + (scope || SIG_SCOPE_DEFAULT); }
   function sigSampleSave(scope, png, name, method) {
     if (!samplesOn()) return;                                     // conserved: nothing is minted
-    try { if (png) localStorage.setItem(sigSampleKey(scope), JSON.stringify({ ts: Date.now(), scope: scope || SIG_SCOPE_DEFAULT, png: png, name: name || '', method: method || 'draw' })); } catch (_) {}
+    try { if (png) mem().setItem(sigSampleKey(scope), JSON.stringify({ ts: Date.now(), scope: scope || SIG_SCOPE_DEFAULT, png: png, name: name || '', method: method || 'draw' })); } catch (_) {}
   }
   function sigSampleLoad(scope) {
     if (!samplesOn()) return null;                                // conserved: the shelf is not read
     scope = scope || SIG_SCOPE_DEFAULT;
-    function read(k) { try { var r = JSON.parse(localStorage.getItem(k)); if (!r || !r.png || Date.now() - r.ts > SIG_TTL) return null; return r; } catch (_) { return null; } }
+    function read(k) { try { var r = JSON.parse(mem().getItem(k)); if (!r || !r.png || Date.now() - r.ts > SIG_TTL) return null; return r; } catch (_) { return null; } }
     var r = read(sigSampleKey(scope));
     // Legacy bridge: pre-scope kits wrote ONE unscoped key. Only a parent form could
     // ever have minted into it (Staff Consent was never live), so honour it for the
@@ -884,10 +916,10 @@
   var SUB_KEY = 'cacfp_submitted_v1', SUB_TTL = 30 * 24 * 3600e3;
   function subLoad() {
     try {
-      var o = JSON.parse(localStorage.getItem(SUB_KEY)) || {};
+      var o = JSON.parse(mem().getItem(SUB_KEY)) || {};
       var now = Date.now(), changed = false;
       for (var k in o) { if (now - (o[k].ts || 0) > SUB_TTL) { delete o[k]; changed = true; } }
-      if (changed) localStorage.setItem(SUB_KEY, JSON.stringify(o));
+      if (changed) mem().setItem(SUB_KEY, JSON.stringify(o));
       return o;
     } catch (_) { return {}; }
   }
@@ -896,7 +928,7 @@
       var fd = (data && data.formData) || {};
       var o = subLoad();
       o[FORM_TYPE] = { ts: Date.now(), child: String(fd.child_name || '').trim(), ref: ref || '' };
-      localStorage.setItem(SUB_KEY, JSON.stringify(o));
+      mem().setItem(SUB_KEY, JSON.stringify(o));
     } catch (_) {}
   }
   function submittedWords(rec) {
@@ -1334,7 +1366,7 @@ document.addEventListener('click', function (e) {
         if (r.reveal[key].indexOf(extra) < 0) r.reveal[key].push(extra);
       } else if (!r.reveal[key]) r.reveal[key] = true;
       var rec = { ts: Date.now(), data: r.data, next: r.next, reveal: r.reveal };
-      localStorage.setItem(PK_KEY, JSON.stringify(rec));
+      mem().setItem(PK_KEY, JSON.stringify(rec));
     } catch (_) {}
   }
 
@@ -1468,6 +1500,34 @@ document.addEventListener('click', function (e) {
     if (CFG.reset) { try { CFG.reset(); } catch (e) {} } else { location.reload(); return; }
     try { window.scrollTo(0, 0); } catch (e) {}
   }
+  /* ⭐ ЯВНАЯ КНОПКА ДЛЯ СТОЙКИ: «та же вкладка, следующая семья» — единственный случай,
+     который сессионная память сама не закрывает. Кнопка стирает ВСЮ семейную память
+     этого сидения (ответы, образец подписи, отметки «отправлено» и «✓ сделано») и
+     перезагружает бланк чистым.
+     ⛔ Родителю она не показывается: на своём телефоне стирать нечего и незачем. */
+  function startFreshNextFamily() {
+    if (!confirm('Clear this family\u2019s answers and signature from this device?')) return;
+    try {
+      var M = mem();
+      for (var i = M.length - 1; i >= 0; i--) {
+        var k = M.key(i);
+        if (k && (k.indexOf('pa_') === 0 || k.indexOf('cacfp_') === 0)) M.removeItem(k);
+      }
+    } catch (_) {}
+    try { location.reload(); } catch (_) {}
+  }
+  function initFreshButton() {
+    if (!sharedDevice() || $('.fk-fresh-btn')) return;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'fk-fresh-btn fk-print-hidden';
+    b.textContent = '↺ Start fresh for next family';
+    b.setAttribute('style', 'position:fixed;right:14px;bottom:14px;z-index:9997;background:#8a4b00;color:#fff;'
+      + 'border:none;border-radius:10px;padding:10px 15px;font:700 12.5px Arial,sans-serif;cursor:pointer;'
+      + 'box-shadow:0 4px 14px rgba(0,0,0,.25)');
+    b.addEventListener('click', startFreshNextFamily);
+    document.body.appendChild(b);
+  }
+
   // ── Session-life notice ──────────────────────────────────────────────────────
   // The kit keeps your answers AND signature on THIS device for PK_TTL (7 days), so a
   // family can fill the packet across the day. Tell them plainly: nothing is on a
@@ -1478,21 +1538,27 @@ document.addEventListener('click', function (e) {
    * значило бы завести второе число об одном сроке — и оно разойдётся первым же. */
   var NOTICE_KEY = 'pa_fk_notice_ts';
   function sessionNotice() {
-    try { var ts = +localStorage.getItem(NOTICE_KEY); if (ts && Date.now() - ts < PK_TTL) return; } catch (_) {}
+    try { var ts = +mem().getItem(NOTICE_KEY); if (ts && Date.now() - ts < PK_TTL) return; } catch (_) {}
     if ($('.fk-life-notice')) return;
     var days = Math.round(PK_TTL / 86400000);
     var b = document.createElement('div'); b.className = 'fk-life-notice fk-print-hidden';
     b.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;background:#fef3c7;color:#92400e;padding:11px 16px;font:600 13px/1.45 Arial,sans-serif;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.12)');
     var txt = document.createElement('span');
-    txt.innerHTML = '⏳ Your answers and signature are kept <strong>on this device for ' + days
-      + ' days</strong>, so you can finish later — on the same phone and browser. Nothing is sent to '
-      + 'the center until you press Submit. After that, or on a different device, it starts fresh.';
+    /* ⛔ НА ОБЩЕМ УСТРОЙСТВЕ ОБЕЩАТЬ СЕМЬ ДНЕЙ НЕЛЬЗЯ — ЭТО БЫЛО БЫ НЕПРАВДОЙ И УГРОЗОЙ
+       СРАЗУ: памяти столько не живёт, а если бы жила, её увидела бы следующая семья. */
+    txt.innerHTML = sharedDevice()
+      ? '⏳ This is a <strong>shared device</strong>. Your answers stay only while this window is '
+        + 'open and are cleared when it closes. Nothing is sent to the center until you press Submit. '
+        + 'Staff: use <strong>“Start fresh for next family”</strong> before the next family sits down.'
+      : '⏳ Your answers and signature are kept <strong>on this device for ' + days
+        + ' days</strong>, so you can finish later — on the same phone and browser. Nothing is sent to '
+        + 'the center until you press Submit. After that, or on a different device, it starts fresh.';
     var ok = document.createElement('button'); ok.type = 'button'; ok.textContent = 'Got it';
     ok.setAttribute('style', 'background:#92400e;color:#fff;border:none;border-radius:8px;padding:7px 15px;font:700 12px Arial,sans-serif;cursor:pointer;flex:none');
     ok.addEventListener('click', function () { b.remove(); });
     b.appendChild(txt); b.appendChild(ok);
     document.body.insertBefore(b, document.body.firstChild);
-    try { localStorage.setItem(NOTICE_KEY, String(Date.now())); } catch (_) {}
+    try { mem().setItem(NOTICE_KEY, String(Date.now())); } catch (_) {}
   }
 
   /* fk:one-child:start — ОДНО ПОЛЕ = ОДИН РЕБЁНОК, ВКЛЮЧАЯ БЛИЗНЕЦОВ ───────────
@@ -2196,7 +2262,7 @@ document.addEventListener('click', function (e) {
     stripCenterPickers();   // #6 — before anything can read or show a picker
     $$('[data-formkit="signature"]').forEach(function (c) { initSig(c); initAdopt(c); });
     initConditionals(); initValidation(); initTooltips(); initChoices();
-    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initPhones(); initDates(); initAddress(); initExclusive();
+    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initFreshButton(); initPhones(); initDates(); initAddress(); initExclusive();
     try { initPhotoCells(); } catch (_) {}
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // resolve center (embed does its own)
     initToolbar();                                         // unified toolbar — brand + center chip / banner
@@ -2242,7 +2308,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 36,
+    KIT: 37,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
