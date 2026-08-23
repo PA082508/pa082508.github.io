@@ -1,6 +1,6 @@
 /* interview-engine.js — СОБРАНО, НЕ НАПИСАНО РУКАМИ.
  * Источник: src/lib/interviewQuestions.ts, src/lib/interviewPrefill.ts, src/lib/interviewScatter.ts, src/lib/interviewFlow.ts, src/lib/interviewEngineBundle.ts
- * Отпечаток источников: fc8d6403b0e5148f
+ * Отпечаток источников: 786deeb2a9dc5884
  * Правка этого файла бессмысленна: он пересобирается из модулей приложения,
  * и страж сборки роняет гейт, если файл разошёлся с источником.
  */
@@ -241,6 +241,7 @@
     }
   };
   var DOOR = "start_form";
+  var CONSENT = "parent_consent";
   function formsForCondition(reg, condition) {
     var _a;
     return Object.entries((_a = reg.forms) != null ? _a : {}).filter(([, f]) => f && typeof f === "object" && f.condition === condition && !f.sameAs).map(([k]) => k).sort();
@@ -264,8 +265,14 @@
     }
     return { forms, added, unanswered };
   }
+  function applyConsent(base, facts) {
+    const has = facts.hasEsignConsent;
+    if (has === true) return base.filter((f) => f !== CONSENT);
+    if (has === false) return [CONSENT, ...base.filter((f) => f !== CONSENT)];
+    return base;
+  }
   function planInterview(input) {
-    var _a, _b;
+    var _a, _b, _c;
     const { dict, registry, baseForms, children, prefill, familyFacts } = input;
     const empty = {
       skipped: false,
@@ -283,7 +290,7 @@
         skipReason: `the set contains ${DOOR} \u2014 that form is itself the conversation with a new family`
       };
     }
-    const fam = applyConditions(registry, baseForms, familyFacts != null ? familyFacts : {});
+    const fam = applyConditions(registry, applyConsent(baseForms, familyFacts != null ? familyFacts : {}), familyFacts != null ? familyFacts : {});
     const seen = new Set(fam.forms);
     const rounds = [];
     const unanswered = [...fam.unanswered];
@@ -300,7 +307,10 @@
         forms: [.../* @__PURE__ */ new Set([...fam.forms, ...per.added])]
       });
     }
-    const formsFinal = [...seen];
+    if (((_c = familyFacts == null ? void 0 : familyFacts.hasEsignConsent) != null ? _c : null) === null) {
+      unanswered.push({ condition: "esign_consent", forms: [CONSENT] });
+    }
+    const formsFinal = [...seen].sort((a, b) => a === CONSENT ? -1 : b === CONSENT ? 1 : 0);
     const q = buildQuestionnaire(dict, formsFinal);
     const filled = prefillQuestionnaire(q, prefill != null ? prefill : null);
     const familyQuestions = {
@@ -319,7 +329,7 @@
     for (const a of [...p.family, ...p.child, ...p.household, ...p.staff]) c[a.state] += 1;
     return c;
   }
-  var FAMILY_LEVEL_FORMS = ["iea", "usda_waiver"];
+  var FAMILY_LEVEL_FORMS = ["iea", "usda_waiver", CONSENT];
   function planSubmissions(plan, opts) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (plan.skipped || !plan.familyQuestions) return [];
