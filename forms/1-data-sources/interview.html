@@ -48,7 +48,10 @@ blockquote{margin:0;padding:11px 14px;border-left:3px solid var(--green);backgro
 /* ⛔ ДАННЫЕ ПОКАЗА — ВЫМЫШЛЕННАЯ СЕМЬЯ. Ни одного живого имени: Fenwick, Bramble Lane. */
 var DEMO = {
   center: 'ridge',
-  base: ['parent_consent','dcy_01234','enroll','iea','child_release_authorization'],
+  /* ⛔ СОГЛАСИЯ В БАЗОВОМ СОСТАВЕ НЕТ — оно УСЛОВНОЕ и приходит ФАКТОМ ИЗ БАЗЫ.
+     Семья впервые онлайн → согласие добавляется ПЕРВЫМ; согласие на файле → его нет вовсе. */
+  base: ['dcy_01234','enroll','iea','child_release_authorization'],
+  familyFacts: { hasEsignConsent: false },   /* показ: семья заходит впервые */
   children: [
     { key:'odalys',  name:'Odalys',  facts:{ attendsSchool:true,  healthCondition:false } },
     { key:'thistle', name:'Thistle', facts:{ infant:true, healthCondition:true, medication:true } }
@@ -66,8 +69,47 @@ Promise.all([
   fetch('interview-dictionary.json').then(function(r){return r.json()}),
   fetch('../../enroll-registry.json').then(function(r){return r.json()})
 ]).then(function(v){ DICT=v[0]; REG=v[1]; PLAN=PAInterview.planInterview({
-    dict:DICT, registry:REG, baseForms:DEMO.base, children:DEMO.children, prefill:DEMO.prefill });
+    dict:DICT, registry:REG, baseForms:DEMO.base, familyFacts:DEMO.familyFacts,
+    children:DEMO.children, prefill:DEMO.prefill });
   render(); });
+
+/* ⛔ ФОРМЫ НАЗЫВАЮТСЯ ЧЕЛОВЕЧЕСКИ, А НЕ КЛЮЧОМ. Находка владельца на показе: очередь
+   подписания звала бумаги `parent_consent`, `dcy_01234`, `iea` — это адреса в коде, а не
+   имена документов. Семья такого документа в руках не держала и в письме не видела.
+   ⭐ ПОРЯДОК ИСТОЧНИКОВ ИМЕНИ: label слота пакета (то, что семья УЖЕ видит на карточке
+   витрины) → title формы из реестра (каталожное, с ревизией) → ключ последним и вслух.
+   Ключ остаётся, но МЕЛКИМ ВТОРИЧНЫМ текстом: он нужен нам для разговора о бумаге, а не
+   родителю для её узнавания. */
+var NAME_CACHE = {};
+function formName(key){
+  if (NAME_CACHE[key]) return NAME_CACHE[key];
+  var label=null, title=null;
+  try {
+    var pk = REG && REG.packets ? REG.packets : {};
+    for (var p in pk) {
+      var slots = pk[p] && pk[p].slots;
+      if (!slots) continue;
+      for (var i=0;i<slots.length;i++) if (slots[i].key===key && slots[i].label) { label=slots[i].label; break }
+      if (label) break;
+    }
+    var f = REG && REG.forms ? REG.forms[key] : null;
+    if (f && f.title) title = f.title;
+  } catch(_){}
+  NAME_CACHE[key] = label || title || key;
+  return NAME_CACHE[key];
+}
+/* ⚠️ Ключ показывается ТОЛЬКО когда человеческого имени нет: тогда молчать нельзя —
+   бумага без имени всё равно должна быть узнаваема хоть чем-то. */
+function formKeyHint(key){
+  /* ⚠️ КЛЮЧ — ОТДЕЛЬНОЙ СТРОКОЙ ПОД ИМЕНЕМ, А НЕ ХВОСТОМ. Хвостом он разрывал длинные
+     имена на две строки, и очередь читалась рвано: «Child Enrollment & Health (DCY» /
+     «01234) · dcy_01234». Имя должно занимать строку целиком — оно здесь главное. */
+  return formName(key)===key ? ''
+    : '<div class="sub" style="font-size:10px;margin-top:1px">'+esc(key)+'</div>';
+}
+/* ⭐ ПРЕСЕТ — ПРО РЕЖИМ, А НЕ ПРО ИМЯ; но и он читается человеком. */
+var PRESET_NAME = { school_transport: 'School transport' };
+function presetName(p){ return PRESET_NAME[p] || p }
 
 function el(h){ var d=document.createElement('div'); d.innerHTML=h; return d.firstElementChild }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}) }
@@ -146,7 +188,7 @@ function familyBlock(){
 function childBlock(){
   var r=PLAN.rounds[ROUND];
   var added=r.addedForms.length? '<div class="card a"><b>Because of your answers, we add:</b> '
-      +esc(r.addedForms.join(', '))+'</div>' : '';
+      +r.addedForms.map(function(k){return esc(formName(k))}).join(', ')+'</div>' : '';
   var body=r.answers.child.slice(0,6).map(qCard).join('');
   var next = ROUND+1<PLAN.rounds.length
     ? '<button class="btn" onclick="ROUND=1;render()">Next — about '+esc(PLAN.rounds[1].name)+'</button>'
@@ -190,21 +232,44 @@ function stage2(){
     +'stop and come back.</p><div class="prog"><i style="width:'+Math.round(signed/n*100)+'%"></i></div>'
     +'<div class="sub" style="font-weight:800;color:var(--green)">Signed '+signed+' of '+n+'</div>';
   var i=0;
+  /* ⛔ СОГЛАСИЕ ИДЁТ ПЕРВЫМ, А НЕ В ОБЩЕЙ СЕМЕЙНОЙ ГРУППЕ В КОНЦЕ. Его подпись усыновляют
+     остальные формы пакета — подписанное раньше него подписано без основания. Поймано на
+     перегенерации: движок ставил его первым в подачах, а экран рисовал последним.
+     ⚠️ IEA при этом остаётся ПОСЛЕДНЕЙ — так сказано семье в ступени 1 («It comes last»).
+     Две формы уровня семьи, и позиции у них противоположные: одна открывает пакет, другая
+     закрывает. */
+  var fam = byChild.__family || [];
+  var consent = fam.filter(function(s){ return s.form==='parent_consent' });
+  var famRest = fam.filter(function(s){ return s.form!=='parent_consent' });
+  if (consent.length){
+    html+='<h2>First — this one signs the rest</h2><div class="card">';
+    consent.forEach(function(s){
+      i++; var st = i<=signed?'<span class="st ok">Signed</span>'
+        : i===signed+1?'<span class="st next">Next — tap to review and sign</span>'
+        : '<span class="st wait">Waiting</span>';
+      html+='<div class="row"><span>'+(i<=signed?'✓':i===signed+1?'→':'·')+' '+esc(formName(s.form))
+        +formKeyHint(s.form)+'</span>'+st+'</div>';
+    });
+    html+='<p class="sub" style="margin:6px 0 0">One per family. Your signature here is applied to '
+      +'every other form — you draw it once.</p></div>';
+  }
   PLAN.rounds.forEach(function(r){
     html+='<h2>For '+esc(r.name)+'</h2><div class="card">';
     (byChild[r.key]||[]).forEach(function(s){
       i++; var st = i<=signed?'<span class="st ok">Signed</span>'
         : i===signed+1?'<span class="st next">Next — tap to review and sign</span>'
         : '<span class="st wait">Waiting</span>';
-      html+='<div class="row"><span>'+(i<=signed?'✓':i===signed+1?'→':'·')+' '+esc(s.form)
-        +(s.preset?' <span class="chip">'+esc(s.preset)+'</span>':'')+'</span>'+st+'</div>';
+      html+='<div class="row"><span>'+(i<=signed?'✓':i===signed+1?'→':'·')+' '+esc(formName(s.form))
+        +(s.preset?' <span class="chip">'+esc(presetName(s.preset))+'</span>':'')
+        +formKeyHint(s.form)+'</span>'+st+'</div>';
     });
     html+='</div>';
   });
-  if (byChild.__family){
-    html+='<h2>For your family</h2><div class="card">';
-    byChild.__family.forEach(function(s){
-      html+='<div class="row"><span>· '+esc(s.form)+'</span><span class="st wait">Waiting</span></div>' });
+  if (famRest.length){
+    html+='<h2>Last — for your family</h2><div class="card">';
+    famRest.forEach(function(s){
+      html+='<div class="row"><span>· '+esc(formName(s.form))+formKeyHint(s.form)
+        +'</span><span class="st wait">Waiting</span></div>' });
     html+='<p class="sub" style="margin:6px 0 0">One per family — lists all your children</p></div>';
   }
   html+='<div class="card a"><b>Signing happens on the form itself.</b><p class="sub" style="margin:4px 0 0">'
