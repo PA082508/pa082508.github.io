@@ -416,9 +416,31 @@ function schoolBlock(){
   d.innerHTML='<b>Attends kindergarten or above at an elementary school?</b> '
     +'<label style="margin-left:14px"><input type="checkbox" id="f_school_y" data-fk-exclusive="school"> Yes</label>'
     +'<label style="margin-left:14px"><input type="checkbox" id="f_school_n" data-fk-exclusive="school"> No</label>'
+    /* ⭐ ВТОРОЕ ПОЛЕ ТОГО ЖЕ ВОПРОСА — НАЗВАНИЕ ШКОЛЫ (решение владельца 23.08).
+       Оно нужно не ради полноты: из него берётся «destination» разрешения на поездку
+       (DCY 01225), которое центр выдаёт заполненным. Без него пресет пришлось бы
+       спрашивать у семьи второй раз — о том, что она уже сказала.
+       ⛔ ПОЛЯ «ШКОЛА» В РОСТЕРЕ НЕТ И НЕ БУДЕТ: единственный носитель ответа — эта
+       подача, и читает его пресет. Колонка с одним потребителем, читающим её из
+       подачи, — второй носитель одного факта. */
+    +'<span id="fk-school-name" style="display:none;margin-left:14px">Which school? '
+    +'<input type="text" id="f_school_name" data-fk-field="school_name" '
+    +'style="font:inherit;padding:3px 7px;border:1px solid #cfe0d5;border-radius:5px;width:290px"></span>'
     +'<div style="font-size:11.5px;color:#4b5563;margin-top:3px">Asked by the center, not part of the state form.</div>';
   host.parentNode.appendChild(d);
-  d.addEventListener('change', revealByFacts);
+  d.addEventListener('change', function(){ schoolNameToggle(); revealByFacts(); });
+  schoolNameToggle();
+}
+
+/* ⛔ ПОЛЕ ШКОЛЫ ПОКАЗЫВАЕТСЯ ТОЛЬКО ПРИ «Yes». Спросить название школы у семьи, которая
+   только что ответила «нет», — способ получить заполненную клетку там, где ответа быть
+   не должно; потом эта клетка уедет в разрешение на поездку. */
+function schoolNameToggle(){
+  var y=document.getElementById('f_school_y'), box=document.getElementById('fk-school-name');
+  if(!box) return;
+  var on = !!(y && y.checked);
+  box.style.display = on ? '' : 'none';
+  if(!on){ var f=document.getElementById('f_school_name'); if(f) f.value=''; }
 }
 
 /* Возраст на ПЕРВЫЙ ДЕНЬ, а не «сегодня»: ребёнку 17 месяцев при заполнении и 19 при
@@ -574,6 +596,9 @@ window.FORMKIT_CONFIG = {
     FIELDS.forEach(function(f){ if(f.t!=='sig') fd[f.id]=g(f.id); });
     /* Ответ центра — своим ключом, чтобы его не спутали с клеткой бумаги. */
     fd.attends_school_age = g('school_y') ? 'yes' : (g('school_n') ? 'no' : null);
+    /* ⭐ Название школы едет РЯДОМ с фактом и только при «yes» — иначе это мусор,
+       из которого потом соберут «destination» несуществующей поездки. */
+    fd.school_name = fd.attends_school_age === 'yes' ? (g('school_name') || '') : '';
     fd.signature_method = 'drawn';        // v8: the parent slot is DRAW ONLY — no typed rail exists
     fd.signature_typed_value = '';
     return {

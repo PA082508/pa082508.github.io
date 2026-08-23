@@ -796,6 +796,14 @@
     "optional": {
       "title": "Other (as needed)"
     },
+    "school_age": {
+      "title": "Attends kindergarten or above",
+      "detectOn": "dcy_01234",
+      "detect": ["attends kindergarten or above"],
+      "issue": "director",
+      "_fact": "attends_school_age === 'yes' в form_data подачи dcy_01234. ЗАПИСАННЫЙ ОТВЕТ, НЕ ВОЗРАСТ: замер 23.08 — возрастное правило назвало бы школьниками 121 ребёнка и вовсе не ответило бы про 18 детей без даты рождения.",
+      "_null": "attends_school_age отсутствует или null = «не спрашивали». Это НЕ «no»: слот семье не выдаётся и молча не прячется — идёт строкой директору «спросить семью»."
+    },
     "medication": {
       "title": "Medication given in care",
       "detectOn": "dcy_01234",
@@ -933,6 +941,12 @@
           "section": "if_applicable",
           "label": "Administration of Medication (DCY 01217)",
           "note": "Your director provides this in person if your child needs medication."
+        },
+        {
+          "key": "dcy_01225",
+          "section": "if_applicable",
+          "label": "Routine Trip Permission (DCY 01225)",
+          "note": "Transport to and from school. Your center fills it in and gives it to you — you choose the car seat category and sign."
         },
         {
           "key": "dcy_01236",
