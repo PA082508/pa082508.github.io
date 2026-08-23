@@ -7,7 +7,7 @@
      он падает на имя файла по шаблону `_vN.html`: здесь оно совпадает, но совпадение — не
      контракт. Переименуют файл — и запись начнёт врать молча. -->
 <meta name="fk-form-version" content="v2">
-<title>Play Academy — Fee Agreement</title>
+<title>Play Academy — Registration &amp; Fee Agreement</title>
 <!-- FORM REGISTRY: slug=start_form · version=v2 · Rev. 07/2026 · requiringOrg=Internal · signer=parent · intakeMode=online|kiosk
 
      v2 (2026-07-27) — ONE form, FOUR variants. Sources (our own documents, forms/3-library/our-documents/):
@@ -27,7 +27,7 @@
      (дата рождения · ходит в школу · ждём ребёнка · платит округ). Историческая заметка
      о том, что переключал вариант:
        (a) registration fee   (b) payment terms   (c) delinquency   (d) responsibility tail
-     Every variant block is <… data-when="!voucher"> and one pass of applyVariant() shows/hides it.
+     Блок включается признаком: <… data-when="!voucher">, показ — refreshDerived().
 
      AMOUNTS ARE NOT IN THE TEXT. They come from enroll-registry.json → fees, effective-dated,
      resolved on the DATE OF SIGNING, and the applied set is snapshotted into the record. If the
@@ -58,8 +58,6 @@
   /* Variant bar (screen-only): the packet link normally decides; this is the override. */
   .vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;background:#eef4f0;border:1px solid #bcd3c5;border-radius:8px;padding:9px 12px}
   .vbar .lbl{font-size:12.5px;font-weight:bold;color:#2a5a42}
-  .vbtn{font-family:inherit;font-size:13px;padding:5px 13px;border:1px solid var(--green);background:#fff;color:var(--green);border-radius:6px;cursor:pointer}
-  .vbtn.on{background:var(--green);color:#fff}
   .vbar .from-link{font-size:11.5px;color:#4a6b58}
   /* Header */
   .hdr{display:grid;grid-template-columns:1fr 260px 1fr;align-items:center;gap:10px;border-bottom:3px double var(--green);padding-bottom:10px}
@@ -221,7 +219,7 @@
   </div>
 
   <!-- Title is the SOURCE document's own title for the chosen variant (print 1:1). -->
-  <h1 id="doctitle">Fee Agreement</h1>
+  <h1 id="doctitle">Registration &amp; Fee Agreement</h1>
   <div class="subtitle">This form starts your child's enrollment. Registration is confirmed when the registration fee is paid.</div>
 
   <!-- CHILDREN — 1..N -->
@@ -563,7 +561,7 @@
   </div>
 
   <footer>
-    <span>Form: start_form · <b>v2</b> · <span id="foot-variant">standard</span> · Rev. 07/2026 · Play Academy Inc.</span>
+    <span>Form: start_form · <b>v2</b> · Rev. 07/2026 · Play Academy Inc.</span>
     <span id="c-foot"></span>
   </footer>
 </div>
@@ -640,21 +638,18 @@ function loadFees(){
     .then(function(){ paintFees(); });
 }
 
-/* ── Variant switching ─────────────────────────────────────────────────────── */
-function applyVariant(v, source){
-  if (!VARIANTS[v]) v = 'standard';
-  VARIANT = v; if (source) VARIANT_SOURCE = source;
-  $$('[data-variant]').forEach(function(n){
-    var list = (n.getAttribute('data-variant')||'').split(/\s+/);
-    n.style.display = list.indexOf(v) >= 0 ? '' : 'none';
-  });
-  $$('.vbtn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-v')===v); });
-  el('doctitle').textContent = VARIANTS[v].title;
-  document.title = 'Play Academy — ' + VARIANTS[v].title;
-  el('foot-variant').textContent = v;
-  paintFees();                                   // the registration fee differs per variant
-  if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
-}
+/* ── Variant switching — СНЯТО 23.08 ─────────────────────────────────────────
+   ⛔ ЗДЕСЬ ЖИЛА applyVariant() ИЗ v1, И ОНА БЫЛА МЁРТВОЙ И СЛОМАННОЙ ОДНОВРЕМЕННО:
+   обращалась к глобали VARIANTS, которой в v2 нет вовсе (`typeof VARIANTS ===
+   "undefined"` на живой странице), к кнопкам .vbtn, которых нет в разметке, и к
+   VARIANT_SOURCE, который никто не читает. Не падало только потому, что её никто
+   не звал.
+   ⭐ ЗАМЕНЫ НЕ ТРЕБУЕТСЯ: v2 показывает блоки ПРИЗНАКОМ, а не именем варианта —
+   `refreshDerived()` + `data-when` + `facts()`. Завести VARIANTS значило бы поднять
+   ВТОРОЙ механизм для той же работы, и однажды они разошлись бы.
+   ⚠️ Мина была настоящая: первый, кто повесил бы переключатель вариантов, получил бы
+   падение страницы на ReferenceError. */
+
 
 /* ── Children 1..N ─────────────────────────────────────────────────────────── */
 var kidSeq = 2;   /* v1's two rows are always on the page; added rows start at 3 */
@@ -683,7 +678,12 @@ function kids(){
 }
 
 
-var DOC_TITLE = 'Fee Agreement';
+/* ⭐ КАНОНИЧЕСКОЕ ЧЕЛОВЕЧЕСКОЕ ИМЯ ФОРМЫ — «Registration & Fee Agreement», ОДНО ВЕЗДЕ
+   (решение владельца 23.08): заголовок бланка, title реестра, ярлык в Библиотеке,
+   имя в проверках приёма. Технический ключ `start_form` не меняется — им адресуются
+   живые подачи, `child_enrolled_days.source`, исключение интервью и условия реестра.
+   ⛔ Имя живёт ОТДЕЛЬНО от ключа: переименовав ключ, мы разделили бы историю подач. */
+var DOC_TITLE = 'Registration & Fee Agreement';
 var OFFICE_MODE = false;   /* ?office=1 либо киоск */
 
 /* Ставка взноса выводится из фактов, а не из выбранного варианта. */
@@ -970,7 +970,7 @@ function sched(){
 }
 
 window.FORMKIT_CONFIG = {
-  formType:'start_form', version:'v2', title:'Fee Agreement', reset:startReset,
+  formType:'start_form', version:'v2', title:'Registration & Fee Agreement', reset:startReset,
   /* No custom submit → the kit's default channel: submit_enrollment_form,
      p_submission_type='start_form' → Enrollment Inbox, center_id from ?center=. */
   collect:function(){
