@@ -160,7 +160,23 @@ var FIELDS = [
      проставляет N/A сама — это пересказ уже данного ответа, а не новое утверждение. */
   {id:'svc_provider',p:2,t:'text',x:58,y:558,w:1150,h:16,r:1,alt:'na_svc',when:'svc_y',label:'Services provider — a name or N/A'},
   {id:'na_svc',     p:2,t:'cb',  x:62,y:581},
-  {id:'trans_yes',  p:2,t:'cb',  x:62,y:646,excl:'transport',r:1,label:'Emergency transportation — permit or deny'},
+  /* ⭐ ПОДСКАЗКА У КЛЕТКИ, А НЕ В ПАМЯТКЕ. Замер 24.08: из 35 принятых бланков четыре
+     оставили эту клетку пустой — три живых ребёнка, и все трое из тех семей, кому
+     пришлось писать письмо. Пустая клетка здесь дороже прочих: ответа нет, и вывести
+     его не из чего.
+     ⛔ ПОДСКАЗКА ГОВОРИТ О ТОМ, ЧТО ДЕЛАЕМ МЫ, А НЕ О ТОМ, ЧЕГО ТРЕБУЕТ ЗАКОН. Норма
+     (OAC 5180:2-12-15 и -16) велит отправить бумаги с ребёнком и остаться с ним до
+     прихода родителя — это и сказано; о пустой клетке норма молчит, и выдумывать за
+     неё юридическое последствие нельзя. */
+  {id:'trans_yes',  p:2,t:'cb',  x:62,y:646,excl:'transport',r:1,label:'Emergency transportation — permit or deny',
+   /* ⛔ НЕ ПЕРЕСКАЗЫВАЕМ БЛАНК. Про то, что службa сама выбирает больницу, напечатано
+      строкой выше — повторять значит спорить с бумагой за внимание. Говорим только то,
+      чего на бланке нет: что делаем мы и чем плоха пустая клетка. */
+   tx:1168,ty:610, hx:84,hy:842,hw:1120,
+   hint:'<b>Please tick one.</b> In an emergency we call 911 either way, a member of our staff '
+       +'goes with your child and stays until you arrive, and this form goes too. Your answer '
+       +'tells us in advance what you want. <b>Either answer is fine \u2014 what does not work is '
+       +'leaving both boxes empty:</b> then we have no answer from you at all.'},
   {id:'trans_no',   p:2,t:'cb',  x:62,y:751,excl:'transport'},
   {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
 
@@ -188,6 +204,36 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       el=document.createElement('input'); el.type='checkbox'; el.className='cb';
       el.style.left=f.x+'px'; el.style.top=f.y+'px';
       if(f.excl) el.setAttribute('data-fk-exclusive',f.excl);   // form-kit initExclusive: Yes/No & has/hasn't pairs
+      /* Подсказка живёт РЯДОМ с клеткой и печатается вместе с бланком: на бумаге у
+         родителя её тоже видно. */
+      /* ⛔ БЛАНК ПЛОТНЫЙ — ПОДСКАЗКА НЕ ЛОЖИТСЯ НА НЕГО ПОСТОЯННО. Первая редакция
+         накрывала вторую клетку «does not have permission», вторая — полосу подписи:
+         свободного поля между ними просто нет. Ставим значок ⓘ у клетки, а текст
+         показываем по нажатию — он ничего не закрывает, пока его не позвали.
+         ⭐ И ЗАМОК УЖЕ СТОИТ: пара помечена обязательной (`r:1`), пустой её на живом
+         бланке не отправить. Значок объясняет ВЫБОР, а не стережёт пропуск. */
+      if(f.hint){
+        var tip=document.createElement('button'); tip.type='button'; tip.className='fktip';
+        tip.textContent='\u24D8'; tip.setAttribute('aria-label','What this means');
+        /* Значок ставится по СВОИМ координатам (`tx/ty`) — в пустое место бумаги, а не
+           поверх букв: первая редакция села на слово «The» первой клетки. */
+        tip.style.cssText='left:'+(f.tx||((f.hx||f.x)+26))+'px;top:'+(f.ty||((f.hy||f.y)-2))+'px';
+        var h=document.createElement('div'); h.className='fkhint'; h.innerHTML=f.hint;
+        h.style.display='none';
+        tip.onclick=(function(box){ return function(){
+          box.style.display = box.style.display==='none' ? 'block' : 'none'; }; })(h);
+        host.appendChild(tip);
+        /* ⛔ ПОДСКАЗКА НИЧЕГО НЕ ЗАКРЫВАЕТ. Первая редакция легла поверх второй клетки
+           «does not have permission» — то есть спрятала тот самый выбор, который
+           объясняет, да ещё и клетку под ним. Ставим НИЖЕ обеих клеток и строки
+           действия; координата берётся из поля, а не угадывается. */
+        /* ⚠️ БУМАГА ПЛОТНАЯ — ОТКРЫТАЯ ЗАПИСКА ВСЁ РАВНО ЧТО-ТО ПЕРЕКРОЕТ. Кладём её на
+           серую полосу «SIGNATURE / review 12 months» — там ПОЯСНЕНИЕ, а не клетка:
+           перекрыть на секунду объяснение не то же, что спрятать выбор или поле. */
+        h.style.cssText='left:'+(f.hx||(f.x+26))+'px;top:'+(f.hy||(f.y+120))+'px;width:'+(f.hw||1140)+'px;'
+          +'box-shadow:0 6px 18px rgba(20,40,31,.18);z-index:9;display:none';
+        host.appendChild(h);
+      }
     } else if(f.t==='area'){
       el=document.createElement('textarea'); el.className='f';
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
@@ -621,6 +667,14 @@ document.addEventListener('DOMContentLoaded',function(){
   .fkpad-h{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0f4c35;color:#fff}
   .fkpad-title{font-weight:800;font-size:15px;flex:1}
   .fkpad-hint{font-size:12px;font-weight:700;opacity:.9}
+  /* ⛔ ПОДСКАЗКА НЕ ЗАКРЫВАЕТ БЛАНК. Она стои́т в поле страницы между клетками, светлым
+     блоком, и на печати остаётся читаемой. */
+  .fktip{position:absolute;width:22px;height:22px;padding:0;border-radius:50%;
+         border:1.5px solid #1e4d7b;background:#eef4fa;color:#1e4d7b;font:700 13px/1 Arial,sans-serif;
+         cursor:pointer;z-index:9}
+  .fkhint{position:absolute;font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+          color:#14281f;background:#eef4fa;border:1.5px solid #c9dcee;border-radius:8px;
+          padding:8px 11px;box-sizing:border-box}
   .fkpad-draw{padding:16px}
   .fkpad-canvas{width:100%;height:240px;background:rgba(255,253,150,.35);border:1.5px dashed #0f4c35;border-radius:10px;cursor:crosshair;display:block;touch-action:none}
   .fkpad-foot{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid #eef2ee}
