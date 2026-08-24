@@ -217,8 +217,19 @@ function qCard(a){
      вопросами хуже длинной. */
   var label = a.canonical.replace(/[._]/g,' ');
   if (a.state==='conflict'){
-    var opts = a.found.map(function(f){
-      return '<button class="pick">'+esc(f.value)+' <span class="sub">— from '+esc(f.form)+'</span></button>'}).join('');
+    /* ⛔ ОДНО ЗНАЧЕНИЕ — ОДНА КНОПКА. Семейный блок читается по записям всех детей, и
+       одно и то же значение приходит из бумаги каждого: без сведения мать увидела бы три
+       одинаковые кнопки и решила бы, что выбирает между тремя разными ответами.
+       ⭐ Подпись называет РЕБЁНКА, чья это запись: имя бумаги семье ни о чём не говорит. */
+    var byValue = [];
+    a.found.forEach(function(f){
+      var row = byValue.filter(function(x){ return x.value===f.value })[0];
+      if(!row){ row={ value:f.value, from:[] }; byValue.push(row) }
+      var who = f.who || f.form;
+      if(row.from.indexOf(who)<0) row.from.push(who);
+    });
+    var opts = byValue.map(function(r){
+      return '<button class="pick">'+esc(r.value)+' <span class="sub">— from '+esc(r.from.join(', '))+'</span></button>'}).join('');
     return '<div class="q conf"><div class="lab">'+esc(label)+'</div>'
       +'<p style="margin:0 0 6px;font-size:13.5px"><b>We have two answers on file.</b> Which one is correct today?</p>'
       +opts+'<button class="pick">Neither — let me type it</button></div>';

@@ -1,6 +1,6 @@
 /* interview-engine.js — СОБРАНО, НЕ НАПИСАНО РУКАМИ.
  * Источник: src/lib/interviewQuestions.ts, src/lib/interviewPrefill.ts, src/lib/interviewScatter.ts, src/lib/interviewFlow.ts, src/lib/interviewQueue.ts, src/lib/interviewEngineBundle.ts
- * Отпечаток источников: 2fddbff482d076c2
+ * Отпечаток источников: 85ef21efef44b366
  * Правка этого файла бессмысленна: он пересобирается из модулей приложения,
  * и страж сборки роняет гейт, если файл разошёлся с источником.
  */
@@ -74,7 +74,8 @@
     if (typeof v === "number" || typeof v === "boolean") return String(v);
     return "";
   };
-  function answerFor(q, forms) {
+  var sameValue = (v) => v.replace(/\s+/g, " ").trim().toLowerCase();
+  function answerFor(q, forms, who) {
     if (q.level === "household") {
       return { ...q, state: "empty", value: null, found: [] };
     }
@@ -84,12 +85,37 @@
       if (!fd) continue;
       const v = txt(fd[t.key]);
       if (!v) continue;
-      found.push({ form: t.form, key: t.key, value: t.branch !== void 0 ? t.branch : v });
+      found.push({ form: t.form, key: t.key, value: t.branch !== void 0 ? t.branch : v, who });
     }
-    const distinct = [...new Set(found.map((f) => f.value))];
+    const distinct = [...new Set(found.map((f) => sameValue(f.value)))];
     if (distinct.length === 0) return { ...q, state: "empty", value: null, found: [] };
-    if (distinct.length === 1) return { ...q, state: "answered", value: distinct[0], found };
+    if (distinct.length === 1) return { ...q, state: "answered", value: found[0].value, found };
     return { ...q, state: "conflict", value: null, found };
+  }
+  function answerAcross(q, sources) {
+    const all = [];
+    for (const s of sources) {
+      const a = answerFor(q, s.forms, s.who);
+      all.push(...a.found);
+    }
+    if (!all.length) return { ...q, state: "empty", value: null, found: [] };
+    const distinct = [...new Set(all.map((f) => sameValue(f.value)))];
+    if (distinct.length === 1) return { ...q, state: "answered", value: all[0].value, found: all };
+    return { ...q, state: "conflict", value: null, found: all };
+  }
+  function prefillAcross(q, sources) {
+    const map = (list) => list.map((x) => answerAcross(x, sources));
+    const out = {
+      family: map(q.family),
+      child: map(q.child),
+      household: map(q.household),
+      staff: map(q.staff),
+      skipped: q.skipped,
+      skipReason: q.skipReason,
+      counts: { answered: 0, empty: 0, conflict: 0 }
+    };
+    for (const a of [...out.family, ...out.child, ...out.household, ...out.staff]) out.counts[a.state] += 1;
+    return out;
   }
   function prefillQuestionnaire(q, forms) {
     const src = forms != null ? forms : {};
@@ -109,8 +135,16 @@
     return out;
   }
   function conflictLine(a) {
+    var _a;
     if (a.state !== "conflict") return null;
-    const parts = a.found.map((f) => `"${f.value}" (from ${f.form})`);
+    const seen = /* @__PURE__ */ new Map();
+    for (const f of a.found) {
+      const label = f.who || f.form;
+      const list = (_a = seen.get(f.value)) != null ? _a : [];
+      if (!list.includes(label)) list.push(label);
+      seen.set(f.value, list);
+    }
+    const parts = [...seen].map(([value, labels]) => `"${value}" (from ${labels.join(", ")})`);
     return `We have two answers on file \u2014 ${parts.join(" and ")}. Which one is correct today?`;
   }
 
@@ -335,7 +369,11 @@
     }
     const formsFinal = [...seen].sort((a, b) => a === CONSENT ? -1 : b === CONSENT ? 1 : 0);
     const q = buildQuestionnaire(dict, formsFinal);
-    const filled = prefillQuestionnaire(q, prefill != null ? prefill : null);
+    const sources = children.map((c) => {
+      var _a2;
+      return { who: c.name, forms: (_a2 = c.prefill) != null ? _a2 : null };
+    }).filter((s) => !!s.forms);
+    const filled = sources.length ? prefillAcross(q, sources) : prefillQuestionnaire(q, prefill != null ? prefill : null);
     const familyQuestions = {
       ...filled,
       child: [],
