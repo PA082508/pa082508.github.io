@@ -1169,8 +1169,16 @@ document.addEventListener('click', function (e) {
      * значение — прошлогодняя бумага ему не указ. */
     var ivBag = null;
     try {
+      /* ⛔ ОТВЕТЫ ИНТЕРВЬЮ ХРАНЯТСЯ ПО РЕБЁНКУ, А НЕ ПО ФОРМЕ. Замер на живой семье
+         тройняшек Graves 24.08: экран складывал ответы всех троих в один мешок с ключом
+         `dcy_01234`, последний записавший побеждал — и мать, открыв строку старшего,
+         получала форму зачисления с именем младшей. Ребёнка называет ТОКЕН строки:
+         он и есть ключ мешка. Мешок чужого ребёнка не читается никогда.
+         ⚠️ Старый плоский вид (`iv[form]`) больше НЕ поддерживаем намеренно: тихая
+         совместимость вернула бы ровно ту ошибку, ради которой заведён токен. */
       var iv = JSON.parse(sessionStorage.getItem('pa_interview_answers') || 'null');
-      if (iv && CFG.formKey && iv[CFG.formKey]) ivBag = iv[CFG.formKey];
+      var myTok = fkToken();
+      if (iv && myTok && CFG.formKey && iv[myTok] && iv[myTok][CFG.formKey]) ivBag = iv[myTok][CFG.formKey];
     } catch (_) {}
 
     var bag = (CFG.formKey && data._forms && data._forms[CFG.formKey]) || null;
@@ -2336,7 +2344,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 38,
+    KIT: 39,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },

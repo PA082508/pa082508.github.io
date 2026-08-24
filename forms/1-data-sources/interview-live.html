@@ -147,7 +147,10 @@ Promise.all([
     PLAN=PAInterview.planInterview({
       dict:DICT, registry:REG, baseForms:base,
       familyFacts:{ hasEsignConsent: fam.hasConsent },
-      children: fam.children.map(function(c){ return { key:c.key, name:c.name, facts:factsOf(c.prefill) } }),
+      /* ⛔ У КАЖДОГО РЕБЁНКА СВОЙ ПРЕФИЛЛ. Замер 24.08 на живой семье: один общий
+         префилл ставил в бланк сестры имя брата и его дату рождения. */
+      children: fam.children.map(function(c){ return { key:c.key, name:c.name, facts:factsOf(c.prefill),
+        prefill:(c.prefill&&c.prefill._forms)||null } }),
       prefill: prefillOfMe._forms || {} });
     document.getElementById('ctr').textContent='Play Academy'+(CENTER?' \u00b7 '+CENTER:'');
     render();
@@ -214,8 +217,19 @@ function qCard(a){
      вопросами хуже длинной. */
   var label = a.canonical.replace(/[._]/g,' ');
   if (a.state==='conflict'){
-    var opts = a.found.map(function(f){
-      return '<button class="pick">'+esc(f.value)+' <span class="sub">— from '+esc(f.form)+'</span></button>'}).join('');
+    /* ⛔ ОДНО ЗНАЧЕНИЕ — ОДНА КНОПКА. Семейный блок читается по записям всех детей, и
+       одно и то же значение приходит из бумаги каждого: без сведения мать увидела бы три
+       одинаковые кнопки и решила бы, что выбирает между тремя разными ответами.
+       ⭐ Подпись называет РЕБЁНКА, чья это запись: имя бумаги семье ни о чём не говорит. */
+    var byValue = [];
+    a.found.forEach(function(f){
+      var row = byValue.filter(function(x){ return x.value===f.value })[0];
+      if(!row){ row={ value:f.value, from:[] }; byValue.push(row) }
+      var who = f.who || f.form;
+      if(row.from.indexOf(who)<0) row.from.push(who);
+    });
+    var opts = byValue.map(function(r){
+      return '<button class="pick">'+esc(r.value)+' <span class="sub">— from '+esc(r.from.join(', '))+'</span></button>'}).join('');
     return '<div class="q conf"><div class="lab">'+esc(label)+'</div>'
       +'<p style="margin:0 0 6px;font-size:13.5px"><b>We have two answers on file.</b> Which one is correct today?</p>'
       +opts+'<button class="pick">Neither — let me type it</button></div>';
@@ -329,16 +343,52 @@ function ieaBlock(){
     +'<button class="btn" onclick="STEP=4;render()">Next — your packet</button></div>';
 }
 
+/* ⛔ ВТОРОЙ РЕАЛИЗАЦИИ ПРАВИЛА ЗДЕСЬ НЕТ. Пара «ключ формы ↔ тип подачи», счёт новых
+   ответов и три состояния строки живут в движке (src/lib/interviewQueue.ts) и приходят
+   сюда собранным артефактом. Витрина только зовёт — и потому проверяется теми же
+   тестами, что и приложение: два мнения о том, подписана ли бумага, однажды разойдутся
+   молча, а цена расхождения — подпись под формой, которую семья уже подписала, или
+   тихая галочка над формой, которую она не подписывала. */
+function childOfSub(s){
+  return FAMILY.children.filter(function(c){ return c.key===(s.childKey||FAMILY.children[0].key) })[0];
+}
+function formsOfChild(s){ var k=childOfSub(s); return (k&&k.prefill&&k.prefill._forms)||{} }
+function acceptedBag(kid, formKey){
+  return PAInterview.acceptedBag((kid&&kid.prefill&&kid.prefill._forms)||{}, REG, formKey);
+}
+function newAnswers(s){
+  var bag=PAInterview.acceptedBag(formsOfChild(s), REG, s.form);
+  return bag ? PAInterview.newAnswers(DICT, s.form, s.formData||{}, bag) : [];
+}
+
+/* ⭐ ФОРМУЛИРОВКА СОСТОЯНИЯ — В ОДНОМ МЕСТЕ. Три места рисовали строку очереди, и
+   разойтись им ничего не мешало: семья прочла бы о той же бумаге два разных слова. */
+function stateBits(st){
+  return st==='signed'  ? { mark:'\u2713', cls:'ok',   text:'Signed' }
+       : st==='updated' ? { mark:'\u21bb', cls:'info', text:'New answers \u2014 tap to re-sign' }
+       : st==='updated-next' ? { mark:'\u21bb', cls:'info', text:'Next \u2014 new answers, tap to re-sign' }
+       : st==='next'    ? { mark:'\u2192', cls:'next', text:'Next \u2014 tap to review and sign' }
+       :                  { mark:'\u00b7', cls:'wait', text:'Waiting' };
+}
 function stage2(){
   var subs=PAInterview.planSubmissions(PLAN,{centerCode:CENTER,presets:{dcy_01225:'school_transport'}});
   SUBS=subs;
   /* ⛔ ОТВЕТЫ ИНТЕРВЬЮ КЛАДУТСЯ В ПАМЯТЬ СИДЕНИЯ, А НЕ В АДРЕС ССЫЛКИ. Адрес виден в
      истории браузера и в плече пересылки; ответы семьи туда не отправляются. Кит читает
      их тем же кодом, что и прежние подачи (v38). */
+  /* ⛔ МЕШОК ОТВЕТОВ — ПО РЕБЁНКУ, А НЕ ПО ФОРМЕ. Складывая по ключу формы, экран
+     смешивал троих детей в одном `dcy_01234`: побеждал последний круг, и бланк старшего
+     открывался с именем младшей. Ребёнка называет ТОКЕН его строки — по нему и кладём,
+     по нему же кит и читает (KIT 39). Формы уровня семьи кладутся токеном ребёнка
+     ссылки: их бланк и открывается им. */
   try {
-    var bagByForm={};
-    subs.forEach(function(s){ bagByForm[s.form]=Object.assign(bagByForm[s.form]||{}, s.formData||{}) });
-    sessionStorage.setItem('pa_interview_answers', JSON.stringify(bagByForm));
+    var bagByChild={};
+    subs.forEach(function(s){
+      var tok=s.childKey||FAMILY.children[0].key;
+      (bagByChild[tok]=bagByChild[tok]||{})[s.form]=
+        Object.assign(bagByChild[tok][s.form]||{}, s.formData||{});
+    });
+    sessionStorage.setItem('pa_interview_answers', JSON.stringify(bagByChild));
   } catch(_){}
   var byChild={};
   subs.forEach(function(s){ (byChild[s.childKey||'__family']=byChild[s.childKey||'__family']||[]).push(s) });
@@ -350,17 +400,29 @@ function stage2(){
      первые N строк подряд — то есть говорила семье, что подписаны бумаги, которых она не
      подписывала. Считаем по КАЖДОЙ строке: есть ли принятая подача этого типа у ЭТОГО
      ребёнка. */
-  function isSigned(s){
-    var kid=FAMILY.children.filter(function(c){return c.key===(s.childKey||FAMILY.children[0].key)})[0];
-    var pf=(kid&&kid.prefill&&kid.prefill._forms)||{};
-    return !!pf[s.form];
+  function isSigned(s){ return !!PAInterview.acceptedBag(formsOfChild(s), REG, s.form) }
+  /* ⭐ Тот же вычислитель отдаём наружу: репетиция обязана мерить ровно то, что рисует
+     экран, а не свою копию правила. */
+  window.stateOf = stateOf;
+  /* ⭐ ТРИ СОСТОЯНИЯ, А НЕ ДВА. Подписана и добавить нечего — Signed. Подписана, но
+     интервью собрало новые ответы — Updated, и она СЧИТАЕТСЯ НЕПОДПИСАННОЙ: форма
+     изменилась, значит подпись нужна свежая (канон). Не подписана — Next/Waiting. */
+  function stateOf(s){
+    return PAInterview.rowState({ dict:DICT, registry:REG, formKey:s.form,
+      formData:s.formData||{}, childForms:formsOfChild(s) });
   }
-  var signed=subs.filter(isSigned).length;
-  var nextKey=(subs.filter(function(s){return !isSigned(s)})[0]||{});
+  var signed=subs.filter(function(s){ return stateOf(s)==='signed' }).length;
+  var updated=subs.filter(function(s){ return stateOf(s)==='updated' }).length;
+  /* ⛔ «СЛЕДУЮЩАЯ» — ТА, ЧТО НЕ ПОДПИСАНА ВОВСЕ, А НЕ ПРОСТО ПЕРВАЯ НЕЗАКРЫТАЯ. Иначе
+     очередь ставила стрелку на исправление уже подписанной бумаги, а НИКОГДА не
+     подписанный план ухода получал «Waiting» — и выглядел делом, которое подождёт. */
+  var nextKey=(subs.filter(function(s){return stateOf(s)==='todo'})[0]
+            || subs.filter(function(s){return stateOf(s)==='updated'})[0] || {});
   var html='<div><h1>Your packet</h1><p><b>'+n+' forms to sign.</b></p>'
     +'<p class="sub">Everything is filled in from your answers. Look each one over and sign it — you can '
     +'stop and come back.</p><div class="prog"><i style="width:'+Math.round(signed/n*100)+'%"></i></div>'
-    +'<div class="sub" style="font-weight:800;color:var(--green)">Signed '+signed+' of '+n+'</div>';
+    +'<div class="sub" style="font-weight:800;color:var(--green)">Signed '+signed+' of '+n
+    +(updated?' \u00b7 <span style="color:var(--amber)">'+updated+' with new answers to add</span>':'')+'</div>';
   var i=0;
   /* ⛔ СОГЛАСИЕ ИДЁТ ПЕРВЫМ, А НЕ В ОБЩЕЙ СЕМЕЙНОЙ ГРУППЕ В КОНЦЕ. Его подпись усыновляют
      остальные формы пакета — подписанное раньше него подписано без основания. Поймано на
@@ -376,12 +438,10 @@ function stage2(){
     consent.forEach(function(s){
       /* ⛔ И ЗДЕСЬ ПО ФАКТУ, А НЕ ПО ПОРЯДКУ: согласие помечалось «Signed» просто потому,
          что стояло первым. Семья Kutsenko, которая согласия НЕ подписывала, видела галочку. */
-      var cDone=isSigned(s), cNext=(s===nextKey);
+      var cs=stateOf(s); var cb=stateBits(s===nextKey?(cs==='updated'?'updated-next':'next'):cs);
       html+='<div class="row"><a href="'+esc(formHref(s))+'" style="color:inherit;text-decoration:none;flex:1">'
-        +(cDone?'✓':cNext?'→':'·')+' '+esc(formName(s.form))+formKeyHint(s.form)+'</a>'
-        +(cDone?'<span class="st ok">Signed</span>'
-          :cNext?'<span class="st next">Next — tap to review and sign</span>'
-          :'<span class="st wait">Waiting</span>')+'</div>';
+        +cb.mark+' '+esc(formName(s.form))+formKeyHint(s.form)+'</a>'
+        +'<span class="st '+cb.cls+'">'+cb.text+'</span></div>';
     });
     html+='<p class="sub" style="margin:6px 0 0">One per family. Your signature here is applied to '
       +'every other form — you draw it once.</p></div>';
@@ -389,12 +449,10 @@ function stage2(){
   PLAN.rounds.forEach(function(r){
     html+='<h2>For '+esc(r.name)+'</h2><div class="card">';
     (byChild[r.key]||[]).forEach(function(s){
-      var done=isSigned(s), isNext=(s===nextKey);
-      var st = done?'<span class="st ok">Signed</span>'
-        : isNext?'<span class="st next">Next — tap to review and sign</span>'
-        : '<span class="st wait">Waiting</span>';
+      var ks=stateOf(s); var kb=stateBits(s===nextKey?(ks==='updated'?'updated-next':'next'):ks);
+      var st = '<span class="st '+kb.cls+'">'+kb.text+'</span>';
       html+='<div class="row"><a href="'+esc(formHref(s))+'" style="color:inherit;text-decoration:none;flex:1">'
-        +(done?'✓':isNext?'→':'·')+' '+esc(formName(s.form))
+        +kb.mark+' '+esc(formName(s.form))
         +(s.preset?' <span class="chip">'+esc(presetName(s.preset))+'</span>':'')
         +formKeyHint(s.form)+'</a>'+st+'</div>';
     });
@@ -402,9 +460,13 @@ function stage2(){
   });
   if (famRest.length){
     html+='<h2>Last — for your family</h2><div class="card">';
+    /* ⛔ И ЗДЕСЬ СОСТОЯНИЕ ЧИТАЕТСЯ, А НЕ ПИШЕТСЯ НАИЗУСТЬ: строка стояла «Waiting»
+       всегда — даже когда IEA этой семьёй уже подана. */
     famRest.forEach(function(s){
-      html+='<div class="row"><a href="'+esc(formHref(s))+'" style="color:inherit;text-decoration:none;flex:1">· '
-        +esc(formName(s.form))+formKeyHint(s.form)+'</a><span class="st wait">Waiting</span></div>' });
+      var fs=stateOf(s); var fb=stateBits(s===nextKey?(fs==='updated'?'updated-next':'next'):fs);
+      html+='<div class="row"><a href="'+esc(formHref(s))+'" style="color:inherit;text-decoration:none;flex:1">'
+        +fb.mark+' '+esc(formName(s.form))+formKeyHint(s.form)+'</a>'
+        +'<span class="st '+fb.cls+'">'+fb.text+'</span></div>' });
     html+='<p class="sub" style="margin:6px 0 0">One per family — lists all your children</p></div>';
   }
   var ro=readOnlySlots();

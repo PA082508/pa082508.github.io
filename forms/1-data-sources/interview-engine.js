@@ -1,12 +1,16 @@
 /* interview-engine.js — СОБРАНО, НЕ НАПИСАНО РУКАМИ.
- * Источник: src/lib/interviewQuestions.ts, src/lib/interviewPrefill.ts, src/lib/interviewScatter.ts, src/lib/interviewFlow.ts, src/lib/interviewEngineBundle.ts
- * Отпечаток источников: b403fca606f759b7
+ * Источник: src/lib/interviewQuestions.ts, src/lib/interviewPrefill.ts, src/lib/interviewScatter.ts, src/lib/interviewFlow.ts, src/lib/interviewQueue.ts, src/lib/interviewEngineBundle.ts
+ * Отпечаток источников: 85ef21efef44b366
  * Правка этого файла бессмысленна: он пересобирается из модулей приложения,
  * и страж сборки роняет гейт, если файл разошёлся с источником.
  */
 "use strict";
 (() => {
   // src/lib/interviewQuestions.ts
+  function branchOf(dict, form, key) {
+    var _a, _b;
+    return (_b = (_a = dict.branchFields) == null ? void 0 : _a[form]) == null ? void 0 : _b[key];
+  }
   var DOOR_FORMS = ["start_form"];
   var ORDER = ["family", "child", "household", "staff"];
   function buildQuestionnaire(dict, formsInSet) {
@@ -36,7 +40,7 @@
       if (!set.includes(r.form)) continue;
       const q = byCanon.get(r.canonical);
       if (q) {
-        q.targets.push({ form: r.form, key: r.key });
+        q.targets.push({ form: r.form, key: r.key, branch: branchOf(dict, r.form, r.key), branchOn: dict.branchOnValue });
         continue;
       }
       const declared = (_a = dict.canonicals) == null ? void 0 : _a[r.canonical];
@@ -45,7 +49,7 @@
         level: (_b = declared == null ? void 0 : declared.level) != null ? _b : r.level,
         // ⭐ Канонический формат, когда источники расходятся; иначе — форма источника.
         format: (_c = declared == null ? void 0 : declared.canonicalFormat) != null ? _c : r.format,
-        targets: [{ form: r.form, key: r.key }]
+        targets: [{ form: r.form, key: r.key, branch: branchOf(dict, r.form, r.key), branchOn: dict.branchOnValue }]
       });
     }
     const out = { ...empty, unknownForms };
@@ -70,7 +74,8 @@
     if (typeof v === "number" || typeof v === "boolean") return String(v);
     return "";
   };
-  function answerFor(q, forms) {
+  var sameValue = (v) => v.replace(/\s+/g, " ").trim().toLowerCase();
+  function answerFor(q, forms, who) {
     if (q.level === "household") {
       return { ...q, state: "empty", value: null, found: [] };
     }
@@ -80,12 +85,37 @@
       if (!fd) continue;
       const v = txt(fd[t.key]);
       if (!v) continue;
-      found.push({ form: t.form, key: t.key, value: v });
+      found.push({ form: t.form, key: t.key, value: t.branch !== void 0 ? t.branch : v, who });
     }
-    const distinct = [...new Set(found.map((f) => f.value))];
+    const distinct = [...new Set(found.map((f) => sameValue(f.value)))];
     if (distinct.length === 0) return { ...q, state: "empty", value: null, found: [] };
-    if (distinct.length === 1) return { ...q, state: "answered", value: distinct[0], found };
+    if (distinct.length === 1) return { ...q, state: "answered", value: found[0].value, found };
     return { ...q, state: "conflict", value: null, found };
+  }
+  function answerAcross(q, sources) {
+    const all = [];
+    for (const s of sources) {
+      const a = answerFor(q, s.forms, s.who);
+      all.push(...a.found);
+    }
+    if (!all.length) return { ...q, state: "empty", value: null, found: [] };
+    const distinct = [...new Set(all.map((f) => sameValue(f.value)))];
+    if (distinct.length === 1) return { ...q, state: "answered", value: all[0].value, found: all };
+    return { ...q, state: "conflict", value: null, found: all };
+  }
+  function prefillAcross(q, sources) {
+    const map = (list) => list.map((x) => answerAcross(x, sources));
+    const out = {
+      family: map(q.family),
+      child: map(q.child),
+      household: map(q.household),
+      staff: map(q.staff),
+      skipped: q.skipped,
+      skipReason: q.skipReason,
+      counts: { answered: 0, empty: 0, conflict: 0 }
+    };
+    for (const a of [...out.family, ...out.child, ...out.household, ...out.staff]) out.counts[a.state] += 1;
+    return out;
   }
   function prefillQuestionnaire(q, forms) {
     const src = forms != null ? forms : {};
@@ -105,8 +135,16 @@
     return out;
   }
   function conflictLine(a) {
+    var _a;
     if (a.state !== "conflict") return null;
-    const parts = a.found.map((f) => `"${f.value}" (from ${f.form})`);
+    const seen = /* @__PURE__ */ new Map();
+    for (const f of a.found) {
+      const label = f.who || f.form;
+      const list = (_a = seen.get(f.value)) != null ? _a : [];
+      if (!list.includes(label)) list.push(label);
+      seen.set(f.value, list);
+    }
+    const parts = [...seen].map(([value, labels]) => `"${value}" (from ${labels.join(", ")})`);
     return `We have two answers on file \u2014 ${parts.join(" and ")}. Which one is correct today?`;
   }
 
@@ -171,7 +209,7 @@
     return out;
   }
   function scatterAnswers(input) {
-    var _a, _b;
+    var _a, _b, _c;
     const { filled, forms, childKey, centerCode } = input;
     const data = {};
     const skipped = [];
@@ -204,6 +242,11 @@
             skipped.push({ canonical: q.canonical, reason: "a child answer needs a child \u2014 none given" });
             continue;
           }
+          if (t.branch !== void 0) {
+            const on = String(q.value).trim().toLowerCase() === t.branch.trim().toLowerCase();
+            put(t.form, t.key, on ? (_b = t.branchOn) != null ? _b : q.value : "");
+            continue;
+          }
           put(t.form, t.key, q.value);
         }
       }
@@ -211,7 +254,7 @@
     if (centerCode) {
       for (const f of forms) {
         if (CENTER_NAME_ONLY.includes(f)) continue;
-        ((_b = data[f]) != null ? _b : data[f] = {}).center_code = centerCode;
+        ((_c = data[f]) != null ? _c : data[f] = {}).center_code = centerCode;
       }
     }
     return { data, skipped };
@@ -272,7 +315,7 @@
     return base;
   }
   function planInterview(input) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g;
     const { dict, registry, baseForms, children, prefill, familyFacts } = input;
     const empty = {
       skipped: false,
@@ -326,15 +369,32 @@
     }
     const formsFinal = [...seen].sort((a, b) => a === CONSENT ? -1 : b === CONSENT ? 1 : 0);
     const q = buildQuestionnaire(dict, formsFinal);
-    const filled = prefillQuestionnaire(q, prefill != null ? prefill : null);
+    const sources = children.map((c) => {
+      var _a2;
+      return { who: c.name, forms: (_a2 = c.prefill) != null ? _a2 : null };
+    }).filter((s) => !!s.forms);
+    const filled = sources.length ? prefillAcross(q, sources) : prefillQuestionnaire(q, prefill != null ? prefill : null);
     const familyQuestions = {
       ...filled,
       child: [],
       staff: filled.staff,
       counts: countOf({ ...filled, child: [] })
     };
+    const blank = prefillQuestionnaire(q, null);
+    const ownOf = new Map(children.map((c) => {
+      var _a2;
+      return [c.key, (_a2 = c.prefill) != null ? _a2 : null];
+    }));
     for (const r of rounds) {
-      r.answers = { ...filled, family: [], household: [], staff: [], counts: countOf({ ...filled, family: [], household: [], staff: [] }) };
+      const own = (_g = ownOf.get(r.key)) != null ? _g : null;
+      const mine = own ? prefillQuestionnaire(q, own) : blank;
+      r.answers = {
+        ...mine,
+        family: [],
+        household: [],
+        staff: [],
+        counts: countOf({ ...mine, family: [], household: [], staff: [] })
+      };
     }
     return { skipped: false, skipReason: null, familyQuestions, rounds, formsFinal, unanswered };
   }
@@ -400,6 +460,67 @@
     return out;
   }
 
+  // src/lib/interviewQueue.ts
+  var TECH = /* @__PURE__ */ new Set(["center_code", "dcy_form", "dcy_version", "type", "consent_title", "consent_version"]);
+  var norm = (v) => String(v != null ? v : "").replace(/\s+/g, " ").trim().toLowerCase();
+  function typeOfForm(reg, formKey) {
+    var _a;
+    const f = (_a = reg.forms) == null ? void 0 : _a[formKey];
+    if (f && typeof f === "object") {
+      const t = f.submissionType;
+      if (typeof t === "string" && t) return t;
+    }
+    return formKey;
+  }
+  function sharedTypes(reg) {
+    var _a, _b;
+    const count = /* @__PURE__ */ new Map();
+    for (const k of Object.keys((_a = reg.forms) != null ? _a : {})) {
+      const t = typeOfForm(reg, k);
+      count.set(t, ((_b = count.get(t)) != null ? _b : 0) + 1);
+    }
+    return new Set([...count].filter(([, n]) => n > 1).map(([t]) => t));
+  }
+  function acceptedBag(forms, reg, formKey) {
+    var _a, _b;
+    const t = typeOfForm(reg, formKey);
+    const bag = (forms != null ? forms : {})[t];
+    if (!bag) return null;
+    if (!sharedTypes(reg).has(t)) return bag;
+    const num = (_a = formKey.match(/(\d{4,5})/)) == null ? void 0 : _a[1];
+    return num && String((_b = bag.dcy_form) != null ? _b : "") === num ? bag : null;
+  }
+  function newAnswers(dict, formKey, formData, bag) {
+    const meaning = /* @__PURE__ */ new Map();
+    for (const r of dict.rows) if (r.form === formKey) meaning.set(r.key, r.canonical);
+    const mirrorHas = (key, value) => {
+      const canon = meaning.get(key);
+      if (!canon) return false;
+      for (const [k2, c2] of meaning) {
+        if (k2 === key || c2 !== canon) continue;
+        const b = bag[k2];
+        if (b != null && String(b) !== "" && norm(b) === norm(value)) return true;
+      }
+      return false;
+    };
+    const out = [];
+    for (const [k, v] of Object.entries(formData)) {
+      if (TECH.has(k) || v === "" || v == null) continue;
+      const b = bag[k];
+      if (b === void 0 || b === null || String(b) === "") {
+        if (!mirrorHas(k, v)) out.push(k);
+        continue;
+      }
+      if (norm(b) !== norm(v)) out.push(k);
+    }
+    return out;
+  }
+  function rowState(input) {
+    const bag = acceptedBag(input.childForms, input.registry, input.formKey);
+    if (!bag) return "todo";
+    return newAnswers(input.dict, input.formKey, input.formData, bag).length ? "updated" : "signed";
+  }
+
   // src/lib/interviewEngineBundle.ts
   var API = {
     buildQuestionnaire,
@@ -414,7 +535,11 @@
     planInterview,
     planSubmissions,
     applyConditions,
-    formsForCondition
+    formsForCondition,
+    rowState,
+    acceptedBag,
+    newAnswers,
+    typeOfForm
   };
   if (typeof window !== "undefined") window.PAInterview = API;
   var interviewEngineBundle_default = API;
