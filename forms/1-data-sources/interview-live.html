@@ -53,6 +53,8 @@ var Q=new URLSearchParams(location.search);
 var TOKEN=Q.get('t')||'', CENTER=Q.get('center')||'', SET=Q.get('set')||Q.get('p')||'admission';
 var ONLY=(Q.get('only')||'').split(',').map(function(x){return x.trim()}).filter(Boolean);
 var DICT=null, REG=null, PLAN=null, FAMILY=null, STEP=0, ROUND=0, SUBS=[];
+/* Строки лекарств по ребёнку. Ветвящегося «принимает ли» нет — поля открыты. */
+var MEDS={};
 
 function rpc(fn, body){
   return fetch(SUPA_URL+'/rest/v1/rpc/'+fn,{method:'POST',
@@ -300,12 +302,115 @@ function familyBlock(){
 /* ⛔ КРУГИ ИДУТ ПО ВСЕМ ДЕТЯМ, А НЕ ПО ДВУМ. Макет знал ровно двоих и жёстко звал
    ROUND=1 — на семье Graves (трое) он застревал на втором ребёнке, на семье из одного
    падал вовсе. Живому экрану про число детей ничего знать нельзя: их называет токен. */
+/**
+ * Пересобрать план текущими ответами семьи.
+ *
+ * ⛔ СОСТАВ ЗАВИСИТ ОТ ТОГО, ЧТО СЕМЬЯ СКАЗАЛА ТОЛЬКО ЧТО, А НЕ ТОЛЬКО ОТ СТАРЫХ БУМАГ.
+ * План считался один раз при загрузке — назвав лекарство, мать не увидела бы разрешения
+ * на него в очереди.
+ */
+function replan(){
+  PLAN=PAInterview.planInterview({
+    dict:DICT, registry:REG, baseForms:baseForms(),
+    familyFacts:{ hasEsignConsent: FAMILY.hasConsent },
+    children: FAMILY.children.map(function(c){
+      return { key:c.key, name:c.name, facts:factsOf(c.prefill),
+               prefill:(c.prefill&&c.prefill._forms)||null,
+               meds: MEDS[c.key] };
+    }),
+    prefill:(FAMILY.children[0].prefill||{})._forms||{} });
+}
+
+/* ── МИНИ-БЛОК ЛЕКАРСТВ ────────────────────────────────────────────────────────
+   ⭐ СПРАШИВАЕМ ОДИН РАЗ, КЛАДЁМ В ДВЕ БУМАГИ. Название и доза нужны и плану ухода, и
+   разрешению на приём: спросив дважды, мы получили бы два ответа, которые однажды
+   разойдутся. Цикл — та же механика, что у детей и жильцов в IEA.
+   ⛔ ОДНО ЛЕКАРСТВО — ОДНА СТРОКА: два препарата в одной строке дают бумагу, по которой
+   нельзя дать ни один из них. */
+function medRow(kid, i){
+  var m=(MEDS[kid]||[])[i]||{};
+  var f=function(name,label,ph){
+    return '<div class="q" style="margin:6px 0"><div class="lab">'+label+'</div>'
+      +'<input value="'+esc(m[name]||'')+'" placeholder="'+ph+'" '
+      +'oninput="medSet(\''+kid+'\','+i+',\''+name+'\',this.value)"></div>';
+  };
+  return '<div class="card" style="background:#fff">'
+    +'<div class="lab" style="margin-bottom:2px">Medicine '+(i+1)+'</div>'
+    + f('name','Name','Ibuprofen')
+    + f('dosage','Dose','5 ml')
+    + f('time','When to give it','8am and 4pm — or “only if fever”')
+    + (m.from? '<div class="src">filled in from <b>'+esc(m.from)+'</b> \u2014 change it if it has</div>' : '')
+    + '<div class="q" style="margin:6px 0"><div class="lab">Photo of the pharmacy label</div>'
+    + '<input type="file" accept="image/*" onchange="medPhoto(\''+kid+'\','+i+',this)">'
+    + '<div class="src">'+(m.photo?'<b>\u2713 label added</b>'
+        :'With the label we need no separate note from the doctor \u2014 you can also add it later.')
+    + '</div></div>'
+    + (MEDS[kid].length>1 ? '<button class="pick" onclick="medDrop(\''+kid+'\','+i+')">Remove this medicine</button>' : '')
+    + '</div>';
+}
+/* ⛔ ВЕТВЯЩЕГОСЯ ВОПРОСА «ПРИНИМАЕТ ЛИ?» ЗДЕСЬ НЕТ (упрощение владельца 24.08). Поля
+   стоят ОТКРЫТЫМИ: семья заполняет, если есть, и оставляет пустыми, если нет. Пустое —
+   законный ответ: ни замка обязательности, ни строки в счётчике оставшихся вопросов.
+   ⭐ ДОВОД ОБ ОБЪЁМЕ. Ступень 1 обещает дословно: «Your answers then fill the forms in
+   for you. All that is left is to look each one over and sign it». Значит спросить надо
+   всё, без чего бумага не станет «only look over and sign», — пустая таблица лекарств на
+   плане ухода у семьи, которая лекарства даёт, это нарушение обещания первого экрана. */
+/* ⭐ УХОД СПРАШИВАЕТСЯ ЗДЕСЬ ЖЕ, А НЕ В «42 MORE QUESTIONS». Это те самые клетки, без
+   которых план ухода не станет «only look over and sign»: что за состояние, как выглядит
+   приступ, что делать и чего избегать. Похороненные в общем хвосте, они остались бы
+   пустыми — и бумага о здоровье ребёнка ушла бы в центр ни о чём. */
+var CARE_Q=['child.has_health_condition','child.health_signs','child.care_instructions','child.avoid'];
+function careCards(r){
+  return r.answers.child.filter(function(a){ return CARE_Q.indexOf(a.canonical)>=0 }).map(qCard).join('');
+}
+function medBlock(kid, r){
+  var rows=(MEDS[kid]||[]).map(function(_,i){ return medRow(kid,i) }).join('');
+  return '<div class="card b"><b>Medicines and care for '+esc(kidName(kid))+'</b>'
+    +'<p class="sub" style="margin:6px 0 0">Fill these in if they apply. '
+    +'Leave them empty if they do not \u2014 nothing here is required.</p></div>'
+    + careCards(r)
+    + rows
+    +'<button class="btn ghost" onclick="medAdd(\''+kid+'\')">+ Add another medicine</button>';
+}
+function kidName(kid){
+  var c=FAMILY.children.filter(function(x){return x.key===kid})[0]; return (c&&c.name)||'this child';
+}
+/* Открыть поля ребёнку: прошлый план ухода предзаполняет их, правимо и с источником. */
+function medInit(kid){
+  if(MEDS[kid]) return;
+  var c=FAMILY.children.filter(function(x){return x.key===kid})[0];
+  var prev=PAInterview.medsFromForms((c&&c.prefill&&c.prefill._forms)||null);
+  MEDS[kid]= prev.length ? prev.map(function(m){ m.from='your care plan on file'; return m })
+                         : [{name:'',dosage:'',time:''}];
+}
+function medAdd(kid){ (MEDS[kid]=MEDS[kid]||[]).push({name:'',dosage:'',time:''}); replan(); render() }
+function medDrop(kid,i){ MEDS[kid].splice(i,1); if(!MEDS[kid].length) MEDS[kid]=[{name:'',dosage:'',time:''}]; replan(); render() }
+function medSet(kid,i,k,v){
+  MEDS[kid][i][k]=v;
+  /* ⛔ ПЕРЕРИСОВКА НА КАЖДОЙ БУКВЕ ВЫБИВАЛА БЫ КУРСОР. План пересобираем, экран — нет:
+     состав зависит от того, названо ли лекарство, а это видно и без перерисовки. */
+  replan();
+}
+function medPhoto(kid,i,el){
+  var f=el.files&&el.files[0]; if(!f) return;
+  var rd=new FileReader();
+  rd.onload=function(){ MEDS[kid][i].photo=String(rd.result); replan(); render() };
+  rd.readAsDataURL(f);
+}
+
 function childBlock(){
   var r=PLAN.rounds[ROUND];
   var others=PLAN.rounds.filter(function(x,k){ return k!==ROUND }).map(function(x){ return x.name });
   var added=r.addedForms.length? '<div class="card a"><b>Because of your answers, we add:</b> '
       +r.addedForms.map(function(k){return esc(formName(k))}).join(', ')+'</div>' : '';
-  var body=r.answers.child.slice(0,6).map(qCard).join('');
+  /* ⛔ ПОДНЯТОЕ В БЛОК ИЗ ОБЩЕГО СПИСКА УХОДИТ: один вопрос — один раз. */
+  var inBlock = factsOf((FAMILY.children.filter(function(c){return c.key===r.key})[0]||{}).prefill).healthCondition===true;
+  var rest = r.answers.child.filter(function(a){ return !(inBlock && CARE_Q.indexOf(a.canonical)>=0) });
+  var body=rest.slice(0,6).map(qCard).join('');
+  /* ⭐ БЛОК ОТКРЫВАЕТСЯ ПО ОТВЕТУ О ЗДОРОВЬЕ — как решено владельцем 24.08. */
+  var kid=FAMILY.children.filter(function(c){return c.key===r.key})[0]||{};
+  var meds='';
+  if(factsOf(kid.prefill).healthCondition===true){ medInit(r.key); meds=medBlock(r.key, r) }
   var last = ROUND+1>=PLAN.rounds.length;
   var next = last
     ? '<button class="btn" onclick="STEP=3;render()">Next — income form</button>'
@@ -316,8 +421,8 @@ function childBlock(){
     +'<h1>About '+esc(r.name)+'</h1>'
     +'<p class="sub">Only this child.'
     +(others.length? ' Nothing here carries to '+esc(others.join(' or '))+'.' : '')+'</p>'
-    + added + body
-    +(r.answers.child.length>6? '<p class="sub">… '+(r.answers.child.length-6)+' more questions about '
+    + added + body + meds
+    +(rest.length>6? '<p class="sub">… '+(rest.length-6)+' more questions about '
       +esc(r.name)+'</p>' : '')
     + next+'</div>';
 }
@@ -407,9 +512,12 @@ function stage2(){
   /* ⭐ ТРИ СОСТОЯНИЯ, А НЕ ДВА. Подписана и добавить нечего — Signed. Подписана, но
      интервью собрало новые ответы — Updated, и она СЧИТАЕТСЯ НЕПОДПИСАННОЙ: форма
      изменилась, значит подпись нужна свежая (канон). Не подписана — Next/Waiting. */
+  function instancesOf(s){
+    return subs.filter(function(x){ return x.form===s.form && x.childKey===s.childKey }).length;
+  }
   function stateOf(s){
     return PAInterview.rowState({ dict:DICT, registry:REG, formKey:s.form,
-      formData:s.formData||{}, childForms:formsOfChild(s) });
+      formData:s.formData||{}, childForms:formsOfChild(s), instanceCount:instancesOf(s) });
   }
   var signed=subs.filter(function(s){ return stateOf(s)==='signed' }).length;
   var updated=subs.filter(function(s){ return stateOf(s)==='updated' }).length;
@@ -452,7 +560,11 @@ function stage2(){
       var ks=stateOf(s); var kb=stateBits(s===nextKey?(ks==='updated'?'updated-next':'next'):ks);
       var st = '<span class="st '+kb.cls+'">'+kb.text+'</span>';
       html+='<div class="row"><a href="'+esc(formHref(s))+'" style="color:inherit;text-decoration:none;flex:1">'
+        /* ⭐ ДВА РАЗРЕШЕНИЯ РАЗЛИЧИМЫ ПО ЛЕКАРСТВУ. Две одинаковые строки «Administration
+           of Medication» не сказали бы матери, какую она уже подписала. */
         +kb.mark+' '+esc(formName(s.form))
+        +(s.instance!=null&&s.formData&&s.formData.medication_name
+          ? ' <span class="chip">'+esc(s.formData.medication_name)+'</span>' : '')
         +(s.preset?' <span class="chip">'+esc(presetName(s.preset))+'</span>':'')
         +formKeyHint(s.form)+'</a>'+st+'</div>';
     });

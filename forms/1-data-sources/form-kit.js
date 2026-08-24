@@ -1222,6 +1222,13 @@ document.addEventListener('click', function (e) {
       });
       applyBag(ivBag);
     }
+    /* ⭐ СТРУКТУРУ КЛАДЁТ САМ БЛАНК. `applyBag` разносит только плоские значения по id —
+       массив (таблица лекарств плана ухода) мимо него проходит молча. Бланк знает свою
+       таблицу лучше кита, поэтому отдаём ему весь мешок и не учим кит форматам чужих
+       страниц. Вызов идёт ПОСЛЕ плоских: PA_APPLY у всех бланков пишет только в пустое. */
+    if (CFG.applyPrefill) {
+      try { CFG.applyPrefill(Object.assign({}, bag || {}, ivBag || {})); } catch (_) {}
+    }
 
     if (!filled) return;
 
@@ -2344,7 +2351,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 39,
+    KIT: 40,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },

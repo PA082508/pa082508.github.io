@@ -521,6 +521,19 @@ function resetForm(){
 function PA_APPLY(fd){
   var S=function(id,v){var e=$id(id);if(e&&v!=null&&!e.value)e.value=v;};
   S('childName',fd.child_name);S('birthDate',fd.date_of_birth||fd.birthdate);S('weight',fd.weight);
+  /* ⭐ ТАБЛИЦУ ЛЕКАРСТВ ЗАПОЛНЯЕТ БЛАНК, А НЕ КИТ. Кит разносит плоские значения по id;
+     массив он пропускает молча — и правильно делает: форма таблицы своя у каждой бумаги.
+     Сюда список приходит либо из принятого плана ухода, либо из мини-блока интервью, где
+     семья назвала лекарства циклом.
+     ⛔ ПИШЕМ ТОЛЬКО В ПУСТОЕ: рука в этой сессии сильнее любого предзаполнения. */
+  if (Array.isArray(fd.medications)) {
+    fd.medications.slice(0,3).forEach(function(m,i){
+      if(!m) return; var n=i+1;
+      S('med'+n+'Name',m.name); S('med'+n+'Dosage',m.dosage); S('med'+n+'Time',m.time);
+      var c=$id('med'+n+'Symptoms');
+      if(c&&!c.checked&&m.administer_when_symptoms_present) c.checked=true;
+    });
+  }
   mirror();
 }
 
@@ -670,6 +683,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=39"></script>
+<script defer src="form-kit.js?v=40"></script>
 </body>
 </html>
