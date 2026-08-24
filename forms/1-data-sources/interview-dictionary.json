@@ -3626,5 +3626,45 @@
       "reason": "служебный маркер типа подачи — его знает колонка submission_type"
     }
   ],
-  "syncedOn": "2026-08-23"
+  "syncedOn": "2026-08-23",
+  "_branchNote": "Пары «да/нет»: один смысл занимает в бланке две клетки, и отмечается ровно одна. Ветка объявляется здесь, а не угадывается по хвосту _y/_n — имя поля не обещание. Зеркала (одно и то же значение в двух клетках: имя на двух страницах, адрес) объявлены в mirrorFields. Каждый смысл с двумя и более полями обязан попасть в одно из двух — это проверяет страж interviewBranchGuard. В отмеченную клетку кладётся branchOnValue — ОТМЕТКА, а не слово ответа: в бланке `health_n` со значением «Yes» читается «отмечено НЕТ». Положив туда «No», мы написали бы слово в клетку, которая означает галочку.",
+  "branchFields": {
+    "dcy_01234": {
+      "health_y": "Yes",
+      "health_n": "No",
+      "svc_y": "Yes",
+      "svc_n": "No",
+      "trans_yes": "Yes",
+      "trans_no": "No"
+    },
+    "dcy_01225": {
+      "water_y": "Yes",
+      "water_n": "No",
+      "wact_y": "Yes",
+      "wact_n": "No"
+    }
+  },
+  "mirrorFields": {
+    "dcy_01234": [
+      "child_name",
+      "child_name2",
+      "dob",
+      "dob2"
+    ],
+    "dcy_01217": [
+      "pharmacy_label_photo",
+      "photo"
+    ],
+    "parents_book_ack": [
+      "parent_name",
+      "print_name"
+    ],
+    "staff": [
+      "address",
+      "street",
+      "driver",
+      "is_driver"
+    ]
+  },
+  "branchOnValue": "Yes"
 }
