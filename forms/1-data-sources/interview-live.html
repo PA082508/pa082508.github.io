@@ -218,11 +218,14 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){retur
    Текст здесь и в клетке 01234 держится одной строкой смысла (`child.transport_by_center`). */
 var Q_HINT = {
   'child.transport_by_center':
-    '<b>What this means.</b> In an emergency we call 911 either way. The squad decides if your '
-    + 'child goes to hospital \u2014 a member of our staff goes with them, stays until you arrive, '
-    + 'and your child\u2019s forms go too. Your answer here tells us in advance what you want, so '
-    + 'nobody is searching for you at that moment. <b>Either answer is fine; what does not work is '
-    + 'leaving it blank.</b>',
+    /* ⛔ ТЕКСТ ДОСЛОВНО ТОТ ЖЕ, ЧТО У КЛЕТКИ БЛАНКА. Читка на живой витрине 24.08 поймала
+       расхождение: бланк укоротили (про выбор больницы там напечатано типографски), а
+       здесь остался прежний, длиннее. Два объяснения одного вопроса — и семья поверит
+       тому, что прочтёт последним. Меняя одно, меняй оба. */
+    '<b>Please tick one.</b> In an emergency we call 911 either way, a member of our staff '
+    + 'goes with your child and stays until you arrive, and this form goes too. Your answer '
+    + 'tells us in advance what you want. <b>Either answer is fine \u2014 what does not work is '
+    + 'leaving both boxes empty:</b> then we have no answer from you at all.',
 };
 
 function qCard(a){
