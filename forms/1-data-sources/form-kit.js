@@ -1157,16 +1157,34 @@ document.addEventListener('click', function (e) {
      * ⛔ Подписи, их даты, строки ежегодного пересмотра и пара близнецов вычищены НА
      * СЕРВЕРЕ: чего нет в ответе, то не утечёт, даже если экран завтра ошибётся. Здесь
      * тот же список стоит вторым замком — на случай старого сервера. */
+    /* ⭐ ОТВЕТЫ ИНТЕРВЬЮ — ТОТ ЖЕ РЕЛЬС, ЧТО И ПРЕЖНИЕ ПОДАЧИ (v38).
+     * Интервью собирает ответы семьи ДО того, как открылась первая бумага, и раскладывает
+     * их по бланкам своим разносом. Класть их вторым механизмом значило бы завести второй
+     * способ заполнить ту же клетку — и однажды они разошлись бы. Поэтому мешок интервью
+     * применяется ТЕМ ЖЕ кодом, что мешок `_forms`: по идентификаторам клеток, с тем же
+     * списком запретов и тем же правилом «рука в этой сессии сильнее».
+     * ⛔ ЖИВЁТ ОДНО СИДЕНИЕ. Ответы интервью — не память о семье, а её сегодняшний
+     * разговор; переживи он вкладку, следующая семья на стойке увидела бы чужие ответы.
+     * ⚠️ ИНТЕРВЬЮ СИЛЬНЕЕ ПРЕЖНИХ ПОДАЧ: семья только что подтвердила или исправила
+     * значение — прошлогодняя бумага ему не указ. */
+    var ivBag = null;
+    try {
+      var iv = JSON.parse(sessionStorage.getItem('pa_interview_answers') || 'null');
+      if (iv && CFG.formKey && iv[CFG.formKey]) ivBag = iv[CFG.formKey];
+    } catch (_) {}
+
     var bag = (CFG.formKey && data._forms && data._forms[CFG.formKey]) || null;
     var NEVER = ['parent_sig','program_sig','physician_sig','sponsor_sig','adult_sig',
                  'parent_sig_dt','program_sig_dt','signature','signatures',
                  'pg_rev_1','pg_rev_2','pg_rev_3','adm_rev_1','adm_rev_2','adm_rev_3',
                  'pg_init_1','pg_init_2','pg_init_3','adm_init_1','adm_init_2','adm_init_3',
                  'child_name2','dob2'];
-    if (bag) {
-      Object.keys(bag).forEach(function (k) {
+    /* Сначала прежние подачи, поверх — ответы интервью: последний записавший побеждает. */
+    function applyBag(src) {
+      if (!src) return;
+      Object.keys(src).forEach(function (k) {
         if (k.charAt(0) === '_' || NEVER.indexOf(k) >= 0) return;
-        var v = bag[k];
+        var v = src[k];
         if (v === null || v === undefined || typeof v === 'object') return;
         var sv = String(v); if (!sv.trim()) return;
         var el = document.getElementById(k) || document.getElementById('f_' + k);
@@ -1185,6 +1203,16 @@ document.addEventListener('click', function (e) {
         filled++;
       });
       refreshCounter();
+    }
+    applyBag(bag);
+    /* ⚠️ Интервью ПОВЕРХ: семья только что подтвердила значение, прошлогодняя бумага ему
+       не указ. `data-fk-touched` по-прежнему сильнее обоих — рука в этой сессии главнее. */
+    if (ivBag) {
+      Object.keys(ivBag).forEach(function (k) {
+        var el = document.getElementById(k) || document.getElementById('f_' + k);
+        if (el && !el.getAttribute('data-fk-touched') && el.tagName !== 'CANVAS' && el.type !== 'checkbox') el.value = '';
+      });
+      applyBag(ivBag);
     }
 
     if (!filled) return;
@@ -2308,7 +2336,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 37,
+    KIT: 38,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
