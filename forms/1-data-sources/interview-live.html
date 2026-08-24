@@ -52,6 +52,16 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var Q=new URLSearchParams(location.search);
 var TOKEN=Q.get('t')||'', CENTER=Q.get('center')||'', SET=Q.get('set')||Q.get('p')||'admission';
 var ONLY=(Q.get('only')||'').split(',').map(function(x){return x.trim()}).filter(Boolean);
+/* ⭐ ТО ЖЕ ПРАВИЛО, ЧТО НА ВИТРИНЕ: отменённая форма разворачивается в преемника.
+   Преемник объявлен в реестре; здесь мы его только читаем — второго мнения о том, чем
+   заменена бумага, быть не может. Применяется после загрузки реестра (см. ниже). */
+function succForm(k){
+  var seen={}, cur=k;
+  while (REG && REG.forms && REG.forms[cur] && REG.forms[cur].supersededBy && !seen[cur]) {
+    seen[cur]=1; cur=REG.forms[cur].supersededBy;
+  }
+  return cur;
+}
 var DICT=null, REG=null, PLAN=null, FAMILY=null, STEP=0, ROUND=0, SUBS=[];
 /* Строки лекарств по ребёнку. Ветвящегося «принимает ли» нет — поля открыты. */
 var MEDS={};
@@ -135,6 +145,7 @@ Promise.all([
   fetch('../../enroll-registry.json').then(function(r){return r.json()})
 ]).then(function(v){
   DICT=v[0]; REG=v[1];
+  ONLY=ONLY.map(succForm);
   if(!TOKEN) return needLink('This link has no personal token.');
   return loadFamily().then(function(fam){
     if(!fam) return needLink('This link has expired \u2014 ask your center for a new one.');

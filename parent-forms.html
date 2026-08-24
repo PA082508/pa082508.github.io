@@ -301,6 +301,21 @@
         Object.keys(reg.packets || {}).forEach(function (p) {
           (reg.packets[p].slots || []).forEach(function (sl) { if (sl && sl.key && !pool[sl.key]) pool[sl.key] = sl; });
         });
+        /* ⭐ ОТМЕНЁННАЯ ФОРМА ОТКРЫВАЕТСЯ ПРЕЕМНИКОМ, А НЕ ПУСТОТОЙ.
+           ⛔ ПОВОД: письма семьям УЖЕ НАПЕЧАТАНЫ, и адрес в них изменить нельзя. У Rife
+           в письме стои́т `only=dcy_01217` — форма, обсолетированная ведомством с
+           01.07.2026 (TL 48). Погасить ссылку значило бы отправить мать в тупик; открыть
+           отменённый бланк — дать ей подписать бумагу, которой больше нет.
+           ⭐ Преемник объявлен В РЕЕСТРЕ (`supersededBy`), а не зашит здесь: завтра
+           отменят другую форму, и чинить придётся одну строку данных, а не код. */
+        var succ = function (k) {
+          var seen = {}, cur = k;
+          while (reg.forms && reg.forms[cur] && reg.forms[cur].supersededBy && !seen[cur]) {
+            seen[cur] = 1; cur = reg.forms[cur].supersededBy;   // цепочка, но без петли
+          }
+          return cur;
+        };
+        only = only.map(succ);
         slots = only.map(function (k) { return pool[k] || ((reg.forms && reg.forms[k]) ? { key: k } : null); }).filter(Boolean).map(gate);
       } else {
         slots = pk.slots.slice()   // ZAKAZ 11: keep/pending render as their own cards
