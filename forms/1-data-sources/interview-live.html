@@ -2,10 +2,11 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Play Academy — Enrolment</title>
-<!-- ⭐ ЭТО РЕЖИМ, А НЕ ВТОРАЯ ДВЕРЬ. Файл собран отдельно ТОЛЬКО ради показа: в работу
-     он въезжает как режим parent-forms.html (?mode=interview), у семьи остаётся одна
-     ссылка — та, что уже в письме. Вторая дверь означала бы второй адрес, второй набор
-     правил про центр и набор, и однажды они разошлись бы. -->
+<!-- ⭐ ЖИВОЙ ЭКРАН ИНТЕРВЬЮ. Семья приходит сюда по СВОЕЙ ссылке.
+     ⛔ НИ ОДНОГО ЗАШИТОГО ЗНАЧЕНИЯ: центр, набор, дети, ответы и факт согласия приходят
+     из именного токена через get_prefill. Нет токена или центра — честная страница
+     «откройте по ссылке своего центра», а НЕ образец чужой семьи.
+     ⚠️ Макет для показов живёт отдельно — interview-demo.html; спутать нельзя. -->
 <style>
 :root{--ink:#14281f;--mut:#5d6b63;--line:#d9e2dc;--green:#0f4c35;--gl:#f2f7f4;--amber:#8a4b00;--ab:#fffbeb;--al:#fde68a;--blue:#1e4d7b;--bb:#eef4fa}
 *{box-sizing:border-box}
@@ -46,32 +47,112 @@ blockquote{margin:0;padding:11px 14px;border-left:3px solid var(--green);backgro
 <script src="interview-engine.js"></script>
 <script>
 /* ⛔ ДАННЫЕ ПОКАЗА — ВЫМЫШЛЕННАЯ СЕМЬЯ. Ни одного живого имени: Fenwick, Bramble Lane. */
-var DEMO = {
-  center: 'ridge',
-  /* ⛔ СОГЛАСИЯ В БАЗОВОМ СОСТАВЕ НЕТ — оно УСЛОВНОЕ и приходит ФАКТОМ ИЗ БАЗЫ.
-     Семья впервые онлайн → согласие добавляется ПЕРВЫМ; согласие на файле → его нет вовсе. */
-  base: ['dcy_01234','enroll','iea','child_release_authorization'],
-  familyFacts: { hasEsignConsent: false },   /* показ: семья заходит впервые */
-  children: [
-    { key:'odalys',  name:'Odalys',  facts:{ attendsSchool:true,  healthCondition:false } },
-    { key:'thistle', name:'Thistle', facts:{ infant:true, healthCondition:true, medication:true } }
-  ],
-  /* _forms как его отдаёт get_prefill — подписей и дохода в нём уже нет (блокеры). */
-  prefill: {
-    dcy_01234: { p1_name:'Marisol Fenwick', address:'4120 Alder Hollow Rd', city:'Bramble Lane',
-                 zip:'44092', p1_phone:'(216) 555-0148' },
-    parent_consent: { parent_name:'M. Fenwick-Quennell' }   /* ← расхождение имени, нарочно */
-  }
-};
-var DICT=null, REG=null, PLAN=null, STEP=0, ROUND=0;
+var SUPA_URL='https://trrmyqfpxntmgxnqkikp.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
+var Q=new URLSearchParams(location.search);
+var TOKEN=Q.get('t')||'', CENTER=Q.get('center')||'', SET=Q.get('set')||Q.get('p')||'admission';
+var ONLY=(Q.get('only')||'').split(',').map(function(x){return x.trim()}).filter(Boolean);
+var DICT=null, REG=null, PLAN=null, FAMILY=null, STEP=0, ROUND=0, SUBS=[];
+
+function rpc(fn, body){
+  return fetch(SUPA_URL+'/rest/v1/rpc/'+fn,{method:'POST',
+    headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Content-Profile':'menumaker'},
+    body:JSON.stringify(body)}).then(function(r){ return r.ok? r.json() : null }).catch(function(){ return null });
+}
+
+/* ⛔ БЕЗ ТОКЕНА ЭКРАН НЕ ГАДАЕТ. Нет именной ссылки — нет семьи; показать «образец»
+   значило бы показать чужих детей. Говорим прямо и предлагаем то, что человек может
+   сделать: открыть ссылку своего центра. */
+function needLink(why){
+  document.getElementById('step').textContent='';
+  document.getElementById('app').innerHTML=
+    '<h1>Open this from your center\u2019s link</h1>'
+    +'<p>This page fills your forms in from what your family has already signed, so it needs '
+    +'the personal link your center sent you \u2014 by e-mail or as a QR code.</p>'
+    +'<div class="card a"><b>What to do</b><p class="sub" style="margin:4px 0 0">Open the link '
+    +'from your center\u2019s message, or ask the center for a current one.</p></div>'
+    +(why?'<p class="sub">'+esc(why)+'</p>':'');
+}
+
+/* ⭐ СОСТАВ СЕМЬИ — ИЗ ТОКЕНА. Ребёнок ссылки плюс братья и сёстры по общему взрослому;
+   у каждого СВОЙ токен, и префилл каждого читается его токеном. */
+function loadFamily(){
+  return Promise.all([ rpc('get_prefill',{p_token:TOKEN}), rpc('get_prefill_siblings',{p_token:TOKEN}) ])
+    .then(function(v){
+      var me=v[0], sib=Array.isArray(v[1])?v[1]:[];
+      if(!me) return null;
+      var kids=[{ key:TOKEN, name:me.child_name||'your child', token:TOKEN, prefill:me }];
+      return Promise.all(sib.map(function(s){
+        return rpc('get_prefill',{p_token:s.token}).then(function(pf){
+          return { key:s.token, name:s.name||'child', token:s.token, prefill:pf||{} } })
+      })).then(function(rest){
+        return { me:me, children:kids.concat(rest),
+                 hasConsent: (me._family && typeof me._family.has_esign_consent==='boolean')
+                              ? me._family.has_esign_consent : null };
+      });
+    });
+}
+
+/* ⛔ ФАКТЫ РЕБЁНКА — ИЗ ЕГО ЖЕ ПОДАЧ, а не из догадок. Чего в подачах нет, то null —
+   «не спрашивали», и оркестратор сам решит, что форма не добавляется, но условие названо. */
+function factsOf(pf){
+  var f=(pf && pf._forms && pf._forms.dcy_01234) || {};
+  var yn=function(y,n){ return f[y]?true : (f[n]?false : null) };
+  return { attendsSchool: f.attends_school_age ? (f.attends_school_age==='yes') : null,
+           healthCondition: yn('health_y','health_n'),
+           medication: null, infant: null, specialDiet: null };
+}
+
+/* ⛔ ПОДПИСЫВАЕМАЯ ФОРМА И ЛИСТ ДЛЯ ЧТЕНИЯ — РАЗНЫЕ ВЕЩИ, И ОЧЕРЕДЬ ИХ НЕ МЕШАЕТ.
+   Первый живой прогон дал семье Graves «33 формы к подписи» — среди них «Building for the
+   Future», «WIC Information» и «What To Bring», которые ничего не требуют, да ещё по три
+   раза, по разу на ребёнка. Это не список дел, а испуг.
+   ⭐ ПРИЗНАК БЕРЁМ ИЗ СЛОВАРЯ, А НЕ ИЗ НОВОГО ФЛАГА: у листа для чтения нет collect(),
+   значит нет и строк словаря — он и объявлен в exemptForms. Второй признак завёл бы
+   второе мнение о том же. */
+var SIGNABLE={};
+function isSignable(key){
+  if (SIGNABLE[key]===undefined)
+    SIGNABLE[key] = !!(DICT && DICT.rows && DICT.rows.some(function(r){ return r.form===key }));
+  return SIGNABLE[key];
+}
+function slotsOfSet(){
+  if (ONLY.length) return ONLY;
+  var pk = REG && REG.packets && REG.packets[SET];
+  if (!pk || !pk.slots) return [];
+  return pk.slots.filter(function(s){ return s.section!=='if_applicable' }).map(function(s){ return s.key });
+}
+function baseForms(){
+  return slotsOfSet().filter(function(k){ return k!=='parent_consent' && isSignable(k) });
+}
+/* Листы для чтения и бумаги, которые несут в центр, — отдельной секцией, ОДИН раз на семью. */
+function readOnlySlots(){ return slotsOfSet().filter(function(k){ return !isSignable(k) }) }
 
 Promise.all([
   fetch('interview-dictionary.json').then(function(r){return r.json()}),
   fetch('../../enroll-registry.json').then(function(r){return r.json()})
-]).then(function(v){ DICT=v[0]; REG=v[1]; PLAN=PAInterview.planInterview({
-    dict:DICT, registry:REG, baseForms:DEMO.base, familyFacts:DEMO.familyFacts,
-    children:DEMO.children, prefill:DEMO.prefill });
-  render(); });
+]).then(function(v){
+  DICT=v[0]; REG=v[1];
+  if(!TOKEN) return needLink('This link has no personal token.');
+  return loadFamily().then(function(fam){
+    if(!fam) return needLink('This link has expired \u2014 ask your center for a new one.');
+    FAMILY=fam;
+    var base=baseForms();
+    if(!base.length) return needLink('This packet has no forms yet.');
+    /* ⛔ НАБОР СО СТАРТ-ФОРМОЙ ИНТЕРВЬЮ НЕ ПОЛУЧАЕТ — уводим прежним путём. */
+    if(base.indexOf('start_form')>=0){
+      location.replace('../../parent-forms.html'+location.search); return;
+    }
+    var prefillOfMe = fam.children[0].prefill || {};
+    PLAN=PAInterview.planInterview({
+      dict:DICT, registry:REG, baseForms:base,
+      familyFacts:{ hasEsignConsent: fam.hasConsent },
+      children: fam.children.map(function(c){ return { key:c.key, name:c.name, facts:factsOf(c.prefill) } }),
+      prefill: prefillOfMe._forms || {} });
+    document.getElementById('ctr').textContent='Play Academy'+(CENTER?' \u00b7 '+CENTER:'');
+    render();
+  });
+}).catch(function(e){ needLink(String(e&&e.message||e)) });
 
 /* ⛔ ФОРМЫ НАЗЫВАЮТСЯ ЧЕЛОВЕЧЕСКИ, А НЕ КЛЮЧОМ. Находка владельца на показе: очередь
    подписания звала бумаги `parent_consent`, `dcy_01234`, `iea` — это адреса в коде, а не
@@ -111,6 +192,18 @@ function formKeyHint(key){
 var PRESET_NAME = { school_transport: 'School transport' };
 function presetName(p){ return PRESET_NAME[p] || p }
 
+/* ⭐ ССЫЛКА НА НАСТОЯЩИЙ БЛАНК — СО СВОИМ ТОКЕНОМ РЕБЁНКА. Форма семьи открывается токеном
+   ребёнка ссылки; детская — токеном СВОЕГО ребёнка. Один токен на всех подставил бы одну
+   и ту же бумагу каждому. */
+function formHref(s){
+  var f=(REG&&REG.forms&&REG.forms[s.form])||{};
+  var cur=f.current, url=(cur&&f.versions&&typeof f.versions[cur]==='string')?f.versions[cur]:(f.fallbackUrl||'');
+  if(!url) return '#';
+  var tok = s.childKey || TOKEN;
+  var sep = url.indexOf('?')>=0?'&':'?';
+  return url+sep+'t='+encodeURIComponent(tok)+(CENTER?'&center='+encodeURIComponent(CENTER):'')+'&k='+encodeURIComponent(s.form);
+}
+
 function el(h){ var d=document.createElement('div'); d.innerHTML=h; return d.firstElementChild }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]}) }
 
@@ -140,13 +233,15 @@ function render(){
   app.innerHTML='';
   if (STEP===0){ s.textContent='Before you start'; app.appendChild(el(stage1())); return }
   if (STEP===1){ s.textContent='About your family'; app.appendChild(el(familyBlock())); return }
-  if (STEP===2){ s.textContent='About '+PLAN.rounds[ROUND].name; app.appendChild(el(childBlock())); return }
+  if (STEP===2){
+    if(!PLAN.rounds.length){ STEP=3; return render() }
+    s.textContent='About '+PLAN.rounds[ROUND].name; app.appendChild(el(childBlock())); return }
   if (STEP===3){ s.textContent='Income (IEA)'; app.appendChild(el(ieaBlock())); return }
   s.textContent='Your packet'; app.appendChild(el(stage2()));
 }
 
 function stage1(){
-  var many = DEMO.base.length>1;
+  var many = PLAN.formsFinal.length>1;
   var counts = PLAN.familyQuestions.counts;
   var covered = counts.answered/(counts.answered+counts.empty+counts.conflict||1);
   /* §1д: абзац показывается ТОЛЬКО когда предзаполнение реально покрывает большинство. */
@@ -181,24 +276,36 @@ function familyBlock(){
     +'<h1>About your family</h1><p class="sub">Asked once — it carries to every child.</p>'
     +'<p class="sub"><span class="chip">'+c.answered+' already answered</span> '
     +'<span class="chip">'+c.conflict+' to confirm</span> <span class="chip">'+c.empty+' new</span></p>'
-    +body+'<p class="sub">… '+(q.family.length-7)+' more family questions</p>'
-    +'<button class="btn" onclick="STEP=2;ROUND=0;render()">Next — about Odalys</button></div>';
+    +body
+    +(q.family.length>7? '<p class="sub">… '+(q.family.length-7)+' more family questions</p>' : '')
+    +(PLAN.rounds.length
+      ? '<button class="btn" onclick="STEP=2;ROUND=0;render()">Next — about '+esc(PLAN.rounds[0].name)+'</button>'
+      : '<button class="btn" onclick="STEP=3;render()">Next — income form</button>')+'</div>';
 }
 
+/* ⛔ КРУГИ ИДУТ ПО ВСЕМ ДЕТЯМ, А НЕ ПО ДВУМ. Макет знал ровно двоих и жёстко звал
+   ROUND=1 — на семье Graves (трое) он застревал на втором ребёнке, на семье из одного
+   падал вовсе. Живому экрану про число детей ничего знать нельзя: их называет токен. */
 function childBlock(){
   var r=PLAN.rounds[ROUND];
+  var others=PLAN.rounds.filter(function(x,k){ return k!==ROUND }).map(function(x){ return x.name });
   var added=r.addedForms.length? '<div class="card a"><b>Because of your answers, we add:</b> '
       +r.addedForms.map(function(k){return esc(formName(k))}).join(', ')+'</div>' : '';
   var body=r.answers.child.slice(0,6).map(qCard).join('');
-  var next = ROUND+1<PLAN.rounds.length
-    ? '<button class="btn" onclick="ROUND=1;render()">Next — about '+esc(PLAN.rounds[1].name)+'</button>'
-    : '<button class="btn" onclick="STEP=3;render()">Next — income form</button>';
-  return '<div><div class="prog"><i style="width:'+(40+ROUND*20)+'%"></i></div>'
+  var last = ROUND+1>=PLAN.rounds.length;
+  var next = last
+    ? '<button class="btn" onclick="STEP=3;render()">Next — income form</button>'
+    : '<button class="btn" onclick="ROUND='+(ROUND+1)+';render()">Next — about '
+      +esc(PLAN.rounds[ROUND+1].name)+'</button>';
+  var pct = 40 + Math.round((ROUND+1)/(PLAN.rounds.length+1)*40);
+  return '<div><div class="prog"><i style="width:'+pct+'%"></i></div>'
     +'<h1>About '+esc(r.name)+'</h1>'
-    +'<p class="sub">Only this child. Nothing here carries to '
-    +esc(ROUND===0?PLAN.rounds[1].name:PLAN.rounds[0].name)+'.</p>'
+    +'<p class="sub">Only this child.'
+    +(others.length? ' Nothing here carries to '+esc(others.join(' or '))+'.' : '')+'</p>'
     + added + body
-    +'<p class="sub">… '+(r.answers.child.length-6)+' more questions about '+esc(r.name)+'</p>'+next+'</div>';
+    +(r.answers.child.length>6? '<p class="sub">… '+(r.answers.child.length-6)+' more questions about '
+      +esc(r.name)+'</p>' : '')
+    + next+'</div>';
 }
 
 function ieaBlock(){
@@ -223,10 +330,33 @@ function ieaBlock(){
 }
 
 function stage2(){
-  var subs=PAInterview.planSubmissions(PLAN,{centerCode:DEMO.center,presets:{dcy_01225:'school_transport'}});
+  var subs=PAInterview.planSubmissions(PLAN,{centerCode:CENTER,presets:{dcy_01225:'school_transport'}});
+  SUBS=subs;
+  /* ⛔ ОТВЕТЫ ИНТЕРВЬЮ КЛАДУТСЯ В ПАМЯТЬ СИДЕНИЯ, А НЕ В АДРЕС ССЫЛКИ. Адрес виден в
+     истории браузера и в плече пересылки; ответы семьи туда не отправляются. Кит читает
+     их тем же кодом, что и прежние подачи (v38). */
+  try {
+    var bagByForm={};
+    subs.forEach(function(s){ bagByForm[s.form]=Object.assign(bagByForm[s.form]||{}, s.formData||{}) });
+    sessionStorage.setItem('pa_interview_answers', JSON.stringify(bagByForm));
+  } catch(_){}
   var byChild={};
   subs.forEach(function(s){ (byChild[s.childKey||'__family']=byChild[s.childKey||'__family']||[]).push(s) });
-  var n=subs.length, signed=3;
+  var n=subs.length;
+  /* ⛔ «ПОДПИСАНО» СЧИТАЕТСЯ ИЗ ЗАПИСЕЙ ЦЕНТРА, А НЕ ИЗ ПАМЯТИ ТЕЛЕФОНА (канон 23.08):
+     мать, вернувшаяся с планшета, увидела бы «0 of N» и подписала бы всё второй раз.
+     Прежние принятые подачи приходят в `_forms` — по ним и считаем. */
+  /* ⛔ ГАЛОЧКА СТАВИТСЯ ПО ФАКТУ, А НЕ ПО ПОРЯДКУ. Первая редакция помечала «Signed»
+     первые N строк подряд — то есть говорила семье, что подписаны бумаги, которых она не
+     подписывала. Считаем по КАЖДОЙ строке: есть ли принятая подача этого типа у ЭТОГО
+     ребёнка. */
+  function isSigned(s){
+    var kid=FAMILY.children.filter(function(c){return c.key===(s.childKey||FAMILY.children[0].key)})[0];
+    var pf=(kid&&kid.prefill&&kid.prefill._forms)||{};
+    return !!pf[s.form];
+  }
+  var signed=subs.filter(isSigned).length;
+  var nextKey=(subs.filter(function(s){return !isSigned(s)})[0]||{});
   var html='<div><h1>Your packet</h1><p><b>'+n+' forms to sign.</b></p>'
     +'<p class="sub">Everything is filled in from your answers. Look each one over and sign it — you can '
     +'stop and come back.</p><div class="prog"><i style="width:'+Math.round(signed/n*100)+'%"></i></div>'
@@ -244,11 +374,14 @@ function stage2(){
   if (consent.length){
     html+='<h2>First — this one signs the rest</h2><div class="card">';
     consent.forEach(function(s){
-      i++; var st = i<=signed?'<span class="st ok">Signed</span>'
-        : i===signed+1?'<span class="st next">Next — tap to review and sign</span>'
-        : '<span class="st wait">Waiting</span>';
-      html+='<div class="row"><span>'+(i<=signed?'✓':i===signed+1?'→':'·')+' '+esc(formName(s.form))
-        +formKeyHint(s.form)+'</span>'+st+'</div>';
+      /* ⛔ И ЗДЕСЬ ПО ФАКТУ, А НЕ ПО ПОРЯДКУ: согласие помечалось «Signed» просто потому,
+         что стояло первым. Семья Kutsenko, которая согласия НЕ подписывала, видела галочку. */
+      var cDone=isSigned(s), cNext=(s===nextKey);
+      html+='<div class="row"><a href="'+esc(formHref(s))+'" style="color:inherit;text-decoration:none;flex:1">'
+        +(cDone?'✓':cNext?'→':'·')+' '+esc(formName(s.form))+formKeyHint(s.form)+'</a>'
+        +(cDone?'<span class="st ok">Signed</span>'
+          :cNext?'<span class="st next">Next — tap to review and sign</span>'
+          :'<span class="st wait">Waiting</span>')+'</div>';
     });
     html+='<p class="sub" style="margin:6px 0 0">One per family. Your signature here is applied to '
       +'every other form — you draw it once.</p></div>';
@@ -256,21 +389,34 @@ function stage2(){
   PLAN.rounds.forEach(function(r){
     html+='<h2>For '+esc(r.name)+'</h2><div class="card">';
     (byChild[r.key]||[]).forEach(function(s){
-      i++; var st = i<=signed?'<span class="st ok">Signed</span>'
-        : i===signed+1?'<span class="st next">Next — tap to review and sign</span>'
+      var done=isSigned(s), isNext=(s===nextKey);
+      var st = done?'<span class="st ok">Signed</span>'
+        : isNext?'<span class="st next">Next — tap to review and sign</span>'
         : '<span class="st wait">Waiting</span>';
-      html+='<div class="row"><span>'+(i<=signed?'✓':i===signed+1?'→':'·')+' '+esc(formName(s.form))
+      html+='<div class="row"><a href="'+esc(formHref(s))+'" style="color:inherit;text-decoration:none;flex:1">'
+        +(done?'✓':isNext?'→':'·')+' '+esc(formName(s.form))
         +(s.preset?' <span class="chip">'+esc(presetName(s.preset))+'</span>':'')
-        +formKeyHint(s.form)+'</span>'+st+'</div>';
+        +formKeyHint(s.form)+'</a>'+st+'</div>';
     });
     html+='</div>';
   });
   if (famRest.length){
     html+='<h2>Last — for your family</h2><div class="card">';
     famRest.forEach(function(s){
-      html+='<div class="row"><span>· '+esc(formName(s.form))+formKeyHint(s.form)
-        +'</span><span class="st wait">Waiting</span></div>' });
+      html+='<div class="row"><a href="'+esc(formHref(s))+'" style="color:inherit;text-decoration:none;flex:1">· '
+        +esc(formName(s.form))+formKeyHint(s.form)+'</a><span class="st wait">Waiting</span></div>' });
     html+='<p class="sub" style="margin:6px 0 0">One per family — lists all your children</p></div>';
+  }
+  var ro=readOnlySlots();
+  if (ro.length){
+    html+='<h2>To read and to bring</h2><div class="card">';
+    ro.forEach(function(k){
+      var f=(REG.forms&&REG.forms[k])||{}, cur=f.current
+      var url=(cur&&f.versions&&typeof f.versions[cur]==='string')?f.versions[cur]:(f.fallbackUrl||'')
+      var hint=(f.kind==='keep')?'Read — no signature needed':'Print &amp; bring back'
+      html+='<div class="row">'+(url?'<a href="'+esc(url)+'" style="color:inherit;text-decoration:none;flex:1">':'<span style="flex:1">')
+        +'· '+esc(formName(k))+(url?'</a>':'</span>')+'<span class="st info">'+hint+'</span></div>' });
+    html+='<p class="sub" style="margin:6px 0 0">These are not signed here — nothing to fill in.</p></div>';
   }
   html+='<div class="card a"><b>Signing happens on the form itself.</b><p class="sub" style="margin:4px 0 0">'
     +'Each form opens filled in; you draw your signature on that form. The questionnaire is not a signature.'

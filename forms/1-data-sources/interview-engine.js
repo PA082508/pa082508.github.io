@@ -1,6 +1,6 @@
 /* interview-engine.js — СОБРАНО, НЕ НАПИСАНО РУКАМИ.
  * Источник: src/lib/interviewQuestions.ts, src/lib/interviewPrefill.ts, src/lib/interviewScatter.ts, src/lib/interviewFlow.ts, src/lib/interviewEngineBundle.ts
- * Отпечаток источников: 786deeb2a9dc5884
+ * Отпечаток источников: b403fca606f759b7
  * Правка этого файла бессмысленна: он пересобирается из модулей приложения,
  * и страж сборки роняет гейт, если файл разошёлся с источником.
  */
@@ -272,7 +272,7 @@
     return base;
   }
   function planInterview(input) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f;
     const { dict, registry, baseForms, children, prefill, familyFacts } = input;
     const empty = {
       skipped: false,
@@ -293,22 +293,36 @@
     const fam = applyConditions(registry, applyConsent(baseForms, familyFacts != null ? familyFacts : {}), familyFacts != null ? familyFacts : {});
     const seen = new Set(fam.forms);
     const rounds = [];
-    const unanswered = [...fam.unanswered];
+    const answered = /* @__PURE__ */ new Set();
+    const unanswered = [];
+    const noteUnanswered = (list) => {
+      for (const u of list) if (!unanswered.some((x) => x.condition === u.condition)) unanswered.push(u);
+    };
+    for (const [c] of Object.entries(CONDITION_OF)) {
+      if (((_a = CONDITION_OF[c](familyFacts != null ? familyFacts : {})) != null ? _a : null) !== null) answered.add(c);
+    }
+    noteUnanswered(fam.unanswered);
     for (const c of children) {
-      const per = applyConditions(registry, [...fam.forms], (_a = c.facts) != null ? _a : {});
+      const per = applyConditions(registry, [...fam.forms], (_b = c.facts) != null ? _b : {});
       per.forms.forEach((f) => seen.add(f));
-      for (const u of per.unanswered) if (!unanswered.some((x) => x.condition === u.condition)) unanswered.push(u);
+      for (const [cond] of Object.entries(CONDITION_OF)) {
+        if (((_d = CONDITION_OF[cond]((_c = c.facts) != null ? _c : {})) != null ? _d : null) !== null) answered.add(cond);
+      }
+      noteUnanswered(per.unanswered);
       rounds.push({
         key: c.key,
         name: c.name,
-        facts: (_b = c.facts) != null ? _b : {},
+        facts: (_e = c.facts) != null ? _e : {},
         answers: null,
         addedForms: per.added,
         forms: [.../* @__PURE__ */ new Set([...fam.forms, ...per.added])]
       });
     }
-    if (((_c = familyFacts == null ? void 0 : familyFacts.hasEsignConsent) != null ? _c : null) === null) {
+    if (((_f = familyFacts == null ? void 0 : familyFacts.hasEsignConsent) != null ? _f : null) === null) {
       unanswered.push({ condition: "esign_consent", forms: [CONSENT] });
+    }
+    for (let i = unanswered.length - 1; i >= 0; i--) {
+      if (answered.has(unanswered[i].condition)) unanswered.splice(i, 1);
     }
     const formsFinal = [...seen].sort((a, b) => a === CONSENT ? -1 : b === CONSENT ? 1 : 0);
     const q = buildQuestionnaire(dict, formsFinal);
@@ -335,6 +349,20 @@
     if (plan.skipped || !plan.familyQuestions) return [];
     const out = [];
     const center = (_a = opts == null ? void 0 : opts.centerCode) != null ? _a : null;
+    if (!plan.rounds.length) {
+      const r = scatterAnswers({ filled: plan.familyQuestions, forms: plan.formsFinal, childKey: null, centerCode: center });
+      return plan.formsFinal.map((f) => {
+        var _a2, _b2, _c2, _d2;
+        return {
+          form: f,
+          childKey: null,
+          formData: (_a2 = r.data[f]) != null ? _a2 : {},
+          preset: (_b2 = opts == null ? void 0 : opts.presets) == null ? void 0 : _b2[f],
+          priorSubmissionId: (_d2 = (_c2 = opts == null ? void 0 : opts.priorByForm) == null ? void 0 : _c2[f]) != null ? _d2 : null,
+          skipped: r.skipped
+        };
+      });
+    }
     const familyForms = plan.formsFinal.filter((f) => FAMILY_LEVEL_FORMS.includes(f));
     if (familyForms.length) {
       const r = scatterAnswers({ filled: plan.familyQuestions, forms: familyForms, childKey: null, centerCode: center });
