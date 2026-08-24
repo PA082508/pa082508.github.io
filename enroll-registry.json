@@ -146,24 +146,17 @@
       "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01236_v1.html",
       "perInstance": false,
       "history": [],
-      "condition": "special_health_need"
+      "condition": [
+        "special_health_need",
+        "medication"
+      ]
     },
     "dcy_01217": {
-      "slug": "dcy_01217",
-      "title": "DCY 01217 — Request for Administration of Medication",
-      "requiringOrg": "ODJFS/DCY",
-      "intakeMode": "paper_scan",
-      "signer": "physician",
-      "submissionType": "medical",
-      "perInstance": true,
-      "expiryMonths": 12,
-      "current": "v1",
-      "versions": {
-        "v1": "https://pa082508.github.io/forms/1-data-sources/DCY_01217_v1.html"
-      },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/DCY_01217_v1.html",
-      "history": [],
-      "condition": "medication"
+      "status": "obsoleted",
+      "obsoletedOn": "2026-07-01",
+      "obsoletedBasis": "DCY Transmittal Letter No. 48 (18.06.2026), table «Obsoleted»: DCY 01217 «Request for Administration of Medication for Child Care». Its permission page is printed on page 2 of the revised DCY 01236 (Rev. 7/2026).",
+      "supersededBy": "dcy_01236",
+      "_note": "REDIRECT ONLY. No title, no versions, no blank: the form does not exist any more. This stub lives so that links already PRINTED IN FAMILIES' LETTERS (only=dcy_01217) open the successor instead of a dead end. Remove it when no printed letter can still be opened."
     },
     "dcy_01305": {
       "slug": "dcy_01305",
@@ -799,7 +792,9 @@
     "school_age": {
       "title": "Attends kindergarten or above",
       "detectOn": "dcy_01234",
-      "detect": ["attends kindergarten or above"],
+      "detect": [
+        "attends kindergarten or above"
+      ],
       "issue": "director",
       "_fact": "attends_school_age === 'yes' в form_data подачи dcy_01234. ЗАПИСАННЫЙ ОТВЕТ, НЕ ВОЗРАСТ: замер 23.08 — возрастное правило назвало бы школьниками 121 ребёнка и вовсе не ответило бы про 18 детей без даты рождения.",
       "_null": "attends_school_age отсутствует или null = «не спрашивали». Это НЕ «no»: слот семье не выдаётся и молча не прячется — идёт строкой директору «спросить семью»."
@@ -935,12 +930,6 @@
           "section": "if_applicable",
           "label": "Topical Product Consent",
           "note": "Sunscreen, ointments and similar topical products."
-        },
-        {
-          "key": "dcy_01217",
-          "section": "if_applicable",
-          "label": "Administration of Medication (DCY 01217)",
-          "note": "Your director provides this in person if your child needs medication."
         },
         {
           "key": "dcy_01225",

@@ -1,6 +1,6 @@
 /* interview-engine.js — СОБРАНО, НЕ НАПИСАНО РУКАМИ.
  * Источник: src/lib/interviewQuestions.ts, src/lib/interviewPrefill.ts, src/lib/interviewScatter.ts, src/lib/interviewFlow.ts, src/lib/interviewQueue.ts, src/lib/interviewEngineBundle.ts
- * Отпечаток источников: 0b39d6e291e34087
+ * Отпечаток источников: df6133dbf4f1558e
  * Правка этого файла бессмысленна: он пересобирается из модулей приложения,
  * и страж сборки роняет гейт, если файл разошёлся с источником.
  */
@@ -295,7 +295,11 @@
   var CONSENT = "parent_consent";
   function formsForCondition(reg, condition) {
     var _a;
-    return Object.entries((_a = reg.forms) != null ? _a : {}).filter(([, f]) => f && typeof f === "object" && f.condition === condition && !f.sameAs).map(([k]) => k).sort();
+    const raises = (f) => {
+      const c = f.condition;
+      return Array.isArray(c) ? c.includes(condition) : c === condition;
+    };
+    return Object.entries((_a = reg.forms) != null ? _a : {}).filter(([, f]) => f && typeof f === "object" && raises(f) && !f.sameAs).map(([k]) => k).sort();
   }
   function applyConditions(reg, base, facts) {
     const forms = [...base];
@@ -429,20 +433,10 @@
     return c;
   }
   var FAMILY_LEVEL_FORMS = ["iea", "usda_waiver", CONSENT];
-  var MED_PERMISSION = "dcy_01217";
   var CARE_PLAN = "dcy_01236";
   var CARE_PLAN_ROWS = 3;
   function careePlanRows(meds) {
     return meds.slice(0, CARE_PLAN_ROWS).map((m) => ({ name: m.name, dosage: m.dosage, time: m.time }));
-  }
-  function medPermissionFields(m) {
-    const out = {
-      medication_name: m.name,
-      dosage: m.dosage,
-      administration_times: m.time
-    };
-    if (m.photo) out.pharmacy_label_photo = m.photo;
-    return out;
   }
   function planSubmissions(plan, opts) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
@@ -487,21 +481,6 @@
       const mine = round.forms.filter((f) => !FAMILY_LEVEL_FORMS.includes(f));
       const r = scatterAnswers({ filled: merged, forms: mine, childKey: round.key, centerCode: center });
       for (const f of mine) {
-        if (f === MED_PERMISSION && round.meds.length) {
-          round.meds.forEach((m, i) => {
-            var _a2, _b2;
-            out.push({
-              form: f,
-              childKey: round.key,
-              instance: i,
-              formData: { ...(_a2 = r.data[f]) != null ? _a2 : {}, ...medPermissionFields(m) },
-              preset: (_b2 = opts == null ? void 0 : opts.presets) == null ? void 0 : _b2[f],
-              priorSubmissionId: null,
-              skipped: r.skipped
-            });
-          });
-          continue;
-        }
         const data = { ...(_h = r.data[f]) != null ? _h : {} };
         if (f === CARE_PLAN && round.meds.length) data.medications = careePlanRows(round.meds);
         out.push({
