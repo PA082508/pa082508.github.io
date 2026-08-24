@@ -1,12 +1,18 @@
 /* interview-engine.js — СОБРАНО, НЕ НАПИСАНО РУКАМИ.
  * Источник: src/lib/interviewQuestions.ts, src/lib/interviewPrefill.ts, src/lib/interviewScatter.ts, src/lib/interviewFlow.ts, src/lib/interviewQueue.ts, src/lib/interviewEngineBundle.ts
- * Отпечаток источников: 85ef21efef44b366
+ * Отпечаток источников: 0b39d6e291e34087
  * Правка этого файла бессмысленна: он пересобирается из модулей приложения,
  * и страж сборки роняет гейт, если файл разошёлся с источником.
  */
 "use strict";
 (() => {
   // src/lib/interviewQuestions.ts
+  function cycleCanonicals(dict) {
+    var _a;
+    const out = /* @__PURE__ */ new Set();
+    for (const c of Object.values((_a = dict.cycles) != null ? _a : {})) for (const k of c.canonicals) out.add(k);
+    return out;
+  }
   function branchOf(dict, form, key) {
     var _a, _b;
     return (_b = (_a = dict.branchFields) == null ? void 0 : _a[form]) == null ? void 0 : _b[key];
@@ -35,9 +41,11 @@
     }
     const known = new Set(dict.rows.map((r) => r.form));
     const unknownForms = set.filter((f) => !known.has(f));
+    const byCycle = cycleCanonicals(dict);
     const byCanon = /* @__PURE__ */ new Map();
     for (const r of dict.rows) {
       if (!set.includes(r.form)) continue;
+      if (byCycle.has(r.canonical)) continue;
       const q = byCanon.get(r.canonical);
       if (q) {
         q.targets.push({ form: r.form, key: r.key, branch: branchOf(dict, r.form, r.key), branchOn: dict.branchOnValue });
@@ -308,6 +316,17 @@
     }
     return { forms, added, unanswered };
   }
+  function medsFromForms(forms) {
+    var _a;
+    const bag = (forms != null ? forms : {}).medical;
+    if (!bag || String((_a = bag.dcy_form) != null ? _a : "") !== "01236") return [];
+    const rows = bag.medications;
+    if (!Array.isArray(rows)) return [];
+    return rows.map((r) => r != null ? r : {}).map((r) => {
+      var _a2, _b, _c;
+      return { name: String((_a2 = r.name) != null ? _a2 : ""), dosage: String((_b = r.dosage) != null ? _b : ""), time: String((_c = r.time) != null ? _c : "") };
+    }).filter((m) => m.name || m.dosage || m.time);
+  }
   function applyConsent(base, facts) {
     const has = facts.hasEsignConsent;
     if (has === true) return base.filter((f) => f !== CONSENT);
@@ -346,17 +365,23 @@
     }
     noteUnanswered(fam.unanswered);
     for (const c of children) {
-      const per = applyConditions(registry, [...fam.forms], (_b = c.facts) != null ? _b : {});
+      const meds = ((_b = c.meds) != null ? _b : []).filter((m) => {
+        var _a2;
+        return String((_a2 = m.name) != null ? _a2 : "").trim();
+      });
+      const facts = c.meds ? { ...(_c = c.facts) != null ? _c : {}, medication: meds.length > 0 } : (_d = c.facts) != null ? _d : {};
+      const per = applyConditions(registry, [...fam.forms], facts);
       per.forms.forEach((f) => seen.add(f));
       for (const [cond] of Object.entries(CONDITION_OF)) {
-        if (((_d = CONDITION_OF[cond]((_c = c.facts) != null ? _c : {})) != null ? _d : null) !== null) answered.add(cond);
+        if (((_e = CONDITION_OF[cond](facts)) != null ? _e : null) !== null) answered.add(cond);
       }
       noteUnanswered(per.unanswered);
       rounds.push({
         key: c.key,
         name: c.name,
-        facts: (_e = c.facts) != null ? _e : {},
+        facts,
         answers: null,
+        meds,
         addedForms: per.added,
         forms: [.../* @__PURE__ */ new Set([...fam.forms, ...per.added])]
       });
@@ -404,6 +429,21 @@
     return c;
   }
   var FAMILY_LEVEL_FORMS = ["iea", "usda_waiver", CONSENT];
+  var MED_PERMISSION = "dcy_01217";
+  var CARE_PLAN = "dcy_01236";
+  var CARE_PLAN_ROWS = 3;
+  function careePlanRows(meds) {
+    return meds.slice(0, CARE_PLAN_ROWS).map((m) => ({ name: m.name, dosage: m.dosage, time: m.time }));
+  }
+  function medPermissionFields(m) {
+    const out = {
+      medication_name: m.name,
+      dosage: m.dosage,
+      administration_times: m.time
+    };
+    if (m.photo) out.pharmacy_label_photo = m.photo;
+    return out;
+  }
   function planSubmissions(plan, opts) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (plan.skipped || !plan.familyQuestions) return [];
@@ -447,10 +487,27 @@
       const mine = round.forms.filter((f) => !FAMILY_LEVEL_FORMS.includes(f));
       const r = scatterAnswers({ filled: merged, forms: mine, childKey: round.key, centerCode: center });
       for (const f of mine) {
+        if (f === MED_PERMISSION && round.meds.length) {
+          round.meds.forEach((m, i) => {
+            var _a2, _b2;
+            out.push({
+              form: f,
+              childKey: round.key,
+              instance: i,
+              formData: { ...(_a2 = r.data[f]) != null ? _a2 : {}, ...medPermissionFields(m) },
+              preset: (_b2 = opts == null ? void 0 : opts.presets) == null ? void 0 : _b2[f],
+              priorSubmissionId: null,
+              skipped: r.skipped
+            });
+          });
+          continue;
+        }
+        const data = { ...(_h = r.data[f]) != null ? _h : {} };
+        if (f === CARE_PLAN && round.meds.length) data.medications = careePlanRows(round.meds);
         out.push({
           form: f,
           childKey: round.key,
-          formData: (_h = r.data[f]) != null ? _h : {},
+          formData: data,
           preset: (_i = opts == null ? void 0 : opts.presets) == null ? void 0 : _i[f],
           priorSubmissionId: (_k = (_j = opts == null ? void 0 : opts.priorByForm) == null ? void 0 : _j[f]) != null ? _k : null,
           skipped: r.skipped
@@ -516,6 +573,8 @@
     return out;
   }
   function rowState(input) {
+    var _a;
+    if (((_a = input.instanceCount) != null ? _a : 1) > 1) return "todo";
     const bag = acceptedBag(input.childForms, input.registry, input.formKey);
     if (!bag) return "todo";
     return newAnswers(input.dict, input.formKey, input.formData, bag).length ? "updated" : "signed";
@@ -536,6 +595,7 @@
     planSubmissions,
     applyConditions,
     formsForCondition,
+    medsFromForms,
     rowState,
     acceptedBag,
     newAnswers,
