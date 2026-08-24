@@ -1180,6 +1180,18 @@
       "sourceFormats": [
         "текст"
       ]
+    },
+    "medication.paper_promised": {
+      "level": "child",
+      "sourceFormats": [
+        "да/нет"
+      ]
+    },
+    "medication.promised_name": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ]
     }
   },
   "forms": {
@@ -2169,6 +2181,13 @@
       "format": "текст"
     },
     {
+      "canonical": "medication.paper_promised",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "medication_paper_promised",
+      "format": "да/нет"
+    },
+    {
       "canonical": "medication.list",
       "level": "child",
       "form": "dcy_01236",
@@ -2209,6 +2228,13 @@
       "form": "dcy_01236",
       "key": "program_staff",
       "format": "массив"
+    },
+    {
+      "canonical": "medication.promised_name",
+      "level": "child",
+      "form": "dcy_01236",
+      "key": "promised_medication_name",
+      "format": "текст"
     },
     {
       "canonical": "child.health_signs",
@@ -3666,5 +3692,19 @@
       "is_driver"
     ]
   },
-  "branchOnValue": "Yes"
+  "branchOnValue": "Yes",
+  "_cyclesNote": "Смыслы, о которых спрашивает ЦИКЛ, а не общий вопросник. Мини-блок лекарств спрашивает название, дозу, время и фото этикетки по одному препарату — те же смыслы в общем списке дали бы второй вопрос об одном и том же и второй ответ, который однажды разойдётся с первым. Страж interviewCycleGuard следит, что каждый объявленный смысл в словаре существует.",
+  "cycles": {
+    "medicines": {
+      "canonicals": [
+        "medication.name",
+        "medication.dose",
+        "medication.times",
+        "medication.label_photo",
+        "medication.paper_promised",
+        "medication.promised_name"
+      ]
+    }
+  },
+  "_promiseNote": "Галочка «указания врача на подписанной бумаге» и необязательное название — вопросы ИНТЕРВЬЮ, а не клетки бланка: в печатный DCY 01236 они не попадают, государственный бланк мы не дописываем. В form_data подачи они едут скрытыми полями, и по ним выводится след ожидания бумаги (promisedPaper.ts)."
 }

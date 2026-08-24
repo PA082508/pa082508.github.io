@@ -65,6 +65,8 @@ function succForm(k){
 var DICT=null, REG=null, PLAN=null, FAMILY=null, STEP=0, ROUND=0, SUBS=[];
 /* Строки лекарств по ребёнку. Ветвящегося «принимает ли» нет — поля открыты. */
 var MEDS={};
+/* Третий ответ: «указания врача на подписанной бумаге, я принесу». По ребёнку. */
+var PROMISE={}, PROMISE_NAME={};
 
 function rpc(fn, body){
   return fetch(SUPA_URL+'/rest/v1/rpc/'+fn,{method:'POST',
@@ -400,7 +402,24 @@ function medBlock(kid, r){
     +'Leave them empty if they do not \u2014 nothing here is required.</p></div>'
     + careCards(r)
     + rows
-    +'<button class="btn ghost" onclick="medAdd(\''+kid+'\')">+ Add another medicine</button>';
+    +'<button class="btn ghost" onclick="medAdd(\''+kid+'\')">+ Add another medicine</button>'
+    /* ⭐ ТРЕТИЙ ОТВЕТ. Рецепт часто выписан на бланке врача, и семья несёт его на стойку —
+       это честный ответ, а не уклонение. Стои́т ПОСЛЕ таблицы: сперва предлагаем сказать
+       словами, и лишь потом — «бумага у меня на руках».
+       ⛔ ОБЕЩАНИЕ НЕ ЕСТЬ РАЗРЕШЕНИЕ, и родителю сказано это прямо. */
+    +'<div class="card a" style="margin-top:10px">'
+    +'<label style="display:flex;gap:9px;align-items:flex-start;font-size:13.5px;cursor:pointer">'
+    +'<input type="checkbox" style="margin-top:3px"'+((PROMISE[kid])?' checked':'')
+      +' onchange="medPromise(\''+kid+'\',this.checked)">'
+    +'<span><b>The doctor\u2019s orders are on a signed paper \u2014 I will hand it to the director.</b>'
+    +'<div class="src" style="margin-top:4px">Nothing can be given until that paper reaches us \u2014 '
+    +'bring it in and we will enter it the same day.</div></span></label>'
+    +((PROMISE[kid])
+      ? '<div class="q" style="margin:9px 0 0"><div class="lab">Name of the medicine, if you remember</div>'
+        +'<input value="'+esc(PROMISE_NAME[kid]||'')+'" placeholder="optional"'
+        +' oninput="medPromiseName(\''+kid+'\',this.value)"></div>'
+      : '')
+    +'</div>';
 }
 function kidName(kid){
   var c=FAMILY.children.filter(function(x){return x.key===kid})[0]; return (c&&c.name)||'this child';
@@ -413,6 +432,8 @@ function medInit(kid){
   MEDS[kid]= prev.length ? prev.map(function(m){ m.from='your care plan on file'; return m })
                          : [{name:'',dosage:'',time:''}];
 }
+function medPromise(kid,v){ PROMISE[kid]=v; if(!v) PROMISE_NAME[kid]=''; replan(); render() }
+function medPromiseName(kid,v){ PROMISE_NAME[kid]=v; }
 function medAdd(kid){ (MEDS[kid]=MEDS[kid]||[]).push({name:'',dosage:'',time:''}); replan(); render() }
 function medDrop(kid,i){ MEDS[kid].splice(i,1); if(!MEDS[kid].length) MEDS[kid]=[{name:'',dosage:'',time:''}]; replan(); render() }
 function medSet(kid,i,k,v){
@@ -524,6 +545,16 @@ function stage2(){
      ссылки: их бланк и открывается им. */
   try {
     var bagByChild={};
+    /* ⛔ ОБЕЩАНИЕ КЛАДЁТСЯ РЯДОМ С ФОРМОЙ, А НЕ В ЕЁ ТАБЛИЦУ. Таблица стр. 2 под подписью
+       родителя и врача — это и есть разрешение; препарат, которого никто не разрешал, в
+       ней выглядел бы разрешённым. Скрытые поля бланка забирают ответ в подачу. */
+    subs.forEach(function(s){
+      if(s.form==='dcy_01236' && s.childKey && PROMISE[s.childKey]){
+        s.formData = s.formData || {};
+        s.formData.medication_paper_promised = 'true';
+        if(PROMISE_NAME[s.childKey]) s.formData.promised_medication_name = PROMISE_NAME[s.childKey];
+      }
+    });
     subs.forEach(function(s){
       var tok=s.childKey||FAMILY.children[0].key;
       (bagByChild[tok]=bagByChild[tok]||{})[s.form]=

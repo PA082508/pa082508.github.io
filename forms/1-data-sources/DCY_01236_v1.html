@@ -200,6 +200,11 @@
 </style>
 </head>
 <body>
+<!-- ⛔ ОТВЕТЫ ИНТЕРВЬЮ, КОТОРЫХ НЕТ НА БУМАГЕ. Скрыты намеренно: печатный бланк —
+     государственный, и дописывать его нельзя; а знать, что семья обещала бумагу от
+     врача, центру необходимо. Кит кладёт сюда значения по id, collect() их забирает. -->
+<input type="checkbox" id="medication_paper_promised" style="display:none">
+<input type="text" id="promised_medication_name" style="display:none">
 
 <div class="toolbar">
   <select id="ctr"><option value="">— Select center —</option><option value="pearl">Play Academy Parma Heights</option><option value="alpha">Play Academy Highland Heights</option><option value="ridge">Play Academy Wickliffe</option></select>
@@ -560,6 +565,12 @@ window.FORMKIT_CONFIG={
     });
     return out;
   },
+  /* ⭐ ДВА СКРЫТЫХ ПОЛЯ — ОТВЕТ ИНТЕРВЬЮ, А НЕ КЛЕТКА БЛАНКА. Родитель может сказать
+     «указания врача на подписанной бумаге, я принесу»; ведомственный бланк такого вопроса
+     не печатает, и дописывать его мы не будем. Ответ едет В ПОДАЧЕ, чтобы центр знал, чего
+     ждать, и НЕ ПЕЧАТАЕТСЯ: поля скрытые, на бумаге их нет.
+     ⛔ В ТАБЛИЦУ СТР. 2 ОБЕЩАННОЕ НЕ ПОПАДАЕТ: таблица под подписью — это и есть
+     разрешение, и препарат, которого никто не разрешал, в ней выглядел бы разрешённым. */
   collect:function(){
     if(!dateTouched){var sd=$id('signedDate');if(sd)sd.value=todayISO();}
     var medications=[1,2,3].map(function(i){return {name:val('med'+i+'Name'),dosage:val('med'+i+'Dosage'),time:val('med'+i+'Time'),administer_when_symptoms_present:chk('med'+i+'Symptoms')};}).filter(function(m){return m.name||m.dosage||m.time||m.administer_when_symptoms_present;});
@@ -590,6 +601,8 @@ window.FORMKIT_CONFIG={
       medication_instructions_not_applicable: chk('medInstructionsNA'),
       actions_if_medication_not_available: val('medNotAvailable'),
       medications:                         medications,
+      medication_paper_promised:           chk('medication_paper_promised'),
+      promised_medication_name:            val('promised_medication_name'),
       parent_attest_provided_info:         chk('parentAttest1'),
       parent_attest_permission_procedure:  chk('parentAttest2'),
       parent_attest_permission_medication: chk('parentAttest3'),
