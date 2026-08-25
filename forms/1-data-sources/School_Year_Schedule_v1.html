@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School-Year Schedule Update</title>
+<style>
+  /* ============================================================
+     SCHOOL-YEAR SCHEDULE UPDATE — v1 · 2026-08-25
+     Kit-path fillable. form-kit.js owns validation/UX/submit.
+
+     ⭐ ТАБЛИЦА ПРИВЫЧНАЯ. Раскладка дней и времён взята с бланков 01234 / CACFP:
+     семья уже заполняла её при зачислении, и узнавание здесь дороже красоты.
+     ⛔ ДВА ИНТЕРВАЛА В ОДНОМ ДНЕ, А НЕ ДВЕ СТРОКИ: «до школы» и «после школы» —
+     один день ребёнка. Носитель (child_enrolled_days) держит arr1/dep1 и arr2/dep2
+     именно для этого.
+     ============================================================ */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; color: #000; background: #e8e8e8; }
+  .sheet { width: 8.5in; max-width: 100%; min-height: 11in; margin: 16px auto; padding: 0.45in 0.5in;
+           background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); display: flex; flex-direction: column; }
+  .idline { text-align: center; font-size: 9.5pt; color: #333; letter-spacing: .02em; }
+  .form-title { text-align: center; font-size: 16pt; font-weight: bold; text-transform: uppercase; margin: 2px 0 10px; }
+  p.intro { font-size: 10pt; line-height: 1.35; margin-bottom: 12px; font-style: italic; }
+  table { border-collapse: collapse; width: 100%; }
+  .blk { margin-bottom: 14px; }
+  .blk td, .blk th { border: 1px solid #000; padding: 4px 8px; vertical-align: middle; font-size: 11pt; line-height: 1.3; }
+  .bar td { background: #000; color: #fff; font-weight: bold; padding: 3px 8px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lbl { font-weight: bold; }
+  .hint { font-style: italic; font-size: 9pt; color: #444; display: block; margin-top: 2px; }
+  input.fill { border: none; outline: none; font: inherit; background: transparent; padding: 1px 4px; width: 100%; }
+  input.fill:focus, input.date-fill:focus, input.time-fill:focus { background: #eef4ff; }
+  input.date-fill { font: inherit; border: none; outline: none; background: transparent; width: 165px; padding: 1px 4px; }
+  input.time-fill { font: inherit; border: none; outline: none; background: transparent; width: 100px; padding: 1px 2px; text-align: center; }
+  input.time-fill:disabled, input.fill:disabled { background: repeating-linear-gradient(45deg,#f4f4f4,#f4f4f4 4px,#eee 4px,#eee 8px); }
+  .opts { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 4px; }
+  .opts label { display: inline-flex; align-items: center; gap: 7px; font-weight: normal; }
+  .opts input[type="radio"], .opts input[type="checkbox"] { width: 17px; height: 17px; }
+  th.day { width: 1.25in; text-align: left; }
+  th.grp { text-align: center; font-size: 9.5pt; }
+  td.tick { width: .5in; text-align: center; }
+  td.tick input { width: 18px; height: 18px; }
+  .sig { border: 1px solid #666; background: #fff; touch-action: none; display: block; }
+  .sig-clear { font-size: 9pt; margin-top: 3px; padding: 2px 8px; cursor: pointer; }
+  .note-box { font-size: 9.5pt; background: #fffbe9; border: 1px solid #e2c98a; padding: 7px 10px; margin-bottom: 12px; line-height: 1.4; }
+  @media (max-width: 700px) { .sheet { padding: 14px 12px; } .blk td, .blk th { padding: 6px 5px; font-size: 10.5pt; } }
+  @media print { body { background: #fff; } .sheet { box-shadow: none; margin: 0; width: auto; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="idline">Play Academy · school-year schedule</div>
+  <div class="form-title">School-Year Schedule Update</div>
+
+  <p class="intro">School has started, and the schedule we have on file is still the summer one.
+  Tell us the days and hours your child actually attends now, so meals and staffing match.</p>
+
+  <!-- ⭐ ПРОШЛОЕ РАЗРЕШЕНО, И ЭТО СКАЗАНО ВСЛУХ. Форма идёт ВДОГОНКУ факту: ребёнок уже
+       ходит в школу, и дата начала почти всегда позади. Молчаливый запрет прошлого заставил
+       бы родителя поставить сегодня — и расписание стало бы неверным задним числом. -->
+  <div class="note-box">
+    <b>If the new schedule already started, give the date it started — even if it is in the past.</b>
+    That is what we need; we are catching up with what is already happening.
+  </div>
+
+  <table class="blk">
+    <tr class="bar"><td colspan="2">CHILD</td></tr>
+    <tr>
+      <td style="width:60%"><span class="lbl">Child's name</span>
+        <input type="text" class="fill" id="childName" data-required data-label="Child's name"></td>
+      <td><span class="lbl">Date of birth</span>
+        <input type="date" class="date-fill" id="dob" data-label="Date of birth"></td>
+    </tr>
+  </table>
+
+  <table class="blk">
+    <tr class="bar"><td>WHICH SCHEDULE FITS YOUR CHILD</td></tr>
+    <tr><td>
+      <div class="opts">
+        <label><input type="radio" name="profile" value="before" id="pBefore"> Before school only</label>
+        <label><input type="radio" name="profile" value="after" id="pAfter"> After school only</label>
+        <label><input type="radio" name="profile" value="both" id="pBoth"> Before <b>and</b> after school</label>
+        <label><input type="radio" name="profile" value="full_day" id="pFull"> Full day — <b>not</b> in school</label>
+      </div>
+      <span class="hint">Choose “Full day” only if your child does not attend school at all this year.</span>
+    </td></tr>
+  </table>
+
+  <!-- ⛔ ОДНА ТАБЛИЦА НА ВСЕ ПРОФИЛИ. Отдельные таблицы «до» и «после» заставили бы семью
+       заполнять форму дважды и разошлись бы между собой при первой правке. Ненужные колонки
+       гасятся, а не прячутся: исчезнувшая колонка читается как «этого не спрашивают». -->
+  <table class="blk">
+    <tr class="bar"><td colspan="5">DAYS AND HOURS</td></tr>
+    <tr>
+      <th class="day">Day</th>
+      <th class="tick">Attends</th>
+      <th class="grp" colspan="2" id="hdrBefore">Before school &nbsp;<span class="hint" style="display:inline">arrive → depart</span></th>
+      <th class="grp" colspan="2" id="hdrAfter">After school &nbsp;<span class="hint" style="display:inline">arrive → depart</span></th>
+    </tr>
+    <tbody id="dayRows"></tbody>
+  </table>
+
+  <table class="blk">
+    <tr class="bar"><td colspan="2">WHEN THIS SCHEDULE STARTED</td></tr>
+    <tr>
+      <td style="width:50%"><span class="lbl">Start date</span>
+        <input type="date" class="date-fill" id="startsOn" data-required data-label="Start date">
+        <span class="hint">May be in the past — give the real date.</span></td>
+      <td><span class="lbl">Anything different on some days?</span>
+        <input type="text" class="fill" id="note" data-label="Note"
+               placeholder="e.g. Wednesdays she stays until 5:30">
+        <span class="hint">Free text — the front desk will read it.</span></td>
+    </tr>
+  </table>
+
+  <table class="blk">
+    <tr class="bar"><td colspan="2">PARENT / GUARDIAN</td></tr>
+    <tr>
+      <td style="width:62%"><span class="lbl">Signature</span>
+        <span class="hint">Sign with your finger or mouse.</span>
+        <div>
+          <!-- ⛔ ТОЛЬКО РИСОВАНИЕМ (слово владельца): ни печатного имени, ни принятого
+               образца. Расписание меняет, куда ребёнок идёт после школы, — под этим
+               ставят руку. -->
+          <canvas class="sig" id="sigParent" width="520" height="46"
+                  data-formkit="signature" data-required data-label="Parent signature"></canvas>
+          <button type="button" class="sig-clear" onclick="FormKit.clearSig('sigParent')">Clear</button>
+        </div></td>
+      <td><span class="lbl">Date</span>
+        <input type="date" class="date-fill" id="parentDate" data-required data-label="Signature date"></td>
+    </tr>
+  </table>
+</div>
+
+<script>
+/* School-Year Schedule — form-specific config only; shared behaviour = form-kit.js */
+(function () {
+  var DAYS = [[1,'Monday'],[2,'Tuesday'],[3,'Wednesday'],[4,'Thursday'],[5,'Friday']];
+  function el(id) { return document.getElementById(id); }
+  function val(id) { var e = el(id); return e ? (e.value || '').trim() : ''; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function profile() { var c = document.querySelector('input[name="profile"]:checked'); return c ? c.value : ''; }
+
+  function buildRows() {
+    el('dayRows').innerHTML = DAYS.map(function (d) {
+      return '<tr>'
+        + '<td class="day"><span class="lbl">' + d[1] + '</span></td>'
+        + '<td class="tick"><input type="checkbox" class="dayTick" data-day="' + d[0] + '"></td>'
+        + '<td><input type="time" class="time-fill bArr" data-day="' + d[0] + '"></td>'
+        + '<td><input type="time" class="time-fill bDep" data-day="' + d[0] + '"></td>'
+        + '<td><input type="time" class="time-fill aArr" data-day="' + d[0] + '"></td>'
+        + '<td><input type="time" class="time-fill aDep" data-day="' + d[0] + '"></td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  /* ⭐ ОДИН РАЗ — И ВО ВСЕ ДНИ. Родитель почти всегда возит ребёнка в одни и те же часы;
+     заставлять его вбивать 8:15 пять раз значит терять форму на третьей строке.
+     Копируется ТОЛЬКО в пустые клетки: правку, сделанную рукой, машина не затирает. */
+  function spreadFirst(cls) {
+    var all = [].slice.call(document.querySelectorAll('.' + cls));
+    var first = all[0]; if (!first || !first.value) return;
+    all.forEach(function (e, i) { if (i > 0 && !e.value) e.value = first.value; });
+  }
+
+  /* ⛔ НЕНУЖНЫЕ КОЛОНКИ ГАСЯТСЯ, А НЕ ПРЯЧУТСЯ. Исчезнувшая колонка читается как
+     «этого не спрашивают»; погашенная — как «не про вас», и это правда. */
+  function applyProfile() {
+    var p = profile();
+    var needB = (p === 'before' || p === 'both' || p === 'full_day');
+    var needA = (p === 'after'  || p === 'both');
+    el('hdrBefore').innerHTML = (p === 'full_day' ? 'Arrive → depart' : 'Before school &nbsp;<span class="hint" style="display:inline">arrive → depart</span>');
+    document.querySelectorAll('.bArr, .bDep').forEach(function (e) { e.disabled = !needB; if (!needB) e.value = ''; });
+    document.querySelectorAll('.aArr, .aDep').forEach(function (e) { e.disabled = !needA; if (!needA) e.value = ''; });
+    if (window.FormKit) FormKit.refreshCounter();
+  }
+
+  function ticked() {
+    return [].slice.call(document.querySelectorAll('.dayTick:checked')).map(function (e) { return +e.getAttribute('data-day'); });
+  }
+  /* Час берётся с ПЕРВОГО отмеченного дня: носитель держит одну пару на интервал.
+     Разные часы по дням семья пишет в примечании — так решено 25.08. */
+  function firstTime(cls) {
+    var days = ticked(); if (!days.length) return null;
+    for (var i = 0; i < days.length; i++) {
+      var e = document.querySelector('.' + cls + '[data-day="' + days[i] + '"]');
+      if (e && e.value) return e.value;
+    }
+    return null;
+  }
+
+  function clearForm() {
+    document.querySelectorAll('input[type="text"], input[type="date"], input[type="time"]').forEach(function (e) { e.value = ''; });
+    document.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(function (e) { e.checked = false; });
+    if (window.FormKit) FormKit.clearSig('sigParent');
+    applyProfile(); setDefaults();
+    if (window.FormKit) { FormKit.refreshCounter(); FormKit.status('Form cleared', ''); }
+  }
+  function setDefaults() { var e = el('parentDate'); if (e && !e.value) e.value = todayISO(); }
+
+  window.FORMKIT_CONFIG = {
+    formType: 'school_year_schedule', version: 'v1', title: 'School-Year Schedule Update',
+    reset: clearForm,
+    /* ⛔ ПРОВЕРКА ГОВОРИТ ПОЛЕМ. «Не сохранилось» заставляет гадать; здесь названо, чего нет.
+       Те же условия, что у разноса (`missingIn`) — форма и приём не спорят. */
+    validate: function () {
+      if (!profile()) return 'Choose which schedule fits your child.';
+      if (!ticked().length) return 'Tick the days your child attends — an empty week is not a schedule.';
+      var p = profile();
+      if (p === 'full_day' && !(firstTime('bArr') && firstTime('bDep'))) return 'Give the arrival and departure times.';
+      if ((p === 'before' || p === 'both') && !(firstTime('bArr') && firstTime('bDep'))) return 'Give the before-school arrival and departure times.';
+      if ((p === 'after'  || p === 'both') && !(firstTime('aArr') && firstTime('aDep'))) return 'Give the after-school arrival and departure times.';
+      return null;
+    },
+    collect: function () {
+      var p = profile();
+      var sig = window.FormKit ? FormKit.getSig('sigParent') : null;
+      /* ⛔ КЛЮЧИ — РОВНО ТЕ, ЧТО ЖДЁТ РАЗНОС (`spreadSchoolYearIfAny`). Разойдись одно имя —
+         подача одобрится, а расписание молча не доедет: та же болезнь, что «пара ключ↔тип». */
+      return {
+        child_name: val('childName'),
+        dob: val('dob') || null,
+        profile: p,
+        days: ticked(),
+        before_arr: (p === 'full_day') ? null : firstTime('bArr'),
+        before_dep: (p === 'full_day') ? null : firstTime('bDep'),
+        after_arr:  firstTime('aArr'),
+        after_dep:  firstTime('aDep'),
+        full_arr:   (p === 'full_day') ? firstTime('bArr') : null,
+        full_dep:   (p === 'full_day') ? firstTime('bDep') : null,
+        starts_on:  val('startsOn') || null,
+        note:       val('note') || null,
+        parent_signature: sig,
+        signature_date: val('parentDate') || todayISO()
+      };
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    buildRows(); setDefaults(); applyProfile();
+    document.querySelectorAll('input[name="profile"]').forEach(function (e) { e.addEventListener('change', applyProfile); });
+    ['bArr','bDep','aArr','aDep'].forEach(function (cls) {
+      var first = document.querySelector('.' + cls);
+      if (first) first.addEventListener('change', function () { spreadFirst(cls); });
+    });
+    /* Отметил день — и часы уже стоят: пустая строка при отмеченном дне это лишний шаг. */
+    document.querySelectorAll('.dayTick').forEach(function (t) {
+      t.addEventListener('change', function () {
+        if (!t.checked) return;
+        ['bArr','bDep','aArr','aDep'].forEach(function (cls) { spreadFirst(cls); });
+        if (window.FormKit) FormKit.refreshCounter();
+      });
+    });
+    var pr = el('btnPrint'); if (pr) pr.addEventListener('click', function () { window.print(); });
+  });
+})();
+</script>
+<script>/* form-kit watchdog — inline, survives a failed form-kit.js load (pattern of 01218). */
+(function(){var t=setTimeout(function(){if(!window.FormKit){
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();document.head.appendChild(s);}},4000);
+window.addEventListener('load',function(){if(window.FormKit)clearTimeout(t);});})();</script>
+<script defer src="form-kit.js?v=40"></script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+</body>
+</html>

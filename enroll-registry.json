@@ -748,6 +748,31 @@
           "note": "v1 published with the staff package, effective Monday, August 10. Held back from the first publish of the package because the verbatim text had not arrived; released the same day it did — nothing was authored on the centre's behalf."
         }
       ]
+    },
+    "school_year_schedule": {
+      "key": "school_year_schedule",
+      "slug": "school_year_schedule",
+      "title": "School-Year Schedule Update",
+      "kind": "signature",
+      "section": "our_documents",
+      "requiringOrg": "Play Academy",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/School_Year_Schedule_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/School_Year_Schedule_v1.html",
+      "perInstance": true,
+      "submissionType": "school_year_schedule",
+      "signer": "parent",
+      "intakeMode": "kit",
+      "condition": "school_age",
+      "history": [
+        {
+          "v": "v1",
+          "on": "2026-08-25",
+          "note": "Built to close the summer-schedule gap; days table mirrors 01234/CACFP."
+        }
+      ]
     }
   },
   "org": {
@@ -1324,11 +1349,11 @@
       {
         "from": "2026-01-01",
         "to": null,
-        "reg_fee": 75.0,
-        "reg_fee_school_age": 25.0,
-        "reg_fee_voucher": 25.0,
-        "infant_waiting_deposit": 150.0,
-        "late_fee_per_day": 5.0,
+        "reg_fee": 75,
+        "reg_fee_school_age": 25,
+        "reg_fee_voucher": 25,
+        "infant_waiting_deposit": 150,
+        "late_fee_per_day": 5,
         "absentee_days_per_half_year": 10
       }
     ]
