@@ -195,6 +195,30 @@
      безымянным, именной уходит по кнопке, которую нажимает сам родитель. */
   var personalToken = qs.get('t') || '';
 
+  /* ⭐ ФЛИП ИНТЕРВЬЮ-ДВЕРИ (слово владельца 25.08). Именная ссылка — и обычная, и
+     волновая — открывает ИНТЕРВЬЮ, а не список бланков. Список остаётся дверью для
+     безымянных заходов (QR со стены, общая ссылка центра): там спрашивать некого.
+
+     ⛔ ПЕРЕКЛЮЧАТЕЛЬ ЖИВЁТ В БАЗЕ, А НЕ ЗДЕСЬ. Требование владельца: откат — ОДИН акт
+     на сервере. Правка этого файла означала бы новую выкладку витрины (сборка, пуш,
+     кэш Pages) в ту минуту, когда семьи уже идут по ссылкам.
+     ⛔ РЕШЕНИЕ ПРИНИМАЕТ СЕРВЕР: спрашиваем «мне куда», а не «дай настройку, я сам
+     решу», — иначе рядом появится вторая копия правила на JS.
+     ⚠️ МОЛЧАНИЕ СЕРВЕРА = СТАРАЯ ДВЕРЬ. Если ответ не пришёл, семья видит привычный
+     список форм, а не пустой экран: недоступность нашего переключателя не должна
+     превращаться в закрытую дверь. */
+  function interviewDoor() {
+    if (!personalToken) return Promise.resolve(false);      // безымянный заход — список
+    return fetch(SB_URL + '/rest/v1/rpc/door_for_links', {
+      method: 'POST',
+      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON,
+                 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+      body: '{}'
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { return !!(d && d.interview); })
+      .catch(function () { return false; });
+  }
+
   /* ── «КАК ЭТО ЗАПОЛНЯЕТСЯ» — блок на пакете (v17) ──────────────────────────
      Семья открывает список форм и не знает трёх вещей: заполнено ли уже что-то за
      неё, можно ли бросить на середине и что будет после Submit. Три строки словами
@@ -264,6 +288,12 @@
       })
       .catch(function () { return { error: true }; });
   }
+
+  /* ⛔ РЕДИРЕКТ РАНЬШЕ ОТРИСОВКИ: увидеть список и через миг быть унесённым в интервью —
+     хуже, чем не увидеть его вовсе. Параметры переносятся как есть: центр, набор, ключи
+     и токен — интервью читает их тем же способом. */
+  interviewDoor().then(function (on) {
+    if (on) { location.replace('forms/1-data-sources/interview-live.html' + location.search); return; }
 
   Promise.all([
     fetch('enroll-registry.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }),
@@ -533,6 +563,7 @@
       window.addEventListener('pageshow', refreshDone);
     })
     .catch(function () { fail('Could not load the form list. Please try again.'); });
+  });   /* конец interviewDoor().then — список форм рисуется только когда дверь старая */
 
   document.getElementById('btnNewFamily').addEventListener('click', function () {
     try { localStorage.removeItem(PACKET_KEY); } catch (e) {}
