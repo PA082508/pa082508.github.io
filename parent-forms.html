@@ -207,8 +207,29 @@
      ⚠️ МОЛЧАНИЕ СЕРВЕРА = СТАРАЯ ДВЕРЬ. Если ответ не пришёл, семья видит привычный
      список форм, а не пустой экран: недоступность нашего переключателя не должна
      превращаться в закрытую дверь. */
+  function rpcDoor(fn, body) {
+    return fetch(SB_URL + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON,
+                 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+      body: JSON.stringify(body || {})
+    }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+  }
+
   function interviewDoor() {
-    if (!personalToken) return Promise.resolve(false);      // безымянный заход — список
+    /* ⭐ БЕЗЫМЯННЫЙ ЗАХОД БОЛЬШЕ НЕ ОЗНАЧАЕТ «СПИСОК» (заказ владельца 26.08). Интервью —
+       свойство НАБОРА: по QR со стойки приходит новая семья, и спрашиваем мы её саму.
+       ⛔ РЕШАЕТ ФЛАГ НА НАБОРЕ, а не наличие ключа и не список слагов в коде.
+       ⛔ FAIL-OPEN В СПИСОК: молчащая дверь не должна запирать семью — отказ сети, сбой
+          функции и «флага нет» ведут туда же, куда вели вчера. */
+    if (!personalToken) {
+      var setSlug = new URLSearchParams(location.search).get('set')
+                 || new URLSearchParams(location.search).get('p');
+      var centerSlug = new URLSearchParams(location.search).get('center');
+      if (!setSlug || !centerSlug) return Promise.resolve(false);
+      return rpcDoor('set_uses_interview', { p_center_slug: centerSlug, p_set_slug: setSlug })
+        .then(function (d) { return d === true; });
+    }
     return fetch(SB_URL + '/rest/v1/rpc/door_for_links', {
       method: 'POST',
       headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON,
