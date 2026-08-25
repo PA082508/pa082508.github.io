@@ -591,8 +591,23 @@
     }
   }
 
+  /* ⛔ У ПАРЫ ГАЛОЧЕК СООБЩЕНИЕ ЛОЖИТСЯ ПОД ВСЮ ПАРУ, А НЕ ПОД ПЕРВУЮ КЛЕТКУ.
+     На 01234 «permit or deny» первая клетка сидит вплотную под официальным абзацем, и
+     «под клеткой» означало «поверх текста бланка». Нижняя клетка группы — та, ниже
+     которой бумага пуста. */
+  function msgAnchor(el) {
+    var grp = el.getAttribute && el.getAttribute('data-fk-exclusive');
+    if (!grp) return el;
+    var all = document.querySelectorAll('[data-fk-exclusive="' + grp + '"]');
+    var last = el;
+    for (var i = 0; i < all.length; i++) {
+      if ((all[i].offsetTop || 0) > (last.offsetTop || 0)) last = all[i];
+    }
+    return last;
+  }
+
   function fieldMsg(el, show, msg) {
-    var box = el.tagName === 'CANVAS' || el.getAttribute('data-fk-choice') ? el : el;
+    var box = msgAnchor(el);
     var next = box.parentNode.querySelector('.fk-msg');
     if (show) {
       if (!next) { next = document.createElement('div'); next.className = 'fk-msg'; box.parentNode.appendChild(next); }
