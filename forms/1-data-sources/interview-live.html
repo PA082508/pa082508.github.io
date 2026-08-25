@@ -148,7 +148,10 @@ Promise.all([
 ]).then(function(v){
   DICT=v[0]; REG=v[1];
   ONLY=ONLY.map(succForm);
-  if(!TOKEN) return needLink('This link has no personal token.');
+  /* ⭐ БЕЗ КЛЮЧА — НЕ ОТКАЗ, А ДРУГОЕ НАЧАЛО (заказ владельца 26.08). По QR со стойки
+     приходит НОВАЯ семья: спрашивать её нам некого, и мы спрашиваем ЕЁ САМУ.
+     ⛔ Префилла у такого прохода нет, и это норма, а не поломка: нечего было заполнять. */
+  if(!TOKEN) return startAnon();
   return loadFamily().then(function(fam){
     if(!fam) return needLink('This link has expired \u2014 ask your center for a new one.');
     FAMILY=fam;
@@ -276,9 +279,68 @@ function qCard(a){
   return '<div class="q"><div class="lab">'+esc(label)+'</div><input placeholder="—">'+hint+'</div>';
 }
 
+/* ── БЛОК САМОНАЗВАНИЯ (STEP -1) ───────────────────────────────────────────────
+   ⛔ ТО, ЧТО КЛЮЧ ПРИНОСИЛ ГОТОВЫМ, ТЕПЕРЬ СПРАШИВАЕТСЯ: кто вы · кто ребёнок · дата
+   рождения. Меньше нельзя — без даты рождения ребёнок неотличим от однофамильца, и
+   разбор в центре превратится в гадание.
+   ⛔ И БОЛЬШЕ ТОЖЕ НЕЛЬЗЯ: адрес, телефоны и прочее спросят сами формы набора. Второй
+   опрос об одном — верный способ бросить пакет на первом экране. */
+var SELF = { adult:'', child:'', dob:'' };
+
+function selfBlock(){
+  var ready = SELF.adult.trim() && SELF.child.trim() && SELF.dob;
+  return '<div><h1>Let us start with who you are</h1>'
+    +'<p class="sub">We have no forms for you yet \u2014 so nothing here is filled in for you. '
+    +'Tell us these three, and the packet builds itself from there.</p>'
+    +'<div class="card"><label>Your name<br><input id="sfAdult" value="'+esc(SELF.adult)+'"></label></div>'
+    +'<div class="card"><label>Your child\u2019s name<br><input id="sfChild" value="'+esc(SELF.child)+'"></label></div>'
+    +'<div class="card"><label>Child\u2019s date of birth<br><input id="sfDob" type="date" value="'+esc(SELF.dob)+'"></label></div>'
+    +'<button class="btn" id="sfGo"'+(ready?'':' disabled')+'>Next</button>'
+    +(ready?'':'<p class="sub">All three are needed \u2014 the date of birth is what tells your child apart from another with the same name.</p>')
+    +'</div>';
+}
+
+function bindSelf(){
+  ['sfAdult','sfChild','sfDob'].forEach(function(id){
+    var e=document.getElementById(id); if(!e) return;
+    e.oninput=function(){
+      SELF[id==='sfAdult'?'adult':id==='sfChild'?'child':'dob']=e.value;
+      var g=document.getElementById('sfGo');
+      if(g) g.disabled=!(SELF.adult.trim()&&SELF.child.trim()&&SELF.dob);
+    };
+  });
+  var g=document.getElementById('sfGo');
+  if(g) g.onclick=function(){ if(g.disabled) return; if(buildAnonFamily()!==false){ STEP=0; render(); } };
+}
+
+/* ⛔ СЕМЬЯ СОБИРАЕТСЯ ИЗ ОТВЕТОВ, А НЕ ИЗ ПУСТОТЫ. Ключа у ребёнка нет — его роль играет
+   рукотворный `anon`; подача заходом 3 разберётся, кто это, и заведёт личность. */
+function buildAnonFamily(){
+  var pf = { child_name:SELF.child, dob:SELF.dob, parent_name:SELF.adult, _sources:{} };
+  FAMILY = { me:pf, children:[{ key:'anon', name:SELF.child, token:'', prefill:pf }],
+             /* ⛔ `null`, А НЕ `false`: «не спрашивали» \u2260 «отказались». Каскад сам
+                поднимет согласие первым листом \u2014 новая семья его ещё не давала. */
+             hasConsent:null };
+  var base = baseForms();
+  /* ⛔ НАБОР СО СТАРТ-ФОРМОЙ ИНТЕРВЬЮ НЕ ПОЛУЧАЕТ — тот же канон, что у именного входа. */
+  if(!base.length || base.indexOf('start_form')>=0){
+    location.replace('../../parent-forms.html'+location.search); return false;
+  }
+  PLAN = PAInterview.planInterview({
+    dict:DICT, registry:REG, baseForms:base,
+    familyFacts:{ hasEsignConsent: FAMILY.hasConsent },
+    children:[{ key:'anon', name:SELF.child, facts:factsOf(pf), prefill:null }],
+    prefill:{} });
+  document.getElementById('ctr').textContent='Play Academy'+(CENTER?' \u00b7 '+CENTER:'');
+  return true;
+}
+
+function startAnon(){ STEP=-1; render(); }
+
 function render(){
   var app=document.getElementById('app'), s=document.getElementById('step');
   app.innerHTML='';
+  if (STEP===-1){ s.textContent='Who you are'; app.appendChild(el(selfBlock())); bindSelf(); return }
   if (STEP===0){ s.textContent='Before you start'; app.appendChild(el(stage1())); return }
   if (STEP===1){ s.textContent='About your family'; app.appendChild(el(familyBlock())); return }
   if (STEP===2){
