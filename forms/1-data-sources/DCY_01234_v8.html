@@ -173,10 +173,17 @@ var FIELDS = [
       строкой выше — повторять значит спорить с бумагой за внимание. Говорим только то,
       чего на бланке нет: что делаем мы и чем плоха пустая клетка. */
    tx:1168,ty:610, hx:84,hy:842,hw:1120,
-   hint:'<b>Please tick one.</b> In an emergency we call 911 either way, a member of our staff '
-       +'goes with your child and stays until you arrive, and this form goes too. Your answer '
-       +'tells us in advance what you want. <b>Either answer is fine \u2014 what does not work is '
-       +'leaving both boxes empty:</b> then we have no answer from you at all.'},
+   /* ⛔ ПЕРВЫМ АБЗАЦЕМ — ЧТО ИМЕННО РАЗРЕШАЕТСЯ. Прежняя подсказка объясняла, что будет
+      при 911, и НЕ говорила, о каком случае вопрос. Семья Nash прочла «911 вызовут в
+      любом случае» и поставила No: раз вызовут, зачем разрешать что-то ещё. Запись её
+      не трогаем — ответ родителя меняется только новой подписью; переспросит волна. */
+   hint:'<b>Please tick one.</b> This is about one thing: <b>may we drive your child to a '
+       +'doctor or an urgent care when waiting for you would take too long?</b> \u201cYes\u201d '
+       +'means we may; \u201cNo\u201d means we wait for you or for the squad. '
+       +'<b>A real emergency does not depend on this answer:</b> we call 911 either way, a '
+       +'member of our staff goes with your child and stays until you arrive, and this form '
+       +'goes with them. <b>Either answer is fine \u2014 what does not work is leaving both '
+       +'boxes empty:</b> then we have no answer from you at all.'},
   {id:'trans_no',   p:2,t:'cb',  x:62,y:751,excl:'transport'},
   {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
 
