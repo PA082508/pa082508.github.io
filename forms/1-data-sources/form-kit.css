@@ -7,7 +7,9 @@
 
 /* Inline validation (§1) */
 .fk-invalid { border-bottom: 2px solid #dc2626 !important; }
-.fk-msg { color: #dc2626; font-size: 11px; margin-top: 3px; line-height: 1.3; }
+/* ⛔ 11px БЫЛ МИКРОКЕГЛЕМ: на живом бланке 01234 красная строка печаталась поверх
+   официального текста и не читалась. Отказ обязан читаться так же легко, как вопрос. */
+.fk-msg { color: #dc2626; font-size: 13px; margin-top: 3px; line-height: 1.35; }
 
 /* "N remaining" counter + submit (§1) */
 .fk-counter { font-size: 12px; font-weight: 700; color: #92400e; background: #fffbeb;

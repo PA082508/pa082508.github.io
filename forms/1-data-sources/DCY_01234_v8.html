@@ -172,7 +172,11 @@ var FIELDS = [
    /* ⛔ НЕ ПЕРЕСКАЗЫВАЕМ БЛАНК. Про то, что службa сама выбирает больницу, напечатано
       строкой выше — повторять значит спорить с бумагой за внимание. Говорим только то,
       чего на бланке нет: что делаем мы и чем плоха пустая клетка. */
-   tx:1168,ty:610, hx:84,hy:842,hw:1120,
+   /* ⛔ ЗНАЧОК СТОЯЛ У ПРАВОГО КРАЯ ЛИСТА (tx:1168), а вопрос и галочки — у левого.
+      Пояснение работает только рядом с тем, что поясняет; на ширине листа его никто
+      не свяжет с вопросом. Ставим к заголовку блока. Текст по-прежнему раскрывается
+      НИЖЕ блока (hy:842) — там бумага пуста и ничего не закрывается. */
+   tx:64,ty:600, hx:84,hy:842,hw:1120,
    /* ⛔ ПЕРВЫМ АБЗАЦЕМ — ЧТО ИМЕННО РАЗРЕШАЕТСЯ. Прежняя подсказка объясняла, что будет
       при 911, и НЕ говорила, о каком случае вопрос. Семья Nash прочла «911 вызовут в
       любом случае» и поставила No: раз вызовут, зачем разрешать что-то ещё. Запись её
@@ -754,6 +758,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=40"></script>
+<script defer src="form-kit.js?v=41"></script>
 </body>
 </html>
