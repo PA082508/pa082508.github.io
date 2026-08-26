@@ -65,6 +65,8 @@ function succForm(k){
   }
   return cur;
 }
+/* Версия словаря — обязана совпадать с полем `version` в самом словаре. */
+var DICT_V='2026-08-26a';
 var DICT=null, REG=null, PLAN=null, FAMILY=null, STEP=0, ROUND=0, SUBS=[];
 /* Строки лекарств по ребёнку. Ветвящегося «принимает ли» нет — поля открыты. */
 var MEDS={};
@@ -146,7 +148,14 @@ function baseForms(){
 function readOnlySlots(){ return slotsOfSet().filter(function(k){ return !isSignable(k) }) }
 
 Promise.all([
-  fetch('interview-dictionary.json').then(function(r){return r.json()}),
+  /* ⛔ СЛОВАРЬ ТЯНУЛСЯ БЕЗ ВЕРСИИ — И ЭТО МОЛЧАЛИВАЯ ДЫРА (замер 26.08). Pages отдаёт
+     `cache-control: max-age=600`: десять минут после выкладки семья могла получить НОВЫЙ
+     экран со СТАРЫМ словарём. Тогда `dependsOn` нет — прятанье молча выключено; подписей
+     нет — вопросы снова звучат именами наших колонок. Ничего не ломается вслух: экран
+     просто работает хуже, и никто не узнаёт.
+     ⭐ ТОТ ЖЕ КАНОН, ЧТО У КИТА: число рядом со ссылкой, и сторож в приложении держит его
+     равным `version` самого словаря — забыть нельзя молча. */
+  fetch('interview-dictionary.json?v='+DICT_V).then(function(r){return r.json()}),
   fetch('../../enroll-registry.json').then(function(r){return r.json()})
 ]).then(function(v){
   DICT=v[0]; REG=v[1];
