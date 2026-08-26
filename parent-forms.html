@@ -132,6 +132,24 @@
   var setName = (qs.get('set') || 'starter').toLowerCase();
   var only = (qs.get('only') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
 
+  /* ── НАБОР `starter` СНЕСЁН, ЕГО АДРЕС — ЖИВ ─────────────────────────────────
+     ⛔ ОТКАЗ ЗДЕСЬ БЫЛ БЫ ХУЖЕ ЛЮБОГО НЕУДОБСТВА: код набора мог разойтись по бумаге,
+     и семья, поднёсшая телефон к печатному листу, получила бы пустую страницу вместо
+     формы. Ведём туда, где лежит то единственное, что в наборе и было подписным, —
+     старт-форма своей дверью.
+     ⚠️ ЭТО КАСАЕТСЯ И ГОЛЫХ ССЫЛОК: `?center=…` без `set=` разрешался в `starter`
+     умолчанием — то есть ровно те же адреса. Замер 26.08: подач `start_form` ноль,
+     терять нечего, но адреса живут дольше наборов.
+     ⭐ Явный `only=` уважается: директор, приславший одну другую бумагу, сильнее
+     умолчания. */
+  if (setName === 'starter' && !only.length) {
+    var to = new URLSearchParams(location.search);
+    to.delete('set');
+    to.set('only', 'start_form');
+    location.replace('parent-forms.html?' + to.toString());
+    return;
+  }
+
   function show(el, on) { el.style.display = on ? '' : 'none'; }
 
   // ── Life-of-data notice, once at the start ───────────────────────────────────

@@ -976,32 +976,6 @@
         }
       ]
     },
-    "starter": {
-      "title": "Starter — new family",
-      "mode": "anonymous",
-      "_note": "First-introduction packet (QR / kiosk). Consent first; start_form pending (VISIBLE in the director screen as 'coming soon', HIDDEN on the parent storefront); DCY 01305 handed over in person.",
-      "slots": [
-        {
-          "key": "parent_consent",
-          "section": "mandatory",
-          "label": "Parent Consent (E-Signature)",
-          "note": "Signed first — adopts your signature for the rest of the packet. Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
-        },
-        {
-          "key": "start_form",
-          "section": "mandatory",
-          "label": "Registration & Fee Agreement",
-          "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid."
-        },
-        {
-          "key": "dcy_01305",
-          "section": "mandatory",
-          "handout": true,
-          "label": "Child Medical Statement (JFS 01305)",
-          "note": "Physician-signed — printed and handed to you in person."
-        }
-      ]
-    },
     "toddler_preschool": {
       "title": "Toddler / Preschool",
       "mode": "addressed",
@@ -1089,12 +1063,6 @@
           "label": "WIC Information",
           "tag": "Coming soon",
           "note": "Awaiting the ODH WIC application (HEA 4460-4466)."
-        },
-        {
-          "key": "start_form",
-          "section": "mandatory",
-          "label": "Registration & Fee Agreement",
-          "note": "Confirms your start date and fees. Your director can fill the amounts with you."
         },
         {
           "key": "parents_book_ack",
@@ -1212,12 +1180,6 @@
           "note": "Awaiting the ODH WIC application (HEA 4460-4466)."
         },
         {
-          "key": "start_form",
-          "section": "mandatory",
-          "label": "Registration & Fee Agreement",
-          "note": "Confirms your start date and fees. Your director can fill the amounts with you."
-        },
-        {
           "key": "parents_book_ack",
           "section": "mandatory",
           "label": "Parent Handbook Receipt",
@@ -1288,10 +1250,6 @@
         },
         {
           "key": "wic_information",
-          "section": "mandatory"
-        },
-        {
-          "key": "start_form",
           "section": "mandatory"
         },
         {
@@ -1373,5 +1331,6 @@
   "_helpNote": "ПОЯСНЕНИЯ К ВОПРОСАМ — ОДИН ИСТОЧНИК НА ВСЕ ДВЕРИ. Ключ — canonical словаря интервью. Читают и бланк (кит-форма), и интервью; копия текста в коде страницы допускается только как запасная на случай отказа сети, и она обязана совпадать.",
   "help": {
     "child.transport_by_center": "<b>Please tick one.</b> This is about one thing: <b>may we drive your child to a doctor or an urgent care when waiting for you would take too long?</b> “Yes” means we may; “No” means we wait for you or for the squad. <b>A real emergency does not depend on this answer:</b> we call 911 either way, a member of our staff goes with your child and stays until you arrive, and this form goes with them. <b>Either answer is fine — what does not work is leaving both boxes empty:</b> then we have no answer from you at all."
-  }
+  },
+  "_startFormNote": "СТАРТ-ФОРМА НЕ СЛОТ НАБОРА (решение владельца 26.08, вариант «в»). Она была обязательным слотом четырёх наборов, и ровно из-за этого четыре набора из пяти МИНОВАЛИ интервью: экран уводил такие наборы прежним путём. Замер: подач start_form НОЛЬ за всё время, строк расписания с sched_source='start_form' — ноль. Теперь у неё своя дверь `parent-forms.html?center=…&only=start_form`, и центр выдаёт её, когда нужна (оформление и плата). ⛔ Путь подачи от членства в наборе не зависит: тип объявлен внутри самой формы (`formType:'start_form'` → `p_submission_type`). Набор `starter` снесён — его единственной подписной была она; прежний адрес перенаправляется на дверь, а не отвечает отказом: код мог разойтись по бумаге."
 }
