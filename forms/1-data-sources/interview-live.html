@@ -39,6 +39,8 @@ p{margin:0 0 10px}
 .ok{color:#0f7a4a}.next{color:var(--green)}.wait{color:#9aa5a0}.info{color:var(--amber)}
 blockquote{margin:0;padding:11px 14px;border-left:3px solid var(--green);background:#fbfcfb;font-style:italic;font-size:13.5px}
 .attrib{font-size:11.5px;color:var(--mut);margin-top:6px}
+.back{display:inline-block;margin:0 0 10px;padding:6px 2px;border:0;background:none;font:inherit;font-size:13.5px;color:var(--mut);cursor:pointer}
+.back:hover{color:#111;text-decoration:underline}
 .chip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--gl);color:var(--green);border:1px solid #cfe0d5}
   .pblk{font-size:15px;font-weight:800;color:#0f4c35;margin:18px 0 6px;
         padding-bottom:4px;border-bottom:1.5px solid #d9e2dc}
@@ -391,7 +393,10 @@ function qCard(a, scope){
   }
   /* ⛔ ПУСТОЙ ВОПРОС — ГЛАВНЫЙ АДРЕСАТ ПОЯСНЕНИЯ. Именно здесь семья и бросает клетку. */
   return '<div class="q"><div class="lab">'+esc(label)+'</div>'
-    +'<input'+mark+' value="'+esc(live===undefined?'':live)+'" placeholder="—">'+hint+'</div>';
+    /* ⛔ ПЛАШКА «—» ЧИТАЛАСЬ КАК ОТВЕТ. Тире в клетке — это то, что человек пишет, когда
+       ответа нет: семья видела заполненное поле там, где мы ждали её слова. Пустое поле
+       честнее любого знака. */
+    +'<input'+mark+' value="'+esc(live===undefined?'':live)+'">'+hint+'</div>';
 }
 
 /* ── БЛОК САМОНАЗВАНИЯ (STEP -1) ───────────────────────────────────────────────
@@ -477,10 +482,46 @@ function buildAnonFamily(){
 
 function startAnon(){ STEP=-1; render(); }
 
+/* ── ШАГ НАЗАД (В.5, заказ владельца 26.08) ────────────────────────────────────
+   ⛔ ДОРОГИ НАЗАД НЕ БЫЛО ВОВСЕ. Опечатку в имени ребёнка нельзя было исправить иначе,
+   как начав разговор заново — то есть потеряв всё набранное. Родитель, заметивший ошибку
+   на четвёртом экране, оказывался перед выбором «оставить неверное или начать сначала».
+   ⭐ ВОЗВРАТ БЕЗ ПОТЕРЬ ДЕРЖИТСЯ НЕ КНОПКОЙ, А `ANSWERS`: экран рисуется из памяти, и
+   шаг назад — просто другая отрисовка той же памяти. Кнопка лишь называет дорогу.
+   ⛔ КНОПКА ЖИВЁТ В ОДНОМ МЕСТЕ — в `render()`, а не в каждом блоке: «на каждом шаге»
+   обязано быть свойством экрана, иначе один новый шаг молча окажется без выхода. */
+function backTarget(){
+  if(STEP===2 && ROUND>0) return { step:2, round:ROUND-1, name:PLAN.rounds[ROUND-1].name };
+  if(STEP===2) return { step:1, name:'your family' };
+  if(STEP===3) return PLAN && PLAN.rounds.length
+    ? { step:2, round:PLAN.rounds.length-1, name:PLAN.rounds[PLAN.rounds.length-1].name }
+    : { step:1, name:'your family' };
+  if(STEP===4) return { step:3, name:'the income questions' };
+  if(STEP===1) return { step:0, name:'the start' };
+  /* ⛔ С ПЕРВОГО ЭКРАНА НАЗАД НЕКУДА, И ЭТО ГОВОРИТСЯ МОЛЧАНИЕМ, А НЕ МЁРТВОЙ КНОПКОЙ:
+     кнопка, которая ничего не делает, читается как поломка. */
+  if(STEP===0 && !TOKEN) return { step:-1, name:'who you are' };
+  return null;
+}
+function goBack(){
+  var t=backTarget(); if(!t) return;
+  STEP=t.step; if(t.round!==undefined) ROUND=t.round;
+  render();
+  window.scrollTo(0,0);
+}
+
 function render(){
   var app=document.getElementById('app'), s=document.getElementById('step');
   bindAnswers();
   app.innerHTML='';
+  var bt=backTarget();
+  if(bt){
+    var bb=document.createElement('button');
+    bb.className='back'; bb.type='button';
+    bb.textContent='\u2190 Back to '+bt.name;
+    bb.onclick=goBack;
+    app.appendChild(bb);
+  }
   if (STEP===-1){ s.textContent='Who you are'; app.appendChild(el(selfBlock())); bindSelf(); return }
   if (STEP===0){ s.textContent='Before you start'; app.appendChild(el(stage1())); return }
   if (STEP===1){ s.textContent='About your family'; app.appendChild(el(familyBlock())); return }
@@ -578,8 +619,16 @@ function familyBlock(){
   }).join('');
   return '<div><div class="prog"><i style="width:20%"></i></div>'
     +'<h1>About your family</h1><p class="sub">Asked once — it carries to every child.</p>'
-    +'<p class="sub"><span class="chip">'+c.answered+' already answered</span> '
-    +'<span class="chip">'+c.conflict+' to confirm</span> <span class="chip">'+c.empty+' new</span></p>'
+    /* ⛔ «0 ALREADY ANSWERED · 0 TO CONFIRM · 51 NEW» — ТРИ ЧИСЛА, ИЗ КОТОРЫХ ДВА НОЛЬ.
+       Новой семье (а по QR со стойки приходит именно она) плашка сообщала только то,
+       сколько работы впереди, и делала это трижды. Считать нечего — говорить нечего.
+       ⭐ Числа остаются там, где они правда: у семьи с прошлыми бумагами «уже заполнено»
+       и «подтвердить» — настоящая новость, и она показывается. */
+    +(c.answered||c.conflict
+      ? '<p class="sub">'
+        +(c.answered? '<span class="chip">'+c.answered+' already filled in from your forms</span> ':'')
+        +(c.conflict? '<span class="chip">'+c.conflict+' to confirm</span>':'')+'</p>'
+      : '')
     +body
     +(PLAN.rounds.length
       ? '<button class="btn" onclick="STEP=2;ROUND=0;render()">Next — about '+esc(PLAN.rounds[0].name)+'</button>'
@@ -712,14 +761,21 @@ function childBlock(){
   /* ⛔ ПОДНЯТОЕ В БЛОК ИЗ ОБЩЕГО СПИСКА УХОДИТ: один вопрос — один раз. */
   var inBlock = factsOf((FAMILY.children.filter(function(c){return c.key===r.key})[0]||{}).prefill).healthCondition===true;
   var rest = r.answers.child.filter(function(a){ return !(inBlock && CARE_Q.indexOf(a.canonical)>=0) });
-  /* ⛔ ВОПРОС С ПОЯСНЕНИЕМ НЕ ПРЯЧЕТСЯ В ХВОСТ. Круг показывает первые шесть, остальные
-     свёрнуты в «… N more questions» — и вопрос об экстренной перевозке, который семьи
-     бросают чаще прочих (замер 24.08: 4 пустых клетки из 35, все у живых семей),
-     оказывался как раз там. Пояснение на невидимом вопросе никого не спасает.
-     ⭐ Поэтому вопросы, которым мы что-то объясняем, поднимаются наверх круга. */
-  rest.sort(function(a,b){ return (Q_HINT[b.canonical]?1:0) - (Q_HINT[a.canonical]?1:0) });
-  rest = rest.filter(function(a){ return askable(a, r.key) });
-  var body=rest.slice(0,6).map(function(a){ return qCard(a, r.key) }).join('');
+  /* ⛔ СВЁРНУТЫЙ ВОПРОС — ВОПРОС, НА КОТОРЫЙ НЕЛЬЗЯ ОТВЕТИТЬ. Круг показывал первые шесть,
+     остальные прятал строкой «… N more questions» БЕЗ СПОСОБА ЕЁ РАСКРЫТЬ: замер 26.08 —
+     19 задаваемых вопросов, из них 13 заперто. Это не «длинный экран покороче», а тринадцать
+     клеток, которые уедут в бумагу пустыми, и никто не узнает почему.
+     ⭐ РЕШЕНИЕ ВЛАДЕЛЬЦА 26.08: показывать ВСЕ, раскрывашку не строить. Лишнее действие
+     стоит дороже прокрутки ровно там, где семья уже устала.
+     ⛔ И СОРТИРОВКА ПО ПОЯСНЕНИЮ УХОДИТ ВМЕСТЕ СО СВЁРТКОЙ. Она поднимала вопрос с
+     объяснением наверх, чтобы он не попал в запертый хвост; хвоста нет — а порядок бумаги
+     она ломала, и он живёт в конфиге бланка (`ord`), не в наших предпочтениях. */
+  rest = rest.filter(function(a){ return askable(a, r.key) })
+             .sort(function(a,b){
+               var d = fieldRank(a.canonical) - fieldRank(b.canonical);
+               return d || a.canonical.localeCompare(b.canonical);
+             });
+  var body=rest.map(function(a){ return qCard(a, r.key) }).join('');
   /* ⭐ БЛОК ОТКРЫВАЕТСЯ ПО ОТВЕТУ О ЗДОРОВЬЕ — как решено владельцем 24.08. */
   var kid=FAMILY.children.filter(function(c){return c.key===r.key})[0]||{};
   var meds='';
@@ -735,8 +791,6 @@ function childBlock(){
     +'<p class="sub">Only this child.'
     +(others.length? ' Nothing here carries to '+esc(others.join(' or '))+'.' : '')+'</p>'
     + added + body + meds
-    +(rest.length>6? '<p class="sub">… '+(rest.length-6)+' more questions about '
-      +esc(r.name)+'</p>' : '')
     + next+'</div>';
 }
 
