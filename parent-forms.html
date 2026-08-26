@@ -350,6 +350,17 @@
       }
       var pk = reg.packets && reg.packets[setName];
       if (setRes && setRes.keys && !pk) pk = { audience: 'parent', title: 'Enrollment packet', slots: [] };
+      /* ⛔ ССЫЛКА НА ОДНУ ФОРМУ НЕ ОБЯЗАНА ЗНАТЬ НАБОР — И НЕ ЗНАЛА ЕГО НИКОГДА.
+         ⛔ ПОВОД — РЕПЕТИЦИЯ ВЛАДЕЛЬЦА 26.08. Вынеся старт-форму из всех наборов, я сломал
+         СОБСТВЕННЫЙ редирект: голый адрес центра вёл на `?only=start_form`, `setName`
+         разрешался умолчанием в снесённый `starter`, `pk` не находился — и семья, поднёсшая
+         телефон к печатному листу, читала «This packet is not available».
+         ⭐ ПРАВИЛО, КОТОРОЕ ЭТО ЗАКРЫВАЕТ НАСОВСЕМ: когда названа ФОРМА, набор не нужен
+         вовсе. Дверь формы живёт вне наборов; ниже `only=` и так умеет брать определение
+         из любого набора, а если ни один её не объявил — прямо из `forms{}` реестра.
+         ⚠️ Шире одного случая: то же спасает библиотечный QR со ссылкой на набор, который
+         с тех пор переименовали или сняли. Адреса живут дольше наборов. */
+      if (!pk && only.length) pk = { audience: 'parent', title: 'Your form', slots: [] };
       if (!pk) return fail('This packet is not available. Please ask your center for a current link.');
 
       var cName = 'Play Academy ' + (CENTER_NAMES[center] || center);
