@@ -422,21 +422,17 @@ var PERSON_BLOCKS = [
   { pfx:'emergency2.', title:'Emergency contact 2' },
 ];
 
-/* ⚠️ ПОРЯДКА БЛАНКА В СЛОВАРЕ НЕТ. Показ 26.08 это и выявил: строки словаря идут по
-   АЛФАВИТУ ключа внутри формы (`accommod, address, child_name, city, development, dob…`),
-   а порядок бумаги живёт в конфигах самих бланков (координаты x/y), куда интервью не
-   смотрит. Настоящая бумажная очередь потребует поля `ord` в словаре, собранного из
-   конфигов форм, — это отдельная работа, и она названа в докладе.
-   ⭐ ПОКА — ЯВНАЯ ЧЕЛОВЕЧЕСКАЯ ОЧЕРЁДНОСТЬ ВНУТРИ ЧЕЛОВЕКА: как называют себя людям, а не
-   как сортирует алфавит. Хвост каноникала, чего нет в списке — после него, алфавитом. */
-var FIELD_ORDER = ['name','absent','dob','relation','relation_other','phone','phone.cell',
-  'phone.home','phone.day','phone.work','email','address.same_as_child','address.street',
-  'address.city','address.state','address.zip','employer','may_pick_up','may_not_pick_up'];
-
+/* ⭐ ПОРЯДОК БЛАНКА ЖИВЁТ В КОНФИГЕ БЛАНКА, СЛОВАРЬ ЕГО ЛИШЬ НЕСЁТ (канон 26.08).
+   `ord` собирается генератором `interviewFieldOrder.mjs`: у накладных бланков — страница,
+   сверху вниз, слева направо; у обычных — порядок разметки. Сменился бланк — перегенерация,
+   а не правка рукой: рука однажды разойдётся с бумагой молча.
+   ⛔ ПРЕЖНИЙ СПИСОК `FIELD_ORDER` СНЕСЁН: два источника правды об одном порядке — это
+   спор, в котором правой не будет ни одна сторона.
+   ⚠️ Чего на бумаге нет (экранные вопросы, циклы), тому `ord` в хвост — выдумывать им
+   место на листе нельзя. */
 function fieldRank(canonical){
-  var tail = canonical.split('.').slice(1).join('.');
-  var i = FIELD_ORDER.indexOf(tail);
-  return i < 0 ? 900 : i;
+  var c = DICT && DICT.canonicals && DICT.canonicals[canonical];
+  return (c && typeof c.ord === 'number') ? c.ord : 9999;
 }
 
 function personBlocks(list){

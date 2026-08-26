@@ -69,121 +69,141 @@
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 78
     },
     "ack.info_provided": {
       "level": "family",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 79
     },
     "ack.permission_medication": {
       "level": "family",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 80
     },
     "ack.permission_procedure": {
       "level": "family",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 81
     },
     "center.trained_staff": {
       "level": "child",
       "sourceFormats": [
         "массив"
-      ]
+      ],
+      "ord": 82
     },
     "center.trainer.gave_care_instructions": {
       "level": "child",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 83
     },
     "center.trainer.gave_med_instructions": {
       "level": "child",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 84
     },
     "center.trainer.name": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 85
     },
     "center.trainer.phone": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 86
     },
     "child.accommodations": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 71
     },
     "child.accommodations_absent": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 72
     },
     "child.additional_info": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 87
     },
     "child.age": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 5
     },
     "child.avoid": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 88
     },
     "child.avoid_absent": {
       "level": "child",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 89
     },
     "child.care_instructions": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 90
     },
     "child.classroom": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 8
     },
     "child.comments": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 19
     },
     "child.development": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 69
     },
     "child.development_absent": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 70
     },
     "child.dob": {
       "level": "child",
@@ -192,49 +212,57 @@
         "текст"
       ],
       "canonicalFormat": "дата YYYY-MM-DD | null",
-      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat."
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat.",
+      "ord": 17
     },
     "child.enrollment_expires": {
       "level": "child",
       "sourceFormats": [
         "дата YYYY-MM-DD"
-      ]
+      ],
+      "ord": 91
     },
     "child.evacuation": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 92
     },
     "child.expected": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 28
     },
     "child.expected_month": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 29
     },
     "child.extra_docs_attached": {
       "level": "child",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 93
     },
     "child.family_input": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 13
     },
     "child.first_day": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 12
     },
     "child.has_health_condition": {
       "level": "child",
@@ -243,73 +271,85 @@
         "текст"
       ],
       "canonicalFormat": "булево (пара health_y/health_n и флаг no_special_condition сводятся к одному)",
-      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat."
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat.",
+      "ord": 68
     },
     "child.health_condition_text": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 94
     },
     "child.health_signs": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 95
     },
     "child.name": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 0
     },
     "child.nap": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 96
     },
     "child.nickname": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 16
     },
     "child.precautions": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 97
     },
     "child.receives_services": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 73
     },
     "child.services_absent": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 75
     },
     "child.services_provider": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 74
     },
     "child.transport_by_center": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 76
     },
     "child.transport_note": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 77
     },
     "child.week": {
       "level": "child",
@@ -318,187 +358,218 @@
         "текст"
       ],
       "canonicalFormat": "массив [{weekday:1..7, arr1, dep1, arr2, dep2}] — см. formatRules.schedule",
-      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat."
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat.",
+      "ord": 98
     },
     "child.week_absent": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 99
     },
     "child.week_varies": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 100
     },
     "child.weight": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 27
     },
     "diet.basis": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 101
     },
     "diet.disability": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 102
     },
     "diet.life_activity": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 103
     },
     "diet.milk_center_declines": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 104
     },
     "diet.milk_center_provides": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 105
     },
     "diet.milk_center_substitutes": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 106
     },
     "diet.milk_choice": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 107
     },
     "diet.omit": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 108
     },
     "diet.restriction": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 109
     },
     "diet.special_need": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 110
     },
     "diet.substitute": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 111
     },
     "diet.value": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 112
     },
     "emergency1.may_not_pick_up": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 66
     },
     "emergency1.may_pick_up": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 64
     },
     "emergency1.name": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 57
     },
     "emergency1.phone": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 60
     },
     "emergency1.relation_other": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 62
     },
     "emergency2.absent": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 59
     },
     "emergency2.may_not_pick_up": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 67
     },
     "emergency2.may_pick_up": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 65
     },
     "emergency2.name": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 58
     },
     "emergency2.phone": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 61
     },
     "emergency2.relation_other": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 63
     },
     "emergency_action.call_911": {
       "level": "child",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 113
     },
     "emergency_action.call_parent": {
       "level": "child",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 114
     },
     "emergency_action.other": {
       "level": "child",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 115
     },
     "emergency_action.other_text": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 116
     },
     "family.children": {
       "level": "family",
@@ -507,691 +578,806 @@
         "текст"
       ],
       "canonicalFormat": "массив имён детей семьи",
-      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat."
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat.",
+      "ord": 117
     },
     "family.found_us": {
       "level": "family",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 118
     },
     "family.publicly_funded": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 30
     },
     "family.referred_by": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 31
     },
     "family.siblings": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 18
     },
     "home.address": {
       "level": "family",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 119
     },
     "home.address.city": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 23
     },
     "home.address.state": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 24
     },
     "home.address.street": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 36
     },
     "home.address.zip": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 25
     },
     "income.assistance_program": {
       "level": "household",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 120
     },
     "income.calculation": {
       "level": "household",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 121
     },
     "income.determination": {
       "level": "household",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 122
     },
     "income.ethnicity": {
       "level": "household",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 123
     },
     "income.household_members": {
       "level": "household",
       "sourceFormats": [
         "массив"
-      ]
+      ],
+      "ord": 124
     },
     "income.race": {
       "level": "household",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 125
     },
     "income.signing_adult": {
       "level": "household",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 126
     },
     "income.waiver_declined": {
       "level": "household",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 127
     },
     "infant.amount_per_feeding": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 128
     },
     "infant.bottle_warmed": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 129
     },
     "infant.feeding": {
       "level": "child",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 130
     },
     "infant.feeding_frequency": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 131
     },
     "infant.food_temperature": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 132
     },
     "infant.formula_choice": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 133
     },
     "infant.formula_name": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 134
     },
     "infant.formula_name_parent": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 135
     },
     "infant.formula_preparation": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 136
     },
     "infant.juice": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 26
     },
     "infant.security_items": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 137
     },
     "infant.sleep_hints": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 138
     },
     "infant.sleep_position": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 139
     },
     "infant.solid_foods": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 140
     },
     "infant.solids_choice": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 141
     },
     "infant.table_food": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 142
     },
     "infant.uses_cup": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 143
     },
     "medication.child_may_carry": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 144
     },
     "medication.dose": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 145
     },
     "medication.dose_attached": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 146
     },
     "medication.expires": {
       "level": "child",
       "sourceFormats": [
         "дата YYYY-MM-DD | null"
-      ]
+      ],
+      "ord": 147
     },
     "medication.if_unavailable": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 148
     },
     "medication.instructions": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 149
     },
     "medication.instructions_absent": {
       "level": "child",
       "sourceFormats": [
         "булево"
-      ]
+      ],
+      "ord": 150
     },
     "medication.instructions_attached": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 151
     },
     "medication.label_photo": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 152
     },
     "medication.list": {
       "level": "child",
       "sourceFormats": [
         "массив"
-      ]
+      ],
+      "ord": 153
     },
     "medication.log": {
       "level": "child",
       "sourceFormats": [
         "массив"
-      ]
+      ],
+      "ord": 154
     },
     "medication.name": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 155
     },
     "medication.period": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 156
     },
     "medication.side_effects": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 157
     },
     "medication.side_effects_attached": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 158
     },
     "medication.taken_before": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 159
     },
     "medication.times": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 160
     },
     "parent1.address.city": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 39
     },
     "parent1.address.same_as_child": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 38
     },
     "parent1.address.state": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 40
     },
     "parent1.address.street": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 42
     },
     "parent1.address.zip": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 41
     },
     "parent1.dob": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 34
     },
     "parent1.email": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 35
     },
     "parent1.employer": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 44
     },
     "parent1.name": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 2
     },
     "parent1.phone.cell": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 43
     },
     "parent1.phone.day": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 161
     },
     "parent1.phone.home": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 37
     },
     "parent1.phone.work": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 45
     },
     "parent2.absent": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 47
     },
     "parent2.address.city": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 49
     },
     "parent2.address.same_as_child": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 48
     },
     "parent2.address.state": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 50
     },
     "parent2.address.street": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 52
     },
     "parent2.address.zip": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 51
     },
     "parent2.email": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 53
     },
     "parent2.employer": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 55
     },
     "parent2.name": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 15
     },
     "parent2.phone.cell": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 54
     },
     "parent2.phone.home": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 46
     },
     "parent2.phone.work": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 56
     },
     "physician.name": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 162
     },
     "physician.phone": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 163
     },
     "pickup.authorized_people": {
       "level": "family",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 164
     },
     "staff.ack_effective": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 165
     },
     "staff.address.city": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 9
     },
     "staff.address.state": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 10
     },
     "staff.address.street": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 7
     },
     "staff.address.zip": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 11
     },
     "staff.compliance": {
       "level": "staff",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 166
     },
     "staff.cook": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 167
     },
     "staff.desired_start": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 168
     },
     "staff.dob": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 3
     },
     "staff.driver": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 22
     },
     "staff.email": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 6
     },
     "staff.emergency_contact": {
       "level": "staff",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 169
     },
     "staff.first_name": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 32
     },
     "staff.handles_food": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 170
     },
     "staff.last_name": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 33
     },
     "staff.name": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 1
     },
     "staff.phone": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 4
     },
     "staff.prepares_food": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 171
     },
     "staff.role": {
       "level": "staff",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 14
     },
     "staff.signer_role": {
       "level": "staff",
       "sourceFormats": [
         "константа"
-      ]
+      ],
+      "ord": 172
     },
     "staff.work_authorization": {
       "level": "staff",
       "sourceFormats": [
         "объект"
-      ]
+      ],
+      "ord": 173
     },
     "trip.destination": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 174
     },
     "trip.mode.bus": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 175
     },
     "trip.mode.other": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 176
     },
     "trip.mode.parent": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 177
     },
     "trip.mode.provider": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 178
     },
     "trip.mode.public": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 179
     },
     "trip.mode.walk": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 180
     },
     "trip.seat.over4": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 181
     },
     "trip.seat.over8": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 182
     },
     "trip.seat.under4": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 183
     },
     "trip.water": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 184
     },
     "trip.water_activities": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 185
     },
     "medication.paper_promised": {
       "level": "child",
       "sourceFormats": [
         "да/нет"
-      ]
+      ],
+      "ord": 20
     },
     "medication.promised_name": {
       "level": "child",
       "sourceFormats": [
         "текст"
-      ]
+      ],
+      "ord": 21
     }
   },
   "forms": {
