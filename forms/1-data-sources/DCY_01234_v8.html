@@ -194,7 +194,9 @@ var FIELDS = [
        +'member of our staff goes with your child and stays until you arrive, and this form '
        +'goes with them. <b>Either answer is fine \u2014 what does not work is leaving both '
        +'boxes empty:</b> then we have no answer from you at all.'},
-  {id:'trans_no',   p:2,t:'cb',  x:62,y:751,excl:'transport'},
+  /* ⛔ msgY СТОИТ И ЗДЕСЬ: якорем отказа служит НИЖНЯЯ клетка пары, и атрибут,
+     объявленный только на верхней, кит не увидит — растр это и поймал. */
+  {id:'trans_no',   p:2,t:'cb',  x:62,y:751,excl:'transport', msgY:830, msgW:1120},
   {id:'trans_action',p:2,t:'text',x:58,y:795,w:1150,h:26},
 
   {id:'parent_sig',    p:2,t:'sig', x:58,y:1015,w:780,h:56,r:1,label:'Parent signature'},
