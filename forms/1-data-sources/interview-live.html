@@ -161,7 +161,11 @@ Promise.all([
      ⭐ ТОТ ЖЕ КАНОН, ЧТО У КИТА: число рядом со ссылкой, и сторож в приложении держит его
      равным `version` самого словаря — забыть нельзя молча. */
   fetch('interview-dictionary.json?v='+DICT_V).then(function(r){return r.json()}),
-  fetch('../../enroll-registry.json').then(function(r){return r.json()})
+  /* ⛔ РЕЕСТР ТЯНУЛСЯ ГОЛЫМ — а он и говорит, из чего состоит набор. Пришёл бы из кэша
+     старым — экран собрал бы вчерашний пакет: например, со старт-формой, только что из
+     наборов вынесенной. Все прочие читатели реестра на витрине давно просят его
+     `?t=`+`no-store`; интервью было единственным исключением. */
+  fetch('../../enroll-registry.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()})
 ]).then(function(v){
   DICT=v[0]; REG=v[1];
   ONLY=ONLY.map(succForm);
@@ -174,10 +178,13 @@ Promise.all([
     FAMILY=fam;
     var base=baseForms();
     if(!base.length) return needLink('This packet has no forms yet.');
-    /* ⛔ НАБОР СО СТАРТ-ФОРМОЙ ИНТЕРВЬЮ НЕ ПОЛУЧАЕТ — уводим прежним путём. */
-    if(base.indexOf('start_form')>=0){
-      location.replace('../../parent-forms.html'+location.search); return;
-    }
+    /* ⭐ ИНТЕРВЬЮ ПОЛУЧАЮТ ВСЕ НАБОРЫ (решение владельца 26.08, вариант «в»).
+       ⛔ ЗДЕСЬ СТОЯЛО ПРАВИЛО «набор со старт-формой уводим прежним путём», и оно
+       выбрасывало из разговора ЧЕТЫРЕ набора из пяти: младенцев, ясли-сад, школьников
+       и welcome. Семья приходила к двери интервью и тут же оказывалась на старой
+       странице — всё, что мы строили в интервью, видела одна семья из пяти.
+       Старт-форма перестала быть слотом набора и живёт своей дверью
+       (`parent-forms.html?center=…&only=start_form`), так что уводить больше некого. */
     var prefillOfMe = fam.children[0].prefill || {};
     PLAN=PAInterview.planInterview({
       dict:DICT, registry:REG, baseForms:base,
@@ -513,8 +520,9 @@ function buildAnonFamily(){
                 поднимет согласие первым листом \u2014 новая семья его ещё не давала. */
              hasConsent:null };
   var base = baseForms();
-  /* ⛔ НАБОР СО СТАРТ-ФОРМОЙ ИНТЕРВЬЮ НЕ ПОЛУЧАЕТ — тот же канон, что у именного входа. */
-  if(!base.length || base.indexOf('start_form')>=0){
+  /* ⛔ ПУСТОЙ НАБОР — ЕДИНСТВЕННАЯ ПРИЧИНА УВЕСТИ: спрашивать не о чем. Условие про
+     старт-форму ушло вместе с её членством в наборах (владелец, 26.08). */
+  if(!base.length){
     location.replace('../../parent-forms.html'+location.search); return false;
   }
   PLAN = PAInterview.planInterview({
