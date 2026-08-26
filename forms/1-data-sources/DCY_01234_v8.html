@@ -491,46 +491,28 @@ function syncImpliedAnswers(){
       комнаты фактом о школе не является. Поэтому спрашиваем, а не вычисляем. */
 function schoolBlock(){
   if(document.getElementById('fk-school')) return;
-  /* ⛔ ВРЕЗКА СТОЯЛА В РАЗРЫВЕ ЛИСТОВ (top:1560 при высоте листа 1650) — поверх подвала
-     «DCY 01234 · Page 1 of 2», и читалась как обломок чужой страницы. Теперь она ИДЁТ В
-     ПОТОКЕ после первого листа и прижата к нему отрицательным отступом: видно, что вопрос
-     относится к листу 1, и ничей подвал не закрыт.
-     ⭐ Печать по-прежнему её не берёт (`fk-print-hidden`): на бланке штата этого вопроса
-     нет, и дорисовывать чужую форму мы не вправе. */
+  /* ⛔ ВИДИМАЯ ВРЕЗКА СНЕСЕНА 26.08 — ВОПРОС ПЕРЕЕХАЛ В ИНТЕРВЬЮ. Он спрашивался ЗДЕСЬ и
+     только здесь, потому что был единственным детектором школьного статуса; теперь его
+     задаёт круг ребёнка (`child.attends_school_age`), а бланк лишь НЕСЁТ ответ.
+     ⭐ НОСИТЕЛЬ ОСТАЁТСЯ, И ЭТО ГЛАВНОЕ: `conditions.school_age` по-прежнему смотрит
+     `detectOn: dcy_01234`, `readSchoolFact` по-прежнему читает `attends_school_age` из
+     этой подачи, а разрешение на поездку по-прежнему берёт из неё `school_name`.
+     Переехал ВОПРОС, а не факт.
+     ⛔ СКРЫТЫЕ ПОЛЯ, А НЕ «НИЧЕГО»: убери их совсем — киту некуда положить ответ
+     интервью, и `collect()` отдал бы `null` поверх сказанного семьёй.
+     ⚠️ ЦЕНА НАЗВАНА ВЛАДЕЛЬЦЕМ: бланк, открытый ПРЯМОЙ ссылкой мимо интервью, вопроса
+     не задаёт — факт останется «не спрашивали», и это честнее выдуманного «нет». */
   var page1=document.getElementById('page1'); if(!page1||!page1.parentNode) return;
   var d=document.createElement('div'); d.id='fk-school'; d.className='fk-print-hidden';
-  d.setAttribute('style','width:1275px;margin:-14px auto 20px;padding:10px 14px;box-sizing:border-box;'
-    +'background:#f2f7f4;border:1.5px solid #cfe0d5;border-top:none;border-radius:0 0 8px 8px;'
-    +'font:13px Arial,sans-serif;color:#14281f');
-  d.innerHTML='<b>Attends kindergarten or above at an elementary school?</b> '
-    +'<label style="margin-left:14px"><input type="checkbox" id="f_school_y" data-fk-field="school_y" data-fk-exclusive="school"> Yes</label>'
-    +'<label style="margin-left:14px"><input type="checkbox" id="f_school_n" data-fk-field="school_n" data-fk-exclusive="school"> No</label>'
-    /* ⭐ ВТОРОЕ ПОЛЕ ТОГО ЖЕ ВОПРОСА — НАЗВАНИЕ ШКОЛЫ (решение владельца 23.08).
-       Оно нужно не ради полноты: из него берётся «destination» разрешения на поездку
-       (DCY 01225), которое центр выдаёт заполненным. Без него пресет пришлось бы
-       спрашивать у семьи второй раз — о том, что она уже сказала.
-       ⛔ ПОЛЯ «ШКОЛА» В РОСТЕРЕ НЕТ И НЕ БУДЕТ: единственный носитель ответа — эта
-       подача, и читает его пресет. Колонка с одним потребителем, читающим её из
-       подачи, — второй носитель одного факта. */
-    +'<span id="fk-school-name" style="display:none;margin-left:14px">Which school? '
-    +'<input type="text" id="f_school_name" data-fk-field="school_name" '
-    +'style="font:inherit;padding:3px 7px;border:1px solid #cfe0d5;border-radius:5px;width:290px"></span>'
-    +'<div style="font-size:11.5px;color:#4b5563;margin-top:3px">Asked by the center, not part of the state form.</div>';
+  d.setAttribute('style','display:none');
+  d.innerHTML='<input type="hidden" id="f_attends_school_age" data-fk-field="attends_school_age">'
+    +'<input type="hidden" id="f_school_name" data-fk-field="school_name">';
   page1.parentNode.insertBefore(d, page1.nextSibling);
-  d.addEventListener('change', function(){ schoolNameToggle(); revealByFacts(); });
-  schoolNameToggle();
 }
 
 /* ⛔ ПОЛЕ ШКОЛЫ ПОКАЗЫВАЕТСЯ ТОЛЬКО ПРИ «Yes». Спросить название школы у семьи, которая
    только что ответила «нет», — способ получить заполненную клетку там, где ответа быть
    не должно; потом эта клетка уедет в разрешение на поездку. */
-function schoolNameToggle(){
-  var y=document.getElementById('f_school_y'), box=document.getElementById('fk-school-name');
-  if(!box) return;
-  var on = !!(y && y.checked);
-  box.style.display = on ? '' : 'none';
-  if(!on){ var f=document.getElementById('f_school_name'); if(f) f.value=''; }
-}
 
 /* Возраст на ПЕРВЫЙ ДЕНЬ, а не «сегодня»: ребёнку 17 месяцев при заполнении и 19 при
    выходе — это разные ответы, и брать надо тот, что относится ко дню в программе. */
@@ -555,8 +537,12 @@ function revealByFacts(){
       +'plan, and we ask how you would like meals and milk handled. You will find all three in '
       +'your packet below.');
   }
-  var y=document.getElementById('f_school_y');
-  if(y&&y.checked&&!_toldSchool){
+  /* ⛔ ЧИТАЕМ НЕ ГАЛОЧКУ, А ОТВЕТ. Галочек больше нет — вопрос задаёт интервью, и его
+     ответ приезжает сюда скрытым полем. Оставь мы `f_school_y`, подсказка о разрешении
+     на поездку молча перестала бы появляться: семья, сказавшая «да», не узнала бы, что
+     ей нужна ещё одна бумага. */
+  var y=document.getElementById('f_attends_school_age');
+  if(y&&String(y.value||'').trim().toLowerCase()==='yes'&&!_toldSchool){
     _toldSchool=true;
     FormKit.reveal('dcy_01225');
     FormKit.tell('school_trip','One more paper for school runs',
@@ -684,7 +670,11 @@ window.FORMKIT_CONFIG = {
     var fd={ type:'dcy_01234', dcy_form:'01234', dcy_version:'v8', center_code:FormKit.centerCode() };
     FIELDS.forEach(function(f){ if(f.t!=='sig') fd[f.id]=g(f.id); });
     /* Ответ центра — своим ключом, чтобы его не спутали с клеткой бумаги. */
-    fd.attends_school_age = g('school_y') ? 'yes' : (g('school_n') ? 'no' : null);
+    /* ⭐ ОТВЕТ ПРИХОДИТ ГОТОВЫМ И ПРИВОДИТСЯ К ЯЗЫКУ ПОДАЧИ (`yes`/`no`), на котором его
+       читает `readSchoolFact`. Пусто — значит НЕ СПРАШИВАЛИ, и это `null`, а не «нет»:
+       выдуманное «нет» тихо лишило бы ребёнка разрешения на поездку. */
+    var _sa = String(g('attends_school_age')||'').trim().toLowerCase();
+    fd.attends_school_age = _sa==='yes' ? 'yes' : (_sa==='no' ? 'no' : null);
     /* ⭐ Название школы едет РЯДОМ с фактом и только при «yes» — иначе это мусор,
        из которого потом соберут «destination» несуществующей поездки. */
     fd.school_name = fd.attends_school_age === 'yes' ? (g('school_name') || '') : '';
