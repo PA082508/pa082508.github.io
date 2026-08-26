@@ -503,8 +503,8 @@ function schoolBlock(){
     +'background:#f2f7f4;border:1.5px solid #cfe0d5;border-top:none;border-radius:0 0 8px 8px;'
     +'font:13px Arial,sans-serif;color:#14281f');
   d.innerHTML='<b>Attends kindergarten or above at an elementary school?</b> '
-    +'<label style="margin-left:14px"><input type="checkbox" id="f_school_y" data-fk-exclusive="school"> Yes</label>'
-    +'<label style="margin-left:14px"><input type="checkbox" id="f_school_n" data-fk-exclusive="school"> No</label>'
+    +'<label style="margin-left:14px"><input type="checkbox" id="f_school_y" data-fk-field="school_y" data-fk-exclusive="school"> Yes</label>'
+    +'<label style="margin-left:14px"><input type="checkbox" id="f_school_n" data-fk-field="school_n" data-fk-exclusive="school"> No</label>'
     /* ⭐ ВТОРОЕ ПОЛЕ ТОГО ЖЕ ВОПРОСА — НАЗВАНИЕ ШКОЛЫ (решение владельца 23.08).
        Оно нужно не ради полноты: из него берётся «destination» разрешения на поездку
        (DCY 01225), которое центр выдаёт заполненным. Без него пресет пришлось бы

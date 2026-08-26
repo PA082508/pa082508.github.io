@@ -71,7 +71,7 @@ function succForm(k){
   return cur;
 }
 /* Версия словаря — обязана совпадать с полем `version` в самом словаре. */
-var DICT_V='2026-08-26b';
+var DICT_V='2026-08-26c';
 var DICT=null, REG=null, PLAN=null, FAMILY=null, STEP=0, ROUND=0, SUBS=[];
 /* Строки лекарств по ребёнку. Ветвящегося «принимает ли» нет — поля открыты. */
 var MEDS={};
@@ -631,9 +631,18 @@ var PERSON_BLOCKS = [
    спор, в котором правой не будет ни одна сторона.
    ⚠️ Чего на бумаге нет (экранные вопросы, циклы), тому `ord` в хвост — выдумывать им
    место на листе нельзя. */
-function fieldRank(canonical){
+/* ⛔ ЕСТЬ ВОПРОСЫ, У КОТОРЫХ МЕСТА НА БУМАГЕ НЕТ, А МЕСТО В РАЗГОВОРЕ ЕСТЬ. Школьный
+   вопрос живёт во врезке `fk-print-hidden` — координат у неё нет, и генератор порядка
+   честно отправил бы его в хвост, ЗА ПОДПИСЬ. `ordAfter` ставит такой вопрос рядом с
+   родным по смыслу; это объявление человека, и генератор его не трогает.
+   ⛔ ШАГ МЕЛКИЙ И УБЫВАЮЩИЙ: два вопроса, объявленные после одного якоря, не сольются,
+   а цепочка «после того, что после того» сохранит порядок. */
+function fieldRank(canonical, depth){
   var c = DICT && DICT.canonicals && DICT.canonicals[canonical];
-  return (c && typeof c.ord === 'number') ? c.ord : 9999;
+  if(!c) return 9999;
+  if(typeof c.ord === 'number') return c.ord;
+  if(c.ordAfter && (depth||0) < 8) return fieldRank(c.ordAfter, (depth||0)+1) + 0.5/((depth||0)+1);
+  return 9999;
 }
 
 function personBlocks(list){
