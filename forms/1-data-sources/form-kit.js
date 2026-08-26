@@ -588,10 +588,17 @@
       /* ⛔ У ПАРЫ ГАЛОЧЕК ТЕКСТ ВОПРОСА ИДЁТ СПРАВА И НИЖЕ САМОЙ КЛЕТКИ. Отступ в 2px клал
          красную строку прямо на слова второй галочки — владелец увидел это на живом
          бланке 01234 дважды. Пара получает зазор в строку бумаги. */
+      /* ⛔ У ПАРЫ ГАЛОЧЕК «ПОД КЛЕТКОЙ» НЕ ЗНАЧИТ «ПОД ВОПРОСОМ»: текст идёт справа и ниже,
+         а под ним ещё поле ответа и следующая полоса бланка. Зазор в 44px увёл строку с
+         текста — и посадил на поле ответа. Угадывать высоту чужой бумаги нельзя.
+         ⭐ МЕСТО НАЗЫВАЕТ ФОРМА: `data-fk-msg-y` — координата на листе, где бумага пуста.
+         Нет её — прежнее поведение, и никакая форма от этого не меняется. */
+      var ownY = el.getAttribute && el.getAttribute('data-fk-msg-y');
+      var ownW = el.getAttribute && el.getAttribute('data-fk-msg-w');
       var gap = (el.getAttribute && el.getAttribute('data-fk-exclusive')) ? 44 : 2;
-      node.style.left = el.offsetLeft + 'px';
-      node.style.top = (el.offsetTop + h + gap) + 'px';
-      node.style.maxWidth = Math.max(220, w) + 'px';
+      node.style.left = (ownY ? (el.offsetLeft + 22) : el.offsetLeft) + 'px';
+      node.style.top = (ownY ? parseInt(ownY, 10) : (el.offsetTop + h + gap)) + 'px';
+      node.style.maxWidth = (ownW ? parseInt(ownW, 10) : Math.max(220, w)) + 'px';
     }
   }
 
