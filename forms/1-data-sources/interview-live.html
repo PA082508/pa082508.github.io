@@ -65,6 +65,8 @@ function succForm(k){
   }
   return cur;
 }
+/* Версия словаря — обязана совпадать с полем `version` в самом словаре. */
+var DICT_V='2026-08-26a';
 var DICT=null, REG=null, PLAN=null, FAMILY=null, STEP=0, ROUND=0, SUBS=[];
 /* Строки лекарств по ребёнку. Ветвящегося «принимает ли» нет — поля открыты. */
 var MEDS={};
@@ -146,7 +148,14 @@ function baseForms(){
 function readOnlySlots(){ return slotsOfSet().filter(function(k){ return !isSignable(k) }) }
 
 Promise.all([
-  fetch('interview-dictionary.json').then(function(r){return r.json()}),
+  /* ⛔ СЛОВАРЬ ТЯНУЛСЯ БЕЗ ВЕРСИИ — И ЭТО МОЛЧАЛИВАЯ ДЫРА (замер 26.08). Pages отдаёт
+     `cache-control: max-age=600`: десять минут после выкладки семья могла получить НОВЫЙ
+     экран со СТАРЫМ словарём. Тогда `dependsOn` нет — прятанье молча выключено; подписей
+     нет — вопросы снова звучат именами наших колонок. Ничего не ломается вслух: экран
+     просто работает хуже, и никто не узнаёт.
+     ⭐ ТОТ ЖЕ КАНОН, ЧТО У КИТА: число рядом со ссылкой, и сторож в приложении держит его
+     равным `version` самого словаря — забыть нельзя молча. */
+  fetch('interview-dictionary.json?v='+DICT_V).then(function(r){return r.json()}),
   fetch('../../enroll-registry.json').then(function(r){return r.json()})
 ]).then(function(v){
   DICT=v[0]; REG=v[1];
@@ -269,6 +278,12 @@ function ansOr(scope, canon, fallback){
 /* ⛔ СЛУШАТЕЛЬ ОДИН И ВЕШАЕТСЯ ОДНАЖДЫ, НА КОРЕНЬ. Каждая перерисовка заменяет
    СОДЕРЖИМОЕ `#app`, но не сам `#app`: обработчик на поле пришлось бы вешать заново
    после каждой отрисовки, и один забытый путь отрисовки молча вернул бы дефект. */
+/* Есть ли вопрос, который ждёт ответа на этот. */
+function isMainQuestion(canon){
+  var m=(DICT && DICT.dependsOn)||{};
+  for(var k in m) if(m[k].on===canon) return true;
+  return false;
+}
 function bindAnswers(){
   var app=document.getElementById('app'); if(!app || app.__ansBound) return;
   app.__ansBound=1;
@@ -276,8 +291,11 @@ function bindAnswers(){
     app.addEventListener(ev, function(e){
       var t=e.target; if(!t || !t.getAttribute) return;
       var c=t.getAttribute('data-canon'); if(!c) return;
-      ansSet(t.getAttribute('data-scope')||'family', c,
-             t.type==='checkbox' ? (t.checked?'Yes':'') : t.value);
+      var sc = t.getAttribute('data-scope')||'family';
+      ansSet(sc, c, t.type==='checkbox' ? (t.checked?'Yes':'') : t.value);
+      /* ⭐ ГЛАВНЫЙ ВОПРОС ОТКРЫВАЕТ ЗАВИСИМЫЙ СРАЗУ. Перерисовываем ТОЛЬКО когда ответ
+         кого-то отпирает: перерисовка на каждой букве выбивала бы курсор из поля. */
+      if(ev==='change' && isMainQuestion(c)) render();
     }, true);
   });
   /* ⛔ СПОРНЫЙ ВОПРОС ТОЖЕ ОТВЕЧАЕТСЯ. Кнопки выбора между двумя записями не имели
@@ -292,6 +310,38 @@ function bindAnswers(){
   }, true);
 }
 
+/* ⛔ ВОПРОС, У КОТОРОГО ЕСТЬ ГЛАВНЫЙ, НЕ ЗАДАЁТСЯ РАНЬШЕ ГЛАВНОГО. «Кто оказывает
+   услуги» до ответа «получает ли услуги» — вопрос в пустоту: семья либо выдумает ответ,
+   либо решит, что мы не читали её же слов строкой выше.
+   ⭐ СВЯЗЬ ОБЪЯВЛЕНА В СЛОВАРЕ (`dependsOn`), а не зашита здесь: экран не место для
+   суждений о смысле бланка. Сменится бумага — правится объявление, не код.
+   ⚠️ ПРЯТАТЬ — НЕ ТЕРЯТЬ. Скрытый вопрос остаётся в наборе и в счёте сторожа полноты;
+   он появляется в тот же миг, как главный отвечен. */
+function askable(a, scope){
+  var dep = (DICT && DICT.dependsOn && DICT.dependsOn[a.canonical]);
+  if(!dep) return true;
+  var v = ansGet(scope, dep.on);
+  /* ⛔ ПРЕФИЛЛ ТОЖЕ ОТВЕТ. Если главный вопрос уже отвечен прошлой бумагой, зависимый
+     обязан быть виден сразу: иначе семья, у которой всё заполнено, не увидела бы клетку,
+     которую центру нужно уточнить. */
+  if(v===undefined) v = mainAnswerFromPlan(a, dep.on, scope);
+  return String(v==null?'':v).trim().toLowerCase() === String(dep.value).trim().toLowerCase();
+}
+/* Ответ на главный вопрос, каким его знает план (то есть прошлые подачи). */
+function mainAnswerFromPlan(a, mainCanon, scope){
+  var pools=[];
+  if(PLAN && PLAN.familyQuestions) pools.push(PLAN.familyQuestions.family||[]);
+  if(PLAN && PLAN.rounds) PLAN.rounds.forEach(function(r){
+    if(scope==='family' || r.key===scope) pools.push(r.answers.child||[]);
+  });
+  for(var i=0;i<pools.length;i++){
+    for(var j=0;j<pools[i].length;j++){
+      if(pools[i][j].canonical===mainCanon) return pools[i][j].value;
+    }
+  }
+  return undefined;
+}
+
 function qCard(a, scope){
   scope = scope || 'family';
   /* ⛔ ОБЛАСТЬ ПРИХОДИТ ЯВНО. `list.map(qCard)` подсунул бы вторым доводом НОМЕР
@@ -301,7 +351,12 @@ function qCard(a, scope){
   /* ⛔ ЯРЛЫК НЕСЁТ ПРЕФИКС СМЫСЛА. Срезав его, экран показывал два разных вопроса под
      одним словом NAME — родителя и экстренного контакта. Одинаковая подпись под разными
      вопросами хуже длинной. */
-  var label = a.canonical.replace(/[._]/g,' ');
+  /* ⭐ ПОДПИСЬ ЖИВЁТ В СЛОВАРЕ, А ИМЯ КЛЮЧА — ЗАПАСНОЙ ВЫХОД (26.08). Пять вопросов
+     звучали машинным «emergency1 relation other»: семья читала имя нашей колонки вместо
+     вопроса. Там, где бумага вопроса не задаёт вовсе (у экстренного контакта на бланке
+     только пустая строка), подпись — единственное, что объясняет, чего от неё хотят. */
+  var dcan = (DICT && DICT.canonicals && DICT.canonicals[a.canonical]) || {};
+  var label = dcan.label || a.canonical.replace(/[._]/g,' ');
   /* ⭐ ОДИН ИСТОЧНИК НА ВСЕ ДВЕРИ (26.08): текст живёт в `enroll-registry.json → help`,
      который читают И бланк, И интервью. Инлайн-копия ниже остаётся ЗАПАСНОЙ — на случай
      отказа сети, — и потому обязана совпадать. Прежде копий было две равноправных, и
@@ -518,7 +573,8 @@ function familyBlock(){
   var q=PLAN.familyQuestions, c=q.counts, tot=c.answered+c.empty+c.conflict;
   var body=personBlocks(q.family).map(function(b){
     return '<h2 class="pblk">'+esc(b.title)+'</h2>'
-      +b.items.map(function(a){ return qCard(a,'family') }).join('');
+      +b.items.filter(function(a){ return askable(a,'family') })
+             .map(function(a){ return qCard(a,'family') }).join('');
   }).join('');
   return '<div><div class="prog"><i style="width:20%"></i></div>'
     +'<h1>About your family</h1><p class="sub">Asked once — it carries to every child.</p>'
@@ -662,6 +718,7 @@ function childBlock(){
      оказывался как раз там. Пояснение на невидимом вопросе никого не спасает.
      ⭐ Поэтому вопросы, которым мы что-то объясняем, поднимаются наверх круга. */
   rest.sort(function(a,b){ return (Q_HINT[b.canonical]?1:0) - (Q_HINT[a.canonical]?1:0) });
+  rest = rest.filter(function(a){ return askable(a, r.key) });
   var body=rest.slice(0,6).map(function(a){ return qCard(a, r.key) }).join('');
   /* ⭐ БЛОК ОТКРЫВАЕТСЯ ПО ОТВЕТУ О ЗДОРОВЬЕ — как решено владельцем 24.08. */
   var kid=FAMILY.children.filter(function(c){return c.key===r.key})[0]||{};
@@ -753,11 +810,26 @@ function stage2(){
        ребёнка, и сказанное в нём точнее общего ответа семьи. */
     subs.forEach(function(s){
       var mine = (s.childKey && ANSWERS.child[s.childKey]) || {};
+      var br = (DICT.branchFields||{})[s.form] || {};
       (DICT.rows||[]).forEach(function(r){
         var v = mine[r.canonical];
         if(v===undefined) v = ANSWERS.family[r.canonical];
         if(r.form!==s.form || v===undefined || v==='') return;
         s.formData = s.formData || {};
+        /* ⛔ ПАРА «ДА/НЕТ» — ДВЕ КЛЕТКИ ОДНОГО СМЫСЛА, И ОТМЕЧАЕТСЯ РОВНО ОДНА.
+           Первая редакция разноса (26.08) писала ответ в ОБЕ: `health_y` и `health_n`
+           получали одно слово, и бланк за подписью родителя утверждал, что состояние
+           здоровья у ребёнка и есть, и нет. Правило то же, что в движке, и берётся из
+           словаря (`branchFields` · `branchOnValue`), а не выдумывается здесь.
+           ⭐ В клетку кладётся ОТМЕТКА, а не ответ: `health_n` значит «отмечено НЕТ»,
+           и слово «No» в ней — не то же самое, что галочка.
+           ⭐ Невыбранная гасится ЯВНО пустым: молчание оставило бы там прежнюю галочку
+           прошлой подачи, и сегодняшний ответ не отменил бы вчерашний. */
+        if(Object.prototype.hasOwnProperty.call(br, r.key)){
+          var on = String(v).trim().toLowerCase() === String(br[r.key]).trim().toLowerCase();
+          s.formData[r.key] = on ? (DICT.branchOnValue || v) : '';
+          return;
+        }
         s.formData[r.key] = v;
       });
     });

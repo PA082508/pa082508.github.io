@@ -13,7 +13,7 @@
     "Реестр приложения синхронизирован с витриной 23.08 — расхождение версий снято.",
     "ПОПРАВКА 23.08: личные поля бланка staff (имя, почта, телефон, адрес, дата рождения) стояли на уровнях family/child — их смыслы были ошибочно склеены с родительскими. Сотрудник не есть parent1: уровень определяет, ЧТО ПЕРЕНОСИТСЯ между детьми семьи, и кадровым полям там места нет."
   ],
-  "version": "1.0.0",
+  "version": "2026-08-26a",
   "measuredOn": "2026-08-23",
   "measuredFrom": "pa082508.github.io — версии current на 23.08.2026",
   "levels": {
@@ -499,7 +499,8 @@
       "sourceFormats": [
         "текст"
       ],
-      "ord": 62
+      "ord": 62,
+      "label": "How is this person related to the child?"
     },
     "emergency2.absent": {
       "level": "family",
@@ -541,7 +542,8 @@
       "sourceFormats": [
         "текст"
       ],
-      "ord": 63
+      "ord": 63,
+      "label": "How is this person related to the child?"
     },
     "emergency_action.call_911": {
       "level": "child",
@@ -562,7 +564,8 @@
       "sourceFormats": [
         "булево"
       ],
-      "ord": 115
+      "ord": 115,
+      "label": "Besides calling 9-1-1 and calling you — should our staff take another step?"
     },
     "emergency_action.other_text": {
       "level": "child",
@@ -1300,7 +1303,8 @@
       "sourceFormats": [
         "текст"
       ],
-      "ord": 176
+      "ord": 176,
+      "label": "Any other way your child travels?"
     },
     "trip.mode.parent": {
       "level": "child",
@@ -3892,5 +3896,36 @@
       ]
     }
   },
-  "_promiseNote": "Галочка «указания врача на подписанной бумаге» и необязательное название — вопросы ИНТЕРВЬЮ, а не клетки бланка: в печатный DCY 01236 они не попадают, государственный бланк мы не дописываем. В form_data подачи они едут скрытыми полями, и по ним выводится след ожидания бумаги (promisedPaper.ts)."
+  "_promiseNote": "Галочка «указания врача на подписанной бумаге» и необязательное название — вопросы ИНТЕРВЬЮ, а не клетки бланка: в печатный DCY 01236 они не попадают, государственный бланк мы не дописываем. В form_data подачи они едут скрытыми полями, и по ним выводится след ожидания бумаги (promisedPaper.ts).",
+  "_dependsNote": "Какой вопрос не задаётся, пока родитель не ответил на главный. ⛔ ЭТО ОБЪЯВЛЕНИЕ, А НЕ ДОГАДКА ПО ИМЕНИ — как и branchFields: связь двух вопросов есть суждение человека о смысле, и пережить скан бланков она обязана. ⚠️ ПРЯТАТЬ — НЕ ЗНАЧИТ ТЕРЯТЬ: скрытый вопрос остаётся в словаре и в счёте сторожа полноты; он появляется, как только главный отвечен.",
+  "dependsOn": {
+    "child.services_provider": {
+      "on": "child.receives_services",
+      "value": "Yes"
+    },
+    "child.services_absent": {
+      "on": "child.receives_services",
+      "value": "Yes"
+    },
+    "child.transport_note": {
+      "on": "child.transport_by_center",
+      "value": "Yes"
+    },
+    "emergency_action.other_text": {
+      "on": "emergency_action.other",
+      "value": "Yes"
+    },
+    "child.health_signs": {
+      "on": "child.has_health_condition",
+      "value": "Yes"
+    },
+    "child.care_instructions": {
+      "on": "child.has_health_condition",
+      "value": "Yes"
+    },
+    "child.avoid": {
+      "on": "child.has_health_condition",
+      "value": "Yes"
+    }
+  }
 }
