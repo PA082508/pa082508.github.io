@@ -585,8 +585,12 @@
       node.style.left = (el.offsetLeft + 8) + 'px';
       node.style.top = (el.offsetTop + Math.max(0, (h - 30) / 2)) + 'px';
     } else {                                             // подсказка — под клеткой
+      /* ⛔ У ПАРЫ ГАЛОЧЕК ТЕКСТ ВОПРОСА ИДЁТ СПРАВА И НИЖЕ САМОЙ КЛЕТКИ. Отступ в 2px клал
+         красную строку прямо на слова второй галочки — владелец увидел это на живом
+         бланке 01234 дважды. Пара получает зазор в строку бумаги. */
+      var gap = (el.getAttribute && el.getAttribute('data-fk-exclusive')) ? 44 : 2;
       node.style.left = el.offsetLeft + 'px';
-      node.style.top = (el.offsetTop + h + 2) + 'px';
+      node.style.top = (el.offsetTop + h + gap) + 'px';
       node.style.maxWidth = Math.max(220, w) + 'px';
     }
   }

@@ -176,7 +176,12 @@ var FIELDS = [
       Пояснение работает только рядом с тем, что поясняет; на ширине листа его никто
       не свяжет с вопросом. Ставим к заголовку блока. Текст по-прежнему раскрывается
       НИЖЕ блока (hy:842) — там бумага пуста и ничего не закрывается. */
-   tx:64,ty:600, hx:84,hy:842,hw:1120,
+   /* ⛔ ЯКОРЬ БЫЛ НЕ ТОТ ДВАЖДЫ: сперва у правого края листа (tx:1168), потом на y:600 —
+      а там строка N/A блока «Name of service provider(s)», ЧУЖОГО вопроса. Значок,
+      стоящий у чужой клетки, поясняет её, а не нашу: человек читает то, что рядом.
+      Ставим на строку САМОЙ пары перевозки (y:646) и левее её клетки (x:34). */
+   tx:34,ty:646, hx:84,hy:842,hw:1120,
+   helpKey:'child.transport_by_center',
    /* ⛔ ПЕРВЫМ АБЗАЦЕМ — ЧТО ИМЕННО РАЗРЕШАЕТСЯ. Прежняя подсказка объясняла, что будет
       при 911, и НЕ говорила, о каком случае вопрос. Семья Nash прочла «911 вызовут в
       любом случае» и поставила No: раз вызовут, зачем разрешать что-то ещё. Запись её
@@ -230,6 +235,19 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
            поверх букв: первая редакция села на слово «The» первой клетки. */
         tip.style.cssText='left:'+(f.tx||((f.hx||f.x)+26))+'px;top:'+(f.ty||((f.hy||f.y)-2))+'px';
         var h=document.createElement('div'); h.className='fkhint'; h.innerHTML=f.hint;
+        /* ⭐ ОДИН ИСТОЧНИК НА ВСЕ ДВЕРИ (26.08). Тот же текст показывает интервью, и две
+           равноправные копии расходятся молча — семья верит той, что прочла последней.
+           Источник — `enroll-registry.json → help`, ключ = canonical словаря.
+           ⛔ FAIL-SILENT К ИНЛАЙНУ: сеть молчит — остаётся текст из конфига поля, а не
+           пустая рамка. Подсказка не обязана быть, но пустой она быть не должна. */
+        if (f.helpKey) {
+          fetch('../../enroll-registry.json?t=' + Date.now(), { cache: 'no-store' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (reg) {
+              var t = reg && reg.help && reg.help[f.helpKey];
+              if (t) h.innerHTML = t;
+            }).catch(function () {});
+        }
         h.style.display='none';
         tip.onclick=(function(box){ return function(){
           box.style.display = box.style.display==='none' ? 'block' : 'none'; }; })(h);
@@ -466,10 +484,17 @@ function syncImpliedAnswers(){
       комнаты фактом о школе не является. Поэтому спрашиваем, а не вычисляем. */
 function schoolBlock(){
   if(document.getElementById('fk-school')) return;
-  var host=document.getElementById('f_first_day'); if(!host||!host.parentNode) return;
+  /* ⛔ ВРЕЗКА СТОЯЛА В РАЗРЫВЕ ЛИСТОВ (top:1560 при высоте листа 1650) — поверх подвала
+     «DCY 01234 · Page 1 of 2», и читалась как обломок чужой страницы. Теперь она ИДЁТ В
+     ПОТОКЕ после первого листа и прижата к нему отрицательным отступом: видно, что вопрос
+     относится к листу 1, и ничей подвал не закрыт.
+     ⭐ Печать по-прежнему её не берёт (`fk-print-hidden`): на бланке штата этого вопроса
+     нет, и дорисовывать чужую форму мы не вправе. */
+  var page1=document.getElementById('page1'); if(!page1||!page1.parentNode) return;
   var d=document.createElement('div'); d.id='fk-school'; d.className='fk-print-hidden';
-  d.setAttribute('style','position:absolute;left:58px;top:1560px;width:1135px;padding:9px 12px;'
-    +'background:#f2f7f4;border:1.5px solid #cfe0d5;border-radius:8px;font:13px Arial,sans-serif;color:#14281f;z-index:4');
+  d.setAttribute('style','width:1275px;margin:-14px auto 20px;padding:10px 14px;box-sizing:border-box;'
+    +'background:#f2f7f4;border:1.5px solid #cfe0d5;border-top:none;border-radius:0 0 8px 8px;'
+    +'font:13px Arial,sans-serif;color:#14281f');
   d.innerHTML='<b>Attends kindergarten or above at an elementary school?</b> '
     +'<label style="margin-left:14px"><input type="checkbox" id="f_school_y" data-fk-exclusive="school"> Yes</label>'
     +'<label style="margin-left:14px"><input type="checkbox" id="f_school_n" data-fk-exclusive="school"> No</label>'
@@ -484,7 +509,7 @@ function schoolBlock(){
     +'<input type="text" id="f_school_name" data-fk-field="school_name" '
     +'style="font:inherit;padding:3px 7px;border:1px solid #cfe0d5;border-radius:5px;width:290px"></span>'
     +'<div style="font-size:11.5px;color:#4b5563;margin-top:3px">Asked by the center, not part of the state form.</div>';
-  host.parentNode.appendChild(d);
+  page1.parentNode.insertBefore(d, page1.nextSibling);
   d.addEventListener('change', function(){ schoolNameToggle(); revealByFacts(); });
   schoolNameToggle();
 }
@@ -758,6 +783,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=41"></script>
+<script defer src="form-kit.js?v=42"></script>
 </body>
 </html>
