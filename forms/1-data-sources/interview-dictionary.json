@@ -13,7 +13,7 @@
     "Реестр приложения синхронизирован с витриной 23.08 — расхождение версий снято.",
     "ПОПРАВКА 23.08: личные поля бланка staff (имя, почта, телефон, адрес, дата рождения) стояли на уровнях family/child — их смыслы были ошибочно склеены с родительскими. Сотрудник не есть parent1: уровень определяет, ЧТО ПЕРЕНОСИТСЯ между детьми семьи, и кадровым полям там места нет."
   ],
-  "version": "2026-08-26b",
+  "version": "2026-08-26c",
   "measuredOn": "2026-08-23",
   "measuredFrom": "pa082508.github.io — версии current на 23.08.2026",
   "levels": {
@@ -213,7 +213,7 @@
       ],
       "canonicalFormat": "дата YYYY-MM-DD | null",
       "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ — это факт замера, а не ошибка словаря. Переливка приводит к canonicalFormat.",
-      "ord": 17
+      "ord": 11
     },
     "child.enrollment_expires": {
       "level": "child",
@@ -255,14 +255,14 @@
       "sourceFormats": [
         "текст"
       ],
-      "ord": 13
+      "ord": 14
     },
     "child.first_day": {
       "level": "child",
       "sourceFormats": [
         "текст"
       ],
-      "ord": 12
+      "ord": 13
     },
     "child.has_health_condition": {
       "level": "child",
@@ -307,7 +307,7 @@
       "sourceFormats": [
         "текст"
       ],
-      "ord": 16
+      "ord": 17
     },
     "child.precautions": {
       "level": "child",
@@ -1093,7 +1093,7 @@
       "sourceFormats": [
         "текст"
       ],
-      "ord": 15
+      "ord": 16
     },
     "parent2.phone.cell": {
       "level": "family",
@@ -1170,7 +1170,7 @@
       "sourceFormats": [
         "текст"
       ],
-      "ord": 11
+      "ord": 12
     },
     "staff.compliance": {
       "level": "staff",
@@ -1268,7 +1268,7 @@
       "sourceFormats": [
         "текст"
       ],
-      "ord": 14
+      "ord": 15
     },
     "staff.signer_role": {
       "level": "staff",
@@ -1382,6 +1382,25 @@
         "текст"
       ],
       "ord": 21
+    },
+    "child.attends_school_age": {
+      "level": "child",
+      "sourceFormats": [
+        "булево",
+        "текст"
+      ],
+      "label": "Does your child go to school or kindergarten?",
+      "ordAfter": "child.transport_by_center",
+      "canonicalFormat": "булево (пара school_y/school_n сводится к одному; в подаче живёт ключом attends_school_age со значением yes/no)",
+      "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ, и это замер, а не ошибка. Семья отвечает «да/нет»; бумага держит ОТМЕТКУ в одной из двух клеток; подача несёт слово `yes`/`no`, которое `collect()` бланка выводит из галочек. Читатель `readSchoolFact` приводит к нижнему регистру и знает ТРИ состояния: третье — «не спрашивали», и оно не равно «нет»."
+    },
+    "child.school_name": {
+      "level": "child",
+      "sourceFormats": [
+        "текст"
+      ],
+      "label": "Which school?",
+      "ordAfter": "child.attends_school_age"
     }
   },
   "forms": {
@@ -3237,6 +3256,27 @@
       "form": "school_year_schedule",
       "key": "dob",
       "format": "дата YYYY-MM-DD | null"
+    },
+    {
+      "canonical": "child.attends_school_age",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "school_y",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.attends_school_age",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "school_n",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.school_name",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "school_name",
+      "format": "текст"
     }
   ],
   "excluded": [
@@ -3925,7 +3965,9 @@
       "svc_y": "Yes",
       "svc_n": "No",
       "trans_yes": "Yes",
-      "trans_no": "No"
+      "trans_no": "No",
+      "school_y": "Yes",
+      "school_n": "No"
     },
     "dcy_01225": {
       "water_y": "Yes",
@@ -4000,6 +4042,11 @@
     "child.avoid": {
       "on": "child.has_health_condition",
       "value": "Yes"
+    },
+    "child.school_name": {
+      "on": "child.attends_school_age",
+      "value": "Yes"
     }
-  }
+  },
+  "_schoolNote": "ПОКА ВРЕЗКА ЖИВА, ОТВЕТ ИДЁТ ГАЛОЧКАМИ. `collect()` бланка считает `attends_school_age` из `school_y`/`school_n` и перезаписал бы прямую запись; поэтому смысл `child.attends_school_age` объявлен ПАРОЙ, а не третьим ключом — смешение пары с прямым ключом сторож пар справедливо не принимает. После сноса врезки пара заменяется одной строкой `attends_school_age` — тем же коммитом, что и снос."
 }
