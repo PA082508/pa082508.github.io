@@ -616,6 +616,28 @@ function stage2(){
         if(PROMISE_NAME[s.childKey]) s.formData.promised_medication_name = PROMISE_NAME[s.childKey];
       }
     });
+    /* ⭐ БЕЗЫМЯННЫЙ ПРОХОД КЛАДЁТ САМОНАЗВАНИЕ В САМИ ПОДАЧИ (26.08). Ответы блока
+       «кто вы · кто ребёнок · дата рождения» живут в памяти интервью, а разбору в Inbox
+       нужны В ПОДАЧЕ: без имени и даты рождения привязывать не к чему, и подача ляжет
+       мёртвым грузом к тем 87, что уже ждут человека.
+       ⛔ КЛЮЧ КАЖДОЙ ФОРМЫ БЕРЁТСЯ ИЗ СЛОВАРЯ, А НЕ ИЗ ГОЛОВЫ: у одного каноникала
+       `child.dob` шесть разных имён по формам (`dob`, `date_of_birth`, `birthdate`…).
+       Записать своё — значит положить ответ мимо клетки, и форма откроется пустой. */
+    if(!TOKEN){
+      var CANON={ 'child.name':SELF.child, 'child.dob':SELF.dob, 'parent1.name':SELF.adult };
+      subs.forEach(function(s){
+        (DICT.rows||[]).forEach(function(r){
+          if(r.form!==s.form) return;
+          var v=CANON[r.canonical];
+          if(v===undefined || v==='') return;
+          s.formData = s.formData || {};
+          /* ⛔ НЕ ЗАТИРАЕМ ОТВЕЧЕННОЕ: если семья уже назвала это в интервью, её слово
+             старше нашего самоназвания. */
+          if(s.formData[r.key]===undefined || s.formData[r.key]==='') s.formData[r.key]=v;
+        });
+      });
+    }
+
     subs.forEach(function(s){
       var tok=s.childKey||FAMILY.children[0].key;
       (bagByChild[tok]=bagByChild[tok]||{})[s.form]=
