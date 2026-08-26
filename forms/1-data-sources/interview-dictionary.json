@@ -13,7 +13,7 @@
     "Реестр приложения синхронизирован с витриной 23.08 — расхождение версий снято.",
     "ПОПРАВКА 23.08: личные поля бланка staff (имя, почта, телефон, адрес, дата рождения) стояли на уровнях family/child — их смыслы были ошибочно склеены с родительскими. Сотрудник не есть parent1: уровень определяет, ЧТО ПЕРЕНОСИТСЯ между детьми семьи, и кадровым полям там места нет."
   ],
-  "version": "2026-08-26a",
+  "version": "2026-08-26b",
   "measuredOn": "2026-08-23",
   "measuredFrom": "pa082508.github.io — версии current на 23.08.2026",
   "levels": {
@@ -3223,6 +3223,20 @@
       "form": "usda_waiver",
       "key": "parent_name",
       "format": "текст"
+    },
+    {
+      "canonical": "child.name",
+      "level": "child",
+      "form": "school_year_schedule",
+      "key": "child_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.dob",
+      "level": "child",
+      "form": "school_year_schedule",
+      "key": "dob",
+      "format": "дата YYYY-MM-DD | null"
     }
   ],
   "excluded": [
@@ -3840,6 +3854,66 @@
       "form": "usda_waiver",
       "key": "type",
       "reason": "служебный маркер типа подачи — его знает колонка submission_type"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "profile",
+      "reason": "неделя спрашивается сеткой самого бланка и живёт носителем child_enrolled_days; каноникалом не разбирается — см. formatRules.schedule (один ключ, два формата)"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "days",
+      "reason": "неделя спрашивается сеткой самого бланка и живёт носителем child_enrolled_days; каноникалом не разбирается — см. formatRules.schedule (один ключ, два формата)"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "before_arr",
+      "reason": "неделя спрашивается сеткой самого бланка и живёт носителем child_enrolled_days; каноникалом не разбирается — см. formatRules.schedule (один ключ, два формата)"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "before_dep",
+      "reason": "неделя спрашивается сеткой самого бланка и живёт носителем child_enrolled_days; каноникалом не разбирается — см. formatRules.schedule (один ключ, два формата)"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "after_arr",
+      "reason": "неделя спрашивается сеткой самого бланка и живёт носителем child_enrolled_days; каноникалом не разбирается — см. formatRules.schedule (один ключ, два формата)"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "after_dep",
+      "reason": "неделя спрашивается сеткой самого бланка и живёт носителем child_enrolled_days; каноникалом не разбирается — см. formatRules.schedule (один ключ, два формата)"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "full_arr",
+      "reason": "неделя спрашивается сеткой самого бланка и живёт носителем child_enrolled_days; каноникалом не разбирается — см. formatRules.schedule (один ключ, два формата)"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "full_dep",
+      "reason": "неделя спрашивается сеткой самого бланка и живёт носителем child_enrolled_days; каноникалом не разбирается — см. formatRules.schedule (один ключ, два формата)"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "starts_on",
+      "reason": "дата вступления этого расписания в силу — свойство подачи, не факт о ребёнке"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "note",
+      "reason": "свободная записка семьи центру"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "parent_signature",
+      "reason": "подпись"
+    },
+    {
+      "form": "school_year_schedule",
+      "key": "signature_date",
+      "reason": "дата подписи"
     }
   ],
   "syncedOn": "2026-08-23",

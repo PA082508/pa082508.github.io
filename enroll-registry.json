@@ -1295,6 +1295,12 @@
         {
           "key": "parents_book",
           "section": "mandatory"
+        },
+        {
+          "key": "school_year_schedule",
+          "section": "if_applicable",
+          "label": "School-Year Schedule Update",
+          "note": "Tells us the weeks your child is at school and the hours we keep — before school, after school, or both."
         }
       ]
     },
