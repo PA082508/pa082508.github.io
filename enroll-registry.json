@@ -963,6 +963,12 @@
           "note": "Transport to and from school. Your center fills it in and gives it to you — you choose the car seat category and sign."
         },
         {
+          "key": "school_year_schedule",
+          "section": "if_applicable",
+          "label": "School-Year Schedule Update",
+          "note": "Tells us the weeks your child is at school and the hours we keep — before school, after school, or both."
+        },
+        {
           "key": "dcy_01236",
           "section": "if_applicable",
           "label": "Care Plan for a Child with Special Needs (DCY 01236)",
