@@ -1755,7 +1755,13 @@ document.addEventListener('click', function (e) {
       else {
         res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP, p_form_version: fkVersion(), p_token: fkToken() });
       }
-      status('Submitted for center review', 'ok');
+      /* ⛔ БЕЗЫМЯННОЙ ПОДАЧЕ ОБЕЩАТЬ «В ДЕЛЕ» НЕЛЬЗЯ (26.08). У неё нет ключа ребёнка:
+         кто это, решит человек в центре, и до его решения подача делом не стала.
+         «Submitted for center review» у именной подачи верно — там ребёнок известен. */
+      status(fkToken()
+        ? 'Submitted for center review'
+        : 'Received. Your center will confirm who you are and add these forms to your '
+          + 'child\u2019s file — you may be asked to bring a document.', 'ok');
       savePacket();
       markSlotDone();
       mintSignature(data);
