@@ -233,15 +233,9 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){retur
    бумага говорит одно, а интервью другое, семья поверит тому, что читает последним.
    Текст здесь и в клетке 01234 держится одной строкой смысла (`child.transport_by_center`). */
 var Q_HINT = {
+  /* ⛔ ЗАПАСНАЯ КОПИЯ. Источник — `enroll-registry.json → help`. */
   'child.transport_by_center':
-    /* ⛔ ТЕКСТ ДОСЛОВНО ТОТ ЖЕ, ЧТО У КЛЕТКИ БЛАНКА. Читка на живой витрине 24.08 поймала
-       расхождение: бланк укоротили (про выбор больницы там напечатано типографски), а
-       здесь остался прежний, длиннее. Два объяснения одного вопроса — и семья поверит
-       тому, что прочтёт последним. Меняя одно, меняй оба. */
-    '<b>Please tick one.</b> In an emergency we call 911 either way, a member of our staff '
-    + 'goes with your child and stays until you arrive, and this form goes too. Your answer '
-    + 'tells us in advance what you want. <b>Either answer is fine \u2014 what does not work is '
-    + 'leaving both boxes empty:</b> then we have no answer from you at all.',
+    "<b>Please tick one.</b> This is about one thing: <b>may we drive your child to a doctor or an urgent care when waiting for you would take too long?</b> “Yes” means we may; “No” means we wait for you or for the squad. <b>A real emergency does not depend on this answer:</b> we call 911 either way, a member of our staff goes with your child and stays until you arrive, and this form goes with them. <b>Either answer is fine — what does not work is leaving both boxes empty:</b> then we have no answer from you at all.",
 };
 
 function qCard(a){
@@ -249,8 +243,13 @@ function qCard(a){
      одним словом NAME — родителя и экстренного контакта. Одинаковая подпись под разными
      вопросами хуже длинной. */
   var label = a.canonical.replace(/[._]/g,' ');
-  var hint = Q_HINT[a.canonical]
-    ? '<div class="src" style="margin-top:7px;line-height:1.5">'+Q_HINT[a.canonical]+'</div>' : '';
+  /* ⭐ ОДИН ИСТОЧНИК НА ВСЕ ДВЕРИ (26.08): текст живёт в `enroll-registry.json → help`,
+     который читают И бланк, И интервью. Инлайн-копия ниже остаётся ЗАПАСНОЙ — на случай
+     отказа сети, — и потому обязана совпадать. Прежде копий было две равноправных, и
+     комментарий честно просил «меняя одно, меняй оба»; просьба не заменяет механизма. */
+  var helpText = (REG && REG.help && REG.help[a.canonical]) || Q_HINT[a.canonical];
+  var hint = helpText
+    ? '<div class="src" style="margin-top:7px;line-height:1.5">'+helpText+'</div>' : '';
   if (a.state==='conflict'){
     /* ⛔ ОДНО ЗНАЧЕНИЕ — ОДНА КНОПКА. Семейный блок читается по записям всех детей, и
        одно и то же значение приходит из бумаги каждого: без сведения мать увидела бы три

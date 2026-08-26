@@ -1357,5 +1357,9 @@
         "absentee_days_per_half_year": 10
       }
     ]
+  },
+  "_helpNote": "ПОЯСНЕНИЯ К ВОПРОСАМ — ОДИН ИСТОЧНИК НА ВСЕ ДВЕРИ. Ключ — canonical словаря интервью. Читают и бланк (кит-форма), и интервью; копия текста в коде страницы допускается только как запасная на случай отказа сети, и она обязана совпадать.",
+  "help": {
+    "child.transport_by_center": "<b>Please tick one.</b> This is about one thing: <b>may we drive your child to a doctor or an urgent care when waiting for you would take too long?</b> “Yes” means we may; “No” means we wait for you or for the squad. <b>A real emergency does not depend on this answer:</b> we call 911 either way, a member of our staff goes with your child and stays until you arrive, and this form goes with them. <b>Either answer is fine — what does not work is leaving both boxes empty:</b> then we have no answer from you at all."
   }
 }
