@@ -671,6 +671,10 @@ function stage2(){
         Object.assign(bagByChild[tok][s.form]||{}, s.formData||{});
     });
     sessionStorage.setItem('pa_interview_answers', JSON.stringify(bagByChild));
+    /* ⭐ ОДИН РАЗГОВОР — ОДИН ID НА ВСЕ БУМАГИ ПАКЕТА. Кит подставит его в подачу, база
+       поднимет в колонку: директор увидит шесть бумаг двух детей ОДНОЙ семьёй, а не
+       шестью строками подряд по времени. */
+    if(PASS_ID) sessionStorage.setItem('pa_interview_pass', PASS_ID);
   } catch(_){}
   var byChild={};
   subs.forEach(function(s){ (byChild[s.childKey||'__family']=byChild[s.childKey||'__family']||[]).push(s) });
