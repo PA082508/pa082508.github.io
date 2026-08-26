@@ -13,7 +13,7 @@
     "Реестр приложения синхронизирован с витриной 23.08 — расхождение версий снято.",
     "ПОПРАВКА 23.08: личные поля бланка staff (имя, почта, телефон, адрес, дата рождения) стояли на уровнях family/child — их смыслы были ошибочно склеены с родительскими. Сотрудник не есть parent1: уровень определяет, ЧТО ПЕРЕНОСИТСЯ между детьми семьи, и кадровым полям там места нет."
   ],
-  "version": "2026-08-26c",
+  "version": "2026-08-26d",
   "measuredOn": "2026-08-23",
   "measuredFrom": "pa082508.github.io — версии current на 23.08.2026",
   "levels": {
@@ -1391,7 +1391,7 @@
       ],
       "label": "Does your child go to school or kindergarten?",
       "ordAfter": "child.transport_by_center",
-      "canonicalFormat": "булево (пара school_y/school_n сводится к одному; в подаче живёт ключом attends_school_age со значением yes/no)",
+      "canonicalFormat": "булево (в подаче живёт ключом attends_school_age со значением yes/no; пусто = не спрашивали)",
       "note": "ИСТОЧНИКИ РАСХОДЯТСЯ ПО ФОРМЕ, и это замер, а не ошибка. Семья отвечает «да/нет»; бумага держит ОТМЕТКУ в одной из двух клеток; подача несёт слово `yes`/`no`, которое `collect()` бланка выводит из галочек. Читатель `readSchoolFact` приводит к нижнему регистру и знает ТРИ состояния: третье — «не спрашивали», и оно не равно «нет»."
     },
     "child.school_name": {
@@ -3258,24 +3258,17 @@
       "format": "дата YYYY-MM-DD | null"
     },
     {
-      "canonical": "child.attends_school_age",
-      "level": "child",
-      "form": "dcy_01234",
-      "key": "school_y",
-      "format": "текст"
-    },
-    {
-      "canonical": "child.attends_school_age",
-      "level": "child",
-      "form": "dcy_01234",
-      "key": "school_n",
-      "format": "текст"
-    },
-    {
       "canonical": "child.school_name",
       "level": "child",
       "form": "dcy_01234",
       "key": "school_name",
+      "format": "текст"
+    },
+    {
+      "canonical": "child.attends_school_age",
+      "level": "child",
+      "form": "dcy_01234",
+      "key": "attends_school_age",
       "format": "текст"
     }
   ],
@@ -3965,9 +3958,7 @@
       "svc_y": "Yes",
       "svc_n": "No",
       "trans_yes": "Yes",
-      "trans_no": "No",
-      "school_y": "Yes",
-      "school_n": "No"
+      "trans_no": "No"
     },
     "dcy_01225": {
       "water_y": "Yes",
@@ -4048,5 +4039,5 @@
       "value": "Yes"
     }
   },
-  "_schoolNote": "ПОКА ВРЕЗКА ЖИВА, ОТВЕТ ИДЁТ ГАЛОЧКАМИ. `collect()` бланка считает `attends_school_age` из `school_y`/`school_n` и перезаписал бы прямую запись; поэтому смысл `child.attends_school_age` объявлен ПАРОЙ, а не третьим ключом — смешение пары с прямым ключом сторож пар справедливо не принимает. После сноса врезки пара заменяется одной строкой `attends_school_age` — тем же коммитом, что и снос."
+  "_schoolNote": "ВРЕЗКА СНЕСЕНА 26.08 — ОТВЕТ ИДЁТ ПРЯМЫМ КЛЮЧОМ. Пока врезка стояла, `collect()` считал `attends_school_age` из галочек и перезаписал бы прямую запись, поэтому смысл был объявлен ПАРОЙ. Галочек больше нет: бланк несёт ответ скрытым полем `attends_school_age`, а `collect()` приводит его к языку подачи (`yes`/`no`; пусто = «не спрашивали», то есть `null`, а не «нет»). Носитель, `enrollmentApprove` и `conditions.school_age → detectOn: dcy_01234` не менялись ни разу: переезжал ВОПРОС."
 }
