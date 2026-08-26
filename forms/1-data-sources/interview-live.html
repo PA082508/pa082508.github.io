@@ -28,6 +28,9 @@ p{margin:0 0 10px}
 .src{font-size:11px;color:var(--mut);margin-top:5px}
 .src b{color:var(--green)}
 .q.conf{border-color:var(--al);background:var(--ab)}
+.pick.on{border-color:var(--green);background:var(--gl);font-weight:700}
+.yn{display:flex;gap:8px}
+.yn .pick{display:inline-block;width:auto;min-width:88px;text-align:center;margin:6px 0}
 .pick{display:block;width:100%;text-align:left;border:1.5px solid var(--al);background:#fff;border-radius:9px;padding:9px 11px;margin:6px 0;font:inherit;font-size:13.5px;cursor:pointer}
 .btn{display:block;width:100%;background:var(--green);color:#fff;border:0;border-radius:10px;padding:12px;font:inherit;font-size:15px;font-weight:700;margin-top:14px;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--green);border:1.5px solid var(--green);margin-top:8px}
@@ -344,6 +347,29 @@ function mainAnswerFromPlan(a, mainCanon, scope){
   return undefined;
 }
 
+/* ⛔ `sourceFormats` ОПИСЫВАЕТ КЛЕТКУ, А НЕ ОТВЕТ. У пар «да/нет» в клетке стои́т ОТМЕТКА,
+   и словарь честно зовёт её `текст`; из пяти пар булевым назван ровно один смысл. Спроси
+   мы только `sourceFormats` — кнопки получил бы один вопрос из пяти, а остальные четыре
+   остались бы полем ввода, где «y» молча не отвечает ни да, ни нет.
+   ⭐ ВТОРОЕ ДОКАЗАТЕЛЬСТВО УЖЕ ОБЪЯВЛЕНО: есть пара в `branchFields` — значит вопрос
+   имеет ровно два ответа. Это суждение бланка, не наше. */
+var BOOL_CACHE = null;
+function boolCanonicals(){
+  if(BOOL_CACHE) return BOOL_CACHE;
+  var out = {};
+  var can = (DICT && DICT.canonicals) || {};
+  for(var k in can){
+    var sf = can[k] && can[k].sourceFormats;
+    if(sf && sf.indexOf('булево')>=0) out[k]=1;
+  }
+  var br = (DICT && DICT.branchFields) || {};
+  (DICT && DICT.rows || []).forEach(function(r){
+    if(br[r.form] && Object.prototype.hasOwnProperty.call(br[r.form], r.key)) out[r.canonical]=1;
+  });
+  BOOL_CACHE = out;
+  return out;
+}
+
 function qCard(a, scope){
   scope = scope || 'family';
   /* ⛔ ОБЛАСТЬ ПРИХОДИТ ЯВНО. `list.map(qCard)` подсунул бы вторым доводом НОМЕР
@@ -384,6 +410,26 @@ function qCard(a, scope){
     return '<div class="q conf"><div class="lab">'+esc(label)+'</div>'
       +'<p style="margin:0 0 6px;font-size:13.5px"><b>We have two answers on file.</b> Which one is correct today?</p>'
       +opts+'<button class="pick"'+mark+' data-value="">Neither — let me type it</button>'+hint+'</div>';
+  }
+  /* ⛔ ВОПРОС «ДА/НЕТ» ТЕКСТОВЫМ ПОЛЕМ — ЛОВУШКА С МОЛЧАЛИВОЙ ЦЕНОЙ. Все 12 булевых
+     смыслов рисовались строкой ввода. Родитель, набравший «y» вместо «Yes», получал ОБЕ
+     клетки пары пустыми: ни «да», ни «нет» — а был уверен, что ответил. Никакой ошибки
+     ему при этом не показывали.
+     ⭐ Формат берётся из словаря (`sourceFormats`), а не угадывается по имени смысла:
+     имя `child.has_health_condition` выглядит булевым, а `child.avoid` — нет, и оба
+     суждения были бы нашими, а не бланка.
+     ⛔ КНОПКА НЕ ОТВЕЧАЕТ ЗА СЕМЬЮ: пока ни одна не нажата, ответа нет. Предвыбранное
+     «No» было бы ответом, которого никто не давал. */
+  if (boolCanonicals()[a.canonical] && a.state!=='conflict'){
+    var cur = live===undefined ? String(a.value==null?'':a.value) : String(live);
+    var norm = cur.trim().toLowerCase();
+    var btn = function(v){
+      return '<button class="pick'+(norm===v.toLowerCase()?' on':'')+'"'+mark
+        +' data-value="'+v+'">'+v+'</button>'; };
+    var srcLine = (a.state==='answered' && live===undefined)
+      ? '<div class="src">filled in from <b>'+esc(a.found.map(function(f){return f.form}).join(', '))+'</b></div>' : '';
+    return '<div class="q'+(a.state==='answered'?' filled':'')+'"><div class="lab">'+esc(label)+'</div>'
+      +'<div class="yn">'+btn('Yes')+btn('No')+'</div>'+srcLine+hint+'</div>';
   }
   if (a.state==='answered'){
     return '<div class="q filled"><div class="lab">'+esc(label)+'</div>'
