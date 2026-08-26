@@ -9,7 +9,14 @@
 .fk-invalid { border-bottom: 2px solid #dc2626 !important; }
 /* ⛔ 11px БЫЛ МИКРОКЕГЛЕМ: на живом бланке 01234 красная строка печаталась поверх
    официального текста и не читалась. Отказ обязан читаться так же легко, как вопрос. */
-.fk-msg { color: #dc2626; font-size: 13px; margin-top: 3px; line-height: 1.35; }
+/* ⛔ ОТКАЗ — ПЛАШКА, А НЕ ТЕКСТ ПОВЕРХ ТЕКСТА. Растр 26.08: между блоком перевозки и
+   полосой SIGNATURE на бланке 01234 свободной бумаги НЕТ ВООБЩЕ, и красная строка, куда
+   её ни двинь, ложится на чужие буквы. Двигать дальше некуда — значит она должна читаться
+   поверх: белый фон, рамка цвета отказа, тень. Печать её всё равно не берёт (ниже).
+   ⭐ Правило общее: так же спасётся любая другая форма с плотной вёрсткой. */
+.fk-msg { color: #dc2626; font-size: 13px; line-height: 1.35; margin-top: 3px;
+          background: #fff; border: 1.5px solid #dc2626; border-radius: 7px;
+          padding: 5px 9px; box-shadow: 0 1px 4px rgba(0,0,0,.18); z-index: 6; }
 
 /* "N remaining" counter + submit (§1) */
 .fk-counter { font-size: 12px; font-weight: 700; color: #92400e; background: #fffbeb;
