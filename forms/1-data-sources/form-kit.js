@@ -1753,6 +1753,13 @@ document.addEventListener('click', function (e) {
         res = await CFG.submit(data);
       } else if (EMBED.active) { res = await EMBED.save(data.formData, data.signatures, data.signatureDate); }
       else {
+        /* ⭐ ПРОХОД ИНТЕРВЬЮ ЕДЕТ СЛУЖЕБНЫМ КЛЮЧОМ. Функция поднимает его в колонку и
+           вычищает из данных — в подаче он не остаётся. Ключ ставит интервью в память
+           сидения; нет интервью — нет ключа, и всё как было. */
+        try {
+          var _pass = sessionStorage.getItem('pa_interview_pass');
+          if (_pass) data.formData = Object.assign({}, data.formData, { _interview_pass: _pass });
+        } catch (_) {}
         res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP, p_form_version: fkVersion(), p_token: fkToken() });
       }
       /* ⛔ БЕЗЫМЯННОЙ ПОДАЧЕ ОБЕЩАТЬ «В ДЕЛЕ» НЕЛЬЗЯ (26.08). У неё нет ключа ребёнка:
