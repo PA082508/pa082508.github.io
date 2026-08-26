@@ -87,6 +87,21 @@ function rpc(fn, body){
 /* ⛔ БЕЗ ТОКЕНА ЭКРАН НЕ ГАДАЕТ. Нет именной ссылки — нет семьи; показать «образец»
    значило бы показать чужих детей. Говорим прямо и предлагаем то, что человек может
    сделать: открыть ссылку своего центра. */
+/* ⛔ ОТКАЗ НАБОРА — НЕ ОТКАЗ ССЫЛКИ, И ГОВОРИТЬ О НЁМ НАДО СВОИМИ СЛОВАМИ. Первая
+   редакция звала сюда `needLink`, и семья с исправной ссылкой читала «откройте страницу
+   по ссылке вашего центра» — совет, который она уже выполнила. Совет, который нельзя
+   исполнить, хуже молчания: он перекладывает поломку на того, кто её не делал.
+   ⭐ Здесь названо, ЧТО не так с набором, и единственное, что семья может сделать. */
+function setProblem(what){
+  document.getElementById('step').textContent='';
+  document.getElementById('app').innerHTML=
+    '<h1>This set is not open right now</h1>'
+    +'<p>'+esc(what)+'</p>'
+    +'<div class="card a"><b>What to do</b><p class="sub" style="margin:4px 0 0">Ask your center '
+    +'for a current link or QR code \u2014 the packet itself is fine, it is this set that needs '
+    +'a fresh one.</p></div>';
+}
+
 function needLink(why){
   document.getElementById('step').textContent='';
   document.getElementById('app').innerHTML=
@@ -140,8 +155,37 @@ function isSignable(key){
     SIGNABLE[key] = !!(DICT && DICT.rows && DICT.rows.some(function(r){ return r.form===key }));
   return SIGNABLE[key];
 }
+/* ⛔ У НАБОРА ДВА МЕСТА ЖИТЕЛЬСТВА, И ВТОРОЕ ИНТЕРВЬЮ НЕ ЗНАЛО. Реестровые наборы
+   объявлены в `enroll-registry.json`; КАСТОМНЫЕ собраны директором в билдере и живут
+   строкой `menumaker.packet_sets` — их состав достаётся только через `resolve_packet_set`.
+   Витрина пакетов умеет это с 22.07; интервью — не умело, и главный набор новых семей
+   («Family's package forms», 9 бумаг) собирался ПУСТЫМ.
+   ⭐ Стационарный QR несёт `?set=<uuid>` — по нему набор и опознаётся. */
+var DBSET=null;   // {keys:[…]} | {closed:true} | {empty:true} | {error:true}
+var IS_UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(SET);
+function resolveDbSet(){
+  if(!IS_UUID || ONLY.length || !CENTER) return Promise.resolve(null);
+  /* ⛔ ФУНКЦИЯ ОТДАЁТ `text[]`, А НЕ ОБЪЕКТ — и три исхода различаются формой ответа, а
+     не полем в нём. Толкование ОДНО НА ДВЕ ДВЕРИ и списано с витрины дословно: `null` —
+     набор в архиве, чужой центр или выдуманный ключ; пустой список — набор есть, бумаг
+     в нём нет; иначе состав.
+     ⚠️ Разойдись это толкование с витриной — две двери сказали бы семье разное об одном
+     наборе, и правой не была бы ни одна. */
+  return rpc('resolve_packet_set',{p_center_slug:CENTER,p_set:SET})
+    .then(function(keys){
+      if (keys === null) return { closed:true };
+      if (!Array.isArray(keys) || !keys.length) return { empty:true };
+      return { keys:keys };
+    })
+    .catch(function(){ return {error:true} });
+}
+
 function slotsOfSet(){
   if (ONLY.length) return ONLY;
+  /* ⛔ СОСТАВ ИЗ БД БЕРЁТСЯ РОВНО ТАК ЖЕ, КАК НА ВИТРИНЕ: `keys` набора и есть список
+     бумаг. Ветку «закрыт/пуст» сюда не пускаем — о ней говорит экран, а не пустой
+     список: молчаливый пустой пакет и был бы тем дефектом, который мы чиним. */
+  if (DBSET && DBSET.keys && DBSET.keys.length) return DBSET.keys;
   var pk = REG && REG.packets && REG.packets[SET];
   if (!pk || !pk.slots) return [];
   return pk.slots.filter(function(s){ return s.section!=='if_applicable' }).map(function(s){ return s.key });
@@ -169,6 +213,23 @@ Promise.all([
 ]).then(function(v){
   DICT=v[0]; REG=v[1];
   ONLY=ONLY.map(succForm);
+  return resolveDbSet().then(function(ds){
+    DBSET=ds;
+    /* ⛔ ПУСТОЙ СОСТАВ ВНУТРИ ИНТЕРВЬЮ — ГОВОРЯЩИЙ ДЕФЕКТ, А НЕ FAIL-OPEN (слово
+       владельца 26.08). Увести молча значило бы спрятать поломку от того единственного,
+       кто может её починить: центр так и не узнал бы, что его набор закрыт или пуст.
+       ⭐ Дверь на витрине уводит в список — и правильно: там речь о ДРУГОМ выборе.
+       Здесь набор уже назван, и сказать надо, что с ним не так. */
+    if (ds && (ds.closed || ds.empty || ds.error)) {
+      return setProblem(ds.closed ? 'This set is closed, or it belongs to another center.'
+                      : ds.empty  ? 'This set has no forms in it yet.'
+                      : 'We could not open this set just now.');
+    }
+    return afterRegistry();
+  });
+}).catch(function(e){ needLink(String(e&&e.message||e)) });
+
+function afterRegistry(){
   /* ⭐ БЕЗ КЛЮЧА — НЕ ОТКАЗ, А ДРУГОЕ НАЧАЛО (заказ владельца 26.08). По QR со стойки
      приходит НОВАЯ семья: спрашивать её нам некого, и мы спрашиваем ЕЁ САМУ.
      ⛔ Префилла у такого прохода нет, и это норма, а не поломка: нечего было заполнять. */
@@ -197,7 +258,7 @@ Promise.all([
     document.getElementById('ctr').textContent='Play Academy'+(CENTER?' \u00b7 '+CENTER:'');
     render();
   });
-}).catch(function(e){ needLink(String(e&&e.message||e)) });
+}
 
 /* ⛔ ФОРМЫ НАЗЫВАЮТСЯ ЧЕЛОВЕЧЕСКИ, А НЕ КЛЮЧОМ. Находка владельца на показе: очередь
    подписания звала бумаги `parent_consent`, `dcy_01234`, `iea` — это адреса в коде, а не
