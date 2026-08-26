@@ -40,6 +40,9 @@ p{margin:0 0 10px}
 blockquote{margin:0;padding:11px 14px;border-left:3px solid var(--green);background:#fbfcfb;font-style:italic;font-size:13.5px}
 .attrib{font-size:11.5px;color:var(--mut);margin-top:6px}
 .chip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--gl);color:var(--green);border:1px solid #cfe0d5}
+  .pblk{font-size:15px;font-weight:800;color:#0f4c35;margin:18px 0 6px;
+        padding-bottom:4px;border-bottom:1.5px solid #d9e2dc}
+  .pblk:first-of-type{margin-top:6px}
 </style></head><body>
 <div class="bar"><span id="ctr">Play Academy</span><span id="step">Before you start</span></div>
 <div class="wrap"><div id="app"></div></div>
@@ -403,15 +406,69 @@ function stage1(){
     +'<button class="btn" onclick="STEP=1;render()">Start</button></div>';
 }
 
+/* ── БЛОКИ ПО ЧЕЛОВЕКУ (заказ владельца 26.08) ─────────────────────────────────
+   ⛔ ПЛОСКИЙ СПИСОК СЕМЕЙНЫХ ВОПРОСОВ ЧИТАЕТСЯ КАК АНКЕТА, А НЕ КАК РАЗГОВОР. Мать
+   отвечала про телефон отца между вопросом об адресе и вопросом об экстренном контакте:
+   поля одного человека были разбросаны, и заполнять их приходилось прыжками.
+   ⭐ ГРУППИРОВКА ВЫВОДИТСЯ ИЗ КЛЮЧЕЙ, а не расписывается руками: каноникалы уже несут
+   `parent1.*`, `parent2.*`, `ec1.*`, `ec2.*`. Новый человек в словаре получит свой блок
+   сам — списка имён в коде нет и не будет (класс «список протухнет»).
+   ⛔ ВНУТРИ БЛОКА — ПОРЯДОК БЛАНКА. Сортировка «вопросы с пояснением наверх» (24.08)
+   внутри блоков НЕ применяется: порядок бумаги главнее нашей заботы о пояснении. */
+var PERSON_BLOCKS = [
+  { pfx:'parent1.',    title:'Parent 1' },
+  { pfx:'parent2.',    title:'Parent 2' },
+  { pfx:'emergency1.', title:'Emergency contact 1' },
+  { pfx:'emergency2.', title:'Emergency contact 2' },
+];
+
+/* ⚠️ ПОРЯДКА БЛАНКА В СЛОВАРЕ НЕТ. Показ 26.08 это и выявил: строки словаря идут по
+   АЛФАВИТУ ключа внутри формы (`accommod, address, child_name, city, development, dob…`),
+   а порядок бумаги живёт в конфигах самих бланков (координаты x/y), куда интервью не
+   смотрит. Настоящая бумажная очередь потребует поля `ord` в словаре, собранного из
+   конфигов форм, — это отдельная работа, и она названа в докладе.
+   ⭐ ПОКА — ЯВНАЯ ЧЕЛОВЕЧЕСКАЯ ОЧЕРЁДНОСТЬ ВНУТРИ ЧЕЛОВЕКА: как называют себя людям, а не
+   как сортирует алфавит. Хвост каноникала, чего нет в списке — после него, алфавитом. */
+var FIELD_ORDER = ['name','absent','dob','relation','relation_other','phone','phone.cell',
+  'phone.home','phone.day','phone.work','email','address.same_as_child','address.street',
+  'address.city','address.state','address.zip','employer','may_pick_up','may_not_pick_up'];
+
+function fieldRank(canonical){
+  var tail = canonical.split('.').slice(1).join('.');
+  var i = FIELD_ORDER.indexOf(tail);
+  return i < 0 ? 900 : i;
+}
+
+function personBlocks(list){
+  var used = {}, out = [];
+  PERSON_BLOCKS.forEach(function(b){
+    var mine = list.filter(function(a){ return a.canonical.indexOf(b.pfx)===0 });
+    if(!mine.length) return;
+    mine.sort(function(x,y){
+      var d = fieldRank(x.canonical) - fieldRank(y.canonical);
+      return d || x.canonical.localeCompare(y.canonical);
+    });
+    mine.forEach(function(a){ used[a.canonical]=1 });
+    out.push({ title:b.title, items:mine });
+  });
+  /* ⛔ ОСТАЛЬНОЕ НЕ ТЕРЯЕТСЯ И НЕ ПРЯЧЕТСЯ: адрес дома, доверенные на забор и прочее
+     семейное идут последним блоком — потерять вопрос страшнее, чем показать его не в
+     самой красивой группе. Сторож полноты числом это же и стережёт. */
+  var rest = list.filter(function(a){ return !used[a.canonical] });
+  if(rest.length) out.push({ title:'The rest about your family', items:rest });
+  return out;
+}
+
 function familyBlock(){
   var q=PLAN.familyQuestions, c=q.counts, tot=c.answered+c.empty+c.conflict;
-  var body=q.family.slice(0,7).map(qCard).join('');
+  var body=personBlocks(q.family).map(function(b){
+    return '<h2 class="pblk">'+esc(b.title)+'</h2>'+b.items.map(qCard).join('');
+  }).join('');
   return '<div><div class="prog"><i style="width:20%"></i></div>'
     +'<h1>About your family</h1><p class="sub">Asked once — it carries to every child.</p>'
     +'<p class="sub"><span class="chip">'+c.answered+' already answered</span> '
     +'<span class="chip">'+c.conflict+' to confirm</span> <span class="chip">'+c.empty+' new</span></p>'
     +body
-    +(q.family.length>7? '<p class="sub">… '+(q.family.length-7)+' more family questions</p>' : '')
     +(PLAN.rounds.length
       ? '<button class="btn" onclick="STEP=2;ROUND=0;render()">Next — about '+esc(PLAN.rounds[0].name)+'</button>'
       : '<button class="btn" onclick="STEP=3;render()">Next — income form</button>')+'</div>';
