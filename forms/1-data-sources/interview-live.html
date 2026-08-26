@@ -241,7 +241,63 @@ var Q_HINT = {
     "<b>Please tick one.</b> This is about one thing: <b>may we drive your child to a doctor or an urgent care when waiting for you would take too long?</b> “Yes” means we may; “No” means we wait for you or for the squad. <b>A real emergency does not depend on this answer:</b> we call 911 either way, a member of our staff goes with your child and stays until you arrive, and this form goes with them. <b>Either answer is fine — what does not work is leaving both boxes empty:</b> then we have no answer from you at all.",
 };
 
-function qCard(a){
+/* ── ОТВЕТЫ СЕМЬИ ЗА ЭТОТ ПРОХОД ───────────────────────────────────────────────
+   ⛔ ПОВОД (проба 26.08). Поля вопросов рисовались голыми `<input>` — без единого
+   обработчика. Набранное рукой не попадало НИКУДА: живая проба безымянного прохода
+   положила в память сидения 20 значений — все из блока самоназвания, лекарств и
+   обещания, — а слово, введённое в первое же поле семейного шага, в мешке отсутствовало
+   (`hasTyped:false`). То есть интервью спрашивало, а бумага уходила без ответа.
+   ⭐ ОДНО МЕСТО ПАМЯТИ. Не «состояние экрана» и не второй план: экран рисуется отсюда,
+   и сюда же пишет. Разойтись им негде — читатель и писатель один.
+   ⛔ ДВА ЯРУСА, ПОТОМУ ЧТО ВОПРОСЫ ДВУХ УРОВНЕЙ. Семейное спрашивается один раз и
+   ложится в бумагу КАЖДОГО ребёнка; детское принадлежит своему кругу. Сложи их в один
+   мешок — ответ о старшем уехал бы в бланк младшей. */
+var ANSWERS = { family:{}, child:{} };
+function ansBag(scope){
+  return scope==='family' ? ANSWERS.family
+       : (ANSWERS.child[scope] = ANSWERS.child[scope] || {});
+}
+function ansGet(scope, canon){ return ansBag(scope)[canon] }
+function ansSet(scope, canon, v){ ansBag(scope)[canon] = v }
+/* ⭐ ЖИВОЙ ОТВЕТ ГЛАВНЕЕ ПРОШЛОЙ БУМАГИ. Если семья набрала своё поверх подставленного —
+   в бланк едет набранное: она сегодня, а подача была год назад. */
+function ansOr(scope, canon, fallback){
+  var v = ansGet(scope, canon);
+  return (v===undefined) ? fallback : v;
+}
+
+/* ⛔ СЛУШАТЕЛЬ ОДИН И ВЕШАЕТСЯ ОДНАЖДЫ, НА КОРЕНЬ. Каждая перерисовка заменяет
+   СОДЕРЖИМОЕ `#app`, но не сам `#app`: обработчик на поле пришлось бы вешать заново
+   после каждой отрисовки, и один забытый путь отрисовки молча вернул бы дефект. */
+function bindAnswers(){
+  var app=document.getElementById('app'); if(!app || app.__ansBound) return;
+  app.__ansBound=1;
+  ['input','change'].forEach(function(ev){
+    app.addEventListener(ev, function(e){
+      var t=e.target; if(!t || !t.getAttribute) return;
+      var c=t.getAttribute('data-canon'); if(!c) return;
+      ansSet(t.getAttribute('data-scope')||'family', c,
+             t.type==='checkbox' ? (t.checked?'Yes':'') : t.value);
+    }, true);
+  });
+  /* ⛔ СПОРНЫЙ ВОПРОС ТОЖЕ ОТВЕЧАЕТСЯ. Кнопки выбора между двумя записями не имели
+     обработчика вовсе: семья нажимала, экран не менялся, выбор никуда не шёл. */
+  app.addEventListener('click', function(e){
+    var b=e.target.closest && e.target.closest('button.pick'); if(!b) return;
+    var c=b.getAttribute('data-canon'); if(!c) return;
+    var scope=b.getAttribute('data-scope')||'family';
+    var v=b.getAttribute('data-value');
+    ansSet(scope, c, v===null ? '' : v);
+    render();
+  }, true);
+}
+
+function qCard(a, scope){
+  scope = scope || 'family';
+  /* ⛔ ОБЛАСТЬ ПРИХОДИТ ЯВНО. `list.map(qCard)` подсунул бы вторым доводом НОМЕР
+     строки — и ответы всей семьи легли бы в мешок ребёнка с ключом «0». */
+  var mark = ' data-canon="'+esc(a.canonical)+'" data-scope="'+esc(scope)+'"';
+  var live = ansGet(scope, a.canonical);
   /* ⛔ ЯРЛЫК НЕСЁТ ПРЕФИКС СМЫСЛА. Срезав его, экран показывал два разных вопроса под
      одним словом NAME — родителя и экстренного контакта. Одинаковая подпись под разными
      вопросами хуже длинной. */
@@ -266,19 +322,21 @@ function qCard(a){
       if(row.from.indexOf(who)<0) row.from.push(who);
     });
     var opts = byValue.map(function(r){
-      return '<button class="pick">'+esc(r.value)+' <span class="sub">— from '+esc(r.from.join(', '))+'</span></button>'}).join('');
+      return '<button class="pick"'+mark+' data-value="'+esc(r.value)+'">'+esc(r.value)
+        +' <span class="sub">— from '+esc(r.from.join(', '))+'</span></button>'}).join('');
     return '<div class="q conf"><div class="lab">'+esc(label)+'</div>'
       +'<p style="margin:0 0 6px;font-size:13.5px"><b>We have two answers on file.</b> Which one is correct today?</p>'
-      +opts+'<button class="pick">Neither — let me type it</button>'+hint+'</div>';
+      +opts+'<button class="pick"'+mark+' data-value="">Neither — let me type it</button>'+hint+'</div>';
   }
   if (a.state==='answered'){
     return '<div class="q filled"><div class="lab">'+esc(label)+'</div>'
-      +'<input value="'+esc(a.value)+'">'
+      +'<input'+mark+' value="'+esc(live===undefined?a.value:live)+'">'
       +'<div class="src">filled in from <b>'+esc(a.found.map(function(f){return f.form}).join(', '))+'</b></div>'
       +hint+'</div>';
   }
   /* ⛔ ПУСТОЙ ВОПРОС — ГЛАВНЫЙ АДРЕСАТ ПОЯСНЕНИЯ. Именно здесь семья и бросает клетку. */
-  return '<div class="q"><div class="lab">'+esc(label)+'</div><input placeholder="—">'+hint+'</div>';
+  return '<div class="q"><div class="lab">'+esc(label)+'</div>'
+    +'<input'+mark+' value="'+esc(live===undefined?'':live)+'" placeholder="—">'+hint+'</div>';
 }
 
 /* ── БЛОК САМОНАЗВАНИЯ (STEP -1) ───────────────────────────────────────────────
@@ -366,6 +424,7 @@ function startAnon(){ STEP=-1; render(); }
 
 function render(){
   var app=document.getElementById('app'), s=document.getElementById('step');
+  bindAnswers();
   app.innerHTML='';
   if (STEP===-1){ s.textContent='Who you are'; app.appendChild(el(selfBlock())); bindSelf(); return }
   if (STEP===0){ s.textContent='Before you start'; app.appendChild(el(stage1())); return }
@@ -458,7 +517,8 @@ function personBlocks(list){
 function familyBlock(){
   var q=PLAN.familyQuestions, c=q.counts, tot=c.answered+c.empty+c.conflict;
   var body=personBlocks(q.family).map(function(b){
-    return '<h2 class="pblk">'+esc(b.title)+'</h2>'+b.items.map(qCard).join('');
+    return '<h2 class="pblk">'+esc(b.title)+'</h2>'
+      +b.items.map(function(a){ return qCard(a,'family') }).join('');
   }).join('');
   return '<div><div class="prog"><i style="width:20%"></i></div>'
     +'<h1>About your family</h1><p class="sub">Asked once — it carries to every child.</p>'
@@ -602,7 +662,7 @@ function childBlock(){
      оказывался как раз там. Пояснение на невидимом вопросе никого не спасает.
      ⭐ Поэтому вопросы, которым мы что-то объясняем, поднимаются наверх круга. */
   rest.sort(function(a,b){ return (Q_HINT[b.canonical]?1:0) - (Q_HINT[a.canonical]?1:0) });
-  var body=rest.slice(0,6).map(qCard).join('');
+  var body=rest.slice(0,6).map(function(a){ return qCard(a, r.key) }).join('');
   /* ⭐ БЛОК ОТКРЫВАЕТСЯ ПО ОТВЕТУ О ЗДОРОВЬЕ — как решено владельцем 24.08. */
   var kid=FAMILY.children.filter(function(c){return c.key===r.key})[0]||{};
   var meds='';
@@ -684,6 +744,23 @@ function stage2(){
      ссылки: их бланк и открывается им. */
   try {
     var bagByChild={};
+    /* ⭐ ОТВЕТЫ ЭТОГО ПРОХОДА ЛОЖАТСЯ ПОВЕРХ ПРЕФИЛЛА (26.08). Живое слово семьи старше
+       прошлой подачи: мать, исправившая телефон на экране, обязана увидеть исправленный
+       в бланке — иначе исправление было представлением, а не правкой.
+       ⛔ ИМЯ КЛЕТКИ БЕРЁТСЯ ИЗ СЛОВАРЯ, А НЕ ИЗ ГОЛОВЫ: у каноникала `child.dob` шесть
+       разных имён по бланкам. Записать своё — положить ответ мимо клетки.
+       ⛔ ДЕТСКОЕ БЬЁТ СЕМЕЙНОЕ, А НЕ НАОБОРОТ: круг ребёнка — разговор про ЭТОГО
+       ребёнка, и сказанное в нём точнее общего ответа семьи. */
+    subs.forEach(function(s){
+      var mine = (s.childKey && ANSWERS.child[s.childKey]) || {};
+      (DICT.rows||[]).forEach(function(r){
+        var v = mine[r.canonical];
+        if(v===undefined) v = ANSWERS.family[r.canonical];
+        if(r.form!==s.form || v===undefined || v==='') return;
+        s.formData = s.formData || {};
+        s.formData[r.key] = v;
+      });
+    });
     /* ⛔ ОБЕЩАНИЕ КЛАДЁТСЯ РЯДОМ С ФОРМОЙ, А НЕ В ЕЁ ТАБЛИЦУ. Таблица стр. 2 под подписью
        родителя и врача — это и есть разрешение; препарат, которого никто не разрешал, в
        ней выглядел бы разрешённым. Скрытые поля бланка забирают ответ в подачу. */
