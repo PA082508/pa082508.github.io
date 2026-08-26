@@ -182,6 +182,7 @@ var FIELDS = [
       Ставим на строку САМОЙ пары перевозки (y:646) и левее её клетки (x:34). */
    tx:34,ty:646, hx:84,hy:842,hw:1120,
    helpKey:'child.transport_by_center',
+   msgY:830, msgW:1120,   /* отказ — ниже поля ответа, где бумага пуста */
    /* ⛔ ПЕРВЫМ АБЗАЦЕМ — ЧТО ИМЕННО РАЗРЕШАЕТСЯ. Прежняя подсказка объясняла, что будет
       при 911, и НЕ говорила, о каком случае вопрос. Семья Nash прочла «911 вызовут в
       любом случае» и поставила No: раз вызовут, зачем разрешать что-то ещё. Запись её
@@ -220,6 +221,10 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       el=document.createElement('input'); el.type='checkbox'; el.className='cb';
       el.style.left=f.x+'px'; el.style.top=f.y+'px';
       if(f.excl) el.setAttribute('data-fk-exclusive',f.excl);   // form-kit initExclusive: Yes/No & has/hasn't pairs
+      /* ⭐ МЕСТО ОТКАЗА НАЗЫВАЕТ ФОРМА, А НЕ КИТ: только она знает, где на ЭТОЙ бумаге
+         пусто. Кит без этих атрибутов ведёт себя как прежде. */
+      if(f.msgY) el.setAttribute('data-fk-msg-y', f.msgY);
+      if(f.msgW) el.setAttribute('data-fk-msg-w', f.msgW);
       /* Подсказка живёт РЯДОМ с клеткой и печатается вместе с бланком: на бумаге у
          родителя её тоже видно. */
       /* ⛔ БЛАНК ПЛОТНЫЙ — ПОДСКАЗКА НЕ ЛОЖИТСЯ НА НЕГО ПОСТОЯННО. Первая редакция
