@@ -284,30 +284,50 @@ function qCard(a){
    разбор в центре превратится в гадание.
    ⛔ И БОЛЬШЕ ТОЖЕ НЕЛЬЗЯ: адрес, телефоны и прочее спросят сами формы набора. Второй
    опрос об одном — верный способ бросить пакет на первом экране. */
-var SELF = { adult:'', child:'', dob:'' };
+var SELF = { adult:'', children:[{ name:'', dob:'' }] };
+/* ⭐ ОДИН РАЗГОВОР — ОДИН ID. Проставляется всем подачам прохода, чтобы директор видел
+   шесть бумаг двух детей как ОДНУ семью, а не шесть строк подряд по времени. */
+var PASS_ID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+
+function selfReady(){
+  if(!SELF.adult.trim()) return false;
+  return SELF.children.length>0 && SELF.children.every(function(c){ return c.name.trim() && c.dob; });
+}
 
 function selfBlock(){
-  var ready = SELF.adult.trim() && SELF.child.trim() && SELF.dob;
+  var ready = selfReady();
   return '<div><h1>Let us start with who you are</h1>'
     +'<p class="sub">We have no forms for you yet \u2014 so nothing here is filled in for you. '
     +'Tell us these three, and the packet builds itself from there.</p>'
     +'<div class="card"><label>Your name<br><input id="sfAdult" value="'+esc(SELF.adult)+'"></label></div>'
-    +'<div class="card"><label>Your child\u2019s name<br><input id="sfChild" value="'+esc(SELF.child)+'"></label></div>'
-    +'<div class="card"><label>Child\u2019s date of birth<br><input id="sfDob" type="date" value="'+esc(SELF.dob)+'"></label></div>'
+    /* ⭐ ДЕТИ — СПИСКОМ, А НЕ ОДИН. Именной вход всегда знал братьев и сестёр
+       (get_prefill_siblings); безымянный обязан уметь то же, иначе новая ветвь входа
+       беднее старой по рамке — а это и есть то, чего делать нельзя. */
+    +SELF.children.map(function(c,i){
+      return '<div class="card"><b>Child '+(i+1)+'</b>'
+        +'<label>Name<br><input class="sfName" data-i="'+i+'" value="'+esc(c.name)+'"></label>'
+        +'<label>Date of birth<br><input class="sfDob" data-i="'+i+'" type="date" value="'+esc(c.dob)+'"></label>'
+        +(SELF.children.length>1?'<button class="btn2 sfDel" data-i="'+i+'">Remove</button>':'')
+        +'</div>'; }).join('')
+    +'<button class="btn2" id="sfAdd">+ Another child in this family</button>'
     +'<button class="btn" id="sfGo"'+(ready?'':' disabled')+'>Next</button>'
     +(ready?'':'<p class="sub">All three are needed \u2014 the date of birth is what tells your child apart from another with the same name.</p>')
     +'</div>';
 }
 
 function bindSelf(){
-  ['sfAdult','sfChild','sfDob'].forEach(function(id){
-    var e=document.getElementById(id); if(!e) return;
-    e.oninput=function(){
-      SELF[id==='sfAdult'?'adult':id==='sfChild'?'child':'dob']=e.value;
-      var g=document.getElementById('sfGo');
-      if(g) g.disabled=!(SELF.adult.trim()&&SELF.child.trim()&&SELF.dob);
-    };
-  });
+  var a=document.getElementById('sfAdult');
+  if(a) a.oninput=function(){ SELF.adult=a.value; var g=document.getElementById('sfGo'); if(g) g.disabled=!selfReady(); };
+  document.querySelectorAll('.sfName').forEach(function(e){
+    e.oninput=function(){ SELF.children[+e.getAttribute('data-i')].name=e.value;
+      var g=document.getElementById('sfGo'); if(g) g.disabled=!selfReady(); }; });
+  document.querySelectorAll('.sfDob').forEach(function(e){
+    e.oninput=function(){ SELF.children[+e.getAttribute('data-i')].dob=e.value;
+      var g=document.getElementById('sfGo'); if(g) g.disabled=!selfReady(); }; });
+  document.querySelectorAll('.sfDel').forEach(function(e){
+    e.onclick=function(){ SELF.children.splice(+e.getAttribute('data-i'),1); render(); }; });
+  var add=document.getElementById('sfAdd');
+  if(add) add.onclick=function(){ SELF.children.push({ name:'', dob:'' }); render(); };
   var g=document.getElementById('sfGo');
   if(g) g.onclick=function(){ if(g.disabled) return; if(buildAnonFamily()!==false){ STEP=0; render(); } };
 }
@@ -315,8 +335,13 @@ function bindSelf(){
 /* ⛔ СЕМЬЯ СОБИРАЕТСЯ ИЗ ОТВЕТОВ, А НЕ ИЗ ПУСТОТЫ. Ключа у ребёнка нет — его роль играет
    рукотворный `anon`; подача заходом 3 разберётся, кто это, и заведёт личность. */
 function buildAnonFamily(){
-  var pf = { child_name:SELF.child, dob:SELF.dob, parent_name:SELF.adult, _sources:{} };
-  FAMILY = { me:pf, children:[{ key:'anon', name:SELF.child, token:'', prefill:pf }],
+  /* ⛔ У КАЖДОГО РЕБЁНКА СВОЙ КЛЮЧ `anonN`: мешок ответов складывается по ключу, и один
+     ключ на всех смешал бы двоих в одном бланке — прецедент Rife, только без токенов. */
+  var kids = SELF.children.map(function(c,i){
+    return { key:'anon'+(i+1), name:c.name, token:'',
+             prefill:{ child_name:c.name, dob:c.dob, parent_name:SELF.adult, _sources:{} } }; });
+  var pf = kids[0].prefill;
+  FAMILY = { me:pf, children:kids,
              /* ⛔ `null`, А НЕ `false`: «не спрашивали» \u2260 «отказались». Каскад сам
                 поднимет согласие первым листом \u2014 новая семья его ещё не давала. */
              hasConsent:null };
@@ -328,7 +353,7 @@ function buildAnonFamily(){
   PLAN = PAInterview.planInterview({
     dict:DICT, registry:REG, baseForms:base,
     familyFacts:{ hasEsignConsent: FAMILY.hasConsent },
-    children:[{ key:'anon', name:SELF.child, facts:factsOf(pf), prefill:null }],
+    children:kids.map(function(k){ return { key:k.key, name:k.name, facts:factsOf(k.prefill), prefill:null }; }),
     prefill:{} });
   document.getElementById('ctr').textContent='Play Academy'+(CENTER?' \u00b7 '+CENTER:'');
   return true;
@@ -624,8 +649,10 @@ function stage2(){
        `child.dob` шесть разных имён по формам (`dob`, `date_of_birth`, `birthdate`…).
        Записать своё — значит положить ответ мимо клетки, и форма откроется пустой. */
     if(!TOKEN){
-      var CANON={ 'child.name':SELF.child, 'child.dob':SELF.dob, 'parent1.name':SELF.adult };
+      var byKey={}; FAMILY.children.forEach(function(c){ byKey[c.key]=c; });
       subs.forEach(function(s){
+        var mine=byKey[s.childKey]||FAMILY.children[0];
+        var CANON={ 'child.name':mine.name, 'child.dob':mine.prefill.dob, 'parent1.name':SELF.adult };
         (DICT.rows||[]).forEach(function(r){
           if(r.form!==s.form) return;
           var v=CANON[r.canonical];
