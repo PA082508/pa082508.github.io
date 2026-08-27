@@ -557,13 +557,17 @@ function formsCount(){ try { return baseForms().length } catch(e){ return 0 } }
 /* Чего не хватает — ИМЕНАМИ, а не числом. «All three are needed» не говорило КОМУ. */
 function selfGaps(){
   var out=[];
-  if(!SELF.adult.trim()) out.push('We still need your name.');
+  /* ⛔ ПОРЯДОК СТРОК = ПОРЯДОК КАРТОЧЕК. Экран переставили (ребёнок первым), а список
+     чего не хватает продолжал начинаться со взрослого: человек читал «нужно ваше имя»
+     и шёл искать его наверху, где теперь стои́т ребёнок. Указатель, ведущий не туда,
+     хуже отсутствующего. */
   SELF.children.forEach(function(c,i){
     var n=!c.name.trim(), d=!c.dob;
     if(n&&d) out.push('Child '+(i+1)+' needs a name and a date of birth.');
     else if(n) out.push('Child '+(i+1)+' needs a name.');
     else if(d) out.push('Child '+(i+1)+' needs a date of birth.');
   });
+  if(!SELF.adult.trim()) out.push('We still need your name.');
   return out;
 }
 
@@ -571,12 +575,16 @@ function selfBlock(){
   var ready = selfReady();
   var n = formsCount();
   /* ⛔ «0 forms» НЕВОЗМОЖНО СКАЗАТЬ ЧЕСТНО — при пустом составе говорим общей фразой. */
+  /* ⛔ ПЕРВАЯ СТРОКА — СЛОВА ВЛАДЕЛЬЦА, ДОСЛОВНО (канон 27.08). Она отвечает на
+     единственный вопрос, с которым семья открывает эту страницу: зачем всё это.
+     Редактировать её нельзя — ни ради краткости, ни ради ритма. */
+  var lead = '<b>To fill in your enrollment forms, answer all the questions in this interview. '
+           + 'At the end you only sign.</b>';
+  /* ⛔ «0 forms» НЕЛЬЗЯ СКАЗАТЬ ЧЕСТНО — при пустом составе обещаем без числа. */
   var promise = n>0
-    ? 'Answer the questions in this one interview and we will fill in every form your center '
-      +'needs \u2014 <b>'+n+' form'+(n===1?'':'s')+'</b> for one child, more for each additional '
-      +'child, depending on their ages. At the end you only sign. Tell us who you are to begin.'
-    : 'Answer the questions in this one interview and we will fill in every form your center '
-      +'needs. At the end you only sign. Tell us who you are to begin.';
+    ? 'Your answers become <b>'+n+' form'+(n===1?'':'s')+'</b> for one child, more for each '
+      +'additional child, depending on their ages. First tell us about your child, then who you are.'
+    : 'Your answers become every form your center needs.';
   /* ⭐ РЕБЁНОК ПЕРВЫМ (вариант Б, слово владельца 27.08). Взрослый стоял первым, и родитель
      вписывал СЕБЯ в поле имени ребёнка: спутать легче всего первое поле. Теперь первое, что
      видит человек, — карточка «Child 1», и ошибиться нечем. */
@@ -590,7 +598,8 @@ function selfBlock(){
         +(c.dob?'':'<p class="dobhint">Not chosen yet \u2014 tap to pick.</p>')+'</label>'
       +(SELF.children.length>1?'<button class="btn2 sfDel" data-i="'+i+'">Remove</button>':'')
       +'</div>'; }).join('');
-  return '<div><h1>Let us start with who you are</h1>'
+  return '<div><h1>Let us start with your child</h1>'
+    +'<p class="sub">'+lead+'</p>'
     +'<p class="sub">'+promise+'</p>'
     +kids
     +'<button class="btn2" id="sfAdd">+ Another child in this family</button>'
