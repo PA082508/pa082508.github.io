@@ -606,7 +606,7 @@
         },
         {
           "at": "2026-07-15",
-          "note": "FLIP → v1 on Nikolay's «поля ок». Mockup taken into the kit (2ee96b7/48e90bb): centre tabs removed (finding #6), Ridge-hardcoded header replaced by ?center= with blank honest degradation, logo → shared pa-logo.png (161KB→24KB). 9 required; OFFICE SETUP badged, never required, director-prefilled via session packet. Channel submit_enrollment_form, submission_type=start_form. OPEN (not blockers): Alpha e-mail unconfirmed, pearl/alpha fax empty."
+          "note": "FLIP → v1 on Nikolay's «поля ок». Mockup taken into the kit (2ee96b7/48e90bb): center tabs removed (finding #6), Ridge-hardcoded header replaced by ?center= with blank honest degradation, logo → shared pa-logo.png (161KB→24KB). 9 required; OFFICE SETUP badged, never required, director-prefilled via session packet. Channel submit_enrollment_form, submission_type=start_form. OPEN (not blockers): Alpha e-mail unconfirmed, pearl/alpha fax empty."
         }
       ],
       "note": "Start here — this begins your enrollment. Registration is confirmed when the fee is paid. (Описание карточки для случая, когда форма не объявлена ни одним набором: витрина синтезирует слот из forms{} и берёт label/note отсюда. Канон формы-двери.)",
@@ -632,11 +632,11 @@
           "ridge": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_ridge_v1.pdf"
         }
       },
-      "note": "Keep-for-your-records booklet, 43pp, effective 1/1/2025. Built per center from the Parma/Pearl source (PH25handbookP.pdf): running header, page-5 contact block (address / licence / phone) and the ADMINISTRATOR line are the centre's own; every other page is byte-identical. APPROVED BY: Tatiana Kogan is org-wide and untouched, as are EFFECTIVE DATE / POLICY NO. Licences: pearl 300629, alpha 307982 (6-digit legacy scheme), ridge 2190020475 (10-digit scheme, confirmed off the wall by the owner 2026-07-15). Alpha/Ridge fax + e-mail are not held anywhere, so those lines are dropped rather than carrying Pearl's.",
+      "note": "Keep-for-your-records booklet, 43pp, effective 1/1/2025. Built per center from the Parma/Pearl source (PH25handbookP.pdf): running header, page-5 contact block (address / licence / phone) and the ADMINISTRATOR line are the center's own; every other page is byte-identical. APPROVED BY: Tatiana Kogan is org-wide and untouched, as are EFFECTIVE DATE / POLICY NO. Licences: pearl 300629, alpha 307982 (6-digit legacy scheme), ridge 2190020475 (10-digit scheme, confirmed off the wall by the owner 2026-07-15). Alpha/Ridge fax + e-mail are not held anywhere, so those lines are dropped rather than carrying Pearl's.",
       "history": [
         {
           "at": "2026-07-15",
-          "note": "v1 per-center build on owner's «ок пара» + attribution ruling: POLICY COUNCIL (Cinthya Patsko, Carmen Santiago) → ADMINISTRATOR: <centre head> ×26; Carmen Santiago removed throughout; name spelling corrected per owner (Cynthia, not the source booklet's Cinthya)."
+          "note": "v1 per-center build on owner's «ок пара» + attribution ruling: POLICY COUNCIL (Cinthya Patsko, Carmen Santiago) → ADMINISTRATOR: <center head> ×26; Carmen Santiago removed throughout; name spelling corrected per owner (Cynthia, not the source booklet's Cinthya)."
         }
       ]
     },
@@ -686,7 +686,7 @@
         },
         {
           "at": "2026-07-15",
-          "note": "v1 LIVE on Nikolay's «флип staff» after preview. Was dark since 2026-07-14 (efb0576 unpublished an accidental publish); gate was «staff-превью ПОСЛЕ фикса №5» — fix #5 shipped in 31027c2, preview seen 2026-07-15. Micro-edits into the kit standard: staff banner (data-fk-banner-msg), data-fk-mint-name=#employee_name, centre picker stripped (finding #6)."
+          "note": "v1 LIVE on Nikolay's «флип staff» after preview. Was dark since 2026-07-14 (efb0576 unpublished an accidental publish); gate was «staff-превью ПОСЛЕ фикса №5» — fix #5 shipped in 31027c2, preview seen 2026-07-15. Micro-edits into the kit standard: staff banner (data-fk-banner-msg), data-fk-mint-name=#employee_name, center picker stripped (finding #6)."
         }
       ]
     },
@@ -705,7 +705,7 @@
       "signer": "staff",
       "audience": "staff",
       "channelKind": "letter_ack",
-      "note": "FIRST INSTANCE of the «Letter with signature» frame (spec 2026-08-06, b73dff1): title · letter body · universal signature window · visible document version · DB trail. The page carries the whole staff package on ONE screen above the pad — §1 the letter (VERBATIM, owner 2026-08-07), §2 the SafePass overview, §3 the one-page teacher guide, §4 the Q&A — so there is nothing to read elsewhere before signing. ?section=letter|overview|guide|qa isolates one part for print; ?print=1 drops the chrome. No staff list is ever exposed on this public page: the signer types First + Last freely and the centre comes from ?center=. Draw-only signature (canon 27.07) with the date as an auto STAMP. CHANNEL: submit_enrollment_form, submission_type = letter_ack — the KIND is shared by every future letter under signature; WHICH letter was signed is data (letter_key / letter_version / package_version), so a new letter is a new body in this shape, not a new table, route or submission type. MAIL THE stableUrl, never the versioned file: a file URL freezes the edition the day it is sent. · ИЗДАНИЕ v2 (11.08.2026): текст обезличен целиком — ни центра, ни комнаты, ни даты старта, ни имени сотрудника (греп-проба на ноль в видимом тексте); центр приходит машинным путём из ?center=. Добавлен раздел «What the parent sees»: учитель стоит по эту сторону планшета, а спрашивают его.",
+      "note": "FIRST INSTANCE of the «Letter with signature» frame (spec 2026-08-06, b73dff1): title · letter body · universal signature window · visible document version · DB trail. The page carries the whole staff package on ONE screen above the pad — §1 the letter (VERBATIM, owner 2026-08-07), §2 the SafePass overview, §3 the one-page teacher guide, §4 the Q&A — so there is nothing to read elsewhere before signing. ?section=letter|overview|guide|qa isolates one part for print; ?print=1 drops the chrome. No staff list is ever exposed on this public page: the signer types First + Last freely and the center comes from ?center=. Draw-only signature (canon 27.07) with the date as an auto STAMP. CHANNEL: submit_enrollment_form, submission_type = letter_ack — the KIND is shared by every future letter under signature; WHICH letter was signed is data (letter_key / letter_version / package_version), so a new letter is a new body in this shape, not a new table, route or submission type. MAIL THE stableUrl, never the versioned file: a file URL freezes the edition the day it is sent. · ИЗДАНИЕ v2 (11.08.2026): текст обезличен целиком — ни центра, ни комнаты, ни даты старта, ни имени сотрудника (греп-проба на ноль в видимом тексте); центр приходит машинным путём из ?center=. Добавлен раздел «What the parent sees»: учитель стоит по эту сторону планшета, а спрашивают его.",
       "history": [
         {
           "at": "2026-08-07",
@@ -745,7 +745,7 @@
       "history": [
         {
           "at": "2026-08-07",
-          "note": "v1 published with the staff package, effective Monday, August 10. Held back from the first publish of the package because the verbatim text had not arrived; released the same day it did — nothing was authored on the centre's behalf."
+          "note": "v1 published with the staff package, effective Monday, August 10. Held back from the first publish of the package because the verbatim text had not arrived; released the same day it did — nothing was authored on the center's behalf."
         }
       ]
     },

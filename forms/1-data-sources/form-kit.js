@@ -29,8 +29,8 @@
   var SUPA_URL = 'https://trrmyqfpxntmgxnqkikp.supabase.co';
   var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
   var ORG = '3a9a290e-7e49-491e-946b-ad86f2399910';
-  // ⚠ THIS MAP IS THE SECOND HALF OF A CENTRE. enroll-registry.json (the storefront's
-  // half) and this map (the form's half) must be edited in the SAME commit — a centre
+  // ⚠ THIS MAP IS THE SECOND HALF OF A CENTER. enroll-registry.json (the storefront's
+  // half) and this map (the form's half) must be edited in the SAME commit — a center
   // present in only one of them produces the worst failure we have: the storefront hands
   // out a link that opens a form which then refuses to file. That is exactly how take 6
   // died (registry got zzdemo in 3695e64, this map did not). `--rehearse-only` now opens
@@ -40,7 +40,7 @@
     pearl: '881ef4ce-1a27-4d3b-aa60-59d2a307bf2b',
     alpha: '099c404b-e6d3-4543-9d9a-1fb11a2ee62d',
     ridge: '4aed7d5a-00d0-4a4c-ac99-311046ad2027',
-    zzdemo: '0de1b5a4-e6d8-4e34-a5e4-e3dde23e1c6c',   // one-time demo centre — not a live site, not in any claim
+    zzdemo: '0de1b5a4-e6d8-4e34-a5e4-e3dde23e1c6c',   // one-time demo center — not a live site, not in any claim
   };
   // Per-center identity for the resolved-center header (center-auto-detect spec).
   var CENTERS_INFO = {
@@ -56,7 +56,7 @@
   // meals not served here (PM snack / evening snack) are NEVER auto-checked.
   var CM = { b: ['07:00', '08:00'], as: ['09:15', '09:45'], l: ['11:30', '12:30'], su: ['15:30', '16:30'] };
   // zzdemo has ZERO rows in menumaker.meal_schedule (measured 2026-07-27). It gets the same
-  // uniform slots so a packet form's §4 behaves like a real centre's; seeding the demo centre's
+  // uniform slots so a packet form's §4 behaves like a real center's; seeding the demo center's
   // real schedule is a DB write and waits for Nikolay's word.
   var CENTER_MEALS = { pearl: CM, alpha: CM, ridge: CM, zzdemo: CM };
   var MEALS = ['b', 'as', 'l', 'ps', 'su', 'es'];
@@ -97,7 +97,7 @@
   function urlCenterParam() { try { return new URLSearchParams(location.search).get('center') || ''; } catch (_) { return ''; } }
   // The old text ("open this from your center's packet link or QR") misdiagnoses the
   // commonest case out loud: the parent DID open it from the packet link — the link
-  // carried a centre this build of the form does not know. Name what was seen.
+  // carried a center this build of the form does not know. Name what was seen.
   /* ⚠️ ДО НАЖАТИЯ И ПОСЛЕ — РАЗНЫЕ СЛОВА. «Nothing was sent» на только что открытой форме
      сообщает о несостоявшейся отправке, которой не было: человек ничего не нажимал.
      Такая плашка либо пугает, либо (чаще) не читается вовсе как относящаяся к делу — и
@@ -1310,7 +1310,7 @@ document.addEventListener('click', function (e) {
       b.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#fff8e6;border-bottom:2px solid #b45309;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#7a4a00');
       b.innerHTML = '<strong>This link was for ' + (st.child_name || 'your child') +
         ' and expired on ' + (st.expired_on || 'an earlier date') + '.</strong> ' +
-        'Ask the centre for a new one — nothing you filled was lost.';
+        'Ask the center for a new one — nothing you filled was lost.';
       document.body.insertBefore(b, document.body.firstChild);
     } catch (_) {}
   }
@@ -1709,7 +1709,7 @@ document.addEventListener('click', function (e) {
 
   async function submit() {
     if (_submitting || _submitted) return;   // in-flight / already-submitted guard
-    // Centre FIRST. It used to be checked after field validation, so a parent learned
+    // Center FIRST. It used to be checked after field validation, so a parent learned
     // the link was unusable only after filling and signing the whole form — take 6 to
     // the letter. The bigger blocker is named on the first press, whenever it comes.
     if (!centerUuid()) { refuseNoCenter(); return; }   // #6 still absolute — but now it REFUSES OUT LOUD
@@ -2210,7 +2210,7 @@ document.addEventListener('click', function (e) {
     var code = centerCode(), info = CENTERS_INFO[code], has = !!centerUuid();
     if (chip) { if (info) { chip.textContent = '📍 ' + info.name.replace(/^Play Academy\s+/, ''); chip.style.display = ''; } else { chip.style.display = 'none'; } }
     if (_tbBanner) { _tbBanner.style.display = has ? 'none' : ''; if (!has) _tbBanner.textContent = unresolvedCenterText(_centerTried); }
-    // Finding #6 is enforced in submit() — no centre resolved, no write, ever. The
+    // Finding #6 is enforced in submit() — no center resolved, no write, ever. The
     // button nevertheless stays ENABLED: a disabled button eats the click and answers
     // nothing, which is how a fully-filled, fully-signed form went four presses with no
     // word either way. Unarmed it looks muted; pressed, it says what is wrong.
