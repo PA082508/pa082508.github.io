@@ -42,6 +42,24 @@ p{margin:0 0 10px}
 .ok{color:#0f7a4a}.next{color:var(--green)}.wait{color:#9aa5a0}.info{color:var(--amber)}
 blockquote{margin:0;padding:11px 14px;border-left:3px solid var(--green);background:#fbfcfb;font-style:italic;font-size:13.5px}
 .attrib{font-size:11.5px;color:var(--mut);margin-top:6px}
+/* ⛔ ПОЛЯ БЛОКА САМОНАЗВАНИЯ ЖИЛИ БЕЗ ШИРИНЫ. Правило `width:100%` было только у `.q input`,
+   а этот блок — `.card`: браузер решал сам, и на телефоне «Name» и «Date of birth» вставали
+   в одну строку, а `<b>Child 1</b>` прилипал к метке — «Child 1Name».
+   ⭐ 16px НЕ КОСМЕТИКА: при меньшем размере iOS увеличивает страницу на фокусе поля, и
+   семья оказывается на съехавшем экране, ничего для этого не сделав. */
+.card b{display:block;margin-bottom:4px}
+.card label{display:block;margin-top:9px;font-size:12.5px;font-weight:600;color:var(--mut)}
+.card label input{display:block;width:100%;box-sizing:border-box;margin-top:3px;
+  font:inherit;font-size:16px;padding:10px;border:1.5px solid var(--line);border-radius:8px;background:#fff}
+/* ⛔ ЗАПЕРТАЯ КНОПКА ОБЯЗАНА ВЫГЛЯДЕТЬ ЗАПЕРТОЙ. `disabled` стоял и работал, но фон
+   оставался полным зелёным: репетиция 27.08 прочла это как «кнопка мёртвая». */
+.btn:disabled{background:#e3e9e5;color:#8a968f;cursor:default;font-weight:600}
+/* ⛔ ПУСТОТА ДАТЫ НЕВИДИМА ЧУЖИМИ СРЕДСТВАМИ: iOS Safari рисует в пустом `input[type=date]`
+   СЕГОДНЯШНЮЮ дату. Значение при этом пусто и обязательным остаётся — врёт только экран.
+   Поэтому пустоту показываем СВОИМ знаком поверх чужого рендера. */
+.card label.miss input{border-color:#c0392b;background:#fff8f7}
+.missline{color:#c0392b;font-size:12.5px;font-weight:600;margin:6px 0 0}
+.dobhint{color:var(--mut);font-size:12px;font-weight:400;margin:3px 0 0}
 .back{display:inline-block;margin:0 0 10px;padding:6px 2px;border:0;background:none;font:inherit;font-size:13.5px;color:var(--mut);cursor:pointer}
 .back:hover{color:#111;text-decoration:underline}
 .chip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--gl);color:var(--green);border:1px solid #cfe0d5}
@@ -529,36 +547,87 @@ function selfReady(){
   return SELF.children.length>0 && SELF.children.every(function(c){ return c.name.trim() && c.dob; });
 }
 
+/* Сколько бумаг наберётся у одного ребёнка — ЖИВЫМ числом состава открытого набора.
+   ⛔ НЕ КОНСТАНТОЙ: у каждого набора оно своё (Family's 8 · admission 7 · infant 8 ·
+   toddler 7 · school_age 5 · Renewal 1), и вписанное однажды разошлось бы молча.
+   ⛔ УСЛОВНЫЕ СЛОТЫ В СЧЁТ НЕ ИДУТ — `slotsOfSet()` отсекает `if_applicable` сам:
+   обещание не должно превышать выдачу. Согласие считается отдельным листом и в N нет. */
+function formsCount(){ try { return baseForms().length } catch(e){ return 0 } }
+
+/* Чего не хватает — ИМЕНАМИ, а не числом. «All three are needed» не говорило КОМУ. */
+function selfGaps(){
+  var out=[];
+  if(!SELF.adult.trim()) out.push('We still need your name.');
+  SELF.children.forEach(function(c,i){
+    var n=!c.name.trim(), d=!c.dob;
+    if(n&&d) out.push('Child '+(i+1)+' needs a name and a date of birth.');
+    else if(n) out.push('Child '+(i+1)+' needs a name.');
+    else if(d) out.push('Child '+(i+1)+' needs a date of birth.');
+  });
+  return out;
+}
+
 function selfBlock(){
   var ready = selfReady();
+  var n = formsCount();
+  /* ⛔ «0 forms» НЕВОЗМОЖНО СКАЗАТЬ ЧЕСТНО — при пустом составе говорим общей фразой. */
+  var promise = n>0
+    ? 'Answer the questions in this one interview and we will fill in every form your center '
+      +'needs \u2014 <b>'+n+' form'+(n===1?'':'s')+'</b> for one child, more for each additional '
+      +'child, depending on their ages. At the end you only sign. Tell us who you are to begin.'
+    : 'Answer the questions in this one interview and we will fill in every form your center '
+      +'needs. At the end you only sign. Tell us who you are to begin.';
+  /* ⭐ РЕБЁНОК ПЕРВЫМ (вариант Б, слово владельца 27.08). Взрослый стоял первым, и родитель
+     вписывал СЕБЯ в поле имени ребёнка: спутать легче всего первое поле. Теперь первое, что
+     видит человек, — карточка «Child 1», и ошибиться нечем. */
+  var kids = SELF.children.map(function(c,i){
+    var missN = c.name.trim()?'':' miss', missD = c.dob?'':' miss';
+    return '<div class="card"><b>Child '+(i+1)+'</b>'
+      +'<label class="'+missN.trim()+'">Name'
+        +'<input class="sfName" data-i="'+i+'" value="'+esc(c.name)+'"></label>'
+      +'<label class="'+missD.trim()+'">Date of birth'
+        +'<input class="sfDob" data-i="'+i+'" type="date" value="'+esc(c.dob)+'">'
+        +(c.dob?'':'<p class="dobhint">Not chosen yet \u2014 tap to pick.</p>')+'</label>'
+      +(SELF.children.length>1?'<button class="btn2 sfDel" data-i="'+i+'">Remove</button>':'')
+      +'</div>'; }).join('');
   return '<div><h1>Let us start with who you are</h1>'
-    +'<p class="sub">We have no forms for you yet \u2014 so nothing here is filled in for you. '
-    +'Tell us these three, and the packet builds itself from there.</p>'
-    +'<div class="card"><label>Your name<br><input id="sfAdult" value="'+esc(SELF.adult)+'"></label></div>'
-    /* ⭐ ДЕТИ — СПИСКОМ, А НЕ ОДИН. Именной вход всегда знал братьев и сестёр
-       (get_prefill_siblings); безымянный обязан уметь то же, иначе новая ветвь входа
-       беднее старой по рамке — а это и есть то, чего делать нельзя. */
-    +SELF.children.map(function(c,i){
-      return '<div class="card"><b>Child '+(i+1)+'</b>'
-        +'<label>Name<br><input class="sfName" data-i="'+i+'" value="'+esc(c.name)+'"></label>'
-        +'<label>Date of birth<br><input class="sfDob" data-i="'+i+'" type="date" value="'+esc(c.dob)+'"></label>'
-        +(SELF.children.length>1?'<button class="btn2 sfDel" data-i="'+i+'">Remove</button>':'')
-        +'</div>'; }).join('')
+    +'<p class="sub">'+promise+'</p>'
+    +kids
     +'<button class="btn2" id="sfAdd">+ Another child in this family</button>'
+    +'<div class="card"><label class="'+(SELF.adult.trim()?'':'miss')+'">Your name (parent or guardian)'
+      +'<input id="sfAdult" value="'+esc(SELF.adult)+'"></label></div>'
+    +'<div id="sfGaps">'+(ready?'':selfGaps().map(function(g){
+        return '<p class="missline">'+esc(g)+'</p>' }).join(''))+'</div>'
     +'<button class="btn" id="sfGo"'+(ready?'':' disabled')+'>Next</button>'
-    +(ready?'':'<p class="sub">All three are needed \u2014 the date of birth is what tells your child apart from another with the same name.</p>')
     +'</div>';
+}
+
+/* ⛔ ПЕРЕРИСОВЫВАТЬ ВЕСЬ ЭКРАН НА КАЖДОЙ БУКВЕ НЕЛЬЗЯ — выбьет курсор. Красим на месте. */
+function selfPaint(){
+  var g=document.getElementById('sfGo'); if(g) g.disabled=!selfReady();
+  var mark=function(inp, ok){ var l=inp&&inp.closest('label'); if(l) l.classList.toggle('miss', !ok) };
+  var a=document.getElementById('sfAdult'); mark(a, !!(a&&a.value.trim()));
+  document.querySelectorAll('.sfName').forEach(function(e){ mark(e, !!e.value.trim()) });
+  document.querySelectorAll('.sfDob').forEach(function(e){
+    mark(e, !!e.value);
+    var l=e.closest('label'), h=l&&l.querySelector('.dobhint');
+    if(e.value && h) h.remove();
+    else if(!e.value && l && !h){ var p=document.createElement('p'); p.className='dobhint';
+      p.textContent='Not chosen yet \u2014 tap to pick.'; l.appendChild(p) }
+  });
+  var box=document.getElementById('sfGaps');
+  if(box) box.innerHTML = selfReady() ? '' : selfGaps().map(function(x){
+    return '<p class="missline">'+esc(x)+'</p>' }).join('');
 }
 
 function bindSelf(){
   var a=document.getElementById('sfAdult');
-  if(a) a.oninput=function(){ SELF.adult=a.value; var g=document.getElementById('sfGo'); if(g) g.disabled=!selfReady(); };
+  if(a) a.oninput=function(){ SELF.adult=a.value; selfPaint(); };
   document.querySelectorAll('.sfName').forEach(function(e){
-    e.oninput=function(){ SELF.children[+e.getAttribute('data-i')].name=e.value;
-      var g=document.getElementById('sfGo'); if(g) g.disabled=!selfReady(); }; });
+    e.oninput=function(){ SELF.children[+e.getAttribute('data-i')].name=e.value; selfPaint(); }; });
   document.querySelectorAll('.sfDob').forEach(function(e){
-    e.oninput=function(){ SELF.children[+e.getAttribute('data-i')].dob=e.value;
-      var g=document.getElementById('sfGo'); if(g) g.disabled=!selfReady(); }; });
+    /* ⭐ У ДАТЫ ДВА СОБЫТИЯ: нативный выбор в iOS даёт `change`, ручной ввод — `input`. */
+    e.oninput=e.onchange=function(){ SELF.children[+e.getAttribute('data-i')].dob=e.value; selfPaint(); }; });
   document.querySelectorAll('.sfDel').forEach(function(e){
     e.onclick=function(){ SELF.children.splice(+e.getAttribute('data-i'),1); render(); }; });
   var add=document.getElementById('sfAdd');
