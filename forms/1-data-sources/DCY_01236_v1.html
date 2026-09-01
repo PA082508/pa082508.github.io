@@ -520,7 +520,7 @@ function resetForm(){
   document.querySelectorAll('input[type="checkbox"]').forEach(function(el){el.checked=false;});
   document.querySelectorAll('input[type="date"]').forEach(function(el){el.value='';});
   if(window.FormKit){FormKit.clearSig('parentSig');FormKit.clearSig('physicianSig');FormKit.clearSig('trainerSig');}
-  var sd=$id('signedDate');if(sd)sd.value=todayISO();dateTouched=false;
+  var sd=$id('signedDate');if(sd)sd.value='';dateTouched=false;
   if(window.FormKit)FormKit.status('Form cleared','');
 }
 function PA_APPLY(fd){
@@ -572,7 +572,8 @@ window.FORMKIT_CONFIG={
      ⛔ В ТАБЛИЦУ СТР. 2 ОБЕЩАННОЕ НЕ ПОПАДАЕТ: таблица под подписью — это и есть
      разрешение, и препарат, которого никто не разрешал, в ней выглядел бы разрешённым. */
   collect:function(){
-    if(!dateTouched){var sd=$id('signedDate');if(sd)sd.value=todayISO();}
+    /* ⛔ И НА ОТПРАВКЕ ТОЖЕ НЕ ДОСОЧИНЯЕМ. Это второй штамп той же выдумки: даже с
+       пустым полем на загрузке collect() вписал бы сегодня всем, кто поля не касался. */
     var medications=[1,2,3].map(function(i){return {name:val('med'+i+'Name'),dosage:val('med'+i+'Dosage'),time:val('med'+i+'Time'),administer_when_symptoms_present:chk('med'+i+'Symptoms')};}).filter(function(m){return m.name||m.dosage||m.time||m.administer_when_symptoms_present;});
     var program_staff=[1,2,3,4,5].map(function(i){return {printed_name:val('staffName'+i),signature_note:val('staffSig'+i),date:val('staffDate'+i)};}).filter(function(s){return s.printed_name||s.signature_note||s.date;});
     var med_log=Array.prototype.slice.call(document.querySelectorAll('#logRows tr')).map(function(tr){return {date:tr.querySelector('.logDate').value.trim(),time:tr.querySelector('.logTime').value.trim(),dosage:tr.querySelector('.logDosage').value.trim(),administered_by:tr.querySelector('.logSig').value.trim()};}).filter(function(r){return r.date||r.time||r.dosage||r.administered_by;});
@@ -651,8 +652,13 @@ document.addEventListener('DOMContentLoaded',function(){
   /* Administration-log rows (print fidelity) */
   var body=$id('logRows');
   if(body){var html='';for(var i=0;i<19;i++){html+='<tr><td><input type="text" class="logDate"></td><td><input type="text" class="logTime"></td><td><input type="text" class="logDosage"></td><td><input type="text" class="logSig"></td></tr>';}body.innerHTML=html;}
-  /* Today's date default for physician date of signature */
-  var sd=$id('signedDate');if(sd&&!sd.value)sd.value=todayISO();
+  /* ⛔ ДАТА ПОДПИСИ ВРАЧА НЕ ПРОСТАВЛЯЕТСЯ САМА — ПУСТО ДО ПОДПИСИ.
+     Здесь стояло `if(sd&&!sd.value)sd.value=todayISO()`, и это уехало в четыре
+     ЗАПЕЧАТАННЫЕ записи (замер 01.09): врач не подписал ни одной, а дата его подписи
+     стоит у всех и равна дню подачи. Запись форвард-онли — правкой это не лечится,
+     чинится только источник. Родитель НЕ ставит дату за врача: подпись и её дата
+     появляются вместе, в центре, на бумаге. */
+  var sd=$id('signedDate');
   if(sd)sd.addEventListener('input',function(){dateTouched=true;});
   /* Mirror child name across pages + medication name onto log */
   var cnEl=$id('childName');if(cnEl)cnEl.addEventListener('input',mirror);
