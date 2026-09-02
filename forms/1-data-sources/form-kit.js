@@ -143,13 +143,43 @@
   function centerUuid() { return CENTERS[centerCode()] || null; }
 
   // ── Signature pads (auto-init every [data-formkit="signature"]) ──────────────
-  function initSig(canvas) {
-    if (!canvas || canvas.__fkSig) return; canvas.__fkSig = true;
+  /* ⛔ ПЕРО ЗАДАЁТСЯ КАЖДЫЙ РАЗ, А НЕ ОДИН. Присвоение `canvas.width` СБРАСЫВАЕТ контекст
+     2D к умолчаниям — `#000000`, толщина 1, торец butt. `fitBig()` делает это на КАЖДОМ
+     открытии пера-модалки, до `initSig`, а тот со второго раза выходит сразу по `__fkSig`.
+     Значит начиная со ВТОРОЙ подписи в сессии человек расписывался пером в ОДИН пиксель.
+     Замер 02.09 на живых образцах: medical (первая подпись) — синяя, средняя
+     непрозрачность 133; IEA (не первая) — чёрная, 77 и НИ ОДНОГО плотного пикселя.
+     Поэтому: перо — всегда, слушатели — один раз.
+
+     ⛔ ТОЛЩИНА СЧИТАЕТСЯ В ЭКРАННЫХ ПИКСЕЛЯХ, А НЕ В ПИКСЕЛЯХ ХОЛСТА. Координаты уже
+     масштабируются (`sx = canvas.width / r.width`); фиксированная толщина в пространстве
+     холста означала, что на узком экране штрих ТОНЬШЕ относительно подписи. Отсюда был
+     разброс между образцами при одном и том же пере. */
+  var PEN_CSS_WIDTH = 2.6, PEN_COLOUR = '#000';
+  function penScale(canvas) {
+    var r = canvas.getBoundingClientRect();
+    return (r.width > 0) ? (canvas.width / r.width) : 1;
+  }
+  function applyPen(canvas) {
     var ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#000080'; ctx.lineWidth = 1.8; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = PEN_COLOUR;
+    ctx.lineWidth = PEN_CSS_WIDTH * penScale(canvas);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    return ctx;
+  }
+  function initSig(canvas) {
+    if (!canvas) return;
+    applyPen(canvas);                            // всегда: контекст мог быть сброшен
+    if (canvas.__fkSig) return; canvas.__fkSig = true;   // слушатели — однажды
+    var ctx = canvas.getContext('2d');
     var drawing = false, lx, ly;
     function pos(e) { var r = canvas.getBoundingClientRect(), sx = canvas.width / r.width, sy = canvas.height / r.height, s = e.touches ? e.touches[0] : e; return { x: (s.clientX - r.left) * sx, y: (s.clientY - r.top) * sy }; }
-    function dn(e) { e.preventDefault(); drawing = true; var p = pos(e); lx = p.x; ly = p.y; ctx.beginPath(); ctx.arc(lx, ly, 0.8, 0, Math.PI * 2); ctx.fill(); }
+    /* Перо переустанавливается на КАЖДОМ касании: между двумя росчерками холст мог
+       поменять размер (поворот планшета, открытие модалки) и сбросить контекст.
+       Точка касания растёт вместе с пером — иначе начало штриха тоньше остального. */
+    function dn(e) { e.preventDefault(); drawing = true; applyPen(canvas); var p = pos(e);
+      lx = p.x; ly = p.y; ctx.beginPath(); ctx.arc(lx, ly, ctx.lineWidth / 2, 0, Math.PI * 2);
+      ctx.fillStyle = PEN_COLOUR; ctx.fill(); }
     function mv(e) { e.preventDefault(); if (!drawing) return; var p = pos(e); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; canvas.dispatchEvent(new Event('fk:ink', { bubbles: true })); }
     function up() { drawing = false; }
     canvas.addEventListener('mousedown', dn); canvas.addEventListener('mousemove', mv);
@@ -1031,7 +1061,33 @@
 })();
 window.FKPad = window.FKPad || (function(){
   var modal,big,titleE,cur=null;
-  function fitBig(){ big.width=Math.max(320,big.clientWidth||600); big.height=Math.max(160,big.clientHeight||240); }
+  /* ⛔ МОДАЛКА РИСУЕТ В ПЛОТНОСТИ ЭКРАНА. Раньше растр равнялся CSS-размеру: на ретине
+     росчерк снимался вдвое грубее, чем человек его видел, и «мягкость» появлялась ещё до
+     всякого уменьшения. Множитель ограничен двойкой — дальше растёт только память. */
+  function fitBig(){
+    var cw=Math.max(320,big.clientWidth||600), ch=Math.max(160,big.clientHeight||240);
+    var dpr=Math.min(2, window.devicePixelRatio||1);
+    big.style.width=cw+'px'; big.style.height=ch+'px';
+    big.width=Math.round(cw*dpr); big.height=Math.round(ch*dpr);
+  }
+  /* ⛔ РАСТР СЛОТА ВТРОЕ КРУПНЕЕ ЕГО МЕСТА НА БУМАГЕ. Слот 380×46 был и растром, и
+     размером: `commit()` ужимал росчерк из модалки (~1000 px) в 380 — в 0,3–0,5 раза, и
+     штрих 1,8 px размазывался до 0,6. Замер 02.09: у живых подписей от 0 до 1,3 %
+     плотных пикселей — непрозрачной середины не оставалось вовсе.
+     Растр поднимаем, ВНЕШНИЙ размер держим стилем: бланк не съезжает, а `sc` в commit()
+     становится втрое больше — уменьшения больше нет.
+     ⚠️ Присвоение width ОЧИЩАЕТ холст, поэтому только на пустом — в commit() перед
+     собственным clearRect. */
+  function upscaleSlot(slot){
+    if (!slot || slot.__fkHiRes) return;
+    var r=slot.getBoundingClientRect();
+    var cssW=Math.round(r.width||slot.width), cssH=Math.round(r.height||slot.height);
+    if (!cssW || !cssH) return;
+    var K=3*Math.min(2, window.devicePixelRatio||1);
+    slot.style.width=cssW+'px'; slot.style.height=cssH+'px';
+    slot.width=Math.round(cssW*K); slot.height=Math.round(cssH*K);
+    slot.__fkHiRes=true;
+  }
   function build(){
     modal=document.createElement('div'); modal.className='fkpad-back';
     modal.innerHTML='<div class="fkpad"><div class="fkpad-h"><span class="fkpad-title">Signature</span>'
@@ -1052,6 +1108,7 @@ window.FKPad = window.FKPad || (function(){
   function open(slotId,opts){ if(!modal) build(); opts=opts||{}; cur={slotId:slotId};
     titleE.textContent=opts.title||'Signature'; modal.style.display='flex'; arm(); }
   function commit(){ var slot=document.getElementById(cur.slotId); if(!slot){ close(); return; }
+    upscaleSlot(slot);            // ДО замеров: aw/ah считаются уже по крупному растру
     var sctx=slot.getContext('2d'); sctx.clearRect(0,0,slot.width,slot.height); var bb=bbox(big);
     if(bb){ var pd=2,aw=slot.width-pd*2,ah=slot.height-pd*2,sc=Math.min(aw/bb.w,ah/bb.h),w=bb.w*sc,h=bb.h*sc;
       sctx.drawImage(big,bb.x,bb.y,bb.w,bb.h,(slot.width-w)/2,(slot.height-h)/2,w,h); }
