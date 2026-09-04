@@ -85,8 +85,20 @@ select.need{outline:3px solid #E53935;outline-offset:1px}
 .pa-embed #pkbanner,.pa-embed #pkbanner2,.pa-embed #pkb{display:none!important}
 
 #done{display:none;position:fixed;left:50%;bottom:40px;transform:translateX(-50%);z-index:200;background:#1b5e20;color:#fff;font-size:14pt;font-weight:bold;padding:16px 34px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+/* ⭐ РЕЖИМ «ТОЛЬКО СЕКЦИЯ ЦЕНТРА»: страница печатается ровно одна, потому что печатается
+   ровно один блок — шапка опознания и секция центра. Прятать «всё лишнее» списком было бы
+   хрупко: любой новый блок пришлось бы дописывать в список и однажды забыть. Поэтому
+   скрывается ВСЁ, и показывается только то, что названо. */
 @media print{
-  #tb,#calc,.sigclear{display:none}
+  body.sponsor-only #sheet > *{display:none!important}
+  body.sponsor-only #sheet > #sponsor,
+  body.sponsor-only #sheet > #sponsorHead{display:block!important}
+  body.sponsor-only #sheet{padding:0!important}
+}
+#sponsorHead{display:none}
+@media print{ body.sponsor-only #sponsorHead{display:block!important;margin-bottom:8px;font-size:9.5pt} }
+@media print{
+  #tb,.sigclear{display:none}
   body{background:#fff}
   #sheet{box-shadow:none;margin:0;width:auto;padding:0}
   input,select,canvas{background:transparent!important}
@@ -103,6 +115,11 @@ select.need{outline:3px solid #E53935;outline-offset:1px}
   <button class="btn bs" onclick="addRow()">+ Row (Part 3)</button>
   <button class="btn br" onclick="clear_()">&#10005; Clear</button>
   <button class="btn bg" onclick="window.print()">&#128424; Print</button>
+  <!-- ⭐ ПЕЧАТЬ ОДНОЙ СТОРОНЫ — только секция центра. Замер 04.09: весь бланк в печати
+       429 мм при полезных 263 мм, то есть в 1,63 раза выше листа; уместить его на одну
+       сторону можно лишь сжав до 61 %, а это 5,5 пункта — бланк, который не заполнить
+       рукой. Поэтому одностраничной сделана СЕКЦИЯ ЦЕНТРА, которую и подписывает центр. -->
+  <button class="btn bs" onclick="printSponsorOnly()">&#128424; Print center section &mdash; 1 page</button>
   <!-- ⭐ ССЫЛКА НА ОБЪЯСНЯЮЩУЮ СТРАНИЦУ (21.08). Родитель, открывший заявление, должен
        иметь возможность СНАЧАЛА понять, нужно ли ему её вообще заполнять: страница несёт
        письмо семье дословно, инструкции и таблицу порогов. Открывается в новой вкладке,
@@ -148,13 +165,13 @@ select.need{outline:3px solid #E53935;outline-offset:1px}
       <th style="text-align:left">* NAME OF ENROLLED CHILD(REN)</th>
       <th>AGE</th>
       <th>BIRTH DATE</th>
-      <td class="benefit">Check type&nbsp;&nbsp;<input type="checkbox" id="ben_snap" onchange="oneOf('ben_snap','ben_owf');determine()"> FOOD ASSISTANCE (SNAP) or<br>of benefit:&nbsp;&nbsp;<input type="checkbox" id="ben_owf" onchange="oneOf('ben_owf','ben_snap');determine()"> OHIO WORKS FIRST (OWF)</td>
+      <td class="benefit">Check type&nbsp;&nbsp;<input type="checkbox" id="ben_snap" onchange="oneOf('ben_snap','ben_owf')"> FOOD ASSISTANCE (SNAP) or<br>of benefit:&nbsp;&nbsp;<input type="checkbox" id="ben_owf" onchange="oneOf('ben_owf','ben_snap')"> OHIO WORKS FIRST (OWF)</td>
     </tr>
     <!-- child rows 1-4 -->
-    <tr class="kid"><td>1. <input type="text" id="kid1_name" data-required data-label="Child 1 name" data-fk-field="child_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid1_age" style="width:90%"></td><td><input type="date" id="kid1_dob" data-fk-field="dob" style="width:94%" onchange="kidAge(1);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid1_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid1_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
-    <tr class="kid"><td>2. <input type="text" id="kid2_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid2_age" style="width:90%"></td><td><input type="date" id="kid2_dob" style="width:94%" onchange="kidAge(2);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid2_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid2_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
-    <tr class="kid"><td>3. <input type="text" id="kid3_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid3_age" style="width:90%"></td><td><input type="date" id="kid3_dob" style="width:94%" onchange="kidAge(3);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid3_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid3_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
-    <tr class="kid"><td>4. <input type="text" id="kid4_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid4_age" style="width:90%"></td><td><input type="date" id="kid4_dob" style="width:94%" onchange="kidAge(4);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid4_foster" onchange="determine()"></td><td class="caseno">CASE NO. <input type="text" id="kid4_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+    <tr class="kid"><td>1. <input type="text" id="kid1_name" data-required data-label="Child 1 name" data-fk-field="child_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid1_age" style="width:90%"></td><td><input type="date" id="kid1_dob" data-fk-field="dob" style="width:94%" onchange="kidAge(1);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid1_foster"></td><td class="caseno">CASE NO. <input type="text" id="kid1_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+    <tr class="kid"><td>2. <input type="text" id="kid2_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid2_age" style="width:90%"></td><td><input type="date" id="kid2_dob" style="width:94%" onchange="kidAge(2);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid2_foster"></td><td class="caseno">CASE NO. <input type="text" id="kid2_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+    <tr class="kid"><td>3. <input type="text" id="kid3_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid3_age" style="width:90%"></td><td><input type="date" id="kid3_dob" style="width:94%" onchange="kidAge(3);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid3_foster"></td><td class="caseno">CASE NO. <input type="text" id="kid3_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
+    <tr class="kid"><td>4. <input type="text" id="kid4_name" autocomplete="off" onblur="saveProfile()"></td><td><input type="text" id="kid4_age" style="width:90%"></td><td><input type="date" id="kid4_dob" style="width:94%" onchange="kidAge(4);saveProfile()"></td><td style="text-align:center"><input type="checkbox" id="kid4_foster"></td><td class="caseno">CASE NO. <input type="text" id="kid4_case" maxlength="7" inputmode="numeric" oninput="caseChk(this)"></td></tr>
   </table>
 </div>
 
@@ -253,6 +270,10 @@ information. I understand that CACFP officials may verify the information. I und
 <b>Privacy Act Statement:</b> The Richard B. Russell National School Lunch Act requires the information on this application. You do not have to give the information, but if you do not, we cannot approve the participant for free or reduced-price meals. You must include the last four digits of the Social Security Number of the adult household member who signs the application. The Social Security Number is not required when you apply on behalf of a foster child or you list a Supplemental Nutrition Assistance Program (SNAP), Temporary Assistance for Needy Families (TANF) Program or Food Distribution Program on Indian Reservations (FDPIR) case number for the participant or other (FDPIR) identifier or when you indicate that the adult household member signing the application does not have a Social Security Number. We will use your information to determine if the participant is eligible for free or reduced-price meals, and for administration and enforcement of the Program.
 </div>
 
+<!-- ⭐ ШАПКА ОДНОСТРАНИЧНОЙ ПЕЧАТИ: лист, вырванный из формы, обязан говорить, к какой
+     заявке он относится. Значения подставляются из уже заполненных полей ПЕРЕД печатью —
+     это не расчёт и не решение, это перенос того, что уже написано рукой. -->
+<div id="sponsorHead"></div>
 <!-- ═══ SPONSOR SECTION ═══ -->
 <div class="part" id="sponsor" style="margin-bottom:0">
   <div class="part-head"><b>THIS SECTION TO BE COMPLETED BY CENTER.&nbsp;&nbsp; Note:&nbsp; All information above this section is to be filled in by the parent or guardian.</b></div>
@@ -264,7 +285,7 @@ Per the total household size, compare total household income to the USDA Income 
 Guidelines to determine correct categorization.&nbsp; When income is listed in different frequencies
 of pay in Part 3, you must convert all income to annual income before determination. Use the
 following Annual Income Conversion&nbsp;:<br>
-Weekly x 52, Every 2 Weeks <span style="font-size:7.6pt">(biweekly)</span> x 26, Twice per Month <span style="font-size:7.6pt">(semi-monthly)</span> x 24, Monthly x 12</td>
+Weekly x 52, Every 2 Weeks <span style="font-size:7.6pt">(biweekly)</span> x 26, Twice per Month <span style="font-size:7.6pt">(semi-monthly)</span> x 24, Monthly x 12, Annually x 1.<br><span style="font-size:8pt">Compare the annual figure with the USDA Income Eligibility Guidelines for FY 2026-2027: at or below the <b>130%</b> line &rarr; FREE; above it and at or below the <b>185%</b> line &rarr; REDUCED-PRICE; above the 185% line &rarr; PAID. A foster child, or a valid seven-digit SNAP/OWF case number, is FREE without an income test.</span></td>
       <td>Application Certified/Categorized as:<br>
         <input type="checkbox" id="cat_free"> <b>FREE,</b> based on&nbsp;&nbsp;
         <input type="checkbox" id="free_case"> Food Assistance/OWF Case No.<br>
@@ -291,10 +312,20 @@ Weekly x 52, Every 2 Weeks <span style="font-size:7.6pt">(biweekly)</span> x 26,
   <div class="spfoot">
     <div class="cols">
       <div class="c" style="flex:1.5;position:relative">
-        <div class="line"><canvas id="sig_sponsor" width="410" height="46" data-office-use style="background:#f4f4f4;cursor:not-allowed;pointer-events:none;position:absolute;left:0;bottom:0;background:rgba(255,253,150,0.4);cursor:crosshair"><div class="office-use-note" style="font-size:9pt;color:#6b6b66;margin-top:2px">For office use — signed at the center</div></canvas><button type="button" class="sigclear" onclick="FormKit.clearSig('sig_sponsor')">&#10005;</button></div>
+        <div class="line"><!-- ⭐ ЖИВОЙ РОСЧЕРК ЦЕНТРА (04.09). Прежде холст был мёртвым: pointer-events:none и
+     подпись «For office use» — то есть подписать на экране было НЕЛЬЗЯ вовсе.
+     ⛔ БЕЗ data-fk-adopt: образец родителя не подставляется под роспись центра — это
+     разные подписанты, и канон образцов держит их в разных областях.
+     ⛔ БЕЗ data-required: семья, подающая онлайн, секцию центра не подписывает. -->
+        <canvas id="sig_sponsor" data-formkit="signature" data-label="Signature of Sponsor / Center Representative" width="410" height="46" style="position:absolute;left:0;bottom:0;background:rgba(255,253,150,0.4);cursor:crosshair"></canvas><button type="button" class="sigclear" onclick="FormKit.clearSig('sig_sponsor')">&#10005;</button></div>
         Signature of Sponsor / Center Representative
+        <!-- ⭐ КНОПКА РОСЧЕРКА — ТА ЖЕ, ЧТО У РОДИТЕЛЯ. Без неё холст мёртв: кит ведёт
+             рисование через большой планшет-модал, а сам холст держит pointer-events:none.
+             Прежде у секции центра такой кнопки не было ВОВСЕ — подписать было нечем. -->
+        <div style="margin-top:3px"><button type="button" class="fkpad-trigger" data-fk-pad="sig_sponsor"
+          data-fk-pad-title="Signature of Sponsor / Center Representative">&#9997; Sign — draw</button></div>
       </div>
-      <div class="c"><div class="line"><input type="date" id="sp_certdate" data-touched="0" onchange="this.dataset.touched=1;calcDates()" style="position:absolute;left:0;bottom:2px;border:none"></div>Date Sponsor Certified/Categorized Form</div>
+      <div class="c"><div class="line"><input type="date" id="sp_certdate" data-touched="0" onchange="this.dataset.touched=1" style="position:absolute;left:0;bottom:2px;border:none"></div>Date Sponsor Certified/Categorized Form</div>
       <div class="c"><div class="line"><input type="text" id="sp_eff" style="position:absolute;left:0;bottom:2px;border:none"></div><b>Effective Date</b><br>(From the&nbsp; first of month of date signed)</div>
       <div class="c"><div class="line"><input type="text" id="sp_exp" style="position:absolute;left:0;bottom:2px;border:none"></div><b>Expiration Date</b><br>(Valid until last day of month in which<br>form was signed one year earlier)</div>
     </div>
@@ -307,14 +338,9 @@ If date of parent signature is not within month of certification or immediately 
 </div><!-- /sheet -->
 
 <div id="done">&#10003; Submitted for center review</div>
-<div id="calc">
-  <b>Screen-only helper (not printed) — FY 2026-2027 USDA thresholds:</b>
-  Household size: <span id="hh">0</span> &nbsp;·&nbsp;
-  Annualized income: $<span id="ann">0</span> &nbsp;·&nbsp;
-  Determination: <span id="verdict">—</span>
-  &nbsp;<button class="btn bs" style="padding:3px 10px" onclick="fillSponsor()">&#8595; Fill Sponsor Section</button>
-  <div style="color:#666;margin-top:4px">FREE ≤ FPL130 · REDUCED ≤ FPL185 · otherwise PAID. Foster, or a valid 7-digit SNAP/OWF case number → FREE automatically.
-  Annualization: Weekly ×52 · Every 2 Weeks ×26 · Twice Per Month ×24 · Monthly ×12 · Annually ×1.</div>
+<!-- ⛔ ЭКРАННЫЙ КАЛЬКУЛЯТОР СНЕСЁН 04.09 (слово владельца). Категорию, суммы и
+     даты ставит ЧЕЛОВЕК: машина не подсказывает и не подставляет. Пороги и
+     множители остались ПЕЧАТНЫМ ТЕКСТОМ на самом бланке, как на официальном. -->
 </div>
 
 <script>
@@ -330,17 +356,13 @@ function gv(id){const e=document.getElementById(id);return e?e.value:''}
 function gcb(id){const e=document.getElementById(id);return !!(e&&e.checked)}
 
 // FY 2026-2027 annual thresholds (Ohio DEW packet 26-27)
-const FREE_A=[0,20748,28132,35516,42900,50284,57668,65052,72436],FREE_ADD=7384;
-const RED_A =[0,29526,40034,50542,61050,71558,82066,92574,103082],RED_ADD=10508;
-function thrFree(n){return n<=8?FREE_A[n]:FREE_A[8]+(n-8)*FREE_ADD}
-function thrRed(n){return n<=8?RED_A[n]:RED_A[8]+(n-8)*RED_ADD}
 
 const FREQ=[['',''],['Weekly','52'],['Every 2 Weeks','26'],['Twice Per Month','24'],['Monthly','12'],['Annually','1']];
 const CATS=['earn','welf','pens','other'];
-let N=0,lastVerdict=null;
+let N=0;
 function rowHtml(i){
-  const inc=c=>`<td class="inc" id="td_${i}_${c}">$<input class="amt" id="amt_${i}_${c}" inputmode="decimal" oninput="recalc()" onblur="fmtAmt(this)"> / <select class="freq" id="frq_${i}_${c}" onchange="recalc()">${FREQ.map(f=>`<option value="${f[1]}">${f[0]}</option>`).join('')}</select></td>`;
-  return `<tr id="row_${i}"><td class="rownum">${i}. <input type="text" id="name_${i}" oninput="recalc()"></td>
+  const inc=c=>`<td class="inc" id="td_${i}_${c}">$<input class="amt" id="amt_${i}_${c}" inputmode="decimal" onblur="fmtAmt(this)"> / <select class="freq" id="frq_${i}_${c}">${FREQ.map(f=>`<option value="${f[1]}">${f[0]}</option>`).join('')}</select></td>`;
+  return `<tr id="row_${i}"><td class="rownum">${i}. <input type="text" id="name_${i}"></td>
     <td class="zero"><input type="checkbox" id="zero_${i}" onchange="toggleZero(${i})"></td>${CATS.map(inc).join('')}</tr>`;
 }
 function addRow(){N++;document.getElementById('p3rows').insertAdjacentHTML('beforeend',rowHtml(N))}
@@ -348,50 +370,28 @@ function toggleZero(i){
   const z=document.getElementById('zero_'+i).checked;
   CATS.forEach(c=>{const td=document.getElementById(`td_${i}_${c}`);td.classList.toggle('dis',z);
     if(z){document.getElementById(`amt_${i}_${c}`).value='';document.getElementById(`frq_${i}_${c}`).value=''}});
-  recalc();
 }
-function caseChk(e){e.value=e.value.replace(/\D/g,'');e.classList.toggle('ok',e.value.length===7);determine()}
+function caseChk(e){e.value=e.value.replace(/\D/g,'');e.classList.toggle('ok',e.value.length===7)}
 function oneOf(a,b){if(document.getElementById(a).checked)document.getElementById(b).checked=false}
 function fmtAmt(e){
   const v=parseFloat(e.value.replace(/,/g,''));
   if(!isNaN(v))e.value=v.toLocaleString('en-US',{maximumFractionDigits:2});
 }
-function recalc(){
-  let hh=0,ann=0;
-  for(let i=1;i<=N;i++){const nm=document.getElementById('name_'+i);if(!nm)continue;
-    if(nm.value.trim())hh++;
-    CATS.forEach(c=>{const a=parseFloat(document.getElementById(`amt_${i}_${c}`).value.replace(/,/g,''))||0;
-      const f=parseFloat(document.getElementById(`frq_${i}_${c}`).value)||0;ann+=a*f})}
-  document.getElementById('hh').textContent=hh;
-  document.getElementById('ann').textContent=ann.toLocaleString('en-US',{maximumFractionDigits:0});
-  determine(hh,ann);
-}
-function determine(hh,ann){
-  if(hh===undefined){hh=parseInt(document.getElementById('hh').textContent)||0;
-    ann=parseFloat(document.getElementById('ann').textContent.replace(/,/g,''))||0}
-  const foster=[1,2,3,4].some(k=>document.getElementById('kid'+k+'_foster').checked);
-  const validCase=[1,2,3,4].some(k=>document.getElementById('kid'+k+'_case').value.length===7)
-      &&(document.getElementById('ben_snap').checked||document.getElementById('ben_owf').checked);
-  const v=document.getElementById('verdict');
-  if(foster){v.textContent='FREE (Foster Child)';v.style.background='#d4edda';lastVerdict={cat:'free',why:'foster'};return}
-  if(validCase){v.textContent='FREE (SNAP/OWF case)';v.style.background='#d4edda';lastVerdict={cat:'free',why:'case'};return}
-  if(!hh||!ann){v.textContent='—';v.style.background='#eee';lastVerdict=null;return}
-  if(ann<=thrFree(hh)){v.textContent=`FREE (≤ $${thrFree(hh).toLocaleString()})`;v.style.background='#d4edda';lastVerdict={cat:'free',why:'income'}}
-  else if(ann<=thrRed(hh)){v.textContent=`REDUCED (≤ $${thrRed(hh).toLocaleString()})`;v.style.background='#fff3cd';lastVerdict={cat:'red',why:'income'}}
-  else{v.textContent=`PAID (> $${thrRed(hh).toLocaleString()})`;v.style.background='#f8d7da';lastVerdict={cat:'paid',why:'high'}}
-}
-function fillSponsor(){
-  document.getElementById('sp_hh').value=document.getElementById('hh').textContent;
-  document.getElementById('sp_income').value=document.getElementById('ann').textContent;
-  ['per_w','per_2w','per_tm','per_m'].forEach(id=>document.getElementById(id).checked=false);
-  document.getElementById('per_y').checked=true;
-  ['cat_free','free_case','free_inc','free_foster','cat_red','cat_paid','paid_high','paid_inc','paid_inv']
-    .forEach(id=>document.getElementById(id).checked=false);
-  if(!lastVerdict)return;
-  if(lastVerdict.cat==='free'){document.getElementById('cat_free').checked=true;
-    document.getElementById(lastVerdict.why==='foster'?'free_foster':lastVerdict.why==='case'?'free_case':'free_inc').checked=true}
-  else if(lastVerdict.cat==='red')document.getElementById('cat_red').checked=true;
-  else{document.getElementById('cat_paid').checked=true;document.getElementById('paid_high').checked=true}
+function printSponsorOnly(){
+  /* ⛔ НИЧЕГО НЕ ВЫЧИСЛЯЕМ: переносим в шапку то, что уже введено. */
+  var g=function(id){var e=document.getElementById(id);return e&&e.value?e.value.trim():''};
+  var kids=[1,2,3,4].map(function(k){return g('kid'+k+'_name')}).filter(Boolean).join(' · ');
+  var ctr=document.getElementById('ctr');
+  var center=(ctr&&ctr.selectedIndex>0)?ctr.options[ctr.selectedIndex].text:g('p1_center');
+  document.getElementById('sponsorHead').innerHTML =
+    '<b>CACFP Income Eligibility Application FY 2026-2027 — center certification</b><br>'
+    + 'Center: <b>' + (center||'____________________') + '</b>'
+    + ' &nbsp;·&nbsp; Child(ren): <b>' + (kids||'____________________') + '</b>';
+  document.body.classList.add('sponsor-only');
+  var off=function(){document.body.classList.remove('sponsor-only');window.removeEventListener('afterprint',off)};
+  window.addEventListener('afterprint',off);
+  window.print();
+  setTimeout(off,1500);   /* запасной ход: не во всех браузерах afterprint приходит */
 }
 function toggleSSN(){
   const no=document.getElementById('no_ssn').checked;
@@ -403,20 +403,12 @@ document.addEventListener('DOMContentLoaded',()=>{
     e.addEventListener('input',()=>{e.value=e.value.replace(/\D/g,'');if(e.value&&ix<3)document.getElementById(arr[ix+1]).focus()});
   });
 });
-function calcDates(){
-  const v=document.getElementById('sp_certdate').value;const d=new Date(v);if(isNaN(d))return;
-  const eff=new Date(d.getFullYear(),d.getMonth(),1);
-  const exp=new Date(d.getFullYear()+1,d.getMonth()+1,0);
-  const f=x=>String(x.getMonth()+1)+'/'+x.getDate()+'/'+x.getFullYear();
-  document.getElementById('sp_eff').value=f(eff);
-  document.getElementById('sp_exp').value=f(exp);
-}
 function clear_(){
   document.getElementById('p3rows').innerHTML='';N=0;for(let i=0;i<6;i++)addRow();
   document.querySelectorAll('#sheet input[type=text]').forEach(e=>{e.value='';e.classList.remove('ok')});
   document.querySelectorAll('#sheet input[type=checkbox]').forEach(e=>{if(!e.disabled)e.checked=false});
   ['ssn1','ssn2','ssn3','ssn4'].forEach(id=>{const e=document.getElementById(id);e.disabled=false;e.value=''});
-  if(window.FormKit){FormKit.clearSig('sig_adult');FormKit.clearSig('sig_sponsor')}recalc();
+  if(window.FormKit){FormKit.clearSig('sig_adult');FormKit.clearSig('sig_sponsor')}
   if(window.FormKit)FormKit.status('Cleared','');
 }
 
@@ -443,7 +435,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 for(let i=0;i<6;i++)addRow();
-recalc();
 
 /* ═══ cross-form prefill applier (used by FORMKIT_CONFIG.applyPrefill) ═══ */
 function PA_APPLY(fd){
@@ -478,9 +469,7 @@ function PA_APPLY(fd){
     C('paid_inv',fd.sponsor.paid_invalid);
     S('sp_hh',fd.sponsor.hh);S('sp_income',fd.sponsor.income);
     S('sp_certdate',fd.sponsor.cert_date);
-    if(fd.sponsor.cert_date&&typeof calcDates==='function')calcDates();
     S('sp_eff',fd.sponsor.effective);S('sp_exp',fd.sponsor.expiration)}
-  if(typeof recalc==='function')recalc();
 }
 
 /* ═══ FORMKIT_CONFIG — shared transport/embed/signatures live in form-kit.js ═══ */
@@ -618,7 +607,8 @@ window.FKPad = window.FKPad || (function(){
    signature, bound STRICTLY 1:1. Two independent pairs (adult member, sponsor). No gate() here,
    so we add listeners. Data dates (DOB, case dates…) are untouched. */
 (function(){
-  var PAIRS=[{sig:'sig_adult',date:'p4_date'},{sig:'sig_sponsor',date:'sp_certdate',after:'calcDates'}];
+  var PAIRS=[{sig:'sig_adult',date:'p4_date'},/* ⛔ after:'calcDates' снято 04.09: даты действия и истечения больше не считает машина. */
+            {sig:'sig_sponsor',date:'sp_certdate'}];
   function todayISO(){ try{ if(window.FormKit&&FormKit.todayISO) return FormKit.todayISO(); }catch(_){}
     var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   function inked(id){ try{ return !!(window.FormKit&&FormKit.getSig&&FormKit.getSig(id)); }catch(_){ return false; } }
