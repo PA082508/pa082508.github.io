@@ -273,6 +273,7 @@ function afterRegistry(){
       children: fam.children.map(function(c){ return { key:c.key, name:c.name, facts:factsOf(c.prefill),
         prefill:(c.prefill&&c.prefill._forms)||null } }),
       prefill: prefillOfMe._forms || {} });
+    seedAnswersFromPrefill();   // \u2b50 \u0432\u043e\u043b\u043d\u0430 2: \u043f\u043b\u043e\u0441\u043a\u0438\u0439 identity/\u043a\u043e\u043d\u0442\u0430\u043a\u0442 \u0438\u0437 get_prefill \u2192 \u043f\u0443\u0441\u0442\u044b\u0435 \u0432\u043e\u043f\u0440\u043e\u0441\u044b \u0430\u043d\u043a\u0435\u0442\u044b
     document.getElementById('ctr').textContent='Play Academy'+(CENTER?' \u00b7 '+CENTER:'');
     render();
   });
@@ -364,6 +365,50 @@ function ansSet(scope, canon, v){ ansBag(scope)[canon] = v }
 function ansOr(scope, canon, fallback){
   var v = ansGet(scope, canon);
   return (v===undefined) ? fallback : v;
+}
+
+/* ⭐ ПРЕДЗАПОЛНЕНИЕ АНКЕТЫ ИЗ ПЛОСКИХ ПОЛЕЙ get_prefill (волна 2, 12.09). Прежде интервью
+   брало ТОЛЬКО вложенный `_forms` (прошлые подачи) — у семьи БЕЗ подач (never-filed) все
+   вопросы «About your family / About <child>» стояли пустыми, хотя identity и контакты у
+   нас на файле есть (их отдаёт `get_prefill` плоскими ключами child_name/parent_name/
+   parent_email/phone_day/dob). Письмо обещает «whatever is already on file is filled in for
+   you» — держим обещание на ПЕРВОМ экране, а не только в документе-бланке (тот заполнял
+   свой слой `data-fk-field` отдельным путём и потому работал).
+   ⛔ ТОЛЬКО ПУСТЫЕ. Где план уже ответил из подачи (`state==='answered'`) или семья набрала
+      своё — не трогаем: живая бумага и живой ввод главнее (`ansGet!==undefined`).
+   ⛔ ПОДПИСИ ТУТ НЕТ. В карте только identity+контакты; ни одной подписной/инициальной
+      каноникали — канон «свежая подпись, не переносим» цел (сид её и не касается).
+   ⚠️ ТЕЛЕФОН — ОДИН НОМЕР НА ФАЙЛЕ, ТИП НЕИЗВЕСТЕН. `get_prefill` отдаёт единственный
+      `phone_day`; DCY-анкета спрашивает home/cell/work, а `parent1.phone.day` уходит в форму
+      `enroll` (IEA), не в DCY-блок. Кладём известный номер в ПЕРВИЧНЫЙ вопрос DCY —
+      `parent1.phone.home` (p1_phone); если это сотовый, семья поправит («change only what has
+      changed»). Пустые cell/work остаются пустыми — второго номера на файле нет. */
+var FLAT2CANON_FAMILY = { parent_name:'parent1.name', parent_email:'parent1.email', phone_day:'parent1.phone.home' };
+var FLAT2CANON_CHILD  = { child_name:'child.name', dob:'child.dob' };
+function seedAnswersFromPrefill(){
+  if(!PLAN || !FAMILY) return;
+  var me = FAMILY.me || {};
+  var famQ = (PLAN.familyQuestions && PLAN.familyQuestions.family) || [];
+  Object.keys(FLAT2CANON_FAMILY).forEach(function(flat){
+    var canon = FLAT2CANON_FAMILY[flat];
+    var q = famQ.filter(function(a){ return a.canonical===canon })[0];
+    if(!q || q.state==='answered') return;                 // ⛔ не поверх подачи
+    if(ansGet('family', canon)!==undefined) return;        // ⛔ не поверх живого ввода
+    var v = String(me[flat]==null?'':me[flat]).trim();
+    if(v) ansSet('family', canon, v);
+  });
+  (PLAN.rounds||[]).forEach(function(r){
+    var kid = (FAMILY.children.filter(function(c){ return c.key===r.key })[0]||{}).prefill || {};
+    var kidQ = (r.answers && r.answers.child) || [];
+    Object.keys(FLAT2CANON_CHILD).forEach(function(flat){
+      var canon = FLAT2CANON_CHILD[flat];
+      var q = kidQ.filter(function(a){ return a.canonical===canon })[0];
+      if(!q || q.state==='answered') return;
+      if(ansGet(r.key, canon)!==undefined) return;
+      var v = String(kid[flat]==null?'':kid[flat]).trim();
+      if(v) ansSet(r.key, canon, v);
+    });
+  });
 }
 
 /* ⛔ СЛУШАТЕЛЬ ОДИН И ВЕШАЕТСЯ ОДНАЖДЫ, НА КОРЕНЬ. Каждая перерисовка заменяет
