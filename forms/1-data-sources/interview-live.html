@@ -264,20 +264,72 @@ function afterRegistry(){
        странице — всё, что мы строили в интервью, видела одна семья из пяти.
        Старт-форма перестала быть слотом набора и живёт своей дверью
        (`parent-forms.html?center=…&only=start_form`), так что уводить больше некого. */
-    var prefillOfMe = fam.children[0].prefill || {};
-    PLAN=PAInterview.planInterview({
-      dict:DICT, registry:REG, baseForms:base,
-      familyFacts:{ hasEsignConsent: fam.hasConsent },
-      /* ⛔ У КАЖДОГО РЕБЁНКА СВОЙ ПРЕФИЛЛ. Замер 24.08 на живой семье: один общий
-         префилл ставил в бланк сестры имя брата и его дату рождения. */
-      children: fam.children.map(function(c){ return { key:c.key, name:c.name, facts:factsOf(c.prefill),
-        prefill:(c.prefill&&c.prefill._forms)||null } }),
-      prefill: prefillOfMe._forms || {} });
-    seedAnswersFromPrefill();   // \u2b50 \u0432\u043e\u043b\u043d\u0430 2: \u043f\u043b\u043e\u0441\u043a\u0438\u0439 identity/\u043a\u043e\u043d\u0442\u0430\u043a\u0442 \u0438\u0437 get_prefill \u2192 \u043f\u0443\u0441\u0442\u044b\u0435 \u0432\u043e\u043f\u0440\u043e\u0441\u044b \u0430\u043d\u043a\u0435\u0442\u044b
+    buildPlanAndSeed();
     document.getElementById('ctr').textContent='Play Academy'+(CENTER?' \u00b7 '+CENTER:'');
+    /* ГЕЙТ E-SIGN СОГЛАСИЯ первым экраном, если у взрослого согласия ещё нет (волна 2).
+       Согласный/renewal его не видит: hasConsent===true -> сразу Before you start. */
+    if(FAMILY.hasConsent!==true) STEP='consent';
     render();
   });
 }
+
+/* Сборка плана — одно место, чтобы пересобрать его ПОСЛЕ согласия: как только взрослый дал
+   согласие в гейте, hasConsent становится true и форма согласия из пакета уходит (один раз, вперёд). */
+function buildPlanAndSeed(){
+  var fam=FAMILY, base=baseForms();
+  var prefillOfMe = fam.children[0].prefill || {};
+  PLAN=PAInterview.planInterview({
+    dict:DICT, registry:REG, baseForms:base,
+    familyFacts:{ hasEsignConsent: fam.hasConsent },
+    children: fam.children.map(function(c){ return { key:c.key, name:c.name, facts:factsOf(c.prefill),
+      prefill:(c.prefill&&c.prefill._forms)||null } }),
+    prefill: prefillOfMe._forms || {} });
+  seedAnswersFromPrefill();
+}
+
+/* ГЕЙТ E-SIGN СОГЛАСИЯ (заказ владельца 12.09; текст утверждён, советник сверил — байт-в-байт).
+   Галочка без предвыбора; continue заперта до неё; по согласию анон-RPC esign_record_consent
+   пишет esign_consent_at+версию взрослому по токену (идемпотентно), пакет пересобирается БЕЗ формы
+   согласия; отказ — честный выход на бумагу. */
+var ESIGN_VERSION='v1.0-2026-09';
+function consentGate(){
+  return '<div><h1>Electronic forms &amp; signature</h1>'
+    +'<p>This form is completed and signed electronically. Your finger-drawn signature counts the '
+    +'same as a signature on paper.</p>'
+    +'<p>By checking the box and continuing, you agree to fill out and sign your child\u2019s forms '
+    +'electronically. You can change your mind at any time \u2014 just tell the director, and you\u2019ll '
+    +'get paper forms instead.</p>'
+    +'<label class="card" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:16px 0">'
+    +'<input type="checkbox" id="esignAgree" style="margin-top:2px;width:18px;height:18px;flex:0 0 auto">'
+    +'<span><b>I agree to complete and sign forms electronically</b></span></label>'
+    +'<button class="btn" id="esignContinue" disabled style="opacity:.5">I agree \u2014 continue</button>'
+    +'<button class="btn" id="esignPaper" style="background:#eef1ef;color:#16211c;margin-top:10px">'
+    +'I\u2019d rather use paper</button></div>';
+}
+function bindConsent(){
+  var cb=document.getElementById('esignAgree'), go=document.getElementById('esignContinue'),
+      pp=document.getElementById('esignPaper');
+  if(cb&&go) cb.onchange=function(){ go.disabled=!cb.checked; go.style.opacity=cb.checked?'1':'.5'; };
+  if(go) go.onclick=function(){
+    if(go.disabled) return;
+    go.disabled=true; go.textContent='One moment\u2026';
+    rpc('esign_record_consent',{p_token:TOKEN,p_version:ESIGN_VERSION}).then(function(r){
+      if(r&&r.ok){ FAMILY.hasConsent=true; buildPlanAndSeed(); STEP=0; render(); window.scrollTo(0,0); }
+      else { go.disabled=false; go.textContent='I agree \u2014 continue';
+        alert('We could not record your agreement \u2014 please try again, or ask the director for paper.'); }
+    }).catch(function(){ go.disabled=false; go.textContent='I agree \u2014 continue';
+      alert('We could not record your agreement \u2014 please try again, or ask the director for paper.'); });
+  };
+  if(pp) pp.onclick=function(){ STEP='paper'; render(); window.scrollTo(0,0); };
+}
+function paperExit(){
+  return '<div><h1>Paper works too</h1>'
+    +'<p>No problem \u2014 ask the director for a paper copy of your child\u2019s enrollment form. '
+    +'Everything on paper counts exactly the same. This link will keep working for 7 days if you '
+    +'change your mind.</p>'
+    +'<button class="btn" id="esignBack" style="background:#eef1ef;color:#16211c">\u2190 Back</button></div>';
+}
+function bindPaper(){ var bk=document.getElementById('esignBack'); if(bk) bk.onclick=function(){ STEP='consent'; render(); window.scrollTo(0,0); }; }
 
 /* ⛔ ФОРМЫ НАЗЫВАЮТСЯ ЧЕЛОВЕЧЕСКИ, А НЕ КЛЮЧОМ. Находка владельца на показе: очередь
    подписания звала бумаги `parent_consent`, `dcy_01234`, `iea` — это адреса в коде, а не
@@ -760,6 +812,8 @@ function render(){
     bb.onclick=goBack;
     app.appendChild(bb);
   }
+  if (STEP==='consent'){ s.textContent='Consent'; app.appendChild(el(consentGate())); bindConsent(); return }
+  if (STEP==='paper'){ s.textContent='Paper'; app.appendChild(el(paperExit())); bindPaper(); return }
   if (STEP===-1){ s.textContent='Who you are'; app.appendChild(el(selfBlock())); bindSelf(); return }
   if (STEP===0){ s.textContent='Before you start'; app.appendChild(el(stage1())); return }
   if (STEP===1){ s.textContent='About your family'; app.appendChild(el(familyBlock())); return }
