@@ -308,6 +308,7 @@
       "audience": "staff"
     },
     "parent_consent": {
+      "selfService": true,
       "auto_file": true,
       "slug": "parent_consent",
       "title": "Parent Consent for Electronic Signatures",
@@ -465,6 +466,7 @@
       "futureFormKit": false
     },
     "parent_responsibilities": {
+      "selfService": true,
       "slug": "parent_responsibilities",
       "title": "Parent Responsibilities",
       "kind": "signature",
@@ -643,6 +645,7 @@
       ]
     },
     "parents_book_ack": {
+      "selfService": true,
       "auto_file": true,
       "slug": "parents_book_ack",
       "title": "Parent Handbook Receipt",
