@@ -308,7 +308,7 @@
       "audience": "staff"
     },
     "parent_consent": {
-      "selfService": true,
+      "ord": 0,
       "auto_file": true,
       "slug": "parent_consent",
       "title": "Parent Consent for Electronic Signatures",
