@@ -1405,8 +1405,9 @@
   },
   "forms": {
     "enroll": {
-      "measuredVersion": "v11",
-      "rows": 11
+      "measuredVersion": "v12",
+      "rows": 11,
+      "note": "ПЕРЕСНЯТ С v11 16.09.2026. v12 = v11 + слот-гейт (условно прячет чекбоксы неслужимых центру приёмов по get_center_meal_slots.active) + derived-след в payload. Набор ПОЛЕЙ collect() НЕ менялся: все шесть приёмов (b/as/l/ps/su/es) остаются в DOM, гейт лишь скрывает. Сверка по полям чиста."
     },
     "iea": {
       "measuredVersion": "v10",
