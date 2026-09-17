@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moving to electronic records — Letter to Play Academy Families</title>
+<style>
+  /* Read-only transition letter. NO signature block (kind=keep letter, owner's ruling
+     2026-09-17): the "sign to confirm" it names is the signature on the Parent Handbook
+     Receipt & Electronic Records form (parents_book_ack v3), never on this letter.
+     Body text is VERBATIM (advisor edition, owner-approved); {LINK} is substituted per
+     family at send, nothing else is touched. */
+  :root { --green:#0f4c35; --line:#c0d8c0; --ink:#1a2e1a; --muted:#6b7280; }
+  * { box-sizing:border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:var(--ink); background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .toolbar { position:sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; gap:10px; align-items:center; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  .wrap { max-width:900px; margin:0 auto; padding:20px 16px; }
+  h1 { font-size:22px; color:var(--green); margin:14px 0 2px; letter-spacing:-0.01em; }
+  .sub { color:var(--muted); font-size:13px; }
+  .ver { display:inline-block; font-size:11.5px; font-weight:700; color:#166534; background:#dcfce7; border:1px solid #bbf7d0; border-radius:999px; padding:3px 10px; margin:10px 0 14px; }
+  .letter { background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:20px 22px; font-size:14.5px; line-height:1.72; }
+  .letter p { margin:0 0 12px; }
+  .letter .sign-off { margin-top:16px; font-weight:700; }
+  .qrbox { display:flex; align-items:center; gap:14px; margin-top:18px; padding:14px 16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; }
+  .qrbox canvas { border:1px solid #e2e8e2; border-radius:6px; background:#fff; }
+  .qrbox .t { font-size:13px; font-weight:700; color:var(--green); }
+  .qrbox .u { font-size:11.5px; color:var(--muted); word-break:break-all; margin-top:3px; }
+  @media print { body{background:#fff;padding:0} .toolbar{display:none!important} .wrap{max-width:none;padding:0 12px} .letter{border:1px solid #ccc} }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+</div>
+
+<div class="wrap">
+  <h1>Moving to electronic records</h1>
+  <div class="sub">Play Academy · to every family, as the transition reaches you</div>
+  <div class="ver">Transition letter v1 · read-only — you sign on the form it points to, not here</div>
+
+  <div class="letter">
+    <!-- VERBATIM: advisor edition, owner-approved 2026-09-17. Not one word changed.
+         {LINK} = the family's personal activation link, substituted per recipient at send. -->
+    <p>Dear Play Academy Families,</p>
+    <p>Play Academy is moving from paper records to electronic ones. As the transition reaches your family, you will receive the necessary forms and a link with a QR code: it sets up the app for your child's drop-off and pick-up and opens your personal account, where you manage your family's information and stay in touch with Play Academy staff.</p>
+    <p>The transition follows a schedule. If you have received this letter, your family's turn has come — please complete the steps within one week.</p>
+    <p>Start by reading the Addendum to the Parent Handbook and signing to confirm you have read it.</p>
+    <p>Thank you!</p>
+    <div class="sign-off">— Play Academy</div>
+  </div>
+
+  <div class="qrbox">
+    <canvas id="qrc" width="140" height="140"></canvas>
+    <div>
+      <div class="t" id="qrt">Your personal link &amp; QR</div>
+      <div class="u" id="qru">added for your family when this letter is sent</div>
+    </div>
+  </div>
+</div>
+
+<script src="../../qrcodegen.js"></script>
+<script>
+/* {LINK} is the family's personal activation link, substituted per recipient by the send rail.
+   Standalone (unsubstituted) preview shows the placeholder note and no QR — the letter never
+   hardcodes a link, because each family's is its own. */
+(function(){
+  var LINK='{LINK}';
+  if(LINK==='{'+'LINK}' || !LINK){ return; }   // not substituted → keep the placeholder note
+  var u=document.getElementById('qru'); if(u) u.textContent=LINK;
+  var t=document.getElementById('qrt'); if(t) t.textContent='Scan to open on your phone';
+  if(!window.qrcodegen) return;
+  var c=document.getElementById('qrc');
+  var qr=qrcodegen.QrCode.encodeText(LINK, qrcodegen.QrCode.Ecc.MEDIUM);
+  var n=qr.size, b=1, scale=Math.max(1,Math.floor(140/(n+b*2))), dim=(n+b*2)*scale;
+  c.width=dim; c.height=dim;
+  var x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,dim,dim); x.fillStyle='#0f4c35';
+  for(var y=0;y<n;y++) for(var i=0;i<n;i++) if(qr.getModule(i,y)) x.fillRect((i+b)*scale,(y+b)*scale,scale,scale);
+})();
+</script>
+</body>
+</html>
