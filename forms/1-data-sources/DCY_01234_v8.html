@@ -280,6 +280,7 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
       if(f.r){el.setAttribute('data-required','');el.setAttribute('data-label',f.label||f.id);}
       if(f.id==='parent_sig') el.style.pointerEvents='none';   // parent signs via FKPad (draw-big/fits-small), never tiny direct-draw
+      if(f.staff) el.style.pointerEvents='none';   // 🔒 2026-09-17: the program (director) slot is NEVER signable on the family device — countersigned only from the director's session on Approve
       // clear button
       var cb=document.createElement('button');cb.type='button';cb.className='sigclear';cb.textContent='✕';
       cb.style.left=(f.x+f.w-22)+'px';cb.style.top=(f.y+2)+'px';
@@ -293,7 +294,8 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
          «а в чём разница?», на который у формы нет ответа. */
       if(f.id==='parent_sig') lock.setAttribute('data-fk-pad','f_'+f.id);
       lock.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
-      lock.textContent = f.staff ? 'Program review — after the parent signs' : 'Complete the required fields first';
+      lock.textContent = f.staff ? 'Program administrator — signed by the center after review' : 'Complete the required fields first';
+      if(f.staff) lock.setAttribute('data-fk-permanent','1');   // 🔒 stays locked on the family device; the program signature is the center's, applied on Approve
       host.appendChild(lock);
     } else {
       el=document.createElement('input'); el.type=f.tel?'tel':'text'; el.className='f';
@@ -464,7 +466,10 @@ function gate(){
     else if(!reqOk){ pLock.style.display='flex'; pLock.textContent='Complete the required fields first'; pLock.classList.remove('siglock-go'); pLock.onclick=null; }
     else { pLock.style.display='flex'; pLock.textContent='✍ Tap to sign — draw big'; pLock.classList.add('siglock-go'); pLock.onclick=openParentPad; }
   }
-  var gLock=document.getElementById('lock_program_sig'); if(gLock) gLock.style.display = (reqOk && parentSigned) ? 'none':'flex';
+  // 🔒 2026-09-17: the program (director) slot NEVER unlocks on the family device. The program
+  // signature is applied only from the director's session on Approve (countersign). Leaving it
+  // signable let a parent's pad reach the program line — 16 DCY 01234 corrupted, Jul–Sep 2026.
+  var gLock=document.getElementById('lock_program_sig'); if(gLock) gLock.style.display='flex';
   stampSignatureDates();
 }
 /* ⭐ ОТВЕТ, ПЕРЕСКАЗАННЫЙ ЗА СЕМЬЮ, ОБЯЗАН СНИМАТЬСЯ ВМЕСТЕ С ПОВОДОМ.
@@ -682,7 +687,7 @@ window.FORMKIT_CONFIG = {
     fd.signature_typed_value = '';
     return {
       formData:fd,
-      signatures:{ parent_sig:FormKit.getSig('f_parent_sig'), program_sig:FormKit.getSig('f_program_sig') },
+      signatures:{ parent_sig:FormKit.getSig('f_parent_sig') },   // 🔒 2026-09-17: program_sig is NOT captured from the family device — the center countersigns it on Approve
       signatureDate: g('parent_sig_dt') || ''
     };
   },
