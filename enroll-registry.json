@@ -766,6 +766,25 @@
         }
       ]
     },
+    "parent_handbook_addendum_electronic_records": {
+      "slug": "parent_handbook_addendum_electronic_records",
+      "title": "Parent Handbook — Addendum: Electronic Records",
+      "kind": "keep",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Parent_Handbook_Addendum_Electronic_Records_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parent_Handbook_Addendum_Electronic_Records_v1.html",
+      "audience": "parent",
+      "section": "our_documents",
+      "note": "Read-only library reference of the Electronic Records addendum (owner's final wording 2026-09-17). kind=keep, NO signature: the SIGNED instrument is parents_book_ack v3, which carries this same text under one signature. This card is for reading and printing (library / Doc Hub) — not a second signature entity.",
+      "history": [
+        {
+          "at": "2026-09-17",
+          "note": "v1 — verbatim owner text; read-only library card, print-PDF. Built to show → STOP → deploy by word."
+        }
+      ]
+    },
     "transition_letter": {
       "slug": "transition_letter",
       "title": "Moving to electronic records — family letter",

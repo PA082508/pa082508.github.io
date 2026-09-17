@@ -53,6 +53,7 @@
     "safepass_parent_letter_ridge": "письмо семье, не форма — collect() нет",
     "safepass_parent_addendum_ridge": "аддендум на подпись, разбираемых полей нет",
     "transition_letter": "письмо-рассылка (kind=keep), подписи нет, разбираемых полей нет — подпись живёт на parents_book_ack v3",
+    "parent_handbook_addendum_electronic_records": "read-only library-карточка (kind=keep), подписи нет, полей нет — подпись живёт на parents_book_ack v3",
     "dcy_01226": "PDF госбланка, кит его не несёт",
     "dcy_01305": "PDF врача, заполняется вне витрины",
     "center_parent_info": "docx-документ библиотеки",
