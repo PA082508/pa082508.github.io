@@ -651,16 +651,21 @@
       "slug": "parents_book_ack",
       "title": "Parent Handbook Receipt",
       "kind": "signature",
-      "current": "v2",
+      "current": "v3",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/Parents_Book_Ack_v1.html",
-        "v2": "https://pa082508.github.io/forms/1-data-sources/Parents_Book_Ack_v2.html"
+        "v2": "https://pa082508.github.io/forms/1-data-sources/Parents_Book_Ack_v2.html",
+        "v3": "https://pa082508.github.io/forms/1-data-sources/Parents_Book_Ack_v3.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parents_Book_Ack_v2.html",
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Parents_Book_Ack_v3.html",
       "intakeMode": "online|kiosk",
       "signer": "parent",
-      "note": "Mini fill-and-sign receipt for the Parent Handbook. Body is VERBATIM from the handbook's own signature page (p.43) — the handbook makes enrolment contingent on a \"signed Parent Handbook receipt\", so the receipt carries its words, not a paraphrase. Signature 1 required (adopts the parent shelf sample); signature 2 optional with the P2 N/A pattern. Channel submit_enrollment_form, submission_type=parents_book_ack.",
+      "note": "Mini fill-and-sign receipt for the Parent Handbook. Body is VERBATIM from the handbook's own signature page (p.43) — the handbook makes enrolment contingent on a \"signed Parent Handbook receipt\", so the receipt carries its words, not a paraphrase. Signature 1 required (adopts the parent shelf sample); signature 2 optional with the P2 N/A pattern. Channel submit_enrollment_form, submission_type=parents_book_ack. v3 (2026-09-17) folds the Electronic Records addendum (owner's final text) under the SAME single signature — the retired keep-addendum safepass_parent_addendum_ridge is superseded here; one entity, one signature, one \"Parent Handbook — acknowledged\" badge. A v2 signature (receipt only) is not undone; form_data.electronic_records_addendum distinguishes a v3 signature in provenance.",
       "history": [
+        {
+          "at": "2026-09-17",
+          "note": "FLIP current v2 → v3 — the Electronic Records addendum (owner's final two paragraphs, 2026-09-17) is added under the SAME single signature; the verbatim p.43 handbook receipt is byte-unchanged. Replaces the read-only keep-addendum safepass_parent_addendum_ridge (now retired) — one entity, not a second: the one signature lights the \"Parent Handbook — acknowledged\" badge, covering both. Those who signed v2 keep the badge (not undone); block coverage comes on the transition wave or the annual cycle; form_data.electronic_records_addendum=true marks a v3 signature in provenance. form-kit.js untouched → ?v= stays 47."
+        },
         {
           "at": "2026-07-27",
           "note": "FLIP current v1 → v2 — DRAW ONLY on the parent signature — the TYPED autograph added on 2026-07-24 is REMOVED (tab, script faces, typed renderer and its CSS all deleted from the edition; the FKPad \"draw-big / fits-small\" pad stays, so a narrow overlay slot is still signable). Reason: the licensing authority (Ohio DCY) states that an electronic signature must be an official electronic or physical signature and \"can't just be the parent typing their name in\". collect() now records signature_method='drawn' unconditionally; signature_typed_value stays in the payload as '' so downstream readers are unchanged. Attestation gate, date-stamp-on-signing, adopt shelf and every coordinate are UNTOUCHED. form-kit.js untouched → ?v= stays 12. Headless read-back on all six editions: 0 typed affordances in the DOM, pad still inks the slot, collect()=drawn, 0 page errors. See docs/compliance/e-signature.md. Second (optional) parent signature is draw-only too. This form also MINTS the parent sample adopted by the government forms."
@@ -741,6 +746,8 @@
       "slug": "safepass_parent_addendum_ridge",
       "title": "SafePass — Parent Handbook Addendum",
       "kind": "keep",
+      "retired": true,
+      "superseded_by": "parents_book_ack",
       "current": "v1",
       "versions": {
         "v1": "https://pa082508.github.io/forms/1-data-sources/SafePass_Parent_Addendum_Ridge_v1.html"
@@ -750,8 +757,30 @@
       "note": "Addendum to the Parent Handbook (parents_book v1, 43 pp., effective 1/1/2025) — SafePass check-in and check-out. Read-only, NO signature block: the signed instrument for the handbook is parents_book_ack; an addendum is read, not signed. Text VERBATIM (owner's final wording 2026-08-07) and carries the restored 26.06 canon of the trusted adult's permanent personal QR. The body has no {LINK}; the Ridge activation link sits beside it with a QR so a printed copy still leads a family to where access is set up.",
       "history": [
         {
+          "at": "2026-09-17",
+          "note": "RETIRED — superseded by parents_book_ack v3. Owner's word 2026-09-17: the addendum is no longer a read-only keep; its Electronic Records content (owner's final text) now rides inside the Parent Handbook Receipt form under ONE signature. The step-by-step \"how to use\" chunks were dropped (they live in parentGuideV2 and the transition letter). Kept in the registry forward-only (not deleted); no longer offered as a standalone keep document."
+        },
+        {
           "at": "2026-08-07",
           "note": "v1 published with the staff package, effective Monday, August 10. Held back from the first publish of the package because the verbatim text had not arrived; released the same day it did — nothing was authored on the center's behalf."
+        }
+      ]
+    },
+    "transition_letter": {
+      "slug": "transition_letter",
+      "title": "Moving to electronic records — family letter",
+      "kind": "keep",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Transition_Letter_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Transition_Letter_v1.html",
+      "audience": "parent",
+      "note": "Read-only transition letter (advisor edition, owner-approved 2026-09-17). NO signature block by design: the \"sign to confirm\" it names is the signature on parents_book_ack v3 (Parent Handbook Receipt & Electronic Records), never on this letter. Sent per family as the transition wave reaches them; {LINK} = the family's personal activation link, substituted at send. Companion to the activation letter safepass_parent_letter_ridge.",
+      "history": [
+        {
+          "at": "2026-09-17",
+          "note": "v1 — verbatim advisor edition, owner-approved. Built to show → STOP → deploy by word."
         }
       ]
     },
