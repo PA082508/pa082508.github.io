@@ -920,6 +920,10 @@
   // _submitted locks the form after success so repeated Submit / Enter can't create
   // duplicate Inbox entries. Edits after submit = a NEW form (Start a new form).
   var _submitting = false, _submitted = false;
+  // Серверный мягкий гейт повтора (17.09): подача этого получателя уже В ДЕЛЕ
+  // (prefill_link_status='complete'). Не запрет — осознанная переподача (настоящее
+  // продление) проходит, случайный повтор упирается в слова на Submit.
+  var _onFile = null, _renewalOK = false;
   // F4 part 2 — per-load idempotency token. A repeat of the same token (double-click,
   // retry) makes submit_enrollment_form return the SAME submission (server dedup).
   // A new form gets a fresh token (see newForm). Null on old browsers → server treats
@@ -1304,7 +1308,21 @@ document.addEventListener('click', function (e) {
       });
       if (!r.ok) return;                                // сеть молчит — не пугаем зря
       var st = await r.json();
-      if (!st || st.status !== 'expired') return;
+      if (!st) return;
+      if (st.status === 'complete') {
+        // Форма этого получателя УЖЕ в деле. Мягкий гейт, не запрет: осознанная переподача
+        // проходит (в семье не один ребёнок, бывает настоящее продление), случайный повтор
+        // упирается в подтверждение на Submit (submit(): _onFile → confirm).
+        _onFile = st;
+        var c = document.createElement('div');
+        c.className = 'fk-onfile-banner fk-print-hidden';
+        c.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#fff8e6;border-bottom:2px solid #b45309;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#7a4a00');
+        c.innerHTML = '<strong>A form for ' + (st.child_name || 'your child') + ' is already on file.</strong> ' +
+          'You only need to submit again if something changed — a genuine renewal.';
+        document.body.insertBefore(c, document.body.firstChild);
+        return;
+      }
+      if (st.status !== 'expired') return;
       var b = document.createElement('div');
       b.className = 'fk-expired-banner fk-print-hidden';
       b.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#fff8e6;border-bottom:2px solid #b45309;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#7a4a00');
@@ -1734,6 +1752,8 @@ document.addEventListener('click', function (e) {
     var data;
     try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status('Error: ' + e.message, 'er'); return; }
     if (!data) { status('Nothing to submit', 'er'); return; }
+    // Title Case имён в полезной нагрузке (collect-сторона; blur ловит живой ввод, это — вставку/автозаполнение).
+    titleCaseFormData(data.formData);
     // ДО ЛЮБОГО ТРАНСПОРТА — и до RPC, и до embed, и до собственного CFG.submit формы:
     // отказ обязан означать НОЛЬ записей, а не «записали и потом пожалели».
     // Смотрим ВСЕ поля имени ребёнка, а не одно: DCY 01234 повторяет имя на второй
@@ -1742,6 +1762,13 @@ document.addEventListener('click', function (e) {
     if (!FAMILY_SCOPE_TYPES[FORM_TYPE] && !fieldTakesManyChildren() &&
         childNames.some(function (k) { return looksLikeMoreThanOneChild(data.formData[k]); })) {
       refuseTwoChildren(); return;
+    }
+    // Мягкий гейт повтора: форма этого получателя уже в деле → одно подтверждение.
+    // Осознанная переподача (продление) проходит; случайный повтор останавливается словами.
+    if (_onFile && !_renewalOK) {
+      var who = (_onFile.child_name || 'this child');
+      if (!window.confirm('A form for ' + who + ' is already on file. Submit again only if this is a genuine renewal — something has changed. Continue?')) { status('Not submitted — the form already on file was kept.', ''); return; }
+      _renewalOK = true;
     }
     _submitting = true;
     status('Saving…', 'in');
@@ -1959,6 +1986,56 @@ document.addEventListener('click', function (e) {
     /* ⛔ ПОЛЯ БЕЗ data-fk-field ТОЖЕ ПОДСКАЗЫВАЮТ. Бланк объявляет type="email"/"tel"
        напрямую, и браузеру этого достаточно — гасим и их. */
     if (shared) $$('input[type="email"], input[type="tel"]').forEach(function (e) { e.setAttribute('autocomplete', 'off'); });
+  }
+
+  // ── Title Case for names (capture layer, 17.09) ─────────────────────────────
+  // Замер аудита канонов: ростер чист (Title Case на approve), но 21 из 255 подач несли
+  // строчное слово в имени («napier») — на КАПЧЕ правила не было, и печатный бланк семьи
+  // показывал строчное. Чиним ВПЕРЁД: правим только новые вводы (blur) и полезную нагрузку
+  // (collect). Существующие подачи НЕ трогаем — forward-only.
+  //
+  // ⛔ МЯГКАЯ КАПИТАЛИЗАЦИЯ, НЕ ГРОМКАЯ. Поднимаем первую букву каждого сегмента (после
+  //    пробела/дефиса/апострофа/точки), но НЕ опускаем остальные: «III» остаётся «III»,
+  //    «McLin» остаётся «McLin», «Rodriguez-Texidor» — обе части, «o'brien» → «O'Brien».
+  // Заглавная — первая буква каждого СЛОВА (по пробелу/дефису), остальные буквы КАК ВВЕЛИ
+  // (не опускаем: «McLin»→«McLin», «JOHN»→«JOHN»). Суффиксы-римлянки поднимаются целиком
+  // («iii»→«III», «iv»→«IV»). Апострофы не трогаем («da'lani»→«Da'lani», не «Da'Lani»).
+  var _ROMAN = /^(i{1,3}|iv|vi{0,3}|ix|xi{0,3}|x{1,3})$/i;   // Jr-суффиксы II…XIII
+  function capWord(w) {
+    if (!w) return w;
+    if (_ROMAN.test(w)) return w.toUpperCase();
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }
+  function titleCaseName(s) {
+    return String(s == null ? '' : s).split(/(\s+|-)/).map(function (tok) {
+      return (/^\s+$/.test(tok) || tok === '-') ? tok : capWord(tok);
+    }).join('');
+  }
+  // Поле имени человека — по id/name; НЕ email/центр/адрес/школа/заметка и НЕ подпись/тел/дата.
+  function isNameField(el) {
+    if ((el.getAttribute('type') || 'text').toLowerCase() !== 'text') return false;
+    if (el.hasAttribute('data-formkit') || el.hasAttribute('data-fk-phone') || el.hasAttribute('data-fk-date')) return false;
+    var k = ((el.id || '') + ' ' + (el.name || '')).toLowerCase();
+    if (/e-?mail|cent(er|re)|street|address|city|\bzip\b|state|school|note|reason|comment|title|position/.test(k)) return false;
+    return /_name|name_|\bname\b|first|last|child|parent|guardian|mother|father|applicant|employee|caregiver|signer|\bfull\b/.test(k);
+  }
+  function initNames() {
+    $$('input').forEach(function (el) {
+      if (!isNameField(el) || el.getAttribute('data-fk-name')) return;
+      el.setAttribute('data-fk-name', '1');
+      el.addEventListener('blur', function () { var v = titleCaseName(el.value); if (v !== el.value) el.value = v; });
+    });
+  }
+  // Collect-сторона: правим значения name-ключей в payload (на случай вставки/автозаполнения,
+  // когда blur не сработал). Только строковые name-поля, forward-only.
+  var NAME_KEY = /(^|_)(name|first|last|child|parent|guardian|mother|father|applicant|employee|caregiver|signer|full)(_|$|name)/i;
+  var NOT_NAME_KEY = /e-?mail|cent(er|re)|street|address|city|zip|state|school|note|reason|comment|title|position|type|method|value|date|phone/i;
+  function titleCaseFormData(fd) {
+    if (!fd || typeof fd !== 'object') return;
+    Object.keys(fd).forEach(function (k) {
+      if (typeof fd[k] !== 'string' || !fd[k]) return;
+      if (NAME_KEY.test(k) && !NOT_NAME_KEY.test(k)) fd[k] = titleCaseName(fd[k]);
+    });
   }
 
   // ── Phone mask (packet standard §5.2): (XXX) XXX-XXXX ────────────────────────
@@ -2344,7 +2421,7 @@ document.addEventListener('click', function (e) {
     stripCenterPickers();   // #6 — before anything can read or show a picker
     $$('[data-formkit="signature"]').forEach(function (c) { initSig(c); initAdopt(c); });
     initConditionals(); initValidation(); initTooltips(); initChoices();
-    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initFreshButton(); initPhones(); initDates(); initAddress(); initExclusive();
+    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initFreshButton(); initPhones(); initNames(); initDates(); initAddress(); initExclusive();
     try { initPhotoCells(); } catch (_) {}
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // resolve center (embed does its own)
     initToolbar();                                         // unified toolbar — brand + center chip / banner
@@ -2390,7 +2467,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 40,
+    KIT: 47,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
