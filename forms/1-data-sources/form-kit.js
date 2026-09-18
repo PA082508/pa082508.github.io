@@ -1760,6 +1760,7 @@ document.addEventListener('click', function (e) {
     if (!data) { status('Nothing to submit', 'er'); return; }
     // Title Case имён в полезной нагрузке (collect-сторона; blur ловит живой ввод, это — вставку/автозаполнение).
     titleCaseFormData(data.formData);
+    normalizePhonesFormData(data.formData);
     // ДО ЛЮБОГО ТРАНСПОРТА — и до RPC, и до embed, и до собственного CFG.submit формы:
     // отказ обязан означать НОЛЬ записей, а не «записали и потом пожалели».
     // Смотрим ВСЕ поля имени ребёнка, а не одно: DCY 01234 повторяет имя на второй
@@ -2041,6 +2042,18 @@ document.addEventListener('click', function (e) {
     Object.keys(fd).forEach(function (k) {
       if (typeof fd[k] !== 'string' || !fd[k]) return;
       if (NAME_KEY.test(k) && !NOT_NAME_KEY.test(k)) fd[k] = titleCaseName(fd[k]);
+    });
+  }
+
+  // ⭐ ТЕЛЕФОН В БД — КАНОНИЧЕСКИЕ ЦИФРЫ (слово владельца 18.09). Маска fmtPhone красит ВВОД
+  //    «(440) 376-2154», но в submit_enrollment_form уходят ЦИФРЫ, а не формат — иначе form_data
+  //    хранит одну строку, а порт (digitsOfPhone) — другую, и показ расходится. Снимаем формат на
+  //    выходе, в ТОЙ ЖЕ точке, что Title Case имён (одна нормализация полезной нагрузки, §4).
+  function normalizePhonesFormData(fd) {
+    if (!fd || typeof fd !== 'object') return;
+    Object.keys(fd).forEach(function (k) {
+      if (typeof fd[k] !== 'string' || !fd[k]) return;
+      if (/phone|cell|mobile|_ph$/i.test(k)) fd[k] = fd[k].replace(/\D/g, '');
     });
   }
 
