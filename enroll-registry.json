@@ -629,15 +629,20 @@
       "slug": "parents_book",
       "title": "Parent Handbook",
       "kind": "keep",
-      "current": "v1",
+      "current": "v2",
       "versions": {
         "v1": {
           "pearl": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_pearl_v1.pdf",
           "alpha": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_alpha_v1.pdf",
           "ridge": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_ridge_v1.pdf"
+        },
+        "v2": {
+          "pearl": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_pearl_v2.pdf",
+          "alpha": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_alpha_v2.pdf",
+          "ridge": "https://pa082508.github.io/forms/3-library/our-documents/ParentHandbook_ridge_v2.pdf"
         }
       },
-      "note": "Keep-for-your-records booklet, 43pp, effective 1/1/2025. Built per center from the Parma/Pearl source (PH25handbookP.pdf): running header, page-5 contact block (address / licence / phone) and the ADMINISTRATOR line are the center's own; every other page is byte-identical. APPROVED BY: Tatiana Kogan is org-wide and untouched, as are EFFECTIVE DATE / POLICY NO. Licences: pearl 300629, alpha 307982 (6-digit legacy scheme), ridge 2190020475 (10-digit scheme, confirmed off the wall by the owner 2026-07-15). Alpha/Ridge fax + e-mail are not held anywhere, so those lines are dropped rather than carrying Pearl's.",
+      "note": "v2 (2026-09-18): the Electronic Records addendum is bound as page 44, right after the Signature page (page 43); pages 1-43 are the v1 body byte-for-byte (pdfunite, no recompress). Signatures are NOT re-collected — the signed instrument stays parents_book_ack v3; the addendum page itself says «you acknowledge this on the Parent Handbook Receipt, not here». Forward-only: v1 kept. v1 note — Keep-for-your-records booklet, 43pp, effective 1/1/2025. Built per center from the Parma/Pearl source (PH25handbookP.pdf): running header, page-5 contact block (address / licence / phone) and the ADMINISTRATOR line are the center's own; every other page is byte-identical. APPROVED BY: Tatiana Kogan is org-wide and untouched, as are EFFECTIVE DATE / POLICY NO. Licences: pearl 300629, alpha 307982 (6-digit legacy scheme), ridge 2190020475 (10-digit scheme, confirmed off the wall by the owner 2026-07-15). Alpha/Ridge fax + e-mail are not held anywhere, so those lines are dropped rather than carrying Pearl's.",
       "history": [
         {
           "at": "2026-07-15",
