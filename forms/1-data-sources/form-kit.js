@@ -1461,6 +1461,12 @@ document.addEventListener('click', function (e) {
     _submitted = true;
     $$('input,select,textarea,button').forEach(function (el) { if (!el.hasAttribute('data-fk-newform')) el.disabled = true; });
     if ($('.fk-submitted-banner')) return;
+    /* ⭐ ГРОМКИЙ ВЕРХНИЙ БАННЕР (слово владельца 18.09): «уже отправлено» видно в точке правки,
+       а не только липкой строкой снизу. lockForm-механику не трогаем — это ВТОРОЙ, верхний баннер. */
+    var tb = document.createElement('div'); tb.className = 'fk-submitted-top fk-print-hidden';
+    tb.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;background:#fffbeb;border-bottom:2px solid #f59e0b;color:#7a4b00;padding:12px 16px;font:700 14px/1.4 Arial,sans-serif;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.12)');
+    tb.innerHTML = '✓ Already submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. This form is locked and can’t be changed here. Need changes? Use “Start a new form” below.';
+    document.body.insertBefore(tb, document.body.firstChild);
     var b = document.createElement('div'); b.className = 'fk-submitted-banner fk-print-hidden';
     b.setAttribute('style', 'position:sticky;bottom:0;left:0;right:0;z-index:9999;background:#0a7d46;color:#fff;padding:12px 16px;font:600 14px/1.4 Arial,sans-serif;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -2px 12px rgba(0,0,0,.18)');
     var txt = document.createElement('span'); txt.innerHTML = '✓ Submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. Need changes?';
