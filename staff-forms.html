@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enrollment Packet — Play Academy</title>
+<title>Staff Forms — Play Academy</title>
 <!-- Link preview (Messages / social): branded card instead of a bare title. -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Play Academy">
-<meta property="og:title" content="Enrollment Packet — Play Academy">
-<meta property="og:description" content="Your Play Academy enrollment packet — complete and sign it online.">
+<meta property="og:title" content="Staff Forms — Play Academy">
+<meta property="og:description" content="Your Play Academy staff forms — read and sign them online.">
 <meta property="og:image" content="https://pa082508.github.io/og-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Enrollment Packet — Play Academy">
-<meta name="twitter:description" content="Your Play Academy enrollment packet — complete and sign it online.">
+<meta name="twitter:title" content="Staff Forms — Play Academy">
+<meta name="twitter:description" content="Your Play Academy staff forms — read and sign them online.">
 <meta name="twitter:image" content="https://pa082508.github.io/og-card.png">
 <style>
   /* ============================================================
@@ -141,7 +141,7 @@
 
   var qs = new URLSearchParams(location.search);
   var center = (qs.get('center') || '').toLowerCase();
-  var setName = (qs.get('set') || 'starter').toLowerCase();
+  var setName = (qs.get('set') || 'staff').toLowerCase();
   var only = (qs.get('only') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
 
   /* ── НАБОР `starter` СНЕСЁН, ЕГО АДРЕС — ЖИВ ─────────────────────────────────
