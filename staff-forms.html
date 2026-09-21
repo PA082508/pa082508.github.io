@@ -92,20 +92,13 @@
 <body>
 <div class="wrap">
   <div class="head">
-    <div class="k" id="ctrLabel">Play Academy · Enrollment packet</div>
-    <h1 id="setTitle">Enrollment packet</h1>
-    <div class="sub" id="setSub">Complete the forms below. Start with Consent — the rest reuse your signature.</div>
+    <div class="k" id="ctrLabel">Play Academy · Staff forms</div>
+    <h1 id="setTitle">Staff forms</h1>
+    <div class="sub" id="setSub">Complete the forms below. Start with the Consent; each form is signed with its own fresh signature.</div>
   </div>
   <div id="list"></div>
   <div id="msg" style="display:none"></div>
 
-  <div class="hint" id="hint">
-    Doing forms for another child? Tap &ldquo;Start new family&rdquo; first to clear the shared details.
-  </div>
-  <div class="actions">
-    <button id="btnNewFamily">Start new family</button>
-    <div id="cleared">&#10003; Shared data cleared</div>
-  </div>
 </div>
 
 <div class="ov" id="ov">
@@ -133,10 +126,10 @@
   var CENTER_NAMES = { ridge: 'Wickliffe', pearl: 'Parma Heights', alpha: 'Highland Heights' };
   var SET_TITLES = { starter: 'Welcome — enrollment packet', toddler_preschool: 'Enrollment packet', infant: 'Infant enrollment packet', admission: 'Admission packet', staff: 'Welcome to the team' };
   // Audience branding: the packet declares audience:'staff' and the page stops talking
-  // about enrolling a child. Absent = parent, so every existing packet is unchanged.
+  // about enrolling. Absent = parent, so every existing packet is unchanged.
   var AUDIENCE_COPY = {
-    staff: { crumb: 'Staff onboarding', sub: 'Complete the forms below. Start with the Consent — the rest reuses your signature.' },
-    parent: { crumb: 'Enrollment', sub: 'Complete the forms below. Start with Consent — the rest reuse your signature.' }
+    staff: { crumb: 'Staff forms', sub: 'Complete the forms below. Start with the Consent; each form is signed with its own fresh signature.' },
+    parent: { crumb: 'Enrollment', sub: 'Complete the forms below. Start with the Consent; each form is signed with its own fresh signature.' }
   };
 
   var qs = new URLSearchParams(location.search);
@@ -188,7 +181,7 @@
     try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}   // mark seen on show — matches the kit
   }
   lifeNotice();
-  function fail(text) { document.getElementById('list').innerHTML = ''; show(document.getElementById('hint'), false); document.querySelector('.actions').style.display = 'none'; var m = document.getElementById('msg'); m.textContent = text; show(m, true); }
+  function fail(text) { document.getElementById('list').innerHTML = ''; var m = document.getElementById('msg'); m.textContent = text; show(m, true); }
 
   // ---- session "done" tracking (per form key) ----
   function packetLoad() { try { var raw = localStorage.getItem(PACKET_KEY); if (!raw) return null; var o = JSON.parse(raw); if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) { localStorage.removeItem(PACKET_KEY); return null; } return o; } catch (e) { return null; } }
@@ -224,6 +217,9 @@
      код с чужим именем — утечка). Поэтому адрес расходится надвое: QR остаётся
      безымянным, именной уходит по кнопке, которую нажимает сам родитель. */
   var personalToken = qs.get('t') || '';
+  // Имя из адресной ссылки композитора (?nm=) — доносим до КНОПКИ Open каждой формы, чтобы поле
+  //   имени (data-fk-field="staff_name") предзаполнилось (form-kit applyUplName). В QR имя НЕ уходит.
+  var uplName = qs.get('nm') || '';
 
   /* ⭐ ФЛИП ИНТЕРВЬЮ-ДВЕРИ (слово владельца 25.08). Именная ссылка — и обычная, и
      волновая — открывает ИНТЕРВЬЮ, а не список бланков. Список остаётся дверью для
@@ -280,16 +276,19 @@
     var d = document.createElement('div');
     d.setAttribute('style', 'margin:10px 0 14px;padding:11px 13px;border:1.5px solid #c0d8c0;border-radius:10px;background:#f8fbf9;font:400 13px/1.6 system-ui,sans-serif;color:#0f4c35');
     d.innerHTML = '<strong>How to complete</strong>' +
-      '<div>· We have pre-filled what we already know about your child — please check it and complete the rest.</div>' +
-      '<div>· One child per form. Twins and multiples need a form each.</div>' +
+      '<div>· We have pre-filled what we already know — please check it and complete the rest.</div>' +
       '<div>· Press Submit when done; it comes straight to the center. This link is personal — please don\'t forward it.</div>';
     var list = document.getElementById('list');
     if (list && list.parentNode) list.parentNode.insertBefore(d, list);
   }
 
   function withToken(url) {
-    if (!url || !personalToken) return url;
-    return url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + encodeURIComponent(personalToken);
+    if (!url) return url;
+    var qp = [];
+    if (personalToken) qp.push('t=' + encodeURIComponent(personalToken));
+    if (uplName) qp.push('nm=' + encodeURIComponent(uplName));   // именной префилл поля имени формы
+    if (!qp.length) return url;
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') + qp.join('&');
   }
 
   // ── Center gate ──────────────────────────────────────────────────────────────
@@ -309,8 +308,8 @@
   }
   // A version is either ONE url for everyone (string) or an object keyed by center
   // slug when each center has its own copy — the Parent Handbook carries each
-  // center's address, licence and administrator, so one shared file would hand a
-  // family another center's document.
+  // center's address, licence and administrator, so one shared file would
+  // hand the wrong center's document.
   function verUrl(v) {
     if (!v) return null;
     if (typeof v === 'string') return v;
@@ -452,50 +451,17 @@
         var b = document.createElement('div'); b.id = 'fk-before';
         b.setAttribute('style','background:#f2f7f4;border:1.5px solid #cfe0d5;border-radius:10px;'
           + 'padding:11px 14px;margin:0 0 14px;font:13.5px/1.55 Arial,sans-serif;color:#14281f');
-        if (typeof setName !== 'undefined' && setName === 'staff') {
-          /* СОТРУДНИК: своя рамка, без единого детского слова (слово владельца по живой пробе).
-             Ни «ребёнок», ни IEA, ни здоровье — только порядок работы и переиспользуемая подпись. */
-          b.innerHTML =
-              '<b>Before you start.</b> Work down the list in order — the first form signs the rest for you. '
-            + 'Your answers stay on this phone for ' + PACKET_TTL_DAYS + ' days, so you can stop and come back. '
-            + '<button type="button" id="fk-more" style="background:none;border:none;color:#0f4c35;'
-            + 'text-decoration:underline;cursor:pointer;font:inherit;padding:0">Read more</button>'
-            + '<div id="fk-more-body" style="display:none;margin-top:8px;color:#33403a">'
-            + 'Start with the Consent — the rest reuse your signature. Nothing is sent to the center until '
-            + 'you press Submit on a form. Papers marked “Read” need no signature; papers marked '
-            + '“Print &amp; bring back” are filled by hand and handed in.'
-            + '</div>';
-        } else {
+        /* СОТРУДНИК: только порядок работы и правда механики подписи (SAMPLE_SCOPE='none' —
+           каждая форма подписывается собственной свежей рисованной подписью, образец не хранится). */
         b.innerHTML =
-            '<b>Before you start.</b> Work down the list in order — the first form signs the rest for you. '
+            '<b>Before you start.</b> Work down the list in order — start with the Consent, then the rest. '
           + 'Your answers stay on this phone for ' + PACKET_TTL_DAYS + ' days, so you can stop and come back. '
           + '<button type="button" id="fk-more" style="background:none;border:none;color:#0f4c35;'
           + 'text-decoration:underline;cursor:pointer;font:inherit;padding:0">Read more</button>'
-          /* ⭐ МНОГОДЕТНЫМ — ОТДЕЛЬНЫМ БЛОКОМ, А НЕ СТРОКОЙ В АБЗАЦЕ. Мать троих читает
-             «одна форма на ребёнка» как «заполнить всё трижды с нуля» и откладывает
-             пакет. Выделенный блок говорит второе предложение сразу: заново — только
-             детское. */
-          + '<div style="margin-top:9px;padding:9px 11px;background:#fff;border:1.5px solid #0f4c35;'
-          + 'border-radius:8px"><b>More than one child?</b> One form per child — twins too. '
-          + 'After you sign a form, press <b>“Fill this form for another child”</b>: your address, '
-          + 'phones and emergency contacts carry over, only the child’s own details are blank. '
-          /* ⚠️ ИСКЛЮЧЕНИЕ НАЗЫВАЕТСЯ ИСКЛЮЧЕНИЕМ. «Одна форма на ребёнка» и «одна на семью»
-             в соседних строках без слова «exception» читаются как противоречие, и семья
-             выбирает то, что короче. */
-          + 'Every form is one per child — <b>with one exception</b>: the Income Eligibility '
-          + 'Application (IEA) is <b>one per family</b>. It comes last; list all your children '
-          + 'on it.</div>'
-          /* ⚠️ Про здоровье — здесь же: иначе семья узнаёт о второй бумаге после подписи. */
-          + '<div style="margin-top:7px">If you tell us a child has a health condition or takes a '
-          + 'medicine, the matching papers appear in this list by themselves. For a medicine, '
-          + '<b>photograph the pharmacy label</b> — with it no separate note from the doctor is needed.</div>'
           + '<div id="fk-more-body" style="display:none;margin-top:8px;color:#33403a">'
-          + 'Order: consent first, then the enrolment form for each child, then anything the answers '
-          + 'add, and the income form last. Nothing is sent to the center until you press Submit on a '
-          + 'form — a half-filled form is yours alone until then. Papers marked “Read” need no '
-          + 'signature; papers marked “Print &amp; bring back” are filled by hand and handed in.'
+          + 'Start with the Consent. Each form is signed with its own fresh signature, drawn by hand on that form. '
+          + 'Nothing is sent to the center until you press Submit on a form. Papers marked “Read” need no signature.'
           + '</div>';
-        }
         var listEl = document.getElementById('list');
         listEl.parentNode.insertBefore(b, listEl);
         document.getElementById('fk-more').addEventListener('click', function(){
@@ -618,10 +584,7 @@
            через час после рамки, её уже не помнит — а ошибётся он именно здесь, заполнив
            её на каждого ребёнка. Дописываем к тексту реестра, а не заменяем его: там своя
            правда (срок 12 месяцев), и терять её незачем. */
-        card.querySelector('.d').textContent = s.key === 'iea'
-          ? 'One per family — not one per child. List all your children on it.'
-            + (note ? ' ' + note : '')
-          : note;
+        card.querySelector('.d').textContent = note;
         if (link) { card.querySelector('.open').href = openHref; }
         list.appendChild(card);
         if (link) {
@@ -642,12 +605,6 @@
     .catch(function () { fail('Could not load the form list. Please try again.'); });
   });   /* конец interviewDoor().then — список форм рисуется только когда дверь старая */
 
-  document.getElementById('btnNewFamily').addEventListener('click', function () {
-    try { localStorage.removeItem(PACKET_KEY); } catch (e) {}
-    refreshDone();
-    var c = document.getElementById('cleared'); c.style.display = 'block';
-    setTimeout(function () { c.style.display = 'none'; }, 2500);
-  });
 })();
 </script>
 </body>
