@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Standing Order — Acknowledgment — Play Academy</title>
+<link rel="stylesheet" href="form-kit.css?v=47">
+<style>
+  :root { --green:#0f4c35; --line:#c0d8c0; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#1a2e1a; background:#f4f6f4; margin:0; padding:0 0 60px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px; }
+  .toolbar { position: sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid #e8f0e8; padding:10px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  h1 { font-size: 22px; color: var(--green); margin: 14px 0 2px; }
+  .sub { color:#6b7280; font-size:13px; margin-bottom:14px; font-style:italic; }
+  fieldset { border:1.5px solid var(--line); border-radius:12px; margin:0 0 16px; padding:14px 16px; background:#fff; }
+  legend { font-weight:700; color:var(--green); font-size:14px; padding:0 6px; }
+  label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
+  input[type=text], input[type=date] {
+    width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .body { font-size:13.5px; line-height:1.62; color:#233; }
+  .body p { margin:0 0 11px; }
+  .body h3 { font-size:14.5px; color:var(--green); margin:16px 0 6px; }
+  .body ul { margin:0 0 11px; padding-left:20px; }
+  .body li { margin:0 0 6px; }
+  .issuer { font-size:13px; color:#374151; border-top:1px solid #e8f0e8; margin-top:14px; padding-top:11px; }
+  .ack { font-size:13.5px; line-height:1.6; color:#1a2e1a; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 14px; margin-top:6px; }
+  .note { font-size:12px; color:#6b7280; background:#f9fafb; border:1px solid #eef2ee; border-radius:8px; padding:8px 10px; margin-top:10px; }
+  .btn { padding:9px 18px; border-radius:9px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:inherit; }
+  .bs { background:var(--green); color:#fff; } .br { background:#fff; color:var(--green); border:1.5px solid var(--green); }
+  .sigbox { position:relative; margin-top:8px; }
+  canvas { width:100%; height:90px; background:rgba(255,253,150,0.6); border:1.5px solid var(--line); border-radius:8px; cursor:crosshair; display:block; }
+  .sig-clear { position:absolute; top:4px; right:6px; font-size:10px; padding:2px 6px; background:#E53935; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+  #done { display:none; background:#0f4c35; color:#fff; border-radius:10px; padding:12px 16px; margin:14px 0; font-weight:700; }
+  #st { font-size:13px; font-weight:600; } #st.ok{color:#0f4c35} #st.er{color:#b91c1c} #st.in{color:#6b7280}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button class="btn bs" data-formkit="submit">✔ Submit</button>
+  <button class="btn br" onclick="soReset()">✕ Clear</button>
+  <button class="btn br" onclick="window.print()">🖨 Print</button>
+  <span id="st"></span>
+  <span class="fk-counter fk-print-hidden" data-formkit="counter"></span>
+</div>
+
+<div class="wrap">
+  <div data-formkit="banner" data-fk-banner-msg="✍️ Please read this order, then sign to acknowledge you have read and understood it"></div>
+  <h1>Standing Order — Electronic Record of Care and Work Time</h1>
+  <div class="sub">To every teacher, cook, floater, and director.</div>
+  <div id="done">✓ Acknowledgment submitted</div>
+
+  <fieldset>
+    <legend>Standing Order</legend>
+    <div class="body">
+      <p>We are moving the daily record of two things — who takes a child, and when each of us works — onto the tablet, through SafePass and the Teacher App. This order explains what that record is, what it asks of you, and how pay follows it. It is written so that the record is fair to you and safe for the children. Please read it, ask any question you have, and sign it in person.</p>
+
+      <h3>What the electronic record is</h3>
+      <p>From the effective date, SafePass and the Teacher App are the official record of two things: handoffs (every time a child is accepted in the morning and released at pickup) and work time (every time you start work, step out for lunch, come back, and leave). The paper sheet still exists as a backup, and its times must match the tablet.</p>
+
+      <h3>Your responsibilities at the door</h3>
+      <ul>
+        <li>Accept and Release are a legal record. Tap Accept only after the child is physically in your hands, and Release only after you have handed the child over.</li>
+        <li>A child who is not marked out is still, on the record, in our care — under your personal responsibility, whatever happened at the door. The door does not close a child's time in care; the Release mark does.</li>
+        <li>A child who is not marked in is the same duty without a record. An unanswered request distorts the child's recorded time in care.</li>
+        <li>The face on the screen must be the face at the door. If anything does not match, do not release — call your director.</li>
+        <li>Mark meals while the meal is being served.</li>
+        <li>Your PIN is your signature — do not share it, and do not work under anyone else's.</li>
+      </ul>
+
+      <h3>Your work time — four marks</h3>
+      <p>Each shift you make four marks: Clock in · Break out · Break in · Clock out.</p>
+      <ul>
+        <li>Lunch is not paid — the Break marks are your unpaid lunch. Other Step out reasons — Planning, Escorting a child, Kitchen, Other — are work time and are not deducted.</li>
+        <li>Everyone marks — including directors.</li>
+        <li>Marks are made on the center's devices only — a personal phone is never a time clock.</li>
+        <li>For roles outside the classroom, time marks take effect as the staff time station reaches your role — teachers are in full effect now.</li>
+        <li>If the tablet is broken, write your times on paper and give them to your director the same day.</li>
+      </ul>
+
+      <h3>How pay is calculated</h3>
+      <ul>
+        <li>Paid time is where your approved schedule and your actual marks overlap. Pay counts from your scheduled start and ends at your scheduled end.</li>
+        <li>Overtime happens only when a director changes your schedule in advance.</li>
+        <li>Time you are away within your scheduled hours is taken off by what you actually marked.</li>
+        <li>Pay runs on your own marks — accuracy protects your own paycheck.</li>
+      </ul>
+      <p>This is a record of hours worked against the schedule, not a statement about anyone's pay rate. It is meant to be accurate and fair, in both directions.</p>
+
+      <h3>Acknowledgment</h3>
+      <p>Please acknowledge this order in person, on the tablet, with your PIN. Your signature says you have read it and understand it. The center keeps a signed copy in your personnel file, and you can see it there at any time.</p>
+
+      <p style="font-style:italic;color:#4b5563">This order is here to protect the children in our care and to keep an honest, fair record of everyone's work. Thank you for the care you give every day.</p>
+
+      <div class="issuer">Issued by: <strong>Tatiana Kogan, Director</strong></div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Sign to acknowledge</legend>
+    <div class="row">
+      <div><label class="f">Employee Name *</label>
+        <input type="text" id="employee_name" data-fk-field="staff_name" autocomplete="name" data-required data-label="Employee name"></div>
+      <div><label class="f">Date *</label>
+        <input type="date" id="signed_date"></div><!-- stamp: NOT required — the signature is the gate; the date is set on signing -->
+    </div>
+    <label class="f">Position / Role</label>
+    <input type="text" id="position" data-fk-field="staff_position" placeholder="e.g. Lead Teacher, Cook, Assistant">
+
+    <div class="ack" id="ackline"></div>
+
+    <label class="f">Electronic Signature *</label>
+    <!-- Live drawn signature only (canon 27.07). The signed date is stamped on signing. -->
+    <div class="sigbox" id="draw_box">
+      <canvas id="sig" data-fk-mint="staff" data-fk-mint-name="#employee_name" width="700" height="90" data-formkit="signature" data-required data-label="Electronic signature"></canvas>
+      <button type="button" class="sig-clear fk-print-hidden" onclick="FormKit.clearSig('sig')">✕</button>
+    </div>
+    <div class="note">Your electronic signature has the same legal effect as a handwritten one. You may request a paper copy at any time.</div>
+  </fieldset>
+</div>
+
+<script>
+/* Staff Standing Order Acknowledgment v1 — form-specific config; shared behaviour = form-kit.js.
+   Second acknowledgment door alongside the in-cabinet PIN acknowledgment (§5): both write an
+   act and both count toward the "signed by N of N" badge. The order text is verbatim from the
+   center's Standing Order v2 (policy_documents) — this form does not restate or edit it. */
+function g(id){var e=document.getElementById(id);return e?(e.value||'').trim():''}
+var ORG_NAME='Play Academy, Inc.';
+
+function refreshAck(){
+  var n=g('employee_name')||'________';
+  document.getElementById('ackline').innerHTML =
+    'I, <strong>'+n.replace(/</g,'&lt;')+'</strong>, acknowledge that I have read and understood this Standing Order '+
+    'and agree to keep the electronic record of care and work time as it describes.';
+}
+function applyOrg(org){
+  if(!org) return;
+  if(org.name){
+    ORG_NAME=org.name;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-fk-org]'),function(el){ el.textContent=org.name; });
+    refreshAck();
+  }
+}
+function soReset(){
+  ['employee_name','position'].forEach(function(id){var e=document.getElementById(id); if(e)e.value='';});
+  FormKit.clearSig('sig'); refreshAck();
+  var sd=document.getElementById('signed_date'); if(sd) sd.value='';  /* stamp clears on reset */
+  if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter(); FormKit.status('Cleared','')}
+}
+window.FORMKIT_CONFIG = {
+  formType:'staff_so_ack', version:'v1', reset:soReset,
+  collect:function(){
+    var sigDate=g('signed_date')||FormKit.todayISO();
+    var fd={
+      type:'staff_so_ack', center_code:FormKit.centerCode(),
+      order_title:'Standing Order — Electronic Record of Care and Work Time', order_version:'v2',
+      staff_name:g('employee_name'), position:g('position'),
+      signature_method: 'drawn',
+      signature_typed_value: ''
+    };
+    return { formData:fd, signatures:{ staff_sig: FormKit.getSig('sig') }, signatureDate: sigDate };
+  },
+  onSuccess:function(ref){ var d=document.getElementById('done'); if(d){ d.innerHTML = '✓ Acknowledgment submitted' + (ref ? ' — Ref <strong>'+ref+'</strong>' : ''); d.style.display='block'; } }
+};
+document.addEventListener('DOMContentLoaded',function(){
+  var pn=document.getElementById('employee_name'); if(pn) pn.addEventListener('input', refreshAck);
+  refreshAck();
+  fetch('../../enroll-registry.json?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){ if(reg&&reg.org) applyOrg(reg.org); })
+    .catch(function(){});
+});
+</script>
+<style>@media print{#fk-wd-banner,#fk-wd-ns{display:none!important}}</style>
+<script>/* form-kit watchdog — inline, survives a form-kit.js load failure. */
+(function(){var RETRIED=false;
+function host(){return document.body||document.documentElement;}
+function up(){return !!window.FormKit;}
+function clear(){var b=document.getElementById('fk-wd-banner');if(b&&b.parentNode)b.parentNode.removeChild(b);}
+function banner(){if(up()){clear();return;}if(document.getElementById('fk-wd-banner'))return;
+var b=document.createElement('div');b.id='fk-wd-banner';b.setAttribute('role','button');b.tabIndex=0;
+b.textContent="This form didn't load fully — tap to reload";
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px/1.35 Arial,sans-serif;padding:12px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3)';
+b.onclick=function(){location.reload();};
+b.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.reload();}};
+host().appendChild(b);}
+function retry(){if(up()){clear();return;}if(RETRIED){banner();return;}RETRIED=true;
+var s=document.createElement('script');s.src='form-kit.js?r='+Date.now();
+s.onload=function(){setTimeout(function(){up()?clear():banner();},1500);};s.onerror=banner;
+(document.head||host()).appendChild(s);
+setTimeout(function(){up()?clear():banner();},4000);}
+window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName==='SCRIPT'&&/form-kit\.js/.test(t.src||'')){if(!up())retry();}},true);
+setTimeout(function(){up()?clear():retry();},4000);
+})();</script>
+<noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
+<script defer src="form-kit.js?v=49"></script>
+<script>
+/* Date = signature stamp (canon 2026-07-24): the signed date is auto-set at the moment of
+   signing — DRAW ONLY (канон 27.07) — read-only, cleared with the signature, bound 1:1. */
+(function(){
+  var PAIRS=[{sig:'sig',date:'signed_date'}];
+  function todayISO(){ try{ if(window.FormKit&&FormKit.todayISO) return FormKit.todayISO(); }catch(_){}
+    var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function inked(id){ try{ return !!(window.FormKit&&FormKit.getSig&&FormKit.getSig(id)); }catch(_){ return false; } }
+  function lock(dt){ dt.readOnly=true; dt.tabIndex=-1; dt.style.pointerEvents='none'; dt.style.background='#eef1ef'; }
+  function stampOne(p){
+    var dt=document.getElementById(p.date); if(!dt) return; lock(dt);
+    var has=inked(p.sig);
+    dt.value = has ? (dt.value||todayISO()) : '';
+  }
+  function stampAll(){ for(var i=0;i<PAIRS.length;i++) stampOne(PAIRS[i]); }
+  document.addEventListener('mouseup',function(){ setTimeout(stampAll,60); });
+  document.addEventListener('touchend',function(){ setTimeout(stampAll,60); });
+  document.addEventListener('DOMContentLoaded',function(){ stampAll(); });
+  window.addEventListener('load',function(){ setTimeout(stampAll,300); });
+  window.__stampSigDates=stampAll;
+})();
+</script>
+</body>
+</html>
