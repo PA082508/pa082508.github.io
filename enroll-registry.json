@@ -706,6 +706,26 @@
         }
       ]
     },
+    "staff_so_ack": {
+      "slug": "staff_so_ack",
+      "title": "Standing Order — Acknowledgment",
+      "kind": "signature",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Staff_SO_Ack_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Staff_SO_Ack_v1.html",
+      "intakeMode": "online|kiosk",
+      "signer": "staff",
+      "audience": "staff",
+      "note": "Standing Order acknowledgment, drawn signature. Second acknowledgment door alongside the in-cabinet PIN acknowledgment (§5) — both write an act to staff_agreement_signatures (source='packet' here, 'cabinet' there) and both count toward the ✓SO / 'signed by N of N' badge, which counts only the ACTIVE Standing Order version. Order text is verbatim from policy_documents standing_order v2 — this form does not restate or edit it. Channel submit_enrollment_form, submission_type=staff_so_ack.",
+      "history": [
+        {
+          "at": "2026-09-20",
+          "note": "Created as a storefront form (copy of Staff_Consent_v2 form-kit skeleton) so the Standing Order can be acknowledged with a drawn signature on the staff distribution conveyor, not only by the in-cabinet PIN path. Body = SO v2 draft (a812b529) verbatim, title Director. formType=staff_so_ack v1."
+        }
+      ]
+    },
     "safepass_staff_ack": {
       "slug": "safepass_staff_ack",
       "title": "SafePass — Staff Package & Acknowledgment",
@@ -1338,6 +1358,12 @@
           "section": "mandatory",
           "label": "Consent to Electronic Records & Signatures",
           "note": "Signed first. Every form is then signed with its own fresh, dated signature. Signing electronically is voluntary. If you prefer, you may print any form and sign it by hand, or complete it in person at the office — paper and electronic signatures are equally accepted."
+        },
+        {
+          "key": "staff_so_ack",
+          "section": "mandatory",
+          "label": "Standing Order — Acknowledgment",
+          "note": "Read the center's Standing Order on the electronic record of care and work time, then sign to acknowledge. You may also acknowledge it in person on the tablet with your PIN — either way counts."
         },
         {
           "key": "staff",
