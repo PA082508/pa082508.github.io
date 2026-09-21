@@ -1376,7 +1376,7 @@
           "key": "staff_so_ack",
           "section": "mandatory",
           "label": "Standing Order — Acknowledgment",
-          "note": "Read the center's Standing Order on the electronic record of care and work time, then sign to acknowledge. You may also acknowledge it in person on the tablet with your PIN — either way counts."
+          "note": "Read the center's Standing Order on the electronic record of care and work time, then sign to acknowledge. You may sign on paper if you prefer."
         },
         {
           "key": "staff",

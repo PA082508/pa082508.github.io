@@ -18,7 +18,12 @@
   label.f { display:block; margin:10px 0 0; font-size:13px; font-weight:600; color:#374151; }
   input[type=text], input[type=date] {
     width:100%; padding:9px 11px; border:1.5px solid var(--line); border-radius:8px; font-size:14px; font-family:inherit; margin-top:4px; background:#fff; }
-  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  /* Имя раздвинуто под полное «Имя Фамилия» (слово владельца): flex, имя ≥~28–30 симв (basis 260px),
+     дата уже; на телефоне дата переносится под имя, имя — во всю ширину строки. */
+  .row { display:flex; flex-wrap:wrap; gap:12px; }
+  .row > div { min-width:0; }
+  .row > div:first-child { flex:3 1 260px; }
+  .row > div:nth-child(2) { flex:1 1 140px; }
   .body { font-size:13.5px; line-height:1.62; color:#233; }
   .body p { margin:0 0 11px; }
   .body ul { margin:0 0 11px; padding-left:20px; }
