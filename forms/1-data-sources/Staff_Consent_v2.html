@@ -46,7 +46,7 @@
 </div>
 
 <div class="wrap">
-  <div data-formkit="banner" data-fk-banner-msg="Consent to electronic signatures — please read and sign"></div>
+  <div data-formkit="banner" data-fk-banner-msg="One consent for electronic signatures — read and sign, once"></div>
   <h1>Staff Consent for Electronic Signatures</h1>
   <div class="sub"><span data-fk-org>Play Academy, Inc.</span> — please read, then sign to consent to electronic signatures on employment forms.</div>
   <div id="done">✓ Consent submitted</div>
@@ -55,16 +55,15 @@
     <legend>Consent</legend>
     <div class="body">
       <p>Dear Team Member,</p>
-      <p>At <span data-fk-org>Play Academy, Inc.</span>, we are moving our employment records and paperwork to electronic form. From the effective date, employee forms &mdash; such as your <strong>Staff Enrollment</strong>, job-description acknowledgments, and workplace policy acknowledgments &mdash; will be signed electronically (e-signatures).</p>
-      <p>An electronically signed form is a full legal record: your electronic signature carries the same intent and authorization as a handwritten signature on these forms. Paper copies remain available upon request, and you may sign any form on paper if you prefer.</p>
-      <p>By signing below, you acknowledge and agree that:</p>
+      <p><span data-fk-org>Play Academy, Inc.</span> is moving its employment records to electronic form. From now on, every document that requires your personal signature will be offered for electronic signature &mdash; no separate consent will be needed each time.</p>
+      <p>By signing below, you agree that:</p>
       <ul>
-        <li>You consent to receiving and completing applicable employment forms electronically.</li>
-        <li>You understand that your electronic signature will be considered your legal signature on documents provided by <span data-fk-org>Play Academy, Inc.</span></li>
-        <li>You may request a paper copy of any document at any time.</li>
+        <li>Your electronic signature is your legal signature on documents provided by <span data-fk-org>Play Academy, Inc.</span></li>
+        <li>You may request a paper copy of any document at any time, and may sign on paper if you prefer.</li>
         <li>Signing this consent does not change the terms or at-will nature of your employment.</li>
+        <li>You draw your signature by hand each time you sign. It stays only on the document you signed &mdash; Play Academy does not keep it as a stored sample and never applies it to any other document for you.</li>
       </ul>
-      <p>If you have any questions about this process, please contact the office. Thank you for being part of our team.</p>
+      <p>If you have any questions, please contact the office.</p>
       <p>Sincerely,<br><span data-fk-org>Play Academy, Inc.</span></p>
     </div>
   </fieldset>
@@ -112,8 +111,7 @@ var ORG_NAME='Play Academy, Inc.';
 function refreshAck(){
   var n=g('employee_name')||'________';
   document.getElementById('ackline').innerHTML =
-    'I, <strong>'+n.replace(/</g,'&lt;')+'</strong>, consent for '+ORG_NAME.replace(/</g,'&lt;')+
-    ' to provide employment and onboarding forms electronically and to accept my electronic signature on those documents.';
+    'I, <strong>'+n.replace(/</g,'&lt;')+'</strong>, agree that my electronic signature is my legal signature on documents provided by '+ORG_NAME.replace(/</g,'&lt;')+'.';
 }
 function applyOrg(org){
   if(!org) return;
