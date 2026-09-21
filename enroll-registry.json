@@ -852,6 +852,19 @@
           "note": "Built to close the summer-schedule gap; days table mirrors 01234/CACFP."
         }
       ]
+    },
+    "staff_why_cover": {
+      "slug": "staff_why_cover",
+      "title": "Why your mark matters — a note for the team",
+      "kind": "document",
+      "section": "staff",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/Staff_Why_Cover_v1.html"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/Staff_Why_Cover_v1.html",
+      "perInstance": false,
+      "history": []
     }
   },
   "org": {
@@ -1370,6 +1383,12 @@
           "section": "mandatory",
           "label": "Staff Enrollment",
           "note": "Your details, position and availability."
+        },
+        {
+          "key": "staff_why_cover",
+          "section": "read",
+          "label": "Why your mark matters — read",
+          "note": "A short letter about the electronic record of care and work time. Read only — nothing to sign."
         }
       ]
     }
