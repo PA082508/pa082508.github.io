@@ -416,6 +416,24 @@
     var banner = $('[data-formkit="autofill-banner"]'); if (banner) banner.style.display = 'none';
     status('↳ Auto-filled from a previous form — please verify', '');
   }
+  // ⭐ ?nm= — имя, переданное адресной ссылкой (staff-композитор строки, app 2026-09-21). Заполняет
+  //    ТОЛЬКО пустое поле data-fk-field="staff_name": сотрудник открывает форму с уже вписанным именем,
+  //    но правка остаётся за ним (не перетираем набранное). Другие поля не трогаем — это не токен-префилл.
+  function applyUrlName() {
+    try {
+      var nm = new URLSearchParams(location.search).get('nm');
+      if (!nm) return;
+      nm = String(nm).trim(); if (!nm) return;
+      fkFields().forEach(function (e) {
+        var k = e.getAttribute('data-fk-field');
+        if (k === 'staff_name' && !(e.value || '').trim()) {
+          e.value = nm;
+          e.dispatchEvent(new Event('input', { bubbles: true }));
+          e.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    } catch (_) {}
+  }
   function initAutofill() {
     fkFields().forEach(function (e) { e.addEventListener('blur', savePacket); });
     var r = pkLoad();
@@ -2440,7 +2458,7 @@ document.addEventListener('click', function (e) {
     stripCenterPickers();   // #6 — before anything can read or show a picker
     $$('[data-formkit="signature"]').forEach(function (c) { initSig(c); initAdopt(c); });
     initConditionals(); initValidation(); initTooltips(); initChoices();
-    initWeek(); initBanner(); initAutofill(); initAutocomplete(); initFreshButton(); initPhones(); initNames(); initDates(); initAddress(); initExclusive();
+    initWeek(); initBanner(); initAutofill(); applyUrlName(); initAutocomplete(); initFreshButton(); initPhones(); initNames(); initDates(); initAddress(); initExclusive();
     try { initPhotoCells(); } catch (_) {}
     if (EMBED.active) EMBED.boot(); else resolveCenter();  // resolve center (embed does its own)
     initToolbar();                                         // unified toolbar — brand + center chip / banner
