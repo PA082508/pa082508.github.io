@@ -210,7 +210,12 @@
   document.getElementById('popClose').addEventListener('click', function () { ov.classList.remove('on'); });
   ov.addEventListener('click', function (e) { if (e.target === ov) ov.classList.remove('on'); });
 
-  function scoped(url) { if (!url) return url; return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'center=' + encodeURIComponent(center); }
+  // Cache-bust для САМОГО HTML-файла формы (на него указывает scoped()). GitHub Pages отдаёт файл
+  // независимо от query, но ключ кэша браузера/CDN включает ?v= — бамп FORM_V при любой правке формы
+  // форсирует свежую загрузку и закрывает окно flash-then-cover (стейл-файл; SO-хвост 21.09).
+  // ⭐ БАМПАТЬ FORM_V в ТОМ ЖЕ окне, что и правка HTML формы (та же дисциплина, что form-kit ?v=).
+  var FORM_V = '20260922';
+  function scoped(url) { if (!url) return url; var u = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'center=' + encodeURIComponent(center); return u + '&v=' + encodeURIComponent(FORM_V); }
 
   /* ── ИМЕННОЙ ТОКЕН ДОЕЗЖАЕТ ДО ФОРМЫ ───────────────────────────────────────
      Замер 15.08. Приложение выдаёт семье адрес витрины с токеном
