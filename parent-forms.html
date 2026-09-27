@@ -41,6 +41,7 @@
   .miniqr { width: 46px; height: 46px; border: 1.5px solid var(--mint-b); border-radius: 9px; padding: 3px; background: #fff; cursor: pointer; display: block; }
   .miniqr canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
   .open { font-size: 15px; font-weight: 800; color: #fff; background: var(--green); border: none; border-radius: 11px; padding: 11px 20px; text-decoration: none; display: inline-block; cursor: pointer; }
+  .card.pkt-next { border: 2px solid var(--green); }
   .card.done .open { background: #fff; color: var(--green); border: 1.5px solid var(--green); }
 
   .card.handout { background: var(--mint); border-color: var(--mint-b); }
@@ -189,6 +190,60 @@
   }
   lifeNotice();
   function fail(text) { document.getElementById('list').innerHTML = ''; show(document.getElementById('hint'), false); document.querySelector('.actions').style.display = 'none'; var m = document.getElementById('msg'); m.textContent = text; show(m, true); }
+
+  var FORM_RANK = { parent_consent: 1, dcy_01234: 2, enroll: 3, cacfp_enrollment: 3, iea: 4 };
+
+  /* ⭐ ПАКЕТ ОДНОГО РЕБЁНКА — ПРАВДА С СЕРВЕРА (Фаза A, 27.09).
+     Память устройства («done») знает только то, что нажали на ЭТОМ телефоне. Сервер знает, что этот
+     ребёнок уже прислал по этой ссылке, и что согласие уже на файле у родителя. Отсюда три слова на
+     карточке — Sent / On file / Next — и конец пакета: «<ребёнок> is done», а следующий шаг —
+     пакет брата или сестры, а не та же форма на другого ребёнка (петля 27.09). */
+  var PKT = null;
+  function applyPacketStatus() {
+    if (!PKT || !PKT.ok) return;
+    var byKey = {}; (PKT.forms || []).forEach(function (f) { byKey[f.key] = f; });
+    Array.prototype.forEach.call(document.querySelectorAll('.card[data-key]'), function (c) {
+      var f = byKey[c.dataset.key]; if (!f) return;
+      var o = c.querySelector('.open'), num = c.querySelector('.num');
+      c.classList.remove('pkt-next');
+      if (f.status === 'sent' || f.status === 'on_file') {
+        c.classList.add('done'); if (num) num.innerHTML = '&#10003;';
+        var tag = document.createElement('span'); tag.className = 'handout-tag';
+        tag.textContent = f.status === 'on_file' ? 'On file ✓' : (f.accepted ? 'Accepted ✓' : 'Sent — waiting for the office');
+        if (o) o.replaceWith(tag); else if (!c.querySelector('.handout-tag')) (c.querySelector('.right') || c).appendChild(tag);
+      } else if (f.key === PKT.next) {
+        c.classList.add('pkt-next'); if (o) o.textContent = 'Next →';
+      }
+    });
+    var old = document.getElementById('pkt-done'); if (old) old.remove();
+    if (PKT.done) {
+      var d = document.createElement('div'); d.id = 'pkt-done';
+      d.setAttribute('style', 'background:#eaf5ef;border:1.5px solid #0f4c35;border-radius:12px;padding:13px 15px;margin:0 0 14px;font:14px/1.5 Arial,sans-serif;color:#0a3320');
+      var who = PKT.child_first_name || 'Your child';
+      d.innerHTML = '<b></b><div class="pkt-sibs" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"></div>';
+      d.querySelector('b').textContent = who + ' is done — thank you. Everything is with the office.';
+      (PKT.siblings || []).filter(function (x) { return x.open > 0; }).forEach(function (x) {
+        var a = document.createElement('a');
+        a.href = location.pathname + '?center=' + encodeURIComponent(center)
+          + ((x.keys && x.keys.length) ? '&only=' + encodeURIComponent(x.keys.join(',')) : '')
+          + '&t=' + encodeURIComponent(x.token);
+        a.textContent = 'Start ' + (x.first_name || 'the next child') + '\u2019s packet \u2192';
+        a.setAttribute('style', 'background:#0f4c35;color:#fff;border-radius:9px;padding:8px 14px;font-weight:700;text-decoration:none');
+        d.querySelector('.pkt-sibs').appendChild(a);
+      });
+      var listEl = document.getElementById('list'); listEl.parentNode.insertBefore(d, listEl);
+    }
+  }
+  function loadPacketStatus() {
+    if (!personalToken) return;
+    fetch(SB_URL + '/rest/v1/rpc/packet_status', {
+      method: 'POST',
+      headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+      body: JSON.stringify({ p_token: personalToken })
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { PKT = j; applyPacketStatus(); })
+      .catch(function () { /* refusal-ok: the list still works from the device memory; the server status is an extra layer */ });
+  }
 
   // ---- session "done" tracking (per form key) ----
   function packetLoad() { try { var raw = localStorage.getItem(PACKET_KEY); if (!raw) return null; var o = JSON.parse(raw); if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) { localStorage.removeItem(PACKET_KEY); return null; } return o; } catch (e) { return null; } }
@@ -413,6 +468,12 @@
           return cur;
         };
         only = only.map(succ);
+        /* ⭐ ПОРЯДОК ЗАДАЁТ СЕРВЕР (Фаза A, 27.09): 1 согласие → 2 DCY 01234 → 3 CACFP → 4 IEA → 5 остальные
+           в порядке ссылки. Новые ссылки уже приходят отсортированными (send_form_link); здесь — страховка
+           для старых, где порядок был порядком кликов директора. */
+        only = only.map(function (k, i) { return { k: k, i: i }; })
+          .sort(function (a, b) { return (FORM_RANK[a.k] || 5) - (FORM_RANK[b.k] || 5) || a.i - b.i; })
+          .map(function (x) { return x.k; });
         slots = only.map(function (k) { return pool[k] || ((reg.forms && reg.forms[k]) ? { key: k } : null); }).filter(Boolean).map(gate);
       } else {
         slots = pk.slots.slice()   // ZAKAZ 11: keep/pending render as their own cards
@@ -641,8 +702,9 @@
 
       howToComplete();
       refreshDone();
-      window.addEventListener('focus', refreshDone);
-      window.addEventListener('pageshow', refreshDone);
+      loadPacketStatus();
+      window.addEventListener('focus', function () { refreshDone(); loadPacketStatus(); });
+      window.addEventListener('pageshow', function () { refreshDone(); loadPacketStatus(); });
     })
     .catch(function () { fail('Could not load the form list. Please try again.'); });
   });   /* конец interviewDoor().then — список форм рисуется только когда дверь старая */

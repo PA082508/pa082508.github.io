@@ -1315,10 +1315,33 @@ document.addEventListener('click', function (e) {
   /* fk:twins-note:end */
 
 
+  var _fkAlreadySent = null;
+  /* ⭐ ФАЗА A: повторное открытие УЖЕ ОТПРАВЛЕННОЙ формы по именной ссылке — не вторая анкета, а
+     «Already sent — waiting for the office». Переподача — только явным «Start a new form». */
+  async function packetSentLock(t) {
+    try {
+      var r = await fetch(SUPA_URL + '/rest/v1/rpc/packet_status', {
+        method: 'POST',
+        headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+        body: JSON.stringify({ p_token: t }),
+      });
+      if (!r.ok) return false;
+      var ps = await r.json();
+      if (!ps || !ps.ok) return false;
+      var k = new URLSearchParams(location.search).get('k');
+      var mine = (ps.forms || []).filter(function (f) { return f.key === FORM_TYPE || (k && f.key === k); })[0];
+      if (!mine || (mine.status !== 'sent' && mine.status !== 'on_file')) return false;
+      _fkAlreadySent = { who: ps.child_first_name || 'your child' };
+      lockForm(null);
+      return true;
+    } catch (_) { return false; }   // refusal-ok: without the server status the form stays open exactly as before
+  }
+
   async function linkStatusNotice() {
     try {
       var t = new URLSearchParams(location.search).get('t');
       if (!t) return;                                   // стационарный QR — истекать нечему
+      if (await packetSentLock(t)) return;
       var r = await fetch(SUPA_URL + '/rest/v1/rpc/prefill_link_status', {
         method: 'POST',
         headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
@@ -1334,7 +1357,7 @@ document.addEventListener('click', function (e) {
         _onFile = st;
         var c = document.createElement('div');
         c.className = 'fk-onfile-banner fk-print-hidden';
-        c.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#fff8e6;border-bottom:2px solid #b45309;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#7a4a00');
+        c.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#f4f6f5;border-bottom:2px solid #1a2e1a;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#1a2e1a');
         c.innerHTML = '<strong>A form for ' + (st.child_name || 'your child') + ' is already on file.</strong> ' +
           'You only need to submit again if something changed — a genuine renewal.';
         document.body.insertBefore(c, document.body.firstChild);
@@ -1343,7 +1366,7 @@ document.addEventListener('click', function (e) {
       if (st.status !== 'expired') return;
       var b = document.createElement('div');
       b.className = 'fk-expired-banner fk-print-hidden';
-      b.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#fff8e6;border-bottom:2px solid #b45309;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#7a4a00');
+      b.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:#f4f6f5;border-bottom:2px solid #1a2e1a;padding:11px 16px;font:400 13.5px/1.5 Arial,sans-serif;color:#1a2e1a');
       b.innerHTML = '<strong>This link was for ' + (st.child_name || 'your child') +
         ' and expired on ' + (st.expired_on || 'an earlier date') + '.</strong> ' +
         'Ask the center for a new one — nothing you filled was lost.';
@@ -1483,39 +1506,59 @@ document.addEventListener('click', function (e) {
        а не только липкой строкой снизу. lockForm-механику не трогаем — это ВТОРОЙ, верхний баннер. */
     var tb = document.createElement('div'); tb.className = 'fk-submitted-top fk-print-hidden';
     tb.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;background:#fffbeb;border-bottom:2px solid #f59e0b;color:#7a4b00;padding:12px 16px;font:700 14px/1.4 Arial,sans-serif;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.12)');
-    tb.innerHTML = '✓ Already submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. This form is locked and can’t be changed here. Need changes? Use “Start a new form” below.';
+    tb.innerHTML = (_fkAlreadySent
+        ? '✓ Already sent — waiting for the office. This form for ' + (_fkAlreadySent.who || 'your child') + ' is in; you don’t need to fill it again.'
+        : '✓ Already submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. This form is locked and can’t be changed here.')
+      + ' Need changes? Use “Start a new form” below.';
     document.body.insertBefore(tb, document.body.firstChild);
     var b = document.createElement('div'); b.className = 'fk-submitted-banner fk-print-hidden';
     b.setAttribute('style', 'position:sticky;bottom:0;left:0;right:0;z-index:9999;background:#0a7d46;color:#fff;padding:12px 16px;font:600 14px/1.4 Arial,sans-serif;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -2px 12px rgba(0,0,0,.18)');
     var txt = document.createElement('span'); txt.innerHTML = '✓ Submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. Need changes?';
     /* Кнопка «ещё один ребёнок» появляется только там, где бланк объявил семейные
        клетки: на форме без такого объявления переносить нечего и обещать нечего. */
-    if ((CFG.familyCells || []).length) {
+    /* ⭐ ФАЗА A (27.09): ОДИН РЕБЁНОК — ОДИН ПАКЕТ, ДО КОНЦА.
+       Прежде здесь стояло «Next: <брат/сестра>» на ЭТУ ЖЕ форму — так 27.09 родилась петля
+       (01234 Samuel → 01234 Mykola → снова 01234, четыре анкеты за шесть минут). Теперь:
+       · по именной ссылке — «Continue <ребёнок>'s forms →» на витрину ЕГО пакета (сервер знает, что уже
+         прислано, и покажет следующую форму); пакет закончен — «<ребёнок> is done» и пакеты братьев/сестёр;
+       · «Fill this form for another child» (перенос семейных данных без токена) — только без именной ссылки. */
+    var tkn = fkToken();
+    if (!tkn && (CFG.familyCells || []).length) {
       var snap = familySnapshot();
       var ac = document.createElement('button'); ac.type = 'button'; ac.setAttribute('data-fk-newform', '1');
       ac.textContent = 'Fill this form for another child';
       ac.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
       ac.addEventListener('click', function () { anotherChild(snap); });
       b.appendChild(ac);
-      /* ⭐ ИМЕННАЯ ССЫЛКА ЗНАЕТ БРАТЬЕВ И СЁСТЕР — но только тех, чьё родство ДОКАЗАНО
-         общим взрослым (get_prefill_siblings). Их форма откроется СВОИМ токеном, то есть
-         с их собственными данными, а не с нашей догадкой. Родства в записи нет — кнопки
-         нет, и работает обычная «ещё один ребёнок». */
-      var tkn = fkToken();
-      if (tkn) fetch(SUPA_URL + '/rest/v1/rpc/get_prefill_siblings', {
+    }
+    if (tkn) {
+      var packetHref = function (t, keys) {
+        return location.origin + '/parent-forms.html?center=' + encodeURIComponent(centerCode())
+          + ((keys && keys.length) ? '&only=' + encodeURIComponent(keys.join(',')) : '')
+          + '&t=' + encodeURIComponent(t);
+      };
+      var linkBtn = function (href, text) {
+        var a = document.createElement('a'); a.href = href; a.setAttribute('data-fk-newform', '1'); a.textContent = text;
+        a.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer;text-decoration:none');
+        return a;
+      };
+      fetch(SUPA_URL + '/rest/v1/rpc/packet_status', {
         method: 'POST',
         headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
         body: JSON.stringify({ p_token: tkn }),
-      }).then(function (r) { return r.ok ? r.json() : []; }).then(function (sibs) {
-        (sibs || []).forEach(function (sb) {
-          var a = document.createElement('a');
-          a.href = location.pathname + '?center=' + encodeURIComponent(centerCode()) + '&t=' + encodeURIComponent(sb.token);
-          a.setAttribute('data-fk-newform', '1');
-          a.textContent = 'Next: ' + sb.name;
-          a.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer;text-decoration:none');
-          b.appendChild(a);
+      }).then(function (r) { return r.ok ? r.json() : null; }).then(function (ps) {
+        var who = (ps && ps.child_first_name) || 'your child';
+        var myKeys = ((ps && ps.forms) || []).map(function (f) { return f.key; });
+        if (!ps || !ps.ok || !ps.done) { b.appendChild(linkBtn(packetHref(tkn, myKeys), 'Continue ' + who + '\u2019s forms \u2192')); return; }
+        var done = document.createElement('span'); done.textContent = who + ' is done — thank you.'; b.appendChild(done);
+        (ps.siblings || []).filter(function (x) { return x.open > 0; }).forEach(function (x) {
+          b.appendChild(linkBtn(packetHref(x.token, x.keys), 'Start ' + (x.first_name || 'the next child') + '\u2019s packet \u2192'));
         });
-      }).catch(function () {});
+      }).catch(function () {
+        /* refusal-ok: without the server the list is reached the way the parent came — never a bare link that would open another set */
+        if (/parent-forms\.html/.test(document.referrer || '')) b.appendChild(linkBtn(document.referrer, 'Back to the list of forms \u2192'));
+        else { var m = document.createElement('span'); m.textContent = 'Go back to the list of forms from your message to continue.'; b.appendChild(m); }
+      });
     }
     var nf = document.createElement('button'); nf.type = 'button'; nf.setAttribute('data-fk-newform', '1'); nf.textContent = 'Start a new form';
     nf.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
