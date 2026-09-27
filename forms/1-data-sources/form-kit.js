@@ -1549,7 +1549,19 @@ document.addEventListener('click', function (e) {
       }).then(function (r) { return r.ok ? r.json() : null; }).then(function (ps) {
         var who = (ps && ps.child_first_name) || 'your child';
         var myKeys = ((ps && ps.forms) || []).map(function (f) { return f.key; });
-        if (!ps || !ps.ok || !ps.done) { b.appendChild(linkBtn(packetHref(tkn, myKeys), 'Continue ' + who + '\u2019s forms \u2192')); return; }
+        /* Пришли из пакета ИНТЕРВЬЮ (дверь `door_for_links.interview`) — назад в ТОТ ЖЕ пакет шагом истории:
+           новая загрузка интервью начала бы вопросы сначала. Без интервью — список пакета этого ребёнка. */
+        var fromInterview = /interview-live\.html/.test(document.referrer || '');
+        if (!ps || !ps.ok || !ps.done) {
+          if (fromInterview) {
+            var bk = document.createElement('button'); bk.type = 'button'; bk.setAttribute('data-fk-newform', '1');
+            bk.textContent = 'Back to ' + who + '\u2019s packet \u2192';
+            bk.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
+            bk.addEventListener('click', function () { history.back(); });
+            b.appendChild(bk); return;
+          }
+          b.appendChild(linkBtn(packetHref(tkn, myKeys), 'Continue ' + who + '\u2019s forms \u2192')); return;
+        }
         var done = document.createElement('span'); done.textContent = who + ' is done — thank you.'; b.appendChild(done);
         (ps.siblings || []).filter(function (x) { return x.open > 0; }).forEach(function (x) {
           b.appendChild(linkBtn(packetHref(x.token, x.keys), 'Start ' + (x.first_name || 'the next child') + '\u2019s packet \u2192'));
