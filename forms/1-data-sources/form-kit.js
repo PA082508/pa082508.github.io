@@ -924,6 +924,80 @@
     } catch (e) { return null; }
   }
 
+  // ── КОПИЯ ПОДПИСАННОЙ ФОРМЫ В МОМЕНТ ПОДПИСИ (28.09, слово «строй хранение подписанной формы») ──────────────
+  // Сразу после принятой подачи страница рисует СВОИ листы в PNG — тот самый вид, который родитель видел и подписал, —
+  // и отдаёт их функции signed-copy вместе с одноразовым ключом подачи (IDEMP). Там копия проверяется и кладётся
+  // неизменной (kind 'at_signing', одна на подачу). ⛔ Никогда не мешает семье: любая неудача — только в консоль;
+  // пробел закрывает офисный бэкфилл. Скрытое на печати (кнопки, баннеры, подсказки) в копию не попадает.
+  var FK_COPY_SKIP = '.fk-print-hidden, .fkpad-trigger, .fkpad-done, .fk-cal, .fk-cal-ico, .fk-addr-list, .fk-toolbar, .fk-toast, script';
+  function loadH2C() {
+    if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    return new Promise(function (res, rej) {
+      var sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      sc.onload = function () { window.html2canvas ? res(window.html2canvas) : rej(new Error('html2canvas missing')); };
+      sc.onerror = function () { rej(new Error('html2canvas did not load')); };
+      document.head.appendChild(sc);
+    });
+  }
+  async function signedCopyPages() {
+    var h2c = await loadH2C();
+    return drawCopyPages(h2c);
+  }
+  // The copy holds the WHOLE text. html2canvas cannot lay out <details> (open or folded — it smears the body over the
+  // lines below; seen on the e-sign consent 28.09), so in the CLONE it draws, every <details>/<summary> becomes a plain
+  // block. The live page is not touched.
+  function flattenFolds(doc) {
+    // The fold's own heading («Read the full text ▾») is hidden in print — the copy matches print: it goes.
+    Array.prototype.slice.call(doc.querySelectorAll('details > summary')).forEach(function (el) { el.parentNode.removeChild(el); });
+    Array.prototype.slice.call(doc.querySelectorAll('details')).forEach(function (el) {
+      var div = doc.createElement('div');
+      div.className = el.className; div.innerHTML = el.innerHTML;
+      el.parentNode.replaceChild(div, el);
+    });
+  }
+  async function drawCopyPages(h2c) {
+    var opt = function (w) { return { scale: Math.min(1.5, 1275 / Math.max(1, w)), useCORS: true, backgroundColor: '#ffffff', logging: false,
+                                      ignoreElements: function (el) { return !!(el.matches && el.matches(FK_COPY_SKIP)); },
+                                      onclone: flattenFolds }; };
+    var pages = [];
+    var els = Array.prototype.slice.call(document.querySelectorAll('.page, .sheet, #sheet'));
+    if (els.length) {
+      for (var i = 0; i < els.length && i < 8; i++) {
+        var c = await h2c(els[i], opt(els[i].offsetWidth));
+        pages.push(c.toDataURL('image/png').split(',')[1]); c = null;
+      }
+      return pages;
+    }
+    // Our own forms have no page markup: draw the form once and cut it into Letter-shaped sheets.
+    var root = document.querySelector('#doc, .doc, main, form') || document.body;
+    var whole = await h2c(root, opt(root.offsetWidth));
+    var sliceH = Math.round(whole.width * 11 / 8.5);
+    for (var y = 0; y < whole.height && pages.length < 8; y += sliceH) {
+      var cv = document.createElement('canvas'); cv.width = whole.width; cv.height = Math.min(sliceH, whole.height - y);
+      var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height);
+      cx.drawImage(whole, 0, y, whole.width, cv.height, 0, 0, whole.width, cv.height);
+      pages.push(cv.toDataURL('image/png').split(',')[1]);
+    }
+    return pages;
+  }
+  // Test hook (read-only): lets the rehearsal draw the pages without submitting. Sends nothing.
+  window.__fkSignedCopyPages = signedCopyPages;
+  async function saveSignedCopy(res, key) {
+    try {
+      var id = res && typeof res === 'object' ? (res.id || res.submissionId) : null;
+      if (!id || !key) return;
+      var pages = await signedCopyPages();
+      if (!pages.length) return;
+      var r = await fetch(SUPA_URL + '/functions/v1/signed-copy', {
+        method: 'POST',
+        headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submission_id: id, idempotency_key: key, pages: pages, edition: (FORM_TYPE || '') + ' ' + (fkVersion() || '') }),
+      });
+      if (!r.ok && window.console) console.warn('signed copy not kept:', r.status, await r.text());
+    } catch (e) { if (window.console) console.warn('signed copy not kept:', e && e.message); }
+  }
+
   // ── CORE submit — one path: embed host, else RPC ─────────────────────────────
   async function rpc(payload) {
     var r = await fetch(SUPA_URL + '/rest/v1/rpc/submit_enrollment_form', {
@@ -1806,6 +1880,7 @@ document.addEventListener('click', function (e) {
 
   async function submit() {
     if (_submitting || _submitted) return;   // in-flight / already-submitted guard
+    var copyKey = null;   // 28.09: set only on the RPC path — the key the signed copy proves itself with
     // Center FIRST. It used to be checked after field validation, so a parent learned
     // the link was unusable only after filling and signing the whole form — take 6 to
     // the letter. The bigger blocker is named on the first press, whenever it comes.
@@ -1868,6 +1943,7 @@ document.addEventListener('click', function (e) {
           if (_pass) data.formData = Object.assign({}, data.formData, { _interview_pass: _pass });
         } catch (_) {}
         res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP, p_form_version: fkVersion(), p_token: fkToken() });
+        copyKey = IDEMP;   // 28.09: the one-time key proves this page made the submission — the signed copy rides on it
       }
       /* ⛔ БЕЗЫМЯННОЙ ПОДАЧЕ ОБЕЩАТЬ «В ДЕЛЕ» НЕЛЬЗЯ (26.08). У неё нет ключа ребёнка:
          кто это, решит человек в центре, и до его решения подача делом не стала.
@@ -1882,6 +1958,7 @@ document.addEventListener('click', function (e) {
       var ref = shortRef(res);
       rememberSubmitted(data, ref);      // память переживает перезагрузку, в отличие от lockForm
       lockForm(ref);                     // read-only + banner; blocks re-submit
+      if (copyKey) saveSignedCopy(res, copyKey);   // 28.09: fire-and-forget — never holds the family up
       if (CFG.onSuccess) CFG.onSuccess(ref);   // pass the Ref so a form's #done can echo it
     } catch (e) { status('Error: ' + e.message, 'er'); if (window.console) console.error(e); }
     finally { _submitting = false; }
