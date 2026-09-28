@@ -985,7 +985,10 @@
   window.__fkSignedCopyPages = signedCopyPages;
   async function saveSignedCopy(res, key) {
     try {
-      var id = res && typeof res === 'object' ? (res.id || res.submissionId) : null;
+      // submit_enrollment_form answers with the submission id as a bare string (live check 28.09: "08f10881-…");
+      // the object shapes are the host/embed paths. Both are accepted; only a real id goes on.
+      var id = typeof res === 'string' ? res : (res && typeof res === 'object' ? (res.id || res.submissionId) : null);
+      if (!/^[0-9a-f-]{36}$/i.test(String(id || ''))) return;
       if (!id || !key) return;
       var pages = await signedCopyPages();
       if (!pages.length) return;
