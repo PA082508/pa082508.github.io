@@ -934,7 +934,9 @@
     if (window.html2canvas) return Promise.resolve(window.html2canvas);
     return new Promise(function (res, rej) {
       var sc = document.createElement('script');
-      sc.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      // html2canvas-pro (MIT fork, same global): the original 1.4.1 fails on modern colour functions — a locked form in
+      // WebKit reports «oklab(…)», and the copy was lost («unsupported color function "oklab"», live check 28.09).
+      sc.src = 'https://cdn.jsdelivr.net/npm/html2canvas-pro@1.5.11/dist/html2canvas-pro.min.js';
       sc.onload = function () { window.html2canvas ? res(window.html2canvas) : rej(new Error('html2canvas missing')); };
       sc.onerror = function () { rej(new Error('html2canvas did not load')); };
       document.head.appendChild(sc);
