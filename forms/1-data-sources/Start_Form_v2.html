@@ -161,6 +161,7 @@
   .sigpad.locked{cursor:not-allowed;background:#f4f4f4}
   .sigclear{font-size:10.5px;border:1px solid #bbb;background:#fff;border-radius:4px;cursor:pointer;color:#a33;margin-left:8px}
   .siglockmsg{font-size:11px;color:#8a6d1e}
+  .progline{border-bottom:1px solid var(--line);height:70px;display:flex;align-items:flex-end;padding:0 4px 6px;font-size:12px;font-style:italic;color:#666}
   @media print{.sigclear,.siglockmsg{display:none}}
   .sig .cap{font-size:12.5px;margin-top:3px}
   .sig .esign{font-size:10.5px;color:#777}
@@ -537,7 +538,7 @@
     </div>
   </div>
 
-  <!-- SIGNATURES — draw only, both. The source pairs the parent's signature with a phone
+  <!-- SIGNATURES — the parent draws; the program line is signed in the office (2026-09-28). The source pairs the parent's signature with a phone
        number and the administration's with a date; the parent's date is added as a stamp
        (a signature carries its own date — canon 2026-07-24). -->
   <div class="sigrow">
@@ -546,8 +547,11 @@
     <div class="sig"><div class="line" style="border:none"><input type="text" id="parent_sig_date" class="stampdate" readonly tabindex="-1"></div><div class="cap">Date</div></div>
   </div>
   <div class="sigrow">
-    <div class="sig"><canvas class="sigpad locked" id="sig-admin" data-formkit="signature" width="360" height="70"></canvas><div class="cap">Play Academy Administration <button type="button" class="sigclear" onclick="clearSigAndStamp('sig-admin')">✕ clear</button> <span class="siglockmsg" id="adminlock">— unlocks after the parent signs</span></div></div>
-    <div class="sig"><div class="line" style="border:none"><input type="text" id="admin_sig_date" class="stampdate" readonly tabindex="-1"></div><div class="cap">date</div></div>
+    <!-- 🔒 2026-09-28: NO program pad on the family device. Until today this pad unlocked after the parent
+         signed, and a family stroke reached the program line (Brylan, b76e9e73). The program signs in the
+         office, on Approve (countersign) — the same cure as DCY 01234 on 2026-09-17. -->
+    <div class="sig"><div class="progline" id="program-line">Signed by the program after review</div><div class="cap">Play Academy Administration</div></div>
+    <div class="sig" aria-hidden="true"></div>
   </div>
 
   <!-- OFFICE USE -->
@@ -917,7 +921,7 @@ function schedOf(n){
    A date beside a signature is a STAMP: set at the moment of signing, read-only, cleared
    with the signature, bound 1:1 to its own stroke (canon 2026-07-24). Both pads are
    DRAW-ONLY — there is no typed rail on this form (docs/compliance/e-signature.md). */
-var PAIRS = [ {sig:'sig-parent', date:'parent_sig_date'}, {sig:'sig-admin', date:'admin_sig_date'} ];
+var PAIRS = [ {sig:'sig-parent', date:'parent_sig_date'} ];   /* 🔒 2026-09-28: the program signs in the office, not here */
 function inked(id){ try { return !!(window.FormKit && FormKit.getSig && FormKit.getSig(id)); } catch(_) { return false; } }
 function todayUS(){ var t=new Date(); return ('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear(); }
 function stampAll(){
@@ -925,20 +929,11 @@ function stampAll(){
     var dt = el(p.date); if (!dt) return;
     dt.value = inked(p.sig) ? (dt.value || todayUS()) : '';
   });
-  lockAdmin();
 }
 function clearSigAndStamp(id){
   if (window.FormKit) FormKit.clearSig(id);
   stampAll();
   if (window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
-}
-/* The administration signs after the parent — the same order as the program slot on DCY 01234. */
-function lockAdmin(){
-  var c = el('sig-admin'); if (!c) return;
-  var open = inked('sig-parent');
-  c.classList.toggle('locked', !open);
-  c.style.pointerEvents = open ? '' : 'none';
-  var m = el('adminlock'); if (m) m.style.display = open ? 'none' : '';
 }
 
 function paintCenter(){
@@ -989,7 +984,7 @@ function startReset(){
    'pay_check','deferred_deposit','office_waitlist','office_prospect'].forEach(function(id){ var e=el(id); if(e) e.checked=false; });
   ['mon','tue','wed','thu','fri'].forEach(function(d){ ['from','to'].forEach(function(k){ var e=el(d+'_'+k); if(e) e.value=''; }); });
   var cc = el('consent_contact'); if (cc) cc.checked = true;
-  if (window.FormKit) { FormKit.clearSig('sig-parent'); FormKit.clearSig('sig-admin'); }
+  if (window.FormKit) { FormKit.clearSig('sig-parent'); }
   refreshPhoto();
   REGFEE_TOUCHED = false; seedRegFee();      // back to the config rate for the next family
   stampAll();
@@ -1091,10 +1086,9 @@ window.FORMKIT_CONFIG = {
         signature_method: 'drawn',                 /* draw only — no typed rail on this form */
         signature_typed_value: '',
         parent_signature_date: g('parent_sig_date')||null,
-        admin_signature_date: g('admin_sig_date')||null,
         terms_version:'Rev. 07/2026'
       },
-      signatures:{ parent_sig: FormKit.getSig('sig-parent'), admin_sig: FormKit.getSig('sig-admin') },
+      signatures:{ parent_sig: FormKit.getSig('sig-parent') },   /* 🔒 2026-09-28: admin_sig is never sent from the family device — the office countersigns on Approve */
       signatureDate: todayISO()
     };
   }
