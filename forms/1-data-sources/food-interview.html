@@ -186,9 +186,11 @@ var LINKS_BY_CENTER={_default:[
 
 /* Editions of the real forms this interview fills (p_form_version). */
 var IEA_VERSION='v10', ENR_VERSION='v12';
-/* infant-meals-preference-v2.html: its FORMKIT_CONFIG says version:'v1' while the file is the v2 edition, and
-   form-kit's fkVersion() returns null for it (no meta, file name has «-v2» not «_v2»). We send the edition held: 'v2'. ⚑ owner */
-var INF_VERSION='v2';
+/* Infant form: NO version is sent — its own carrier (rpc/submit_public_form → infant_meal_preferences) has no version field. */
+/* ⚑ owner: _interview/_handed ride inside p_data of the infant form (the coordinator's rule: extras only inside the data object).
+   The live submit_public_form inserts only its named columns, so they are NOT stored for the infant row; they only enter
+   its content_hash (sha256 of the whole p_data). false → the infant p_data is byte-for-byte the real form's row. */
+var INFANT_DATA_CARRIES_STAMPS=true;
 var INTERVIEW_VERSION='v1';
 
 /* ═══════════════════════ PAGE PARAMETERS ═══════════════════════ */
@@ -458,26 +460,33 @@ function enrData(i,sigDate){var c=S.children[i],a=S.adult,schedule={};
     signature_method:'drawn',signature_typed_value:'',parent_birthdate:a.dob,parent_email:a.email,expires_on:expiresOn(sigDate)};
   if(notApplying())fd.income_application='not_applying';
   return fd}
-/* infant-meals-preference-v2.html collect() */
+/* infant-meals-preference-v2.html — its own submit() builds this row (NOT collect()): one fact, one carrier —
+   the infant form lives in infant_meal_preferences via rpc/submit_public_form, never in enrollment_submissions. */
 var INF_FORMULA={center:'center_provides_formula',bring_formula:'parent_brings_formula',bring_bm:'parent_brings_breast_milk',breastfeed:'parent_breastfeeds_onsite'};
 var INF_SOLID={center:'center_provides_solids',one:'parent_brings_one_solid'};
-function infData(i){var c=S.children[i];
-  return {type:'infant_meals',center_name:CENTER.name,formula_name:CENTER.formula||'',formula_choice:INF_FORMULA[c.formula]||'',
-    parent_formula_name:c.formula==='bring_formula'?(c.fname||''):'',solid_food_choice:INF_SOLID[c.solid]||'',infant_name:c.name,infant_birthdate:c.dob||null}}
+function infRow(i,sigPng,sigDate){var c=S.children[i];
+  /* center_name = the raw ?center value, exactly as the real infant form fills #centerName from the URL (measured: 'zzdemo'). */
+  return {center_name:String(QS.get('center')||'').trim(),formula_name:CENTER.formula||'',formula_choice:INF_FORMULA[c.formula]||null,
+    parent_formula_name:c.formula==='bring_formula'?String(c.fname||'').trim():'',solid_food_choice:INF_SOLID[c.solid]||null,
+    infant_name:titleCaseName(String(c.name||'').trim()),infant_birthdate:c.dob||null,parent_signature_img:sigPng,signed_date:sigDate||null}}
 
 function buildSubmissions(){var sigDate=todayISO(),out=[];
   docs().forEach(function(d){var fd,sigs,type,ver;
+    if(!S.idem[d.id])S.idem[d.id]=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():null;
+    if(d.kind==='inf'){var row=infRow(d.child,padPNG(d.id),sigDate);if(INFANT_DATA_CARRIES_STAMPS)stamp(row);
+      out.push({id:d.id,title:d.title,rpc:'submit_public_form',body:{p_form:'infant_meals',p_center_slug:CENTER_SLUG,p_data:row,p_idempotency_key:S.idem[d.id]}});return}
     if(d.kind==='iea'){fd=ieaData(sigDate);sigs={adult_sig:padPNG(d.id)};type='iea';ver=IEA_VERSION}
     else if(d.kind==='enr'){fd=enrData(d.child,sigDate);sigs={parent_sig:padPNG(d.id)};type='cacfp_enrollment';ver=ENR_VERSION}
-    else {fd=infData(d.child);sigs={parent_sig:padPNG(d.id)};type='infant_meals';ver=INF_VERSION}
     stamp(kitNormalize(fd));
-    if(!S.idem[d.id])S.idem[d.id]=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():null;
-    out.push({id:d.id,title:d.title,body:{p_org:ORG,p_center:CENTERS[CENTER_SLUG],p_submission_type:type,p_form_data:fd,p_signatures:sigs,p_signature_date:sigDate,p_source:'online',p_idempotency_key:S.idem[d.id],p_form_version:ver,p_token:null}})});
+    out.push({id:d.id,title:d.title,rpc:'submit_enrollment_form',body:{p_org:ORG,p_center:CENTERS[CENTER_SLUG],p_submission_type:type,p_form_data:fd,p_signatures:sigs,p_signature_date:sigDate,p_source:'online',p_idempotency_key:S.idem[d.id],p_form_version:ver,p_token:null}})});
   return out}
 
 /* ═══════════════════════ SUBMIT (form-kit.js rpc() transport) ═══════════════════════ */
-async function rpcSubmit(body){var r;
-  try{r=await fetch(SUPA_URL+'/rest/v1/rpc/submit_enrollment_form',{method:'POST',headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Content-Profile':'menumaker'},body:JSON.stringify(body)})}
+/* submit_enrollment_form: form-kit.js rpc(). submit_public_form: infant-meals-preference-v2.html submit()
+   (same headers plus Prefer:return=representation; success = r.ok, answer = the new row's uuid). */
+async function rpcSubmit(name,body){var r,h={apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Content-Profile':'menumaker'};
+  if(name==='submit_public_form')h=Object.assign({Prefer:'return=representation'},h);
+  try{r=await fetch(SUPA_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:h,body:JSON.stringify(body)})}
   catch(e){throw new Error('No connection to the center’s server ('+(e&&e.message||'network error')+').')}
   if(!r.ok){var t='';try{t=await r.text()}catch(_){}var msg=t;try{var j=JSON.parse(t);msg=j.message||j.hint||j.details||t}catch(_){}throw new Error('The server refused it (HTTP '+r.status+(msg?': '+msg:'')+').')}
   return r.json()}
@@ -486,7 +495,7 @@ async function submitAll(){var f=document.getElementById("f"),btn=document.getEl
   SENDING=true;if(btn){btn.disabled=true;btn.textContent='Sending…'}bn.hidden=true;
   for(var n=0;n<subs.length;n++){var s=subs[n];if(S.done[s.id])continue;
     if(btn)btn.textContent='Sending '+(n+1)+' of '+subs.length+'…';
-    try{var res=await rpcSubmit(s.body);S.done[s.id]=typeof res==='string'?res:(res&&res.id)||true}
+    try{var res=await rpcSubmit(s.rpc,s.body);S.done[s.id]=typeof res==='string'?res:(res&&res.id)||true}
     catch(e){SENDING=false;if(btn){btn.disabled=false;btn.textContent='Sign and submit'}
       var sent=subs.filter(function(x){return S.done[x.id]}).map(function(x){return x.title.replace(/&amp;/g,'&')});
       bn.hidden=false;bn.textContent='“'+s.title.replace(/&amp;/g,'&')+'” was not sent. '+(e&&e.message||e)+' '+(sent.length?'Already received by the center: '+sent.join('; ')+'. ':'Nothing was received yet. ')+'Tap “Sign and submit” to try again — forms already received are not sent twice.';
