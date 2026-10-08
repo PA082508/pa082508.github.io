@@ -244,7 +244,19 @@
       headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON,
                  'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
       body: JSON.stringify(body || {})
-    }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    }).then(function (r) { if (!r.ok) { doorRefused('the server answered ' + r.status); return null; } return r.json(); })
+      .catch(function () { doorRefused('no connection to the server'); return null; });
+  }
+  /* ⭐ 08.10 (LAWS §L2): ОТКАЗ ДВЕРИ ВИДЕН. Канон 26.08 «молчащая дверь не должна запирать семью» в силе — семья
+     получает список форм; но теперь это сказано словами с причиной, а не молча (13.09→06.10: 415 отказов 401
+     прошли незамеченными). Починка права — миграция 20261102zzzm в приложении. */
+  function doorRefused(why) {
+    try { console.warn('[interview door]', why); if (document.getElementById('door-refused')) return;
+      var n = document.createElement('div'); n.id = 'door-refused'; n.setAttribute('role', 'status');
+      n.textContent = 'The online interview could not be opened (' + why + '). You can still fill in each form below.';
+      n.style.cssText = 'margin:10px auto;max-width:720px;padding:10px 14px;border:1px solid #c7c2e8;border-radius:10px;background:#f3f0fb;color:#3b2a7a;font:600 14px/1.4 Arial,sans-serif';
+      (document.body || document.documentElement).insertBefore(n, (document.body || document.documentElement).firstChild);
+    } catch (e) { console.warn('[interview door] note', e); }
   }
 
   function interviewDoor() {
