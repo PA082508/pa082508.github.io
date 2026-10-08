@@ -1,0 +1,522 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Food Program Interview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<!--
+  food-interview.html — v1 (built 08.10.2026 on branch feat/food-interview-two-sets-20261008, owner's word «Строить ночью»).
+  Behaviour standard («эталон»): iea_interview_v8_reference.html (one interview fills the yearly food-program pair).
+  Steps, wording, validation and branching are the reference's; the changes are listed in the commit message.
+
+  Two sets, one mechanism:
+    ?set=food  — IEA + CACFP Enrollment per child + Infant Meals Preference (< 12 months) + nondiscrimination letter + links
+    ?set=full  — «New child»: the same food pair + DCY 01234 stub step + acknowledgments + letter + links
+    ?forms=iea,enroll,infant,dcy01234 — any subset (one to four), normalized to canonical order; a step shows only
+                if a form of the composition needs it (owner's amendment 08.10 08:41)
+  Center: ?center=<slug> ONLY (no default, no picker — the form-kit canon). ?demo=1 shows «Load example family».
+
+  ⛔ REGISTRY: this page is NOT registered in enroll-registry.json yet (owner's word needed).
+     Stub for the future entry: forms.food_interview { current:'v1', versions:{v1:'…/food-interview.html'}, sets:['food','full'] }.
+-->
+<style>
+:root{
+  --bg:#f3f5f2; --card:#ffffff; --ink:#1b2620; --muted:#5b6b62; --line:#d6ded8;
+  --accent:#1f4d3a; --accent-ink:#ffffff; --soft:#e6efe9;
+  --attn:#5b3fa8; --attn-soft:#efeafb; --ok:#1d6b45;
+  --f-display:"Literata",Georgia,"Times New Roman",serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121815; --card:#1a221e; --ink:#e3ebe6; --muted:#9cb0a5; --line:#2e3a34;
+  --accent:#7fc4a1; --accent-ink:#0f1a14; --soft:#21302a; --attn:#b9a3f2; --attn-soft:#2a2440; --ok:#7fd1a4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815; --card:#1a221e; --ink:#e3ebe6; --muted:#9cb0a5; --line:#2e3a34;
+  --accent:#7fc4a1; --accent-ink:#0f1a14; --soft:#21302a; --attn:#b9a3f2; --attn-soft:#2a2440; --ok:#7fd1a4; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body)}
+img{max-width:100%}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font:600 12px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:650 1.6rem/1.2 var(--f-display);margin:0;text-wrap:balance}
+h2{font:650 1.25rem/1.25 var(--f-display);margin:0;text-wrap:balance}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .25s}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+.part{font:500 12px/1 var(--f-mono);color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.sub{color:var(--muted);margin:0}
+blockquote{margin:0;padding:12px 14px;border-left:3px solid var(--accent);background:var(--soft);font-size:.95rem}
+.field{display:flex;flex-direction:column;gap:6px}
+label{font-weight:600}
+.req::after{content:" *";color:var(--attn)}
+input[type=text],input[type=date],input[type=tel],input[type=email],input[type=number],select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--attn);outline-offset:2px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:2fr 1fr 1.2fr;gap:10px}
+@media (max-width:420px){.row,.row3{grid-template-columns:1fr}}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:500}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+.choices{display:flex;gap:10px;flex-wrap:wrap}
+.choice{flex:1 1 140px;border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--card);font:600 1rem var(--f-body);color:var(--ink);cursor:pointer;text-align:left}
+.choice[aria-pressed=true]{border-color:var(--accent);background:var(--soft)}
+.miss{display:none;color:var(--attn);font-weight:600;font-size:.9rem}
+.field.bad .miss{display:block}
+.field.bad input,.field.bad select{border-color:var(--attn);background:var(--attn-soft)}
+.field.bad canvas{border-color:var(--attn);background:var(--attn-soft)}
+.banner{border:2px solid var(--attn);background:var(--attn-soft);border-radius:8px;padding:10px 12px;font-weight:600}
+.note{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:12px;font-size:.95rem}
+.nav{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+button.btn{font:600 1rem var(--f-body);border-radius:8px;padding:12px 18px;border:1px solid var(--accent);cursor:pointer}
+button.btn[disabled]{opacity:.6;cursor:progress}
+.primary{background:var(--accent);color:var(--accent-ink)}
+.ghost{background:transparent;color:var(--accent)}
+.member{border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.inc{display:grid;grid-template-columns:1.3fr 1fr 1.2fr;gap:8px;align-items:end}
+.inc span{font-size:.9rem;font-weight:600}
+@media (max-width:420px){.inc{grid-template-columns:1fr 1fr}.inc span{grid-column:1/-1}}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font:400 .85rem var(--f-mono);font-variant-numeric:tabular-nums}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+.sum dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}
+.sum dt{color:var(--muted)} .sum dd{margin:0;font-weight:600;min-width:0;overflow-wrap:anywhere}
+canvas{width:100%;height:140px;border:1px dashed var(--line);border-radius:8px;background:var(--card);touch-action:none}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.small{font-size:.85rem}
+.done{color:var(--ok);font-weight:700}
+.days{display:flex;flex-wrap:wrap;gap:6px}
+.days label{border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:flex;gap:6px;align-items:center;font-weight:600}
+.days .off{color:var(--muted);background:var(--soft);text-decoration:line-through;font-weight:500}
+.days .off span{text-decoration:none;font-weight:700}
+.doc{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.doc h3{font:650 1.05rem var(--f-display);margin:0}
+.legal{font-size:.9rem;display:flex;flex-direction:column;gap:8px;max-height:none}
+.legal p,.legal ol{margin:0}
+.legal ol{padding-left:20px}
+.links{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.links a{color:var(--accent);font-weight:600;overflow-wrap:anywhere}
+[hidden]{display:none!important}
+.modal{position:fixed;inset:0;background:rgba(10,20,15,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.mbox{background:var(--card);color:var(--ink);border:2px solid var(--attn);border-radius:12px;padding:20px;max-width:380px;display:flex;flex-direction:column;gap:12px}
+</style></head><body>
+
+<div class="wrap">
+  <div class="top">
+    <span class="eyebrow" id="eyebrow">Play Academy · CACFP · FY 2026–2027</span>
+    <h1 id="h1">Income Eligibility Application and CACFP Enrollment</h1><p class="sub small" id="lead">One interview fills both yearly forms: the Income Eligibility Application for your household and the CACFP Enrollment Form for each child.</p>
+    <div class="bar"><i id="prog" style="width:5%"></i></div>
+    <span class="part" id="partlbl"></span>
+  </div>
+  <div class="tools small" id="tools" hidden>
+    <button class="btn ghost" id="sampleBtn" type="button">Load example family</button>
+  </div>
+  <div id="banner" class="banner" role="alert" hidden></div>
+  <div id="modal" class="modal" hidden role="alertdialog" aria-modal="true" aria-labelledby="mt"><div class="mbox"><h2 id="mt">Please sign the form</h2><p id="mx">Your signature is missing. Sign in the box with your finger, then tap “Sign and submit”.</p><button type="button" class="btn primary" id="mok">OK, I will sign</button></div></div>
+  <form id="f" class="card" novalidate></form>
+</div>
+
+<script>
+/* ═══════════════════════ CONSTANTS ═══════════════════════ */
+/* Deploy constants — copied from forms/1-data-sources/form-kit.js (SUPA_URL, SUPA_KEY, ORG, CENTERS, CENTERS_INFO).
+   ⚠ form-kit.js says its CENTERS map is «the second half of a center» together with enroll-registry.json —
+   a new center must be added there AND here in the same commit. */
+var SUPA_URL='https://trrmyqfpxntmgxnqkikp.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycm15cWZweG50bWd4bnFraWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTczMzMsImV4cCI6MjA5NjE3MzMzM30.b2zlijzzwPPgZqTFNrOvhgNWZpBSxmQQioErMpoX_Ko';
+var ORG='3a9a290e-7e49-491e-946b-ad86f2399910';
+var CENTERS={
+  pearl:'881ef4ce-1a27-4d3b-aa60-59d2a307bf2b',
+  alpha:'099c404b-e6d3-4543-9d9a-1fb11a2ee62d',
+  ridge:'4aed7d5a-00d0-4a4c-ac99-311046ad2027',
+  zzdemo:'0de1b5a4-e6d8-4e34-a5e4-e3dde23e1c6c'   // one-time demo center — not a live site, not in any claim
+};
+var CENTERS_INFO={
+  pearl:{name:'Play Academy Parma Heights'},
+  alpha:{name:'Play Academy Highland Heights'},
+  ridge:{name:'Play Academy Wickliffe'},
+  zzdemo:{name:'ZZ Demo'}
+};
+
+/* ⚑ STUB — owner to confirm. Days the center is closed (✕ on the days line). Default: Saturday and Sunday. */
+var CENTER_CLOSED_DAYS_PENDING_OWNER=true;
+var CENTER_CLOSED_DAYS={_default:{sat:1,sun:1}};
+/* ⚑ STUB — owner to name. The infant formula each center offers (goes to the Infant form's formula_name).
+   Empty → the reference wording «the iron-fortified formula named by the center» and formula_name ''. */
+var CENTER_FORMULA_PENDING_OWNER=true;
+var CENTER_FORMULA={};
+
+/* ⚑ STUB — DCY 01234 is not built into the interview yet; the step only says so and lets the family continue. */
+var FLAG_01234_STUB=true;
+
+/* ⚑ STUB — the acknowledgments list of the «New child» set is the owner's. Each item: «I have read …» + its own signature.
+   ⛔ Not sent anywhere yet: there is no carrier (submission type) for an acknowledgment from this page. */
+var ACKS_PENDING_OWNER=true;
+var ACKS=[
+  {id:'handbook',title:'the Parent Handbook'},
+  {id:'policies',title:'the center policies given to me at enrollment'}
+];
+
+/* ⚑ Nondiscrimination letter. Text = the most complete USDA statement found in this repo:
+   forms/1-data-sources/infant-meals-preference-v2.html (div.legal, footer «USDA is an equal opportunity provider,
+   employer, and lender. Rev. 8/2025»). Other copies (USDA_Waiver_v5.html, WIC_Information_Flyer_v1.html) are short forms. */
+var NONDISC_PENDING_OWNER=true;
+var NONDISC_EDITION='usda-nondiscrimination-rev-2025-08';
+var NONDISC_SIGNATURE_REQUIRED=false;
+/* ⚑ STUB — a composition of ONLY dcy01234 shows the letter only if this is switched on (owner to decide). */
+var NONDISC_01234_PENDING_OWNER=true;
+var NONDISC_FOR_01234_ONLY=false;
+var NONDISC_TEXT=[
+  'In accordance with federal civil rights law and USDA civil rights regulations and policies, the USDA, its agencies, offices, employees, and institutions participating in or administering USDA programs are prohibited from discriminating based on race, color, national origin, religion, sex, disability, age, marital status, family/parental status, income derived from a public assistance program, political beliefs, or reprisal or retaliation for prior civil rights activity, in any program or activity conducted or funded by USDA (not all bases apply to all programs). Remedies and complaint filing deadlines vary by program or incident.',
+  'Persons with disabilities who require alternative means of communication for program information (e.g., Braille, large print, audiotape, American Sign Language, etc.) should contact the state or local agency that administers the program or contact USDA through the Telecommunications Relay Service at 711 (voice and TTY). Additionally, program information may be made available in languages other than English.',
+  'To file a program discrimination complaint, complete the USDA Program Discrimination Complaint Form, AD-3027, found online at How to File a Program Discrimination Complaint and at any USDA office or write a letter addressed to USDA and provide in the letter all of the information requested in the form. To request a copy of the complaint form, call (866) 632-9992. Submit your completed form or letter to USDA by:',
+  ['Mail: U.S. Department of Agriculture, Office of the Assistant Secretary for Civil Rights, 1400 Independence Avenue, SW, Mail Stop 9410, Washington, D.C. 20250-9410;','Fax: (202) 690-7442; or','Email: program.intake@usda.gov.'],
+  'USDA is an equal opportunity provider, employer, and lender.'
+];
+
+/* ⚑ STUB — the owner's list per center. kind:'food' shows when a food form is in the composition;
+   kind:'general' only when DCY 01234 is in it (the «New child» set). */
+var LINKS_PENDING_OWNER=true;
+var LINKS_BY_CENTER={_default:[
+  {kind:'food',title:'USDA Child and Adult Care Food Program (CACFP)',url:'https://www.fns.usda.gov/cacfp'},
+  {kind:'food',title:'USDA: How to file a program discrimination complaint',url:'https://www.usda.gov/oascr/how-to-file-a-program-discrimination-complaint'},
+  {kind:'general',title:'Ohio Department of Children and Youth',url:'https://childrenandyouth.ohio.gov/'}
+]};
+
+/* Editions of the real forms this interview fills (p_form_version). */
+var IEA_VERSION='v10', ENR_VERSION='v12';
+/* infant-meals-preference-v2.html: its FORMKIT_CONFIG says version:'v1' while the file is the v2 edition, and
+   form-kit's fkVersion() returns null for it (no meta, file name has «-v2» not «_v2»). We send the edition held: 'v2'. ⚑ owner */
+var INF_VERSION='v2';
+var INTERVIEW_VERSION='v1';
+
+/* ═══════════════════════ PAGE PARAMETERS ═══════════════════════ */
+var QS=new URLSearchParams(location.search);
+/* COMPOSITION = list of data forms, from ONE to all four (owner's amendment 08.10 08:41: «посылать нужно отдельно
+   всего лишь одну форму… предусмотреть возможность каждой из этих четырёх форм самостоятельное интервью»).
+   ONE mechanism: a step is shown only if a form of the composition needs it.
+     ?forms=iea,enroll,infant,dcy01234 — any subset, any order (normalized to the canonical order below)
+     ?set=food — preset = iea,enroll,infant      ?set=full — preset = dcy01234,iea,enroll,infant + acknowledgments */
+var FORM_ORDER=['dcy01234','iea','enroll','infant'];
+var PRESETS={food:['iea','enroll','infant'],full:['dcy01234','iea','enroll','infant']};
+var COMP,SET;
+(function(){var want=(QS.get('forms')||'').toLowerCase().split(',').map(function(x){return x.trim()}).filter(Boolean);
+  var list=FORM_ORDER.filter(function(f){return want.indexOf(f)>=0});
+  if(list.length){COMP=list;var pf=Object.keys(PRESETS).filter(function(k){return PRESETS[k].join()===list.join()})[0];SET=(pf==='food')?'food':list.join(',')}
+  else{SET=QS.get('set')==='full'?'full':'food';COMP=PRESETS[SET].slice()}})();
+function has(f){return COMP.indexOf(f)>=0}
+function anyFood(){return has('iea')||has('enroll')||has('infant')}
+var DEMO=QS.get('demo')==='1';
+function canonCenter(code){if(!code)return'';var w=String(code).trim().toLowerCase();return CENTERS[w]?w:''}
+var CENTER_SLUG=canonCenter(QS.get('center'));
+
+/* ═══════════════════════ REFERENCE MODEL ═══════════════════════ */
+var FREQ=[["","How often?"],["52","Weekly"],["26","Every 2 weeks"],["24","Twice per month"],["12","Monthly"],["1","Annually"]];
+var SRC=[["earn","Earnings from work (before deductions)"],["welf","Welfare, child support, alimony"],["pens","Pensions, retirement, Social Security, SSI, VA"],["other","All other income"]];
+var DAYS=[["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],["fri","Fri"],["sat","Sat"],["sun","Sun"]];
+var MEALS=[["b","Breakfast"],["as","AM snack"],["l","Lunch"],["ps","PM snack"],["su","Supper"],["es","Evening snack"]];
+var SLOT_OF={b:'breakfast',as:'am_snack',l:'lunch',ps:'pm_snack',su:'supper',es:'evening_snack'};
+var CENTER={
+  closedDays:CENTER_CLOSED_DAYS[CENTER_SLUG]||CENTER_CLOSED_DAYS._default,
+  noMeals:{},   /* filled from get_center_meal_slots; on failure stays empty → all 6 shown */
+  formula:CENTER_FORMULA[CENTER_SLUG]||"",
+  name:(CENTERS_INFO[CENTER_SLUG]||{}).name||""
+};
+function formulaWords(){return CENTER.formula?CENTER.formula:"the iron-fortified formula named by the center"}
+function months(d){if(!d)return 99;var b=new Date(d+"T00:00"),n=new Date();return (n.getFullYear()-b.getFullYear())*12+n.getMonth()-b.getMonth()-(n.getDate()<b.getDate()?1:0)}
+function isInfant(c){return months(c.dob)<12}
+var TIMES=[["","Time"]];(function(){for(var m=360;m<=1110;m+=15){var h=Math.floor(m/60),mm=m%60,ap=h<12?"am":"pm",hh=h>12?h-12:h;TIMES.push([String(m),hh+":"+(mm<10?"0":"")+mm+" "+ap])}})();
+function lineR(n){return 29526+(n-1)*10508}
+function blankMember(n,kid){return {name:n||"",kid:!!kid,has:null,inc:{earn:{a:"",f:""},welf:{a:"",f:""},pens:{a:"",f:""},other:{a:"",f:""}}}}
+function blankKid(){return {name:"",dob:"",foster:false,days:{},a1:"",d1:"",school:false,a2:"",d2:"",busTo:false,busFrom:false,meals:{},varies:false}}
+function blank(){return {children:[blankKid()],snap:null,owf:null,cases:{},checked:false,hsize:"",above:null,members:[],adult:{name:"",ssn:"",nossn:false,day:"",work:"",street:"",city:"",state:"OH",zip:"",county:"",dob:"",email:""},race:{},eth:"",sig:{},acks:{},ackSig:{},nondiscSeen:false,nondiscAt:"",nondiscSig:"",sent:false,idem:{},done:{}}}
+var S=blank(),STEP=0,K=0,SENDING=false;
+/* Invented example family (only with ?demo=1). */
+function sample(){var s=blank();
+  s.children=[{name:"Maya Ortiz",dob:"2021-04-12",foster:false,days:{mon:1,tue:1,wed:1,thu:1,fri:1},a1:"450",d1:"1020",school:false,a2:"",d2:"",busTo:false,busFrom:false,meals:{b:1,as:1,l:1,su:1},varies:false}];
+  s.snap=false;s.owf=false;s.checked=true;s.hsize="2";s.above=false;
+  s.members=[blankMember("Ana Ortiz"),blankMember("Maya Ortiz",true)];s.members[0].has=true;s.members[0].inc.earn={a:"1450",f:"26"};s.members[1].has=false;
+  s.adult={name:"Ana Ortiz",ssn:"1234",nossn:false,day:"(440) 555-0142",work:"",street:"100 Example St",city:"Wickliffe",state:"OH",zip:"44092",county:"Lake",dob:"1994-02-20",email:"ana.example@example.com"};return s}
+function age(d){if(!d)return"";var b=new Date(d+"T00:00"),n=new Date(),a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a<0?"":String(a)}
+function allFoster(){return S.children.length>0&&S.children.every(function(c){return c.foster})}
+function nonFoster(){return S.children.map(function(c,i){return i}).filter(function(i){return !S.children[i].foster})}
+function categorical(){return allFoster()||S.snap===true||S.owf===true}
+function notApplying(){return has('iea')&&!categorical()&&S.above===true}
+function incomePath(){return has('iea')&&!categorical()&&S.above===false}
+function ageWords(d){var m=months(d);if(m<0)return'';if(m<24)return m+' month'+(m===1?'':'s')+' old';var a=+age(d);return a+' years old'}
+function infantOnly(){return has('infant')&&!has('iea')&&!has('enroll')}
+function steps(){var st=[];
+  if(anyFood())st.push("letter","children");
+  if(has("dcy01234")&&FLAG_01234_STUB)st.push("dcy01234");
+  if(has("iea")){st.push("foster");
+    if(!allFoster()){st.push("snap");if(S.snap===true)st.push("cases");else if(S.snap===false){st.push("owf");if(S.owf===true)st.push("cases");else if(S.owf===false){st.push("tablea");
+      if(S.above===true){if(has("enroll"))st.push("notapply");else{st.push("ieanotneeded");if(!docs().length&&!has("dcy01234"))return st}}
+      else if(S.above===false)st.push("household")}}}}
+  if(has("enroll")||(has("iea")&&!notApplying()))st.push("adult");
+  S.children.forEach(function(c,i){if(has("enroll"))st.push("care"+i);if(has("infant")){if(isInfant(c))st.push("infant"+i);else if(infantOnly())st.push("infantno"+i)}});
+  if(infantOnly()&&!docs().length&&!has("dcy01234"))return st;
+  if(has("iea")&&!notApplying())st.push("part5");
+  if(SET==="full")st.push("acks");
+  if(anyFood()||NONDISC_FOR_01234_ONLY)st.push("nondisc");
+  if(linksFor().length)st.push("links");
+  st.push("review");return st}
+function partOf(k){if(k.indexOf("infantno")===0)return "Infant meals · "+(S.children[+k.slice(8)].name||"child");if(k.indexOf("infant")===0)return "Infant meals · "+(S.children[+k.slice(6)].name||"infant");if(k.indexOf("care")===0)return "Enrollment · "+(S.children[+k.slice(4)].name||"child");return {letter:"Before you start",children:"Your children",dcy01234:"Child enrollment (DCY 01234)",foster:"Foster child",snap:"Benefits · SNAP",owf:"Benefits · OWF",cases:"Benefits · case number",tablea:"Income check",notapply:"Not applying for income",ieanotneeded:"Income form not needed",household:"Household and income",adult:"Parent or guardian",part5:"Optional",acks:"Acknowledgments",nondisc:"Nondiscrimination statement",links:"Useful links",review:"Review and sign"}[k]}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fld(id,lbl,val,o){o=o||{};return '<div class="field" data-f="'+id+'"><label for="'+id+'" class="'+(o.req===false?'':'req')+'">'+lbl+'</label>'+
+  (o.select?'<select id="'+id+'">'+o.select.map(function(x){return '<option value="'+x[0]+'"'+(String(val)===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>'
+   :'<input id="'+id+'" type="'+(o.type||'text')+'" value="'+esc(val)+'"'+(o.ph?' placeholder="'+o.ph+'"':'')+(o.mode?' inputmode="'+o.mode+'"':'')+'>')+'<span class="miss">'+(o.msg||'Please fill this in to continue.')+'</span></div>'}
+function yn(key,val,yes,no){return '<div class="choices"><button type="button" class="choice" data-yn="'+key+'" data-v="1" aria-pressed="'+(val===true)+'">'+(yes||"Yes")+'</button><button type="button" class="choice" data-yn="'+key+'" data-v="0" aria-pressed="'+(val===false)+'">'+(no||"No")+'</button></div><div class="field" data-f="'+key+'"><span class="miss">Please choose one answer.</span></div>'}
+function tm(v){var t=TIMES.filter(function(x){return x[0]===v})[0];return t?t[1]:""}
+function sigBox(id,title){return '<div class="field" data-f="sig_'+id+'"><label class="req">Signature</label><canvas class="pad" data-sig="'+id+'" aria-label="Signature pad for '+esc(title)+'"></canvas><span class="miss">Please sign this form.</span><button type="button" class="btn ghost small" data-clr="'+id+'">Clear signature</button></div>'}
+function linksFor(){var all=LINKS_BY_CENTER[CENTER_SLUG]||LINKS_BY_CENTER._default||[];return all.filter(function(l){return l.kind==="food"?anyFood():has("dcy01234")})}
+
+function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[STEP],h="";
+  document.getElementById("prog").style.width=Math.round((STEP+1)/st.length*100)+"%";
+  document.getElementById("partlbl").textContent=partOf(k)+" · step "+(STEP+1)+" of "+st.length;
+  document.getElementById("banner").hidden=true;
+  if(k==="letter"){h='<h2>Help us receive support for your child’s meals</h2><div class="note">Play Academy serves your child healthy meals and snacks every day. The USDA Child and Adult Care Food Program pays the center back for part of the cost of these meals. '+
+    (has("iea")&&has("enroll")?'Every year the program needs two forms from each family: the Enrollment Form for each child, and the Income Eligibility Application for the household. This interview fills in both. It takes about five minutes, and everything you tell us is kept confidential.'
+     :'This interview fills in '+compWords()+'. Everything you tell us is kept confidential.')+'</div>'+
+    (SET==="full"?'<div class="note">This interview is for a new child at the center. Besides the two food program forms, it also covers the child enrollment form and the papers you confirm you have read.</div>':'')+
+    (has("iea")?'<h2>The letter from the State of Ohio</h2><blockquote>“The CACFP provides reimbursement to the child care center for healthy meals and snacks served to children enrolled in child care. The completion of the income eligibility application is optional. … You or your children do not have to be U.S. citizens to qualify for meal benefits. … An application must contain complete information to be considered for free or reduced-price meals.”</blockquote><p class="sub small">— Ohio CACFP Income Eligibility Application, FY 2026–2027, Household Letter</p>':'')+'<div class="note">We ask one thing at a time. Every answer goes into its own box on the official forms. At the end you see '+(compCount()>1?'each form and sign it':'the form and sign it')+'.</div>'}
+  if(k==="children"){h='<h2>Your child at the center</h2><p class="sub">Start with one child. If more of your children attend Play Academy, add them below.</p>';
+    S.children.forEach(function(c,i){h+='<div class="member"><b>Child '+(i+1)+'</b>'+fld("c"+i+"n","Child’s full name",c.name)+'<div class="row">'+fld("c"+i+"d","Birth date",c.dob,{type:"date"})+'<div class="field"><label>Age</label><input type="text" id="c'+i+'age" value="'+age(c.dob)+'" disabled aria-label="Age, filled from birth date"></div></div></div>'});
+    h+='<p class="sub small">Made a mistake? Just correct the name or the date. An extra row you leave empty is skipped.</p>';if(S.children.length<4)h+='<button type="button" class="btn ghost" id="addChild">+ Add another child</button>'}
+  if(k==="dcy01234")h='<h2>DCY 01234 — questions come here</h2><div class="note">The questions of the Child Enrollment and Health Information form (DCY 01234) are not built into this interview yet. Nothing is asked here for now. Tap Next to continue.</div>';
+  if(k==="foster"){h='<h2>Is any of these children a foster child?</h2><p class="sub">A foster child is the legal responsibility of a welfare agency or court. You will attach that documentation. A foster child gets free meals without any income questions.</p>';
+    S.children.forEach(function(c,i){h+='<label class="check"><input type="checkbox" data-foster="'+i+'"'+(c.foster?' checked':'')+'>'+esc(c.name||("Child "+(i+1)))+' is a foster child</label>'});
+    /* Mixed foster: USDA policy memo CACFP 08-2011, Q16 — a foster child does not make the household's other children free; the foster child is counted in the household. */
+    if(allFoster())h+='<div class="note done">No income questions are needed.</div>';else if(S.children.some(function(c){return c.foster}))h+='<div class="note" id="mixedFosterNote">The foster child gets free meals. Under USDA rules a foster child does not make the other children in the household free, so we still ask about benefits or income for the other children. The foster child is counted as a member of your household.</div>'}
+  if(k==="snap")h='<h2>Does your household receive Food Assistance (SNAP)?</h2><div class="note">If your household receives SNAP or Ohio Works First, your child qualifies for free meals. You only give the case number. You do not list income, and you do not need the last 4 digits of a Social Security Number.</div>'+yn("snap",S.snap);
+  if(k==="owf")h='<h2>Does your household receive Ohio Works First (OWF)?</h2><p class="sub">Ohio Works First is Ohio’s cash assistance program (TANF).</p>'+yn("owf",S.owf);
+  if(k==="cases"){h='<h2>'+(S.snap?"Food Assistance (SNAP)":"Ohio Works First (OWF)")+' case number</h2><p class="sub">A valid case number has 7 digits. It is on your benefit letter or card.</p>';
+    nonFoster().forEach(function(i){h+=fld("case"+i,"Case number for "+esc(S.children[i].name||("Child "+(i+1))),S.cases[i]||"",{mode:"numeric",ph:"7 digits",msg:"Enter the 7-digit case number."})});h+='<div class="note done">That is all for income.</div>'}
+  if(k==="tablea"){h='<h2>Check whether your household qualifies by income</h2><p class="sub">Free and reduced-price meal support depends on household size and income. Look at the table before you fill in the income part.</p><button type="button" class="btn ghost" id="showTable">'+(S.checked?'Hide the income table':'Check if you qualify by income')+'</button>';
+    if(S.checked){h+='<div class="tbl"><table><thead><tr><th>Household size</th><th>Yearly</th><th>Monthly</th><th>Twice a month</th><th>Every 2 weeks</th><th>Weekly</th></tr></thead><tbody>';
+      for(var n=1;n<=8;n++){var r=lineR(n);h+='<tr><td>'+n+'</td><td>$'+r.toLocaleString()+'</td><td>$'+Math.ceil(r/12).toLocaleString()+'</td><td>$'+Math.ceil(r/24).toLocaleString()+'</td><td>$'+Math.ceil(r/26).toLocaleString()+'</td><td>$'+Math.ceil(r/52).toLocaleString()+'</td></tr>'}
+      h+='<tr><td>each more</td><td>+$10,508</td><td>+$876</td><td>+$438</td><td>+$405</td><td>+$203</td></tr></tbody></table></div><p class="small sub">Ohio CACFP Income Eligibility Guidelines, FY 2026–2027. Use the row for the number of people in your household and the column for how often you are paid.</p>'+
+        '<b>Is your household’s income above the figure in your row?</b>'+yn("above",S.above,"Yes — our income is above it","No — it is at or below it")}}
+  if(k==="notapply"){var names=S.children.map(function(c){return esc(c.name)}).join(", ");h='<h2>You do not need to fill in the income form</h2><div class="note">Your '+(S.children.length>1?'children':'child')+' ('+names+') will receive the same healthy meals as every other child at the center. The center records that you chose not to apply for income-based support, so no one will ask you for the income form again this year.</div><div class="note"><b>One form is still required.</b> The CACFP Enrollment Form for each child is required every year by federal rules (7 CFR 226.15). We fill it in from your answers. Next we ask for your contact details and each child’s days, hours and meals. Then you sign the enrollment form'+(S.children.length>1?' for each child':'')+'.</div>'}
+  if(k==="ieanotneeded"){h='<h2>You do not need to fill in the income form</h2><div class="note">Your household’s income is above the figure in your row, so the Income Eligibility Application is not needed. Nothing is sent to the center for the income form. Your '+(S.children.length>1?'children':'child')+' will receive the same healthy meals as every other child at the center.</div>'+(steps().indexOf(k)===steps().length-1?'<div class="note">That is all. You can close this page.</div>':'')}
+  if(k.indexOf("infantno")===0){var cn=S.children[+k.slice(8)];h='<h2>This form is only for children under 12 months</h2><div class="note">This form is only for children under 12 months — '+esc(cn.name)+' is '+esc(ageWords(cn.dob))+'. Ask the center for the right form.</div><p class="sub">Nothing is sent for '+esc(cn.name)+'.</p>'}
+  if(k==="household"){if(!S.members.length)S.members=[blankMember("")].concat(S.children.map(function(c){return blankMember(c.name,true)}));
+    h='<h2>Your household and its income</h2><p class="sub">Start with one person who earns money. Then add every other person who lives with you. The children are already on the list. For each person, answer whether they have income. If yes, enter each income and how often it is received — gross income during the last month, before taxes.</p>';
+    var person=function(i,label){var m=S.members[i],o='<div class="member"><b>'+label+'</b>'+fld("m"+i+"n","Name",m.name)+'<b class="small">Does '+(m.name?esc(m.name):'this person')+' have any income?</b><div class="choices"><button type="button" class="choice" data-has="'+i+'" data-v="1" aria-pressed="'+(m.has===true)+'">Yes</button><button type="button" class="choice" data-has="'+i+'" data-v="0" aria-pressed="'+(m.has===false)+'">No income</button></div><div class="field" data-f="m'+i+'has"><span class="miss">Choose Yes or No income.</span></div>';
+      if(m.has===true){SRC.forEach(function(s){var v=m.inc[s[0]];o+='<div class="inc"><span>'+s[1]+'</span>'+fld("m"+i+s[0]+"a","Amount $",v.a,{req:false,mode:"decimal",msg:"Enter the amount."})+fld("m"+i+s[0]+"f","How often",v.f,{req:false,select:FREQ,msg:"Choose how often."})+'</div>'});o+='<div class="field" data-f="m'+i+'any"><span class="miss">Enter at least one income with how often it is received.</span></div>'}
+      return o+'</div>'};
+    var ad=0,kd=0;S.members.forEach(function(m,i){if(!m.kid)h+=person(i,"Person "+(++ad))});h+='<button type="button" class="btn ghost" id="addMember">+ Add another person who lives with you</button><b>Children</b>';S.members.forEach(function(m,i){if(m.kid)h+=person(i,"Child "+(++kd))});
+    h+='<p class="sub small">Made a mistake? Just correct it. An extra person you leave empty is skipped.</p>'}
+  if(k==="adult"){h='<h2>Parent or guardian</h2><p class="sub">This information goes on '+(has("iea")&&has("enroll")&&!notApplying()?'both forms':has("enroll")?'the enrollment form':'the income form')+'.</p>'+fld("an","Print name",S.adult.name);
+    if(incomePath())h+='<div class="field" data-f="ssnblock">'+fld("ssn","Last 4 digits of Social Security Number",S.adult.ssn,{req:!S.adult.nossn,mode:"numeric",ph:"4 digits",msg:"Enter 4 digits, or check the box below."})+'<label class="check"><input type="checkbox" id="nossn"'+(S.adult.nossn?' checked':'')+'>I do not have a Social Security Number</label></div>';
+    /* Enrollment v12 carries parent_birthdate + parent_email (no state, no county, no work phone); IEA v10 carries work phone, state, county. */
+    if(has("enroll"))h+='<div class="row">'+fld("pdob","Your birth date",S.adult.dob,{type:"date"})+fld("email","Email",S.adult.email,{type:"email"})+'</div>';
+    h+='<div class="row">'+fld("day","Daytime phone",S.adult.day,{type:"tel"})+(has("iea")?fld("work","Work phone",S.adult.work,{type:"tel",req:false}):'')+'</div>'+fld("street","Street / Apt",S.adult.street)+'<div class="row3">'+fld("city","City",S.adult.city)+(has("iea")?fld("state","State",S.adult.state):'')+fld("zip","ZIP",S.adult.zip,{mode:"numeric",msg:"Enter a 5-digit ZIP."})+'</div>'+(has("iea")&&!notApplying()?fld("county","County",S.adult.county):'')}
+  if(k.indexOf("care")===0){K=+k.slice(4);var c=S.children[K];h='<h2>'+esc(c.name)+': days, hours and meals</h2><p class="sub">For the CACFP Enrollment Form. Check the days your child is normally in care, the hours, and the meals your child normally receives here.</p><b>Days in care</b><div class="days">'+DAYS.map(function(d){return CENTER.closedDays[d[0]]?'<label class="off" title="The center is closed on this day"><span aria-hidden="true">✕</span>'+d[1]+'</label>':'<label><input type="checkbox" data-day="'+d[0]+'"'+(c.days[d[0]]?' checked':'')+'>'+d[1]+'</label>'}).join('')+'</div><div class="field" data-f="days"><span class="miss">Check at least one day.</span></div>'+
+    (c.school?'<div class="note small">School days: list the morning hours before school and the afternoon hours after school.</div><b>Before school</b><div class="row">'+fld("a1","Arrives at the center",c.a1,{select:TIMES,msg:"Choose the arrival time."})+fld("d1","Leaves for school",c.d1,{select:TIMES,msg:"Choose the time."})+'</div><label class="check"><input type="checkbox" id="busTo"'+(c.busTo?' checked':'')+'>The center’s school bus takes my child to school</label><b>After school</b><div class="row">'+fld("a2","Comes back from school",c.a2,{select:TIMES,msg:"Choose the time."})+fld("d2","Goes home",c.d2,{select:TIMES,msg:"Choose the time."})+'</div><label class="check"><input type="checkbox" id="busFrom"'+(c.busFrom?' checked':'')+'>The center’s school bus brings my child back from school</label>'
+      :'<div class="row">'+fld("a1","Arrives",c.a1,{select:TIMES,msg:"Choose the arrival time."})+fld("d1","Leaves",c.d1,{select:TIMES,msg:"Choose the departure time."})+'</div>')+
+    '<label class="check"><input type="checkbox" id="school"'+(c.school?' checked':'')+'>My child goes to school (before and after school care)</label>'+
+    '<b>Meals normally received while in care</b><div class="days">'+MEALS.map(function(m){return CENTER.noMeals[m[0]]?'<label class="off" title="Not served at this center"><span aria-hidden="true">✕</span>'+m[1]+'</label>':'<label><input type="checkbox" data-meal="'+m[0]+'"'+(c.meals[m[0]]?' checked':'')+'>'+m[1]+'</label>'}).join('')+'<span class="small sub" style="flex-basis:100%">✕ = not offered at this center</span>'+'</div><div class="field" data-f="meals"><span class="miss">Check at least one meal.</span></div><label class="check"><input type="checkbox" id="varies"'+(c.varies?' checked':'')+'>The schedule may often change because of my work schedule</label>'}
+  if(k.indexOf("infant")===0&&k.indexOf("infantno")!==0){K=+k.slice(6);var ci=S.children[K];h='<h2>'+esc(ci.name)+' is under one year old</h2><p class="sub">Infant Meals – Parent Preference Letter. All enrolled children receive meals free of charge. The center offers '+esc(formulaWords())+' and the other required infant foods. You may decline the formula and bring your own. When your child turns one, the center provides milk and toddler meals.</p>'+
+    '<b>Formula or breast milk (choose one)</b><div class="choices" style="flex-direction:column">'+[["center","I want the center to provide formula for my infant"],["bring_formula","I will bring iron-fortified infant formula"],["bring_bm","I will bring expressed breast milk"],["breastfeed","I will come to the center to breastfeed my infant"]].map(function(o){return '<button type="button" class="choice" data-inf="formula" data-v="'+o[0]+'" aria-pressed="'+(ci.formula===o[0])+'">'+o[1]+'</button>'}).join('')+'</div><div class="field" data-f="inf_formula"><span class="miss">Please choose one.</span></div>'+
+    (ci.formula==="bring_formula"?fld("fname","Name of the formula you will bring",ci.fname||"",{msg:"Enter the formula name."}):'')+
+    '<b>Solid food (choose one)</b><div class="choices" style="flex-direction:column">'+[["center","The center provides all solid foods when my infant is developmentally ready"],["one","I will bring one solid food item; the center provides all other required components"]].map(function(o){return '<button type="button" class="choice" data-inf="solid" data-v="'+o[0]+'" aria-pressed="'+(ci.solid===o[0])+'">'+o[1]+'</button>'}).join('')+'</div><div class="field" data-f="inf_solid"><span class="miss">Please choose one.</span></div><p class="small sub">If your feeding preferences change, you will be asked to complete a new form.</p>'}
+  if(k==="part5"){var R=[["ai","American Indian or Alaska Native"],["asian","Asian"],["black","Black or African American"],["pacific","Native Hawaiian or Other Pacific Islander"],["white","White"],["other","Other"]];
+    h='<h2>Race and ethnicity of the enrolled children</h2><p class="sub">Optional. You can skip this. It does not affect meals.</p><b>Race (check all that apply)</b>'+R.map(function(r){return '<label class="check"><input type="checkbox" data-race="'+r[0]+'"'+(S.race[r[0]]?' checked':'')+'>'+r[1]+'</label>'}).join('')+'<b>Ethnicity (one)</b><div class="choices"><button type="button" class="choice" data-eth="hispanic" aria-pressed="'+(S.eth==="hispanic")+'">Hispanic or Latino</button><button type="button" class="choice" data-eth="not_hispanic" aria-pressed="'+(S.eth==="not_hispanic")+'">Not Hispanic or Latino</button></div>'}
+  if(k==="acks"){h='<h2>Papers you have read</h2><p class="sub">Check each paper you have read and sign under it.</p>';
+    ACKS.forEach(function(a){h+='<div class="doc"><div class="field" data-f="ack_'+a.id+'"><label class="check"><input type="checkbox" data-ack="'+a.id+'"'+(S.acks[a.id]?' checked':'')+'>I have read '+esc(a.title)+'</label><span class="miss">Check this box to continue.</span></div>'+sigBox("ack_"+a.id,a.title)+'</div>'})}
+  if(k==="nondisc"){h='<h2>Nondiscrimination statement</h2><p class="sub">The USDA asks every family in the food program to see this statement. Please read it.</p><div class="doc legal" id="nondiscText">'+NONDISC_TEXT.map(function(p){return Array.isArray(p)?'<ol>'+p.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ol>':'<p>'+esc(p)+'</p>'}).join('')+'</div>'+
+    '<div class="field" data-f="nondisc_seen"><label class="check"><input type="checkbox" id="nondiscSeen"'+(S.nondiscSeen?' checked':'')+'>I have seen this letter</label><span class="miss">Check this box to continue.</span></div>'+
+    (NONDISC_SIGNATURE_REQUIRED?sigBox("nondisc","the nondiscrimination statement"):'')}
+  if(k==="links"){var L=linksFor();h='<h2>Useful links</h2><p class="sub">Keep these for later. Nothing to sign here.</p><ul class="links">'+L.map(function(l){return '<li><a href="'+esc(l.url)+'" target="_blank" rel="noopener">'+esc(l.title)+'</a></li>'}).join('')+'</ul>'}
+  if(k==="review"){var ds=docs();h='<h2>Your forms</h2><p class="sub">'+(ds.length?'Look over each form and sign it. Tap Back to change an answer.':'There is nothing to sign or send yet.')+'</p>';
+    if(has("dcy01234"))h+='<div class="doc" id="dcyReviewStub"><h3>DCY 01234 — Child Enrollment and Health Information</h3><p class="sub">Not built into this interview yet. Nothing is signed or sent for it.</p></div>';
+    ds.forEach(function(d){h+='<div class="doc"><h3>'+d.title+'</h3>'+d.body+sigBox(d.id,d.title)+'</div>'});
+    if(ds.some(function(d){return d.kind==="iea"}))h+='<p class="small">By signing the Income Eligibility Application I certify that all information on that form is true and correct and that all income is reported. I understand that the center will get Federal Funds based on the information, that CACFP officials may verify the information, and that if I purposely give false information, I may be prosecuted.</p>'}
+  /* The last step that is not a review with forms has no Next: nothing more to ask, nothing to send. */
+  var terminal=(STEP===st.length-1)&&!(k==="review"&&docs().length);
+  var nav='<div class="nav">'+(STEP>0?'<button type="button" class="btn ghost" id="back">Back</button>':'<span></span>')+(terminal?'':'<button type="submit" class="btn primary" id="nextBtn">'+(k==="review"?'Sign and submit':'Next')+'</button>')+'</div>';
+  document.getElementById("f").innerHTML=h+nav;bind(k)}
+
+function docs(){var a=S.adult,out=[];
+  if(has("iea")&&!notApplying()&&!(S.above===true&&!categorical())){var b='<div class="sum"><dl>';S.children.forEach(function(c){b+='<dt>Child</dt><dd>'+esc(c.name)+' · '+esc(c.dob)+' · age '+age(c.dob)+(c.foster?' · foster':'')+'</dd>'});
+    if(S.snap||S.owf)nonFoster().forEach(function(i){b+='<dt>'+(S.snap?'SNAP':'OWF')+' case</dt><dd>'+esc(S.cases[i])+'</dd>'});
+    if(incomePath())S.members.forEach(function(m){b+='<dt>'+esc(m.name)+'</dt><dd>'+(m.has===false?'no income':SRC.filter(function(s){return m.inc[s[0]].a}).map(function(s){var v=m.inc[s[0]];return '$'+esc(v.a)+' '+FREQ.filter(function(x){return x[0]===v.f})[0][1].toLowerCase()}).join(', '))+'</dd>'});
+    b+='<dt>Signs</dt><dd>'+esc(a.name)+(incomePath()?' · SSN '+(a.nossn?'none':'…'+esc(a.ssn)):'')+'</dd><dt>Address</dt><dd>'+esc(a.street)+', '+esc(a.city)+', '+esc(a.state)+' '+esc(a.zip)+' · '+esc(a.county)+' County</dd></dl></div>';
+    out.push({id:"iea",kind:"iea",title:"Income Eligibility Application (one for the household)",body:b})}
+  if(has("enroll"))S.children.forEach(function(c,i){var days=DAYS.filter(function(d){return c.days[d[0]]}).map(function(d){return d[1]}).join(", "),meals=MEALS.filter(function(m){return c.meals[m[0]]}).map(function(m){return m[1]}).join(", ");
+    out.push({id:"enr"+i,kind:"enr",child:i,title:"CACFP Enrollment Form — "+esc(c.name),body:'<div class="sum"><dl><dt>Child</dt><dd>'+esc(c.name)+' · '+esc(c.dob)+' · age '+age(c.dob)+'</dd><dt>Days</dt><dd>'+days+'</dd><dt>Hours</dt><dd>'+(c.school?'before school '+tm(c.a1)+' – '+tm(c.d1)+(c.busTo?' (center bus to school)':'')+' · after school '+tm(c.a2)+' – '+tm(c.d2)+(c.busFrom?' (center bus from school)':''):tm(c.a1)+' – '+tm(c.d1))+'</dd><dt>Meals</dt><dd>'+meals+'</dd><dt>Schedule varies</dt><dd>'+(c.varies?'yes':'no')+'</dd><dt>Parent</dt><dd>'+esc(a.name)+' · born '+esc(a.dob)+' · '+esc(a.day)+' · '+esc(a.email)+'</dd><dt>Address</dt><dd>'+esc(a.street)+', '+esc(a.city)+' '+esc(a.zip)+'</dd></dl></div>'})});
+  if(has("infant"))S.children.forEach(function(c,i){if(!isInfant(c))return;var F={center:"Center provides formula",bring_formula:"Parent brings formula: "+esc(c.fname||""),bring_bm:"Parent brings expressed breast milk",breastfeed:"Parent comes to breastfeed"},Sd={center:"Center provides all solid foods",one:"Parent brings one solid food item"};
+    out.push({id:"inf"+i,kind:"inf",child:i,title:"Infant Meals – Parent Preference Letter — "+esc(c.name),body:'<div class="sum"><dl><dt>Infant</dt><dd>'+esc(c.name)+' · '+esc(c.dob)+'</dd><dt>Formula / breast milk</dt><dd>'+(F[c.formula]||'')+'</dd><dt>Solid food</dt><dd>'+(Sd[c.solid]||'')+'</dd></dl></div>'})});
+  return out}
+
+/* ═══════════════════════ SIGNATURE PADS ═══════════════════════ */
+var pads={};
+function setupPads(){pads={};document.querySelectorAll("canvas.pad").forEach(function(c){var id=c.dataset.sig,r=c.getBoundingClientRect(),x=c.getContext("2d");c.width=r.width*2;c.height=r.height*2;x.scale(2,2);x.lineWidth=2.2;x.lineCap="round";x.strokeStyle=getComputedStyle(document.body).color;S.sig[id]=false;var d=false;
+  function p(e){var q=c.getBoundingClientRect();return[e.clientX-q.left,e.clientY-q.top]}
+  c.onpointerdown=function(e){d=true;try{c.setPointerCapture(e.pointerId)}catch(_){}var a=p(e);x.beginPath();x.moveTo(a[0],a[1])};c.onpointermove=function(e){if(!d)return;var a=p(e);x.lineTo(a[0],a[1]);x.stroke();S.sig[id]=true};c.onpointerup=function(){d=false};pads[id]={c:c,x:x}});
+  document.querySelectorAll("[data-clr]").forEach(function(b){b.onclick=function(){var q=pads[b.dataset.clr];q.x.clearRect(0,0,q.c.width,q.c.height);S.sig[b.dataset.clr]=false}})}
+function padPNG(id){var q=pads[id];return q&&S.sig[id]?q.c.toDataURL("image/png"):null}
+
+/* ═══════════════════════ BINDING ═══════════════════════ */
+function fmtPhone(v){var d=String(v||'').replace(/\D/g,'').slice(0,10);return d.length>6?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):d.length>3?'('+d.slice(0,3)+') '+d.slice(3):d}
+function bind(k){var f=document.getElementById("f"),c=S.children[K];
+  f.oninput=function(e){var t=e.target,id=t.id,m;
+    if((m=id.match(/^c(\d)([nd])$/))){S.children[+m[1]][m[2]==="n"?"name":"dob"]=t.value;if(m[2]==="d"){var ag=document.getElementById("c"+m[1]+"age");if(ag)ag.value=age(t.value)}return}
+    if((m=id.match(/^case(\d)$/))){S.cases[+m[1]]=t.value.replace(/\D/g,"").slice(0,7);t.value=S.cases[+m[1]];return}
+    if((m=id.match(/^m(\d+)n$/))){S.members[+m[1]].name=t.value;return}
+    if((m=id.match(/^m(\d+)(earn|welf|pens|other)([af])$/))){S.members[+m[1]].inc[m[2]][m[3]]=t.value;return}
+    if(/^(a1|d1|a2|d2|fname)$/.test(id)){c[id]=t.value;return}
+    if(id==="day"||id==="work"){t.value=fmtPhone(t.value)}
+    var map={an:"name",ssn:"ssn",day:"day",work:"work",street:"street",city:"city",state:"state",zip:"zip",county:"county",pdob:"dob",email:"email"};if(map[id])S.adult[map[id]]=t.value};
+  f.onchange=f.oninput;
+  f.querySelectorAll("[data-foster]").forEach(function(x){x.onchange=function(){S.children[+x.dataset.foster].foster=x.checked;render()}});
+  f.querySelectorAll("[data-has]").forEach(function(b){b.onclick=function(){S.members[+b.dataset.has].has=b.dataset.v==="1";render()}});
+  f.querySelectorAll("[data-yn]").forEach(function(b){b.onclick=function(){var key=b.dataset.yn,v=b.dataset.v==="1";S[key]=v;if(key==="snap"&&v){S.owf=null;S.above=null}if(key==="owf"&&v)S.above=null;render()}});
+  f.querySelectorAll("[data-day]").forEach(function(x){x.onchange=function(){c.days[x.dataset.day]=x.checked}});
+  f.querySelectorAll("[data-meal]").forEach(function(x){x.onchange=function(){c.meals[x.dataset.meal]=x.checked}});
+  f.querySelectorAll("[data-inf]").forEach(function(b){b.onclick=function(){c[b.dataset.inf]=b.dataset.v;render()}});
+  f.querySelectorAll("[data-race]").forEach(function(x){x.onchange=function(){S.race[x.dataset.race]=x.checked}});
+  f.querySelectorAll("[data-ack]").forEach(function(x){x.onchange=function(){S.acks[x.dataset.ack]=x.checked}});
+  f.querySelectorAll("[data-eth]").forEach(function(b){b.onclick=function(){S.eth=S.eth===b.dataset.eth?"":b.dataset.eth;render()}});
+  var g;if((g=document.getElementById("school")))g.onchange=function(){c.school=document.getElementById("school").checked;render()};
+  if((g=document.getElementById("busTo")))g.onchange=function(){c.busTo=document.getElementById("busTo").checked};
+  if((g=document.getElementById("busFrom")))g.onchange=function(){c.busFrom=document.getElementById("busFrom").checked};
+  if((g=document.getElementById("varies")))g.onchange=function(){c.varies=document.getElementById("varies").checked};
+  if((g=document.getElementById("nondiscSeen")))g.onchange=function(){S.nondiscSeen=this.checked;S.nondiscAt=this.checked?new Date().toISOString():""};
+  if((g=document.getElementById("showTable")))g.onclick=function(){S.checked=!S.checked;render()};
+  if((g=document.getElementById("addChild")))g.onclick=function(){S.children.push(blankKid());render()};
+  if((g=document.getElementById("addMember")))g.onclick=function(){var ki=S.members.findIndex(function(m){return m.kid});if(ki<0)S.members.push(blankMember(""));else S.members.splice(ki,0,blankMember(""));render()};
+  if((g=document.getElementById("nossn")))g.onchange=function(){S.adult.nossn=document.getElementById("nossn").checked;if(S.adult.nossn)S.adult.ssn="";render()};
+  if((g=document.getElementById("back")))g.onclick=function(){if(SENDING)return;STEP--;render()};
+  if(f.querySelector("canvas.pad"))setupPads();
+  f.onsubmit=function(e){e.preventDefault();if(SENDING)return;prune(k);var bad=check(k);
+    document.querySelectorAll(".field.bad").forEach(function(x){x.classList.remove("bad")});
+    if(bad.length){bad.forEach(function(id){var el=f.querySelector('[data-f="'+id+'"]');if(el)el.classList.add("bad")});
+      var bn=document.getElementById("banner");bn.hidden=false;bn.textContent="Some answers are missing. Fill in the highlighted "+(bad.length===1?"box":bad.length+" boxes")+" to continue.";
+      var sigBad=bad.filter(function(id){return id.indexOf("sig_")===0});
+      if(sigBad.length&&(k==="review"||k==="acks"||k==="nondisc")){var md=document.getElementById("modal"),n=sigBad.length;document.getElementById("mx").textContent=(n===1?"One form is":n+" forms are")+" not signed yet. Sign in each highlighted box with your finger, then tap “"+(k==="review"?"Sign and submit":"Next")+"”.";md.hidden=false;var ok=document.getElementById("mok");ok.focus();ok.onclick=function(){md.hidden=true;var el=f.querySelector(".field.bad canvas, .field.bad input");if(el)el.scrollIntoView({block:"center"})};return}
+      var first=f.querySelector(".field.bad input, .field.bad select, .field.bad button");if(first)first.focus();else bn.scrollIntoView();return}
+    if(k==="acks")ACKS.forEach(function(a){S.ackSig[a.id]=padPNG("ack_"+a.id)});
+    if(k==="nondisc"&&NONDISC_SIGNATURE_REQUIRED)S.nondiscSig=padPNG("nondisc");
+    if(k==="review"){submitAll();return}
+    STEP++;render();window.scrollTo(0,0)}}
+function emptyM(m){return !m.kid&&!m.name.trim()&&m.has===null&&SRC.every(function(s){return !m.inc[s[0]].a&&!m.inc[s[0]].f})}
+function prune(k){var ch=false;if(k==="children"){var c=S.children.filter(function(x,i){return i===0||x.name.trim()||x.dob});if(c.length!==S.children.length){S.children=c;ch=true}}
+  if(k==="household"){var m=S.members.filter(function(x,i){return i===0||!emptyM(x)});if(m.length!==S.members.length){S.members=m;ch=true}}if(ch)render()}
+function check(k){var b=[];function need(id,v){if(!String(v||"").trim())b.push(id)}
+  if(k==="children")S.children.forEach(function(c,i){need("c"+i+"n",c.name);need("c"+i+"d",c.dob)});
+  if(k==="snap"&&S.snap===null)b.push("snap");if(k==="owf"&&S.owf===null)b.push("owf");
+  if(k==="cases")nonFoster().forEach(function(i){if(!/^\d{7}$/.test(S.cases[i]||""))b.push("case"+i)});
+  if(k==="tablea"&&S.above===null){if(!S.checked){S.checked=true;render();}b.push("above")}
+  if(k==="household")S.members.forEach(function(m,i){need("m"+i+"n",m.name);if(m.has===null){b.push("m"+i+"has");return}if(m.has===false)return;var any=false;SRC.forEach(function(s){var v=m.inc[s[0]];if(v.a&&!v.f)b.push("m"+i+s[0]+"f");if(v.f&&!v.a)b.push("m"+i+s[0]+"a");if(v.a&&v.f)any=true});if(!any)b.push("m"+i+"any")});
+  if(k==="adult"){var a=S.adult;need("an",a.name);if(incomePath()&&!a.nossn&&!/^\d{4}$/.test(a.ssn))b.push("ssn");if(has("enroll")){need("pdob",a.dob);if(!/.+@.+\..+/.test(a.email))b.push("email")}need("day",a.day);need("street",a.street);need("city",a.city);if(has("iea"))need("state",a.state);if(!/^\d{5}$/.test(a.zip))b.push("zip");if(has("iea")&&!notApplying())need("county",a.county)}
+  if(k.indexOf("care")===0){var c=S.children[+k.slice(4)];if(!DAYS.some(function(d){return c.days[d[0]]&&!CENTER.closedDays[d[0]]}))b.push("days");need("a1",c.a1);need("d1",c.d1);if(c.school){need("a2",c.a2);need("d2",c.d2)}if(!MEALS.some(function(m){return c.meals[m[0]]&&!CENTER.noMeals[m[0]]}))b.push("meals")}
+  if(k.indexOf("infant")===0&&k.indexOf("infantno")!==0){var ci=S.children[+k.slice(6)];if(!ci.formula)b.push("inf_formula");if(ci.formula==="bring_formula")need("fname",ci.fname);if(!ci.solid)b.push("inf_solid")}
+  if(k==="acks")ACKS.forEach(function(a){if(!S.acks[a.id])b.push("ack_"+a.id);if(!S.sig["ack_"+a.id])b.push("sig_ack_"+a.id)});
+  if(k==="nondisc"){if(!S.nondiscSeen)b.push("nondisc_seen");if(NONDISC_SIGNATURE_REQUIRED&&!S.sig.nondisc)b.push("sig_nondisc")}
+  if(k==="review")Object.keys(pads).forEach(function(id){if(!S.sig[id])b.push("sig_"+id)});return b}
+
+/* ═══════════════════════ PAYLOADS — the real forms' collect() shapes ═══════════════════════ */
+function isoDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function todayISO(){return isoDate(new Date())}
+/* CACFP_Enrollment_v12 expDate(): last day of the signing month one year later (computed on local date parts). */
+function expiresOn(sig){var p=sig.split('-');return isoDate(new Date(+p[0]+1,+p[1],0))}
+/* Age as the real forms write it (calcAge / kidAge): whole years, or «N mo» under one year. */
+function formAge(d){if(!d)return'';var b=new Date(d+'T00:00'),n=new Date(),a=n.getFullYear()-b.getFullYear(),m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate())){a--;m+=12}if(n.getDate()<b.getDate())m--;return a<0?'':(a===0?Math.max(m,0)+' mo':String(a))}
+/* form-kit.js titleCaseFormData + normalizePhonesFormData (top-level keys only, like the kit). */
+var _ROMAN=/^(i{1,3}|iv|vi{0,3}|ix|xi{0,3}|x{1,3})$/i;
+function capWord(w){if(!w)return w;if(_ROMAN.test(w))return w.toUpperCase();return w.charAt(0).toUpperCase()+w.slice(1)}
+function titleCaseName(s){return String(s==null?'':s).split(/(\s+|-)/).map(function(t){return(/^\s+$/.test(t)||t==='-')?t:capWord(t)}).join('')}
+var NAME_KEY=/(^|_)(name|first|last|child|parent|guardian|mother|father|applicant|employee|caregiver|signer|full)(_|$|name)/i;
+var NOT_NAME_KEY=/e-?mail|cent(er|re)|street|address|city|zip|state|school|note|reason|comment|title|position|type|method|value|date|phone/i;
+function kitNormalize(fd){Object.keys(fd).forEach(function(k){if(typeof fd[k]!=='string'||!fd[k])return;if(NAME_KEY.test(k)&&!NOT_NAME_KEY.test(k))fd[k]=titleCaseName(fd[k]);if(/phone|cell|mobile|_ph$/i.test(k))fd[k]=fd[k].replace(/\D/g,'')});return fd}
+function stamp(fd){fd._interview={set:SET,page:'food-interview',version:INTERVIEW_VERSION};fd._handed={nondiscrimination:{edition:NONDISC_EDITION,at:S.nondiscAt}};return fd}
+
+/* IEA_FY2026-27_v10.html collect() */
+function ieaData(sigDate){var a=S.adult,inc=incomePath(),cat=S.snap===true||S.owf===true;
+  /* Nested names: the real IEA title-cases them on blur (form-kit initNames), the kit's payload pass only touches top-level keys. */
+  var kids=S.children.slice(0,4).map(function(c,i){return {name:titleCaseName(c.name),age:formAge(c.dob),dob:c.dob,foster:!!c.foster,case_no:(cat&&!c.foster)?(S.cases[i]||''):''}}).filter(function(k){return k.name.trim()});
+  var rows=inc?S.members.filter(function(m){return m.name.trim()}).map(function(m){return {name:titleCaseName(m.name.trim()),zero:m.has===false,
+    income:{earn:ie(m,'earn'),welf:ie(m,'welf'),pens:ie(m,'pens'),other:ie(m,'other')}}}):[];
+  function ie(m,s){var v=m.inc[s];return m.has===true?{amt:String(v.a||'').replace(/,/g,''),freq_mult:v.f||''}:{amt:'',freq_mult:''}}
+  return {type:'iea_fy2026_27',center_code:CENTER_SLUG,center_name:CENTER.name,signature_method:'drawn',signature_typed_value:'',
+    children:kids,benefit:{snap:S.snap===true,owf:S.snap!==true&&S.owf===true},household:rows,schedule_none:null,
+    adult:{print_name:titleCaseName(a.name),date:sigDate,ssn_last4:inc&&!a.nossn?a.ssn:'',no_ssn:inc?!!a.nossn:false,day_phone:a.day,work_phone:a.work,
+      street:a.street,city:a.city,state:a.state,zip:a.zip,city_state_zip:[a.city,[a.state,a.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '),county:a.county},
+    ethnicity:{hispanic:S.eth==='hispanic',not_hispanic:S.eth==='not_hispanic'},
+    race:{ai:!!S.race.ai,asian:!!S.race.asian,black:!!S.race.black,pacific:!!S.race.pacific,white:!!S.race.white,other:!!S.race.other},
+    helper:{household_size:'',annualized:'',verdict:''}}}
+/* CACFP_Enrollment_v12.html collect().
+   ⚑ The bus-to/from-school answers have no box on the Enrollment form v12 — they are asked (reference) but not sent. */
+function enrData(i,sigDate){var c=S.children[i],a=S.adult,schedule={};
+  DAYS.forEach(function(dd){var d=dd[0],ic=!!c.days[d]&&!CENTER.closedDays[d],meals={},msrc={};
+    MEALS.forEach(function(mm){var m=mm[0],on=ic&&!!c.meals[m]&&!CENTER.noMeals[m];meals[m]=on;if(on)msrc[m]='hand'});
+    schedule[d]={in_care:ic,arr1:ic?tm(c.a1):'',dep1:ic?tm(c.d1):'',arr2:ic&&c.school?tm(c.a2):'',dep2:ic&&c.school?tm(c.d2):'',meals:meals,meals_src:msrc}});
+  var fd={type:'cacfp_enrollment',meals_derived:true,center_code:CENTER_SLUG,center_name:CENTER.name,child_name:c.name,age:formAge(c.dob),birthdate:c.dob,
+    schedule:schedule,schedule_varies:!!c.varies,day_phone:a.day,mailing:{street:a.street,city:a.city,zip:a.zip},parent_name:a.name,
+    signature_method:'drawn',signature_typed_value:'',parent_birthdate:a.dob,parent_email:a.email,expires_on:expiresOn(sigDate)};
+  if(notApplying())fd.income_application='not_applying';
+  return fd}
+/* infant-meals-preference-v2.html collect() */
+var INF_FORMULA={center:'center_provides_formula',bring_formula:'parent_brings_formula',bring_bm:'parent_brings_breast_milk',breastfeed:'parent_breastfeeds_onsite'};
+var INF_SOLID={center:'center_provides_solids',one:'parent_brings_one_solid'};
+function infData(i){var c=S.children[i];
+  return {type:'infant_meals',center_name:CENTER.name,formula_name:CENTER.formula||'',formula_choice:INF_FORMULA[c.formula]||'',
+    parent_formula_name:c.formula==='bring_formula'?(c.fname||''):'',solid_food_choice:INF_SOLID[c.solid]||'',infant_name:c.name,infant_birthdate:c.dob||null}}
+
+function buildSubmissions(){var sigDate=todayISO(),out=[];
+  docs().forEach(function(d){var fd,sigs,type,ver;
+    if(d.kind==='iea'){fd=ieaData(sigDate);sigs={adult_sig:padPNG(d.id)};type='iea';ver=IEA_VERSION}
+    else if(d.kind==='enr'){fd=enrData(d.child,sigDate);sigs={parent_sig:padPNG(d.id)};type='cacfp_enrollment';ver=ENR_VERSION}
+    else {fd=infData(d.child);sigs={parent_sig:padPNG(d.id)};type='infant_meals';ver=INF_VERSION}
+    stamp(kitNormalize(fd));
+    if(!S.idem[d.id])S.idem[d.id]=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():null;
+    out.push({id:d.id,title:d.title,body:{p_org:ORG,p_center:CENTERS[CENTER_SLUG],p_submission_type:type,p_form_data:fd,p_signatures:sigs,p_signature_date:sigDate,p_source:'online',p_idempotency_key:S.idem[d.id],p_form_version:ver,p_token:null}})});
+  return out}
+
+/* ═══════════════════════ SUBMIT (form-kit.js rpc() transport) ═══════════════════════ */
+async function rpcSubmit(body){var r;
+  try{r=await fetch(SUPA_URL+'/rest/v1/rpc/submit_enrollment_form',{method:'POST',headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Content-Profile':'menumaker'},body:JSON.stringify(body)})}
+  catch(e){throw new Error('No connection to the center’s server ('+(e&&e.message||'network error')+').')}
+  if(!r.ok){var t='';try{t=await r.text()}catch(_){}var msg=t;try{var j=JSON.parse(t);msg=j.message||j.hint||j.details||t}catch(_){}throw new Error('The server refused it (HTTP '+r.status+(msg?': '+msg:'')+').')}
+  return r.json()}
+async function submitAll(){var f=document.getElementById("f"),btn=document.getElementById("nextBtn"),bn=document.getElementById("banner");
+  var subs;try{subs=buildSubmissions()}catch(e){bn.hidden=false;bn.textContent='The forms could not be prepared: '+(e&&e.message||e)+'. Nothing was sent.';return}
+  SENDING=true;if(btn){btn.disabled=true;btn.textContent='Sending…'}bn.hidden=true;
+  for(var n=0;n<subs.length;n++){var s=subs[n];if(S.done[s.id])continue;
+    if(btn)btn.textContent='Sending '+(n+1)+' of '+subs.length+'…';
+    try{var res=await rpcSubmit(s.body);S.done[s.id]=typeof res==='string'?res:(res&&res.id)||true}
+    catch(e){SENDING=false;if(btn){btn.disabled=false;btn.textContent='Sign and submit'}
+      var sent=subs.filter(function(x){return S.done[x.id]}).map(function(x){return x.title.replace(/&amp;/g,'&')});
+      bn.hidden=false;bn.textContent='“'+s.title.replace(/&amp;/g,'&')+'” was not sent. '+(e&&e.message||e)+' '+(sent.length?'Already received by the center: '+sent.join('; ')+'. ':'Nothing was received yet. ')+'Tap “Sign and submit” to try again — forms already received are not sent twice.';
+      bn.scrollIntoView({block:"center"});return}}
+  SENDING=false;S.sent=true;
+  f.innerHTML='<h2 class="done">Submitted for center review</h2><p>'+(!(has("iea")&&has("enroll"))?'The center received '+subs.map(function(x){return x.title.replace(/&amp;/g,'&')}).join('; ')+'.':notApplying()?'The center received your enrollment form'+(S.children.length>1?'s':'')+' and your answer that you are not applying for income-based support.':'The center received your income application and enrollment form'+(S.children.length>1?'s':'')+'. The center checks them and signs its part.')+' You do not need to do anything else.</p>';
+  document.getElementById("prog").style.width="100%";document.getElementById("partlbl").textContent="Done";window.scrollTo(0,0)}
+
+/* ═══════════════════════ CENTER: served meals (CACFP_Enrollment_v12 slot gate) ═══════════════════════ */
+function loadMealSlots(){
+  /* Same door and body as CACFP_Enrollment_v12.html: {p_center_slug}. Failure or empty → all 6 meals stay offered. */
+  fetch(SUPA_URL+'/rest/v1/rpc/get_center_meal_slots',{method:'POST',headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Content-Profile':'menumaker'},body:JSON.stringify({p_center_slug:CENTER_SLUG})})
+    .then(function(r){return r.ok?r.json():null})
+    .then(function(res){var active=res&&Array.isArray(res.active)?res.active:null;if(!active||!active.length)return;
+      var no={};MEALS.forEach(function(m){if(active.indexOf(SLOT_OF[m[0]])===-1)no[m[0]]=1});CENTER.noMeals=no;
+      S.children.forEach(function(c){Object.keys(no).forEach(function(m){delete c.meals[m]})});
+      var st=steps(),k=st[Math.min(STEP,st.length-1)];if(k&&k.indexOf("care")===0)render()})
+    .catch(function(){/* all 6 stay offered */});
+}
+
+/* ═══════════════════════ BOOT ═══════════════════════ */
+function compNames(){var N={dcy01234:'Child Enrollment and Health Information (DCY 01234)',iea:'Income Eligibility Application',enroll:'CACFP Enrollment',infant:'Infant Meals – Parent Preference Letter'};return COMP.map(function(f){return N[f]})}
+function compCount(){return COMP.length}
+function compWords(){var W={dcy01234:'the child enrollment form (DCY 01234)',iea:'the Income Eligibility Application for your household',enroll:'the CACFP Enrollment Form for each child',infant:'the Infant Meals – Parent Preference Letter for each child under 12 months'};var w=COMP.filter(function(f){return f!=='dcy01234'}).map(function(f){return W[f]});return w.length>1?w.slice(0,-1).join(', ')+' and '+w[w.length-1]:w[0]}
+if(SET!=="food"&&SET!=="full"){document.getElementById("h1").textContent=compNames().join(" and ");document.getElementById("lead").textContent="One interview fills "+(COMP.length>1?"these forms":"this form")+". We ask one thing at a time."}
+if(SET==="full"){document.getElementById("h1").textContent="New child: enrollment and food program forms";document.getElementById("lead").textContent="One interview fills the forms for a new child: the CACFP Enrollment Form for each child, the Income Eligibility Application for your household, and the papers you confirm you have read."}
+if(!CENTER_SLUG){document.getElementById("f").innerHTML='<h2>Open this interview from your center’s link</h2><p>This page does not know which Play Academy center it is for. Please open it from the link or QR code your center gave you.</p>';document.getElementById("partlbl").textContent="";}
+else{
+  if(DEMO){document.getElementById("tools").hidden=false;document.getElementById("sampleBtn").onclick=function(){S=sample();STEP=0;render()}}
+  render();loadMealSlots();
+}
+</script>
+</body></html>
