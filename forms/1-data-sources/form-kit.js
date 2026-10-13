@@ -949,6 +949,19 @@
   // The copy holds the WHOLE text. html2canvas cannot lay out <details> (open or folded — it smears the body over the
   // lines below; seen on the e-sign consent 28.09), so in the CLONE it draws, every <details>/<summary> becomes a plain
   // block. The live page is not touched.
+  // v56 (13.10, owner: «выложить починку бледных копий сейчас») — THE COPY IS DRAWN WITH DARK FIELDS. lockForm() sets
+  // `disabled` on every field right before the shot (the copy is taken asynchronously, so swapping the two lines would not
+  // help), and a browser draws a disabled field pale: iOS Safari ~0.4 opacity and a system grey via -webkit-text-fill-color,
+  // Chrome a grey. Only the CLONE html2canvas draws is undisabled and forced black and opaque — the live page stays locked.
+  // Same rule as the app replica (30.09). Nothing else changes: the payload and the signed-copy endpoint are as in v55.
+  function darkenFieldsForCopy(doc) {
+    Array.prototype.slice.call(doc.querySelectorAll("input, textarea, select")).forEach(function (el) {
+      el.disabled = false;
+      el.style.color = "#000";
+      el.style.setProperty("-webkit-text-fill-color", "#000", "important");
+      el.style.opacity = "1";
+    });
+  }
   function flattenFolds(doc) {
     // The fold's own heading («Read the full text ▾») is hidden in print — the copy matches print: it goes.
     Array.prototype.slice.call(doc.querySelectorAll('details > summary')).forEach(function (el) { el.parentNode.removeChild(el); });
@@ -961,7 +974,7 @@
   async function drawCopyPages(h2c) {
     var opt = function (w) { return { scale: Math.min(1.5, 1275 / Math.max(1, w)), useCORS: true, backgroundColor: '#ffffff', logging: false,
                                       ignoreElements: function (el) { return !!(el.matches && el.matches(FK_COPY_SKIP)); },
-                                      onclone: flattenFolds }; };
+                                      onclone: function (doc) { flattenFolds(doc); darkenFieldsForCopy(doc); } }; };
     var pages = [];
     var els = Array.prototype.slice.call(document.querySelectorAll('.page, .sheet, #sheet'));
     if (els.length) {
