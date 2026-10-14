@@ -988,11 +988,38 @@
         v = el.placeholder;
         var pc = (win.getComputedStyle(el, '::placeholder') || {}).color || '#757575';
         span.style.setProperty('color', pc); span.style.setProperty('-webkit-text-fill-color', pc, 'important');
+      } else if (v) {
+        // v58 (14.10, owner's decision) — a FILLED value is drawn black and semi-bold in the copy; a placeholder stays grey
+        // and regular as in v57. Arial/Helvetica carry no 600 face, so 600 resolves to the Bold face (same as 700) on
+        // iOS/macOS WebKit and Chromium alike — measured 14.10: ink 600 == 700 to the pixel, no wrap, span rect == field rect.
+        span.style.setProperty('color', '#000'); span.style.setProperty('-webkit-text-fill-color', '#000', 'important');
+        if ((parseInt(cs.fontWeight, 10) || 400) < 600) span.style.setProperty('font-weight', '600'); // a field the form already sets bold keeps its own weight
       }
       span.textContent = v || '';
       if (el.id) span.id = el.id;
       span.className = el.className;
       el.parentNode.replaceChild(span, el);
+    });
+  }
+  // v58 (14.10, owner's decision) — THE SIGNATURE IN THE COPY IS BLACK AND THICKER, THE STROKE SHAPE UNCHANGED. The pad
+  // keeps no stroke points (initSig draws straight onto the canvas: #000080, lineWidth 1.8; FKPad scales the ink box into
+  // the slot, so a slot stroke is often thinner than 1.8), and html2canvas-pro does not read CSS `filter` at all — so the
+  // only shape-true way is on the pixels. html2canvas-pro clones every <canvas> with putImageData into the CLONE document
+  // (createCanvasClone, allowTaint=false) and later draws that clone with drawImage; here, in the clone only, the ink is
+  // stamped 9 times at half-pixel offsets (a ~0.5 px rim on every side — the stacked alphas make the anti-aliased edge
+  // solid, nothing moves) and then every inked pixel is painted #000 through `source-in` (alpha kept = shape kept).
+  // The live canvas, getSig()'s PNG and the payload are untouched. An empty slot stays empty (source-in over nothing).
+  function boldSignaturesForCopy(doc) {
+    Array.prototype.slice.call(doc.querySelectorAll('canvas[data-formkit="signature"]')).forEach(function (c) {
+      var w = c.width, h = c.height; if (!w || !h) return;
+      var ctx = c.getContext('2d'); if (!ctx) return;
+      var src = doc.createElement('canvas'); src.width = w; src.height = h;
+      src.getContext('2d').drawImage(c, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      var d = 0.5;
+      for (var dy = -d; dy <= d; dy += d) for (var dx = -d; dx <= d; dx += d) ctx.drawImage(src, dx, dy);
+      ctx.globalCompositeOperation = 'source-in'; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over';
     });
   }
   function flattenFolds(doc) {
@@ -1007,7 +1034,7 @@
   async function drawCopyPages(h2c) {
     var opt = function (w) { return { scale: Math.min(1.5, 1275 / Math.max(1, w)), useCORS: true, backgroundColor: '#ffffff', logging: false,
                                       ignoreElements: function (el) { return !!(el.matches && el.matches(FK_COPY_SKIP)); },
-                                      onclone: function (doc) { flattenFolds(doc); darkenFieldsForCopy(doc); unclipTextInputsForCopy(doc); } }; };
+                                      onclone: function (doc) { flattenFolds(doc); darkenFieldsForCopy(doc); unclipTextInputsForCopy(doc); boldSignaturesForCopy(doc); } }; };
     var pages = [];
     var els = Array.prototype.slice.call(document.querySelectorAll('.page, .sheet, #sheet'));
     if (els.length) {
@@ -2687,7 +2714,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 57,
+    KIT: 58,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
