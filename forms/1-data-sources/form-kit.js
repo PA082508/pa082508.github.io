@@ -983,6 +983,10 @@
       var isDate = el.type === 'date';
       if ((!TEXT_LIKE[el.type] && !isDate) || !el.parentNode) return;
       if (isDate && !el.value) return;
+      // owner's word 14.10: a FILLED field never carries the kit's red «required» underline into the copy — the live page may
+      // still be toggling fk-invalid (debounced fieldMsg/markEmpties) at the instant html2canvas clones; an empty one keeps
+      // it. Stripped from the CLONE's input BEFORE its computed style is copied, or the 2px red border would be baked in.
+      if (el.value) el.classList.remove('fk-invalid');
       var cs = win.getComputedStyle(el);
       var span = doc.createElement('span');
       for (var i = 0; i < cs.length; i++) { var p = cs[i]; span.style.setProperty(p, cs.getPropertyValue(p), cs.getPropertyPriority(p)); }
@@ -1013,9 +1017,6 @@
       span.textContent = v || '';
       if (el.id) span.id = el.id;
       span.className = el.className;
-      // owner's word 14.10: a FILLED field never carries the kit's red «required» underline into the copy — the live page may
-      // still be toggling fk-invalid (debounced fieldMsg/markEmpties) at the instant html2canvas clones; an empty one keeps it.
-      if (el.value) span.classList.remove('fk-invalid');
       var r0 = el.getBoundingClientRect();
       el.parentNode.replaceChild(span, el);
       // v59: the span sits exactly where the field sat — a date box in WebKit lands ~1 px higher than the input it replaced
