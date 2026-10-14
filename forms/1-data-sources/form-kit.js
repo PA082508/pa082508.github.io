@@ -962,6 +962,39 @@
       el.style.opacity = "1";
     });
   }
+  // v57 (14.10) — THE VALUE OF A TEXT FIELD IS DRAWN WHOLE. html2canvas(-pro) does not take an <input> value from the
+  // browser's layout: it draws the string itself with textBaseline 'ideographic' pinned at contentTop + contentHeight/2 + 1
+  // and clips to the content box (canvas-renderer, «Fixed an issue with characters moving up»). A 14px-tall Arial 12px
+  // field puts that baseline 8px down while a capital rises 12px above it — the top 4px of every capital were cut
+  // («ZZ Demo» → «ZZ Uemo», live family copy 14.10; the same in Chromium for v55 and v56, 13.10). Dates escaped only by
+  // size (17px box, 11px font → 0.5px). line-height/padding do not enter that formula, so no CSS on the input helps.
+  // In the CLONE every text-like <input> becomes an inline-block <span> wearing the input's computed style, with the value
+  // as a text node and line-height = content height (single line, centred as the browser centres it): html2canvas lays
+  // out ordinary text by the browser's own rectangles — exactly as every label on the form. Dates, checkboxes, selects
+  // are untouched; the live page is untouched. Also mends text-align on letter-spaced fields (the case number).
+  function unclipTextInputsForCopy(doc) {
+    var TEXT_LIKE = { text: 1, tel: 1, email: 1, number: 1, search: 1, url: 1 };
+    var win = doc.defaultView;
+    Array.prototype.slice.call(doc.querySelectorAll('input')).forEach(function (el) {
+      if (!TEXT_LIKE[el.type] || !el.parentNode) return;
+      var cs = win.getComputedStyle(el);
+      var span = doc.createElement('span');
+      for (var i = 0; i < cs.length; i++) { var p = cs[i]; span.style.setProperty(p, cs.getPropertyValue(p), cs.getPropertyPriority(p)); }
+      span.style.setProperty('display', 'inline-block');
+      span.style.setProperty('white-space', 'pre');
+      span.style.setProperty('line-height', cs.height);
+      var v = el.value;
+      if (!v && el.placeholder) {
+        v = el.placeholder;
+        var pc = (win.getComputedStyle(el, '::placeholder') || {}).color || '#757575';
+        span.style.setProperty('color', pc); span.style.setProperty('-webkit-text-fill-color', pc, 'important');
+      }
+      span.textContent = v || '';
+      if (el.id) span.id = el.id;
+      span.className = el.className;
+      el.parentNode.replaceChild(span, el);
+    });
+  }
   function flattenFolds(doc) {
     // The fold's own heading («Read the full text ▾») is hidden in print — the copy matches print: it goes.
     Array.prototype.slice.call(doc.querySelectorAll('details > summary')).forEach(function (el) { el.parentNode.removeChild(el); });
@@ -974,7 +1007,7 @@
   async function drawCopyPages(h2c) {
     var opt = function (w) { return { scale: Math.min(1.5, 1275 / Math.max(1, w)), useCORS: true, backgroundColor: '#ffffff', logging: false,
                                       ignoreElements: function (el) { return !!(el.matches && el.matches(FK_COPY_SKIP)); },
-                                      onclone: function (doc) { flattenFolds(doc); darkenFieldsForCopy(doc); } }; };
+                                      onclone: function (doc) { flattenFolds(doc); darkenFieldsForCopy(doc); unclipTextInputsForCopy(doc); } }; };
     var pages = [];
     var els = Array.prototype.slice.call(document.querySelectorAll('.page, .sheet, #sheet'));
     if (els.length) {
@@ -2654,7 +2687,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 51,
+    KIT: 57,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
