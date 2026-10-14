@@ -1000,6 +1000,9 @@
         // «2024 - 07 - 14» grew gaps; a hair of letter-spacing makes it draw glyph by glyph on the browser's own rects (tight
         // in WebKit and Chromium, measured 14.10; a U+2011 hyphen did not help).
         span.style.setProperty('letter-spacing', '0.01px');
+        // owner's word 14.10 (v59, not yet released): every filled date — the grey signature date too — is semi-bold like
+        // the text fields, so the copy carries one weight throughout.
+        if ((parseInt(cs.fontWeight, 10) || 400) < 600) span.style.setProperty('font-weight', '600');
       } else if (v) {
         // v58 (14.10, owner's decision) — a FILLED value is drawn black and semi-bold in the copy; a placeholder stays grey
         // and regular as in v57. Arial/Helvetica carry no 600 face, so 600 resolves to the Bold face (same as 700) on
