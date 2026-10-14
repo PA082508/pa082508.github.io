@@ -974,9 +974,15 @@
   // are untouched; the live page is untouched. Also mends text-align on letter-spaced fields (the case number).
   function unclipTextInputsForCopy(doc) {
     var TEXT_LIKE = { text: 1, tel: 1, email: 1, number: 1, search: 1, url: 1 };
+    // v59 (14.10, owner's decision) — a FILLED <input type=date> goes the same way: html2canvas-pro draws its value by the same
+    // pinned-baseline formula and the 17px box lost the top 1–2 px of every digit (seen on the v57/v58 copies). The copy keeps
+    // the ISO value the copies already showed («2026-10-14»), not the screen's localized form — the content of the copy does not
+    // change, only its clipping. An EMPTY date is left as it is (the grey mm/dd/yyyy the browser draws).
     var win = doc.defaultView;
     Array.prototype.slice.call(doc.querySelectorAll('input')).forEach(function (el) {
-      if (!TEXT_LIKE[el.type] || !el.parentNode) return;
+      var isDate = el.type === 'date';
+      if ((!TEXT_LIKE[el.type] && !isDate) || !el.parentNode) return;
+      if (isDate && !el.value) return;
       var cs = win.getComputedStyle(el);
       var span = doc.createElement('span');
       for (var i = 0; i < cs.length; i++) { var p = cs[i]; span.style.setProperty(p, cs.getPropertyValue(p), cs.getPropertyPriority(p)); }
@@ -988,6 +994,12 @@
         v = el.placeholder;
         var pc = (win.getComputedStyle(el, '::placeholder') || {}).color || '#757575';
         span.style.setProperty('color', pc); span.style.setProperty('-webkit-text-fill-color', pc, 'important');
+      } else if (v && isDate) {
+        span.style.setProperty('color', '#000'); span.style.setProperty('-webkit-text-fill-color', '#000', 'important');
+        // html2canvas splits a run at the hyphens (break opportunities) and places each piece by its range rect — in WebKit
+        // «2024 - 07 - 14» grew gaps; a hair of letter-spacing makes it draw glyph by glyph on the browser's own rects (tight
+        // in WebKit and Chromium, measured 14.10; a U+2011 hyphen did not help).
+        span.style.setProperty('letter-spacing', '0.01px');
       } else if (v) {
         // v58 (14.10, owner's decision) — a FILLED value is drawn black and semi-bold in the copy; a placeholder stays grey
         // and regular as in v57. Arial/Helvetica carry no 600 face, so 600 resolves to the Bold face (same as 700) on
@@ -998,7 +1010,12 @@
       span.textContent = v || '';
       if (el.id) span.id = el.id;
       span.className = el.className;
+      var r0 = el.getBoundingClientRect();
       el.parentNode.replaceChild(span, el);
+      // v59: the span sits exactly where the field sat — a date box in WebKit lands ~1 px higher than the input it replaced
+      // (different baseline), so the span is nudged by the measured difference; a text span measures 0 and is left alone.
+      var r1 = span.getBoundingClientRect(), dx = r0.left - r1.left, dy = r0.top - r1.top;
+      if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) { span.style.setProperty('position', 'relative'); span.style.setProperty('left', dx.toFixed(2) + 'px'); span.style.setProperty('top', dy.toFixed(2) + 'px'); }
     });
   }
   // v58 (14.10, owner's decision) — THE SIGNATURE IN THE COPY IS BLACK AND THICKER, THE STROKE SHAPE UNCHANGED. The pad
@@ -2714,7 +2731,7 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 58,
+    KIT: 59,
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
