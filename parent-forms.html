@@ -584,6 +584,27 @@
         });
       })();
 
+      /* ⭐ FOOD FORMS ONLY THROUGH THE INTERVIEW (16.10, owner's final path: «link/QR — a set or one form — both lead
+         into the interview; the parent types nothing in the form»). The IEA, the CACFP Enrollment and the Infant Meals
+         Preference are no longer opened as blanks from this list: their slots become ONE interview
+         (forms/1-data-sources/food-interview.html?center=&forms=…). A composition of food forms only → straight into the
+         interview; a mixed set → one «Food program forms» card in place of their cards.
+         Was: an Open button per form straight to IEA_FY2026-27_v10.html / CACFP_Enrollment_v12.html (14 days to 16.10:
+         15 IEA + 16 CACFP from families' phones). The director's paper path is not here and is untouched
+         (IEA ?office=1 blank, the app's «Type the paper form into the Inbox»).
+         Rollback lever: FOOD_VIA_INTERVIEW = false (one line, one storefront publish). */
+      var FOOD_VIA_INTERVIEW = true;
+      var FOOD_KEYS = { iea: 'iea', enroll: 'enroll', infant_meals: 'infant' };
+      var foodSlots = FOOD_VIA_INTERVIEW ? slots.filter(function (s) { return !s.pending && Object.prototype.hasOwnProperty.call(FOOD_KEYS, s.key); }) : [];
+      function interviewUrl(withPersonal) {
+        var f = []; foodSlots.forEach(function (s) { var k = FOOD_KEYS[s.key]; if (f.indexOf(k) < 0) f.push(k); });
+        var u = 'https://pa082508.github.io/forms/1-data-sources/food-interview.html?center=' + encodeURIComponent(center)
+              + '&forms=' + encodeURIComponent(f.join(',')) + '&v=' + encodeURIComponent(FORM_V);
+        return withPersonal ? withToken(u) : u;
+      }
+      if (foodSlots.length && foodSlots.length === slots.length) { location.replace(interviewUrl(true)); return; }
+      if (foodSlots.length) slots = slots.filter(function (s) { return foodSlots.indexOf(s) < 0; });
+
       var list = document.getElementById('list'), n = 0;
       slots.forEach(function (s) {
         var form = reg.forms[s.key] || {};
@@ -707,6 +728,24 @@
           card.querySelector('.miniqr').addEventListener('click', function () { openQR(label, link); });
         } else { card.querySelector('.miniqr').style.display = 'none'; }
       });
+
+      if (foodSlots.length) {
+        n++;
+        var fc = document.createElement('div'), fLink = interviewUrl(false);
+        fc.className = 'card'; fc.dataset.key = 'food_interview'; fc.dataset.n = String(n);
+        fc.innerHTML = '<div class="num">' + n + '</div>'
+          + '<div class="info"><div class="t"></div><span class="badge fs">Fill &amp; sign</span><div class="d"></div></div>'
+          + '<div class="right"><span class="miniqr" title="Scan / share this interview"><canvas></canvas></span>'
+          + '<a class="open" target="_blank" rel="noreferrer">Open</a></div>';
+        fc.querySelector('.t').textContent = 'Food program forms — one short interview';
+        fc.querySelector('.d').textContent = 'We ask one thing at a time and fill in '
+          + foodSlots.map(function (s) { var fm = reg.forms[s.key] || {}; return s.label || fm.title || s.key; }).join(', ')
+          + ' for you. At the end you sign.';
+        fc.querySelector('.open').href = interviewUrl(true);
+        list.appendChild(fc);
+        drawQR(fc.querySelector('.miniqr canvas'), fLink, 46);
+        fc.querySelector('.miniqr').addEventListener('click', function () { openQR('Food program forms', fLink); });
+      }
 
       // Одноформенный режим: ссылка/QR названы ОДНУ форму — страница становится
       // её обложкой, а не списком пакета (замер 09.08).
