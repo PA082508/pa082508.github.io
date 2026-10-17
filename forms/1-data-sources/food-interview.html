@@ -16,6 +16,19 @@
 
   ⛔ REGISTRY: this page is NOT registered in enroll-registry.json yet (owner's word needed).
      Stub for the future entry: forms.food_interview { current:'v1', versions:{v1:'…/food-interview.html'}, sets:['food','full'] }.
+
+  ⭐ 17.10 REORDER (owner's word «порядок меняем мы сами»; canon 17.10 18:55 — two modules + combined):
+     0  e-sign consent FIRST (one per adult; skipped when THIS adult — the guardian of the named link — has an active
+        consent; none → no e-signature, words + «sign on paper», LAWS §L2; a withdrawn consent → paper in words)
+     1  module «CACFP Enrollment»: which children eat here → the parent → days / hours / meals per child
+        (one Enrollment per child, each signed live in the window that names the form and the child)
+     2  module «IEA»: SNAP → OWF/TANF → foster → case number (short IEA, FREE, no income, no SSN) · or the income check
+        → household and income (full IEA; $0 = «No income») → SSN · or «above» = not applying (no IEA, existing text)
+     combined = 1 → 2 (?set=food or ?forms=enroll,iea); a module alone: ?forms=enroll · ?forms=iea
+     Infant Meals is NOT in the interview any more (canon 17.10 13:22): the official live form infant-meals-preference-v2
+        is offered after the interview, one per child under 12 months by the center's today (twins → two forms).
+     Was (16.10, b960c59): letter → children → SNAP → OWF → foster → … → household → adult → care{i} + infant{i} per child.
+     Every question, text and field of the steps is the one already on this page (one carrier) — only the order moved.
 -->
 <style>
 :root{
@@ -191,6 +204,76 @@ var LINKS_BY_CENTER={_default:[
   {kind:'general',title:'Ohio Department of Children and Youth',url:'https://childrenandyouth.ohio.gov/'}
 ]};
 
+/* ⚑ SLOT — the IEA introduction (canon 17.10 18:55; owner's text NOT given). The wording «help us get reimbursed…»
+   exists nowhere (checked 17.10). EMPTY ON PURPOSE: nothing is shown until the owner gives the text verbatim.
+   Do not write or invent it here. */
+var IEA_INTRO_TEXT='';
+
+/* ═══ E-SIGN CONSENT FIRST (17.10, canon 2) ═══
+   One per adult, for both sets. Skipped when THIS adult (the guardian named by the link's token) has an active consent
+   (get_prefill._family.has_esign_consent — after 20261103zzf a withdrawn consent does not count). No consent → no
+   e-signature: words + «sign on paper» (LAWS §L2). A withdrawn consent → paper, in words (the director sees «withdrawn»
+   on the parent's card). A link with no named adult (QR / shared link) cannot record a consent for anyone → the official
+   consent form first (Parent_ESign_Consent, through the storefront), unless it was submitted on this phone.
+   ⚠ COPY THAT DECLARES ITSELF: consentGate() and paperExit() below are byte-for-byte the texts of
+   interview-live.html consentGate()/paperExit() (owner's text 12.09). The carrier is interview-live.html; a change
+   there must be made here in the same commit. */
+var ESIGN_VERSION='v1.0-2026-09';
+var CONSENT=null;   /* null until known; 'yes' · 'need' · 'form' · 'paper' · 'withdrawn' */
+function consentGate(){
+  return '<div><h1>Electronic forms &amp; signature</h1>'
+    +'<p>This form is completed and signed electronically. Your finger-drawn signature counts the '
+    +'same as a signature on paper.</p>'
+    +'<p>By checking the box and continuing, you agree to fill out and sign your child\u2019s forms '
+    +'electronically. You can change your mind at any time \u2014 just tell the director, and you\u2019ll '
+    +'get paper forms instead.</p>'
+    +'<label class="card" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:16px 0">'
+    +'<input type="checkbox" id="esignAgree" style="margin-top:2px;width:18px;height:18px;flex:0 0 auto">'
+    +'<span><b>I agree to complete and sign forms electronically</b></span></label>'
+    +'<button class="btn" id="esignContinue" disabled style="opacity:.5">I agree \u2014 continue</button>'
+    +'<button class="btn" id="esignPaper" style="background:#eef1ef;color:#16211c;margin-top:10px">'
+    +'I\u2019d rather use paper</button></div>';
+}
+function paperExit(){
+  return '<div><h1>Paper works too</h1>'
+    +'<p>No problem \u2014 ask the director for a paper copy of your child\u2019s enrollment form. '
+    +'Everything on paper counts exactly the same. This link will keep working for 7 days if you '
+    +'change your mind.</p>'
+    +'<button class="btn" id="esignBack" style="background:#eef1ef;color:#16211c">\u2190 Back</button></div>';
+}
+/* New words (17.10) — no carrier had them. */
+function paperWithdrawn(){
+  return '<div><h1>Paper forms</h1><p>You told the center that you no longer want to sign forms electronically. '
+    +'Nothing can be signed on this page. Please ask the director for the paper forms \u2014 everything on paper counts exactly the same.</p></div>';
+}
+function consentFormFirst(){
+  var u='../../parent-forms.html?center='+encodeURIComponent(CENTER_SLUG)+'&only=parent_consent';
+  return '<div><h1>First: consent to sign electronically</h1>'
+    +'<p>Before the food program forms, each parent signs the Parent Consent for Electronic Signatures once. '
+    +'Sign it first, then come back to this page.</p>'
+    +'<p><a class="btn primary" style="display:inline-block;text-decoration:none" id="consentFormLink" href="'+esc(u)+'" target="_blank" rel="noopener">Open the consent form</a></p>'
+    +'<p class="sub small">Already signed it on this phone? Tap \u201cI signed it\u201d. Prefer paper? Ask the director for the paper forms.</p>'
+    +'<div class="nav"><button type="button" class="btn ghost" id="esignPaper">I\u2019d rather use paper</button>'
+    +'<button type="button" class="btn primary" id="consentSigned">I signed it \u2014 continue</button></div>'
+    +'<span class="small sub" id="consentNotYet" hidden>We do not see the consent form sent from this phone yet. Sign it and tap Submit on it, then try again.</span></div>';
+}
+/* the consent form submitted on this phone (the kit marks its packet slot done — cacfp_packet_v1.done.parent_consent) */
+function consentSentHere(){try{var o=JSON.parse(localStorage.getItem('cacfp_packet_v1'))||{};return !!(o.done&&o.done.parent_consent)&&(Date.now()-(+o.ts||0))<7*24*60*60*1000}catch(_){return false}}
+function bindConsent(){
+  var cb=document.getElementById('esignAgree'),go=document.getElementById('esignContinue'),pp=document.getElementById('esignPaper'),bk=document.getElementById('esignBack'),sg=document.getElementById('consentSigned');
+  if(cb&&go)cb.onchange=function(){go.disabled=!cb.checked;go.style.opacity=cb.checked?'1':'.5'};
+  if(go)go.onclick=function(e){e.preventDefault();if(go.disabled)return;go.disabled=true;go.textContent='One moment\u2026';
+    rpcSubmit('esign_record_consent',{p_token:TOKEN,p_version:ESIGN_VERSION}).then(function(r){
+      if(r&&r.ok){CONSENT='yes';STEP=0;render();window.scrollTo(0,0)}
+      else if(r&&r.error==='no_live_token_or_guardian'){CONSENT='form';STEP=0;render()}
+      else throw new Error('not recorded')})
+    .catch(function(){go.disabled=false;go.textContent='I agree \u2014 continue';var bn=document.getElementById('banner');bn.hidden=false;bn.textContent='We could not record your agreement \u2014 please try again, or ask the director for paper.'})};
+  if(pp)pp.onclick=function(e){e.preventDefault();CONSENT='paper';STEP=0;render();window.scrollTo(0,0)};
+  if(bk)bk.onclick=function(e){e.preventDefault();CONSENT=TOKEN&&CONSENT_HAD_GUARDIAN?'need':'form';STEP=0;render()};
+  if(sg)sg.onclick=function(e){e.preventDefault();if(consentSentHere()){CONSENT='yes';STEP=0;render()}else{document.getElementById('consentNotYet').hidden=false}};
+}
+var CONSENT_HAD_GUARDIAN=false;
+
 /* Editions of the real forms this interview fills (p_form_version). */
 var IEA_VERSION='v10', ENR_VERSION='v12';
 /* Infant form: NO version is sent — its own carrier (rpc/submit_public_form → infant_meal_preferences) has no version field. */
@@ -206,12 +289,18 @@ var QS=new URLSearchParams(location.search);
    всего лишь одну форму… предусмотреть возможность каждой из этих четырёх форм самостоятельное интервью»).
    ONE mechanism: a step is shown only if a form of the composition needs it.
      ?forms=iea,enroll,infant,dcy01234 — any subset, any order (normalized to the canonical order below)
-     ?set=food — preset = iea,enroll,infant      ?set=full — preset = dcy01234,iea,enroll,infant + acknowledgments */
-var FORM_ORDER=['dcy01234','iea','enroll','infant'];
-var PRESETS={food:['iea','enroll','infant'],full:['dcy01234','iea','enroll','infant']};
+     ?set=food — preset = enroll,iea (combined 1 → 2)      ?set=full — preset = dcy01234,enroll,iea + acknowledgments */
+/* 17.10: module 1 (enroll) BEFORE module 2 (iea) — the canonical order is the order the family is asked.
+   'infant' is no longer a form of the interview (canon 17.10 13:22) — an old link that names it is read without it,
+   and the official Infant Meals form is offered at the end (see infantThird()). Was: ['dcy01234','iea','enroll','infant']. */
+var FORM_ORDER=['dcy01234','enroll','iea'];
+var PRESETS={food:['enroll','iea'],full:['dcy01234','enroll','iea']};
 var COMP,SET;
+var WANT_INFANT_ONLY=false;
 (function(){var want=(QS.get('forms')||'').toLowerCase().split(',').map(function(x){return x.trim()}).filter(Boolean);
   var list=FORM_ORDER.filter(function(f){return want.indexOf(f)>=0});
+  /* An old link that names only the infant form opens the official Infant Meals form, never a whole interview. */
+  if(!list.length&&want.indexOf('infant')>=0)WANT_INFANT_ONLY=true;
   if(list.length){COMP=list;var pf=Object.keys(PRESETS).filter(function(k){return PRESETS[k].join()===list.join()})[0];SET=(pf==='food')?'food':list.join(',')}
   else{SET=QS.get('set')==='full'?'full':'food';COMP=PRESETS[SET].slice()}})();
 function has(f){return COMP.indexOf(f)>=0}
@@ -246,16 +335,32 @@ function formulaWords(){return CENTER.formula?CENTER.formula:"the iron-fortified
    August, per district); September 30 is the older line and only shows the (unticked) question to a few children born
    between the district's first day and September 30 — it never ticks anything. KINDERGARTEN_CUTOFF is the one place to
    change it. Was (6f0ae0e): 72 months (the app's CACFP food group 6–12, not a school rule). */
-var KINDERGARTEN_CUTOFF={month:9,day:30};
-function schoolYearStart(now){now=now||new Date();return now.getMonth()>=7?now.getFullYear():now.getFullYear()-1}
-function schoolAge(c){if(!c||!c.dob)return false;var y=schoolYearStart()-5,m=String(KINDERGARTEN_CUTOFF.month).padStart(2,"0"),d=String(KINDERGARTEN_CUTOFF.day).padStart(2,"0");return c.dob<=y+"-"+m+"-"+d}
-function months(d){if(!d)return 99;var b=new Date(d+"T00:00"),n=new Date();return (n.getFullYear()-b.getFullYear())*12+n.getMonth()-b.getMonth()-(n.getDate()<b.getDate()?1:0)}
-function isInfant(c){return months(c.dob)<12}
+/* ⛔ 17.10: THE CUTOFF IS UNSET. The owner has not named the kindergarten cutoff yet (open decision; the proposal
+   «five by 30.09» was NOT accepted as a value). One named parameter, value null = UNSET. While it is unset the page
+   does not decide «school age» by the date of birth: it says so in words (KINDERGARTEN_CUTOFF_UNSET_WORDS) and asks
+   the (unticked) school question for every child of one year and older — nothing is ticked for the family.
+   To set it: KINDERGARTEN_CUTOFF={month:M,day:D} (five years old by that day of the school year) — only by the owner's word.
+   Was (b960c59): KINDERGARTEN_CUTOFF={month:9,day:30}. */
+var KINDERGARTEN_CUTOFF=null;
+var KINDERGARTEN_CUTOFF_UNSET_WORDS='Kindergarten cutoff not set: the center has not set the kindergarten age line yet, so we cannot tell from the birth date whether your child goes to school. Tick the box only if your child goes to school.';
+function cutoffSet(){return !!(KINDERGARTEN_CUTOFF&&KINDERGARTEN_CUTOFF.month&&KINDERGARTEN_CUTOFF.day)}
+function schoolYearStart(now){now=now||centerNow();return now.getMonth()>=7?now.getFullYear():now.getFullYear()-1}
+/* true / false by the cutoff; 'unset' when the cutoff is not set (then the question is asked, never ticked). */
+function schoolAge(c){if(!c||!c.dob)return false;if(!cutoffSet())return months(c.dob)>=12?'unset':false;var y=schoolYearStart()-5,m=String(KINDERGARTEN_CUTOFF.month).padStart(2,"0"),d=String(KINDERGARTEN_CUTOFF.day).padStart(2,"0");return c.dob<=y+"-"+m+"-"+d}
+/* ⭐ TODAY BY THE CENTER'S ZONE (17.10): age in months and «under 12 months» are counted on the center's day, not the
+   phone's. Copy of the org setting app_settings.timezone (America/New_York, saved 17.10) — menumaker.center_today()
+   reads the same setting on the server; the app's centerTodayIso() is the client twin. This copy declares itself:
+   a new zone must be changed here too. */
+var CENTER_TZ='America/New_York';
+function centerTodayIso(){try{var p=new Intl.DateTimeFormat('en-CA',{timeZone:CENTER_TZ,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),o={};p.forEach(function(x){o[x.type]=x.value});return o.year+'-'+o.month+'-'+o.day}catch(_){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}}
+function centerNow(){return new Date(centerTodayIso()+"T00:00")}
+function months(d){if(!d)return 99;var b=new Date(d+"T00:00"),n=centerNow();return (n.getFullYear()-b.getFullYear())*12+n.getMonth()-b.getMonth()-(n.getDate()<b.getDate()?1:0)}
+function isInfant(c){return !!(c&&c.dob)&&months(c.dob)<12}
 var TIMES=[["","Time"]];(function(){for(var m=360;m<=1110;m+=15){var h=Math.floor(m/60),mm=m%60,ap=h<12?"am":"pm",hh=h>12?h-12:h;TIMES.push([String(m),hh+":"+(mm<10?"0":"")+mm+" "+ap])}})();
 function lineR(n){return 29526+(n-1)*10508}
 function blankMember(n,kid){return {name:n||"",kid:!!kid,has:null,inc:{earn:{a:"",f:""},welf:{a:"",f:""},pens:{a:"",f:""},other:{a:"",f:""}}}}
 function blankKid(){return {name:"",dob:"",foster:false,days:{},a1:"",d1:"",school:false,a2:"",d2:"",busTo:false,busFrom:false,meals:{},varies:false}}
-function blank(){return {children:[blankKid()],snap:null,owf:null,cases:{},checked:false,hsize:"",above:null,members:[],adult:{name:"",ssn:"",nossn:false,day:"",work:"",street:"",city:"",state:"OH",zip:"",county:"",dob:"",email:""},kidInc:false,race:{},eth:"",sig:{},acks:{},ackSig:{},nondiscSeen:false,nondiscAt:"",nondiscSig:"",sent:false,idem:{},done:{}}}
+function blank(){return {children:[blankKid()],snap:null,owf:null,cases:{},checked:false,hsize:"",above:null,members:[],adult:{name:"",ssn:"",nossn:false,day:"",work:"",street:"",city:"",state:"OH",zip:"",county:"",dob:"",email:""},kidInc:false,race:{},eth:"",sig:{},acks:{},ackSig:{},nondiscSeen:false,nondiscAt:"",nondiscSig:"",sent:false,idem:{},done:{},kidsFromRecords:false,kidsOk:false}}
 var S=blank(),STEP=0,K=0,SENDING=false;
 /* Invented example family (only with ?demo=1). */
 function sample(){var s=blank();
@@ -263,33 +368,37 @@ function sample(){var s=blank();
   s.snap=false;s.owf=false;s.checked=true;s.hsize="2";s.above=false;
   s.members=[blankMember("Ana Ortiz"),blankMember("Maya Ortiz",true)];s.members[0].has=true;s.members[0].inc.earn={a:"1450",f:"26"};s.members[1].has=false;
   s.adult={name:"Ana Ortiz",ssn:"1234",nossn:false,day:"(440) 555-0142",work:"",street:"100 Example St",city:"Wickliffe",state:"OH",zip:"44092",county:"Lake",dob:"1994-02-20",email:"ana.example@example.com"};return s}
-function age(d){if(!d)return"";var b=new Date(d+"T00:00"),n=new Date(),a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a<0?"":String(a)}
+function age(d){if(!d)return"";var b=new Date(d+"T00:00"),n=centerNow(),a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a<0?"":String(a)}
 function allFoster(){return S.children.length>0&&S.children.every(function(c){return c.foster})}
 function nonFoster(){return S.children.map(function(c,i){return i}).filter(function(i){return !S.children[i].foster})}
 function categorical(){return allFoster()||S.snap===true||S.owf===true}
 function notApplying(){return has('iea')&&!categorical()&&S.above===true}
 function incomePath(){return has('iea')&&!categorical()&&S.above===false}
 function ageWords(d){var m=months(d);if(m<0)return'';if(m<24)return m+' month'+(m===1?'':'s')+' old';var a=+age(d);return a+' years old'}
-function infantOnly(){return has('infant')&&!has('iea')&&!has('enroll')}
+/* ═══ STEPS — 17.10 order: [consent] → module 1 Enrollment → module 2 IEA → the papers → review ═══ */
 function steps(){var st=[];
+  /* 0 — consent first (one per adult). CONSENT: 'yes' (on file or just given) · 'need' (ask) · 'paper' · 'withdrawn' ·
+     'form' (no named adult on this link: the official consent form first). */
+  if(CONSENT==='need'||CONSENT==='form')st.push("consent");
+  if(CONSENT==='paper'||CONSENT==='withdrawn'){st.push("paper");return st}
+  if(CONSENT==='need'||CONSENT==='form')return st;
   if(anyFood())st.push("letter","children");
   if(has("dcy01234")&&FLAG_01234_STUB)st.push("dcy01234");
-  /* 16.10 (owner's remark on the interview run): SNAP → OWF → «Is any of these children a foster child?» third.
-     Was: foster first, then SNAP / OWF only if not every child is a foster child. The branching is the same. */
+  /* module 1 — CACFP Enrollment: the parent, then days / hours / meals per child */
+  if(has("enroll")||has("iea"))st.push("adult");
+  if(has("enroll"))S.children.forEach(function(c,i){st.push("care"+i)});
+  /* module 2 — IEA. 16.10 order kept: SNAP → OWF → «Is any of these children a foster child?» third. */
   if(has("iea")){st.push("snap");if(S.snap===false)st.push("owf");
     if(S.snap===true||(S.snap===false&&S.owf!==null)){st.push("foster");
       if(!allFoster()){if(S.snap===true||S.owf===true)st.push("cases");else{st.push("tablea");
       if(S.above===true){if(has("enroll"))st.push("notapply");else{st.push("ieanotneeded");if(!docs().length&&!has("dcy01234"))return st}}
-      else if(S.above===false)st.push("household")}}}}
-  if(has("enroll")||(has("iea")&&!notApplying()))st.push("adult");
-  S.children.forEach(function(c,i){if(has("enroll"))st.push("care"+i);if(has("infant")){if(isInfant(c))st.push("infant"+i);else if(infantOnly())st.push("infantno"+i)}});
-  if(infantOnly()&&!docs().length&&!has("dcy01234"))return st;
+      else if(S.above===false){st.push("household");st.push("ssn")}}}}}
   if(has("iea")&&!notApplying())st.push("part5");
   if(SET==="full")st.push("acks");
   if(anyFood()||NONDISC_FOR_01234_ONLY)st.push("nondisc");
   if(linksFor().length)st.push("links");
   st.push("review");return st}
-function partOf(k){if(k.indexOf("infantno")===0)return "Infant meals · "+(S.children[+k.slice(8)].name||"child");if(k.indexOf("infant")===0)return "Infant meals · "+(S.children[+k.slice(6)].name||"infant");if(k.indexOf("care")===0)return "Enrollment · "+(S.children[+k.slice(4)].name||"child");return {letter:"Before you start",children:"Your children",dcy01234:"Child enrollment (DCY 01234)",foster:"Foster child",snap:"Benefits · SNAP",owf:"Benefits · OWF",cases:"Benefits · case number",tablea:"Income check",notapply:"Not applying for income",ieanotneeded:"Income form not needed",household:"Household and income",adult:"Parent or guardian",part5:"Optional",acks:"Acknowledgments",nondisc:"Nondiscrimination statement",links:"Useful links",review:"Review and sign"}[k]}
+function partOf(k){if(k.indexOf("care")===0)return "Enrollment · "+(S.children[+k.slice(4)].name||"child");return {consent:"Electronic forms & signature",paper:"Paper forms",ssn:"Income · Social Security Number",letter:"Before you start",children:"Your children",dcy01234:"Child enrollment (DCY 01234)",foster:"Foster child",snap:"Benefits · SNAP",owf:"Benefits · OWF",cases:"Benefits · case number",tablea:"Income check",notapply:"Not applying for income",ieanotneeded:"Income form not needed",household:"Household and income",adult:"Parent or guardian",part5:"Optional",acks:"Acknowledgments",nondisc:"Nondiscrimination statement",links:"Useful links",review:"Review and sign"}[k]}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function fld(id,lbl,val,o){o=o||{};return '<div class="field" data-f="'+id+'"><label for="'+id+'" class="'+(o.req===false?'':'req')+'">'+lbl+'</label>'+
   (o.select?'<select id="'+id+'">'+o.select.map(function(x){return '<option value="'+x[0]+'"'+(String(val)===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>'
@@ -304,14 +413,21 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
   document.getElementById("prog").style.width=Math.round((STEP+1)/st.length*100)+"%";
   document.getElementById("partlbl").textContent=partOf(k)+" · step "+(STEP+1)+" of "+st.length;
   document.getElementById("banner").hidden=true;
+  if(k==="consent")h=CONSENT==='form'?consentFormFirst():consentGate();
+  if(k==="paper")h=CONSENT==='withdrawn'?paperWithdrawn():paperExit();
   if(k==="letter"){h='<h2>Help us receive support for your child’s meals</h2><div class="note">Play Academy serves your child healthy meals and snacks every day. The USDA Child and Adult Care Food Program pays the center back for part of the cost of these meals. '+
     (has("iea")&&has("enroll")?'Every year the program needs two forms from each family: the Enrollment Form for each child, and the Income Eligibility Application for the household. This interview fills in both. It takes about five minutes, and everything you tell us is kept confidential.'
      :'This interview fills in '+compWords()+'. Everything you tell us is kept confidential.')+'</div>'+
     (SET==="full"?'<div class="note">This interview is for a new child at the center. Besides the two food program forms, it also covers the child enrollment form and the papers you confirm you have read.</div>':'')+
-    (has("iea")?'<h2>The letter from the State of Ohio</h2><blockquote>“The CACFP provides reimbursement to the child care center for healthy meals and snacks served to children enrolled in child care. The completion of the income eligibility application is optional. … You or your children do not have to be U.S. citizens to qualify for meal benefits. … An application must contain complete information to be considered for free or reduced-price meals.”</blockquote><p class="sub small">— Ohio CACFP Income Eligibility Application, FY 2026–2027, Household Letter</p>':'')+'<div class="note">We ask one thing at a time. Every answer goes into its own box on the official forms. At the end you see '+(compCount()>1?'each form and sign it':'the form and sign it')+'.</div>'}
+    (has("iea")?'<h2>The letter from the State of Ohio</h2><blockquote>“The CACFP provides reimbursement to the child care center for healthy meals and snacks served to children enrolled in child care. The completion of the income eligibility application is optional. … You or your children do not have to be U.S. citizens to qualify for meal benefits. … An application must contain complete information to be considered for free or reduced-price meals.”</blockquote><p class="sub small">— Ohio CACFP Income Eligibility Application, FY 2026–2027, Household Letter</p>':'')+
+    (has("iea")&&IEA_INTRO_TEXT?'<div class="note" id="ieaIntro">'+esc(IEA_INTRO_TEXT)+'</div>':'')+'<div class="note">We ask one thing at a time. Every answer goes into its own box on the official forms. At the end you see '+(compCount()>1?'each form and sign it':'the form and sign it')+'.</div>'}
   if(k==="children"){h='<h2>Your child at the center</h2><p class="sub">Start with one child. If more of your children attend Play Academy, add them below.</p>';
     S.children.forEach(function(c,i){h+='<div class="member"><b>Child '+(i+1)+'</b>'+fld("c"+i+"n","Child’s full name",c.name)+'<div class="row">'+fld("c"+i+"d","Birth date",c.dob,{type:"date"})+'<div class="field"><label>Age</label><input type="text" id="c'+i+'age" value="'+age(c.dob)+'" disabled aria-label="Age, filled from birth date"></div></div></div>'});
-    h+='<p class="sub small">Made a mistake? Just correct the name or the date. An extra row you leave empty is skipped.</p>';if(S.children.length<4)h+='<button type="button" class="btn ghost" id="addChild">+ Add another child</button>'}
+    h+='<p class="sub small">Made a mistake? Just correct the name or the date. An extra row you leave empty is skipped.</p>';
+    /* 17.10 (canon 1в / 3): children and dates of birth from the center's records (the named link) or from the form the
+       family filled first on this phone (usually DCY 01234) — the parent confirms them. */
+    if(S.kidsFromRecords)h+='<div class="field" data-f="kidsok"><label class="check"><input type="checkbox" id="kidsOk"'+(S.kidsOk?' checked':'')+'>'+(S.kidsFromRecords==='device'?'We filled this in from the form you completed before on this phone. These are my children at the center, and the names and birth dates are correct.':'We filled this in from the center’s records. These are my children at the center, and the names and birth dates are correct.')+'</label><span class="miss">Check the names and birth dates, then tick this box.</span></div>';
+    if(S.children.length<4)h+='<button type="button" class="btn ghost" id="addChild">+ Add another child</button>'}
   if(k==="dcy01234")h='<h2>DCY 01234 — questions come here</h2><div class="note">The questions of the Child Enrollment and Health Information form (DCY 01234) are not built into this interview yet. Nothing is asked here for now. Tap Next to continue.</div>';
   if(k==="foster"){h='<h2>Is any of these children a foster child?</h2><p class="sub">A foster child is the legal responsibility of a welfare agency or court. You will attach that documentation. A foster child gets free meals without any income questions.</p>';
     S.children.forEach(function(c,i){h+='<label class="check"><input type="checkbox" data-foster="'+i+'"'+(c.foster?' checked':'')+'>'+esc(c.name||("Child "+(i+1)))+' is a foster child</label>'});
@@ -329,6 +445,7 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
   if(k==="notapply"){var names=S.children.map(function(c){return esc(c.name)}).join(", ");h='<h2>You do not need to fill in the income form</h2><div class="note">Your '+(S.children.length>1?'children':'child')+' ('+names+') will receive the same healthy meals as every other child at the center. The center records that you chose not to apply for income-based support, so no one will ask you for the income form again this year.</div><div class="note"><b>One form is still required.</b> The CACFP Enrollment Form for each child is required every year by federal rules (7 CFR 226.15). We fill it in from your answers. Next we ask for your contact details and each child’s days, hours and meals. Then you sign the enrollment form'+(S.children.length>1?' for each child':'')+'.</div>'}
   if(k==="ieanotneeded"){h='<h2>You do not need to fill in the income form</h2><div class="note">Your household’s income is above the figure in your row, so the Income Eligibility Application is not needed. Nothing is sent to the center for the income form. Your '+(S.children.length>1?'children':'child')+' will receive the same healthy meals as every other child at the center.</div>'+(steps().indexOf(k)===steps().length-1?'<div class="note">That is all. You can close this page.</div>':'')}
   if(k.indexOf("infantno")===0){var cn=S.children[+k.slice(8)];h='<h2>This form is only for children under 12 months</h2><div class="note">This form is only for children under 12 months — '+esc(cn.name)+' is '+esc(ageWords(cn.dob))+'. Ask the center for the right form.</div><p class="sub">Nothing is sent for '+esc(cn.name)+'.</p>'}
+  if(k==="ssn")h='<h2>Last 4 digits of Social Security Number</h2>'+'<div class="field" data-f="ssnblock">'+fld("ssn","Last 4 digits of Social Security Number",S.adult.ssn,{req:!S.adult.nossn,mode:"numeric",ph:"4 digits",msg:"Enter 4 digits, or check the box below."})+'<label class="check"><input type="checkbox" id="nossn"'+(S.adult.nossn?' checked':'')+'>I do not have a Social Security Number</label></div>';
   if(k==="household"){if(!S.members.length)S.members=[blankMember("")].concat(S.children.map(function(c){return blankMember(c.name,true)}));
     h='<h2>Your household and its income</h2><p class="sub">Start with one person who earns money. Then add every other person who lives with you. The children are already on the list. For each person, answer whether they have income. If yes, enter each income and how often it is received — gross income during the last month, before taxes.</p>';
     var person=function(i,label){var m=S.members[i],o='<div class="member"><b>'+label+'</b>'+fld("m"+i+"n","Name",m.name)+'<b class="small">Does '+(m.name?esc(m.name):'this person')+' have any income?</b><div class="choices"><button type="button" class="choice" data-has="'+i+'" data-v="1" aria-pressed="'+(m.has===true)+'">Yes</button><button type="button" class="choice" data-has="'+i+'" data-v="0" aria-pressed="'+(m.has===false)+'">No income</button></div><div class="field" data-f="m'+i+'has"><span class="miss">Choose Yes or No income.</span></div>';
@@ -345,7 +462,7 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
     h+='</div>';
     h+='<p class="sub small">Made a mistake? Just correct it. An extra person you leave empty is skipped.</p>'}
   if(k==="adult"){h='<h2>Parent or guardian</h2><p class="sub">This information goes on '+(has("iea")&&has("enroll")&&!notApplying()?'both forms':has("enroll")?'the enrollment form':'the income form')+'.</p>'+fld("an","Print name",S.adult.name);
-    if(incomePath())h+='<div class="field" data-f="ssnblock">'+fld("ssn","Last 4 digits of Social Security Number",S.adult.ssn,{req:!S.adult.nossn,mode:"numeric",ph:"4 digits",msg:"Enter 4 digits, or check the box below."})+'<label class="check"><input type="checkbox" id="nossn"'+(S.adult.nossn?' checked':'')+'>I do not have a Social Security Number</label></div>';
+    /* 17.10: the SSN box moved to its own step «ssn» after the income (module 2) — same field, same words. */
     /* Enrollment v12 carries parent_birthdate + parent_email (no state, no county, no work phone); IEA v10 carries work phone, state, county. */
     if(has("enroll"))h+='<div class="row">'+fld("pdob","Your birth date",S.adult.dob,{type:"date"})+fld("email","Email",S.adult.email,{type:"email"})+'</div>';
     h+='<div class="row">'+fld("day","Daytime phone",S.adult.day,{type:"tel"})+(has("iea")?fld("work","Work phone",S.adult.work,{type:"tel",req:false}):'')+'</div>'+fld("street","Street / Apt",S.adult.street)+'<div class="row3">'+fld("city","City",S.adult.city)+(has("iea")?fld("state","State",S.adult.state):'')+fld("zip","ZIP",S.adult.zip,{mode:"numeric",msg:"Enter a 5-digit ZIP."})+'</div>'+(has("iea")&&!notApplying()?fld("county","County",S.adult.county):'')}
@@ -354,6 +471,7 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
   if(k.indexOf("care")===0){K=+k.slice(4);var c=S.children[K];if(!schoolAge(c)){c.school=false;c.busTo=false;c.busFrom=false;c.a2="";c.d2=""}h='<h2>'+esc(c.name)+': days, hours and meals</h2><p class="sub">For the CACFP Enrollment Form. Check the days your child is normally in care, the hours, and the meals your child normally receives here.</p><b>Days in care</b><div class="days">'+DAYS.map(function(d){return CENTER.closedDays[d[0]]?'<label class="off" title="The center is closed on this day"><span aria-hidden="true">✕</span>'+d[1]+'</label>':'<label><input type="checkbox" data-day="'+d[0]+'"'+(c.days[d[0]]?' checked':'')+'>'+d[1]+'</label>'}).join('')+'</div><div class="field" data-f="days"><span class="miss">Check at least one day.</span></div>'+
     (c.school?'<div class="note small">School days: list the morning hours before school and the afternoon hours after school.</div><b>Before school</b><div class="row">'+fld("a1","Arrives at the center",c.a1,{select:TIMES,msg:"Choose the arrival time."})+fld("d1","Leaves for school",c.d1,{select:TIMES,msg:"Choose the time."})+'</div><label class="check"><input type="checkbox" id="busTo"'+(c.busTo?' checked':'')+'>The center’s school bus takes my child to school</label><b>After school</b><div class="row">'+fld("a2","Comes back from school",c.a2,{select:TIMES,msg:"Choose the time."})+fld("d2","Goes home",c.d2,{select:TIMES,msg:"Choose the time."})+'</div><label class="check"><input type="checkbox" id="busFrom"'+(c.busFrom?' checked':'')+'>The center’s school bus brings my child back from school</label>'
       :'<div class="row">'+fld("a1","Arrives",c.a1,{select:TIMES,msg:"Choose the arrival time."})+fld("d1","Leaves",c.d1,{select:TIMES,msg:"Choose the departure time."})+'</div>')+
+    (schoolAge(c)==='unset'?'<div class="note small" id="cutoffUnset">'+esc(KINDERGARTEN_CUTOFF_UNSET_WORDS)+'</div>':'')+
     (schoolAge(c)?'<label class="check"><input type="checkbox" id="school"'+(c.school?' checked':'')+'>My child goes to school (before and after school care)</label>':'')+
     '<b>Meals normally received while in care</b><div class="days">'+MEALS.map(function(m){return CENTER.noMeals[m[0]]?'<label class="off" title="Not served at this center"><span aria-hidden="true">✕</span>'+m[1]+'</label>':'<label><input type="checkbox" data-meal="'+m[0]+'"'+(c.meals[m[0]]?' checked':'')+'>'+m[1]+'</label>'}).join('')+'<span class="small sub" style="flex-basis:100%">✕ = not offered at this center</span>'+'</div><div class="field" data-f="meals"><span class="miss">Check at least one meal.</span></div><label class="check"><input type="checkbox" id="varies"'+(c.varies?' checked':'')+'>The schedule may often change because of my work schedule</label>'}
   if(k.indexOf("infant")===0&&k.indexOf("infantno")!==0){K=+k.slice(6);var ci=S.children[K];h='<h2>'+esc(ci.name)+' is under one year old</h2><p class="sub">Infant Meals – Parent Preference Letter. All enrolled children receive meals free of charge. The center offers '+esc(formulaWords())+' and the other required infant foods. You may decline the formula and bring your own. When your child turns one, the center provides milk and toddler meals.</p>'+
@@ -413,6 +531,7 @@ function openSignPop(id,title){var m=document.getElementById("sigmodal"),c=docum
 /* ═══════════════════════ BINDING ═══════════════════════ */
 function fmtPhone(v){var d=String(v||'').replace(/\D/g,'').slice(0,10);return d.length>6?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):d.length>3?'('+d.slice(0,3)+') '+d.slice(3):d}
 function bind(k){var f=document.getElementById("f"),c=S.children[K];
+  if(k==="consent"||k==="paper"){bindConsent();return}
   f.oninput=function(e){var t=e.target,id=t.id,m;
     if((m=id.match(/^c(\d)([nd])$/))){S.children[+m[1]][m[2]==="n"?"name":"dob"]=t.value;if(m[2]==="d"){var ag=document.getElementById("c"+m[1]+"age");if(ag)ag.value=age(t.value)}return}
     if((m=id.match(/^case(\d)$/))){S.cases[+m[1]]=t.value.replace(/\D/g,"").slice(0,7);t.value=S.cases[+m[1]];return}
@@ -442,6 +561,7 @@ function bind(k){var f=document.getElementById("f"),c=S.children[K];
   if((g=document.getElementById("showTable")))g.onclick=function(){S.checked=!S.checked;render()};
   if((g=document.getElementById("addChild")))g.onclick=function(){S.children.push(blankKid());render()};
   if((g=document.getElementById("addMember")))g.onclick=function(){var ki=S.members.findIndex(function(m){return m.kid});if(ki<0)S.members.push(blankMember(""));else S.members.splice(ki,0,blankMember(""));render()};
+  if((g=document.getElementById("kidsOk")))g.onchange=function(){S.kidsOk=this.checked};
   if((g=document.getElementById("nossn")))g.onchange=function(){S.adult.nossn=document.getElementById("nossn").checked;if(S.adult.nossn)S.adult.ssn="";render()};
   if((g=document.getElementById("back")))g.onclick=function(){if(SENDING)return;if(k==="review"&&S.sigPng){docs().forEach(function(d){delete S.sigPng[d.id];S.sig[d.id]=false})}STEP--;render()};
   if(f.querySelector("canvas.pad"))setupPads();
@@ -463,13 +583,14 @@ function emptyM(m){return !m.kid&&!m.name.trim()&&m.has===null&&SRC.every(functi
 function prune(k){var ch=false;if(k==="children"){var c=S.children.filter(function(x,i){return i===0||x.name.trim()||x.dob});if(c.length!==S.children.length){S.children=c;ch=true}}
   if(k==="household"){var m=S.members.filter(function(x,i){return i===0||!emptyM(x)});if(m.length!==S.members.length){S.members=m;ch=true}}if(ch)render()}
 function check(k){var b=[];function need(id,v){if(!String(v||"").trim())b.push(id)}
-  if(k==="children")S.children.forEach(function(c,i){need("c"+i+"n",c.name);need("c"+i+"d",c.dob)});
+  if(k==="children"){S.children.forEach(function(c,i){need("c"+i+"n",c.name);need("c"+i+"d",c.dob)});if(S.kidsFromRecords&&!S.kidsOk)b.push("kidsok")}
+  if(k==="ssn"&&!S.adult.nossn&&!/^\d{4}$/.test(S.adult.ssn))b.push("ssn");
   if(k==="snap"&&S.snap===null)b.push("snap");if(k==="owf"&&S.owf===null)b.push("owf");
   if(k==="cases")nonFoster().forEach(function(i){if(!/^\d{7}$/.test(S.cases[i]||""))b.push("case"+i)});
   if(k==="tablea"&&S.above===null){if(!S.checked){S.checked=true;render();}b.push("above")}
   if(k==="household"){kidSync();if(S.kidInc===true){var kp=S.members.filter(function(m){return m.kid&&m.kidPick});if(!kp.length)b.push("kidany");S.members.forEach(function(m,i){if(!m.kid||!m.kidPick)return;if(!m.kidSrc)b.push("k"+i+"s");else{if(!m.inc[m.kidSrc].a)b.push("k"+i+"a");if(!m.inc[m.kidSrc].f)b.push("k"+i+"f")}})}}
   if(k==="household")S.members.forEach(function(m,i){if(m.kid)return;need("m"+i+"n",m.name);if(m.has===null){b.push("m"+i+"has");return}if(m.has===false)return;var any=false;SRC.forEach(function(s){var v=m.inc[s[0]];if(v.a&&!v.f)b.push("m"+i+s[0]+"f");if(v.f&&!v.a)b.push("m"+i+s[0]+"a");if(v.a&&v.f)any=true});if(!any)b.push("m"+i+"any")});
-  if(k==="adult"){var a=S.adult;need("an",a.name);if(incomePath()&&!a.nossn&&!/^\d{4}$/.test(a.ssn))b.push("ssn");if(has("enroll")){need("pdob",a.dob);if(!/.+@.+\..+/.test(a.email))b.push("email")}need("day",a.day);need("street",a.street);need("city",a.city);if(has("iea"))need("state",a.state);if(!/^\d{5}$/.test(a.zip))b.push("zip");if(has("iea")&&!notApplying())need("county",a.county)}
+  if(k==="adult"){var a=S.adult;need("an",a.name);if(has("enroll")){need("pdob",a.dob);if(!/.+@.+\..+/.test(a.email))b.push("email")}need("day",a.day);need("street",a.street);need("city",a.city);if(has("iea"))need("state",a.state);if(!/^\d{5}$/.test(a.zip))b.push("zip");if(has("iea")&&!notApplying())need("county",a.county)}
   if(k.indexOf("care")===0){var c=S.children[+k.slice(4)];if(!DAYS.some(function(d){return c.days[d[0]]&&!CENTER.closedDays[d[0]]}))b.push("days");need("a1",c.a1);need("d1",c.d1);if(c.school){need("a2",c.a2);need("d2",c.d2)}if(!MEALS.some(function(m){return c.meals[m[0]]&&!CENTER.noMeals[m[0]]}))b.push("meals")}
   if(k.indexOf("infant")===0&&k.indexOf("infantno")!==0){var ci=S.children[+k.slice(6)];if(!ci.formula)b.push("inf_formula");if(ci.formula==="bring_formula")need("fname",ci.fname);if(!ci.solid)b.push("inf_solid")}
   if(k==="acks")ACKS.forEach(function(a){if(!S.acks[a.id])b.push("ack_"+a.id);if(!S.sig["ack_"+a.id])b.push("sig_ack_"+a.id)});
@@ -478,7 +599,7 @@ function check(k){var b=[];function need(id,v){if(!String(v||"").trim())b.push(i
 
 /* ═══════════════════════ PAYLOADS — the real forms' collect() shapes ═══════════════════════ */
 function isoDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-function todayISO(){return isoDate(new Date())}
+function todayISO(){return centerTodayIso()}
 /* CACFP_Enrollment_v12 expDate(): last day of the signing month one year later (computed on local date parts). */
 function expiresOn(sig){var p=sig.split('-');return isoDate(new Date(+p[0]+1,+p[1],0))}
 /* Age as the real forms write it (calcAge / kidAge): whole years, or «N mo» under one year. */
@@ -505,7 +626,12 @@ function ieaData(sigDate){var a=S.adult,inc=incomePath(),cat=S.snap===true||S.ow
       street:a.street,city:a.city,state:a.state,zip:a.zip,city_state_zip:[a.city,[a.state,a.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '),county:a.county},
     ethnicity:{hispanic:S.eth==='hispanic',not_hispanic:S.eth==='not_hispanic'},
     race:{ai:!!S.race.ai,asian:!!S.race.asian,black:!!S.race.black,pacific:!!S.race.pacific,white:!!S.race.white,other:!!S.race.other},
-    helper:{household_size:'',annualized:'',verdict:''}}}
+    /* 17.10 (canon 3): household size = every person listed (adults the parent added + the children); the income period
+       is SAVED with the form — the words the family answered to and the month they cover (the month before the signing
+       month, by the center's day). The category is still decided by the app (ieaDetermine.ts), never here. */
+    helper:{household_size:inc?String(rows.length):'',annualized:'',verdict:''},
+    income_period:inc?{basis:'gross income during the last month, before taxes',month:lastMonthIso(sigDate)}:null}}
+function lastMonthIso(sig){var p=String(sig||centerTodayIso()).split('-'),y=+p[0],m=+p[1]-1;if(m<1){m=12;y--}return y+'-'+String(m).padStart(2,'0')}
 /* CACFP_Enrollment_v12.html collect().
    ⚑ The bus-to/from-school answers have no box on the Enrollment form v12 — they are asked (reference) but not sent. */
 function enrData(i,sigDate){var c=S.children[i],a=S.adult,schedule={};
@@ -535,7 +661,7 @@ function buildSubmissions(){var sigDate=todayISO(),out=[];
     if(d.kind==='iea'){fd=ieaData(sigDate);sigs={adult_sig:padPNG(d.id)};type='iea';ver=IEA_VERSION}
     else if(d.kind==='enr'){fd=enrData(d.child,sigDate);sigs={parent_sig:padPNG(d.id)};type='cacfp_enrollment';ver=ENR_VERSION}
     stamp(kitNormalize(fd));
-    out.push({id:d.id,title:d.title,rpc:'submit_enrollment_form',body:{p_org:ORG,p_center:CENTERS[CENTER_SLUG],p_submission_type:type,p_form_data:fd,p_signatures:sigs,p_signature_date:sigDate,p_source:'online',p_idempotency_key:S.idem[d.id],p_form_version:ver,p_token:(d.kind==='iea'||(d.kind==='enr'&&S.children[d.child]&&S.children[d.child].tok))?TOKEN:null}})});
+    out.push({id:d.id,title:d.title,rpc:'submit_enrollment_form',body:{p_org:ORG,p_center:CENTERS[CENTER_SLUG],p_submission_type:type,p_form_data:fd,p_signatures:sigs,p_signature_date:sigDate,p_source:'online',p_idempotency_key:S.idem[d.id],p_form_version:ver,p_token:d.kind==='iea'?TOKEN:((d.kind==='enr'&&S.children[d.child]&&typeof S.children[d.child].tok==='string')?S.children[d.child].tok:null)}})});
   return out}
 
 /* ═══════════════════════ SUBMIT (form-kit.js rpc() transport) ═══════════════════════ */
@@ -565,18 +691,46 @@ async function submitAll(){var f=document.getElementById("f"),btn=document.getEl
   SENDING=false;S.sent=true;
   f.innerHTML='<h2 class="done">Submitted for center review</h2><p>'+(!(has("iea")&&has("enroll"))?'The center received '+subs.map(function(x){return x.title.replace(/&amp;/g,'&')}).join('; ')+'.':notApplying()?'The center received your enrollment form'+(S.children.length>1?'s':'')+' and your answer that you are not applying for income-based support.':'The center received your income application and enrollment form'+(S.children.length>1?'s':'')+'. The center checks them and signs its part.')+' You do not need to do anything else.</p>'+
     '<div class="note" id="refs"><b>Your confirmation '+(subs.length>1?'references':'reference')+'</b><ul>'+subs.map(function(x){return '<li>'+x.title+': <span style="font-family:var(--f-mono)">'+esc(String(S.done[x.id]).slice(0,8).toUpperCase())+'</span></li>'}).join('')+'</ul><span class="small">Keep this. It is the start of your form’s number at the center.</span></div>';
+  f.insertAdjacentHTML('beforeend',infantThird());bindInfantThird();
+  markDone(['food_interview'].concat(has('iea')?['iea']:[]).concat(has('enroll')?['enroll']:[]));
   document.getElementById("prog").style.width="100%";document.getElementById("partlbl").textContent="Done";window.scrollTo(0,0)}
 
-/* get_prefill (the kit's door, same body {p_token}): the child of the link and the parent, once, only into empty boxes. */
-function loadPrefill(){if(!TOKEN)return;
-  fetch(SUPA_URL+'/rest/v1/rpc/get_prefill',{method:'POST',headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Content-Profile':'menumaker'},body:JSON.stringify({p_token:TOKEN})})
-    .then(function(r){return r.ok?r.json():null}).catch(function(){return null})
-    .then(function(d){var bn=document.getElementById("banner");
-      if(d&&d.error){bn.hidden=false;bn.textContent=d.message||'This link cannot open the forms.';return}
-      if(!d){bn.hidden=false;bn.textContent='This personal link has expired or could not be read, so nothing is filled in for you. You can still answer every question.';return}
-      var c=S.children[0];c.tok=true;if(!c.name&&d.child_name)c.name=d.child_name;if(!c.dob&&d.dob)c.dob=d.dob;
+/* get_prefill (the kit's door, same body {p_token}): the child of the link and the parent, once, only into empty boxes.
+   17.10: + the consent of THIS adult decides step 0; + the family's other children from the center's records
+   (_family.children after 20261103zzf; before it — get_prefill_siblings, the same door interview-live.html reads);
+   the parent confirms them on the children step. */
+function anon(fn,body){return fetch(SUPA_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Content-Profile':'menumaker'},body:JSON.stringify(body)}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}
+function loadPrefill(){if(!TOKEN)return Promise.resolve(null);
+  return anon('get_prefill',{p_token:TOKEN}).then(function(d){var bn=document.getElementById("banner");
+      if(d&&d.error){bn.hidden=false;bn.textContent=d.message||'This link cannot open the forms.';CONSENT='form';return}
+      if(!d){bn.hidden=false;bn.textContent='This personal link has expired or could not be read, so nothing is filled in for you. You can still answer every question.';CONSENT='form';return}
+      var fam=d._family||{};
+      CONSENT=fam.esign_withdrawn===true?'withdrawn':fam.has_esign_consent===true?'yes':'need';CONSENT_HAD_GUARDIAN=CONSENT==='need';
+      var c=S.children[0];c.tok=TOKEN;if(!c.name&&d.child_name)c.name=d.child_name;if(!c.dob&&d.dob)c.dob=d.dob;
+      if(d.child_name)S.kidsFromRecords='records';
       var a=S.adult;if(!a.name&&d.parent_name)a.name=d.parent_name;if(!a.email&&d.parent_email)a.email=d.parent_email;if(!a.day&&d.phone_day)a.day=fmtPhone(d.phone_day);
-      if(STEP<=1)render()})}
+      var kids=Array.isArray(fam.children)?fam.children:null;
+      if(kids){kids.forEach(function(k){if(!k||!k.name||S.children.length>=4)return;if(S.children.some(function(x){return x.name.trim().toLowerCase()===String(k.name).trim().toLowerCase()}))return;var n=blankKid();n.name=k.name;n.dob=k.dob||'';if(k.token)n.tok=k.token;S.children.push(n)});return}
+      return anon('get_prefill_siblings',{p_token:TOKEN}).then(function(sib){if(!Array.isArray(sib))return;
+        return Promise.all(sib.slice(0,3).map(function(x){return anon('get_prefill',{p_token:x.token}).then(function(pf){var n=blankKid();n.name=(pf&&pf.child_name)||x.name||'';n.dob=(pf&&pf.dob)||'';n.tok=x.token;if(n.name)S.children.push(n)})}))})})}
+/* No named link: the data the family typed on the FIRST form on this phone (usually DCY 01234 / the consent) — the kit's
+   own packet memory pa_packet_profile (form-kit.js pkLoad: 7 days, same keys data-fk-field). Only into empty boxes. */
+function loadDeviceProfile(){try{var r=JSON.parse(localStorage.getItem('pa_packet_profile'));if(!r||!r.data||Date.now()-r.ts>7*24*60*60*1000)return;var d=r.data,c=S.children[0],a=S.adult,any=false;
+  function put(o,k,v){if(v&&!o[k]){o[k]=v;any=true}}
+  put(c,'name',d.child_name);put(c,'dob',d.dob);put(a,'name',d.parent_name);put(a,'email',d.parent_email);put(a,'day',d.phone_day?fmtPhone(d.phone_day):'');put(a,'street',d.street);put(a,'city',d.city);put(a,'zip',d.zip);put(a,'dob',d.parent_birthdate);
+  if(any&&d.child_name)S.kidsFromRecords='device'}catch(_){}}
+
+/* ═══ THIRD — Infant Meals on its OFFICIAL live form, one per child under 12 months (canon 17.10 13:22) ═══
+   Age by the center's today; twins → two forms. Each button writes that infant into the kit's packet memory (the
+   «existing mechanism» the infant form already reads: child_name, dob) and opens the official form with its slot key. */
+function infantKids(){return S.children.map(function(c,i){return {c:c,i:i}}).filter(function(x){return x.c.name&&isInfant(x.c)})}
+function infantUrl(c){var u='infant-meals-preference-v2.html?center='+encodeURIComponent(CENTER_SLUG)+'&k=infant_meals';var t=typeof c.tok==='string'?c.tok:null;return t?u+'&t='+encodeURIComponent(t):u}
+function infantThird(){var L=infantKids();if(!L.length)return'';
+  return '<div class="doc" id="infantThird"><h3>One more form: Infant Meals – Parent Preference Letter</h3><p class="sub">'+(L.length===1?'Your child is':'These children are')+' under 12 months old. Each infant needs its own Infant Meals form'+(L.length>1?' — one per child, twins too':'')+'. It opens the official form; sign it there.</p>'+
+    L.map(function(x){return '<a class="btn primary" style="text-decoration:none;text-align:center" data-infant="'+x.i+'" href="'+esc(infantUrl(x.c))+'" target="_blank" rel="noopener">Infant Meals form for '+esc(x.c.name)+'</a>'}).join('')+'</div>'}
+function bindInfantThird(){document.querySelectorAll('[data-infant]').forEach(function(a){a.onclick=function(){var c=S.children[+a.dataset.infant];try{var r=JSON.parse(localStorage.getItem('pa_packet_profile'))||{data:{}};r.ts=Date.now();r.data=r.data||{};r.data.child_name=c.name;r.data.dob=c.dob;localStorage.setItem('pa_packet_profile',JSON.stringify(r))}catch(_){}}})}
+/* the storefront list shows ✓ on its food cards: same store and shape as form-kit.js markSlotDone (cacfp_packet_v1) */
+function markDone(keys){try{var o=JSON.parse(localStorage.getItem('cacfp_packet_v1'))||{};o.ts=Date.now();o.done=o.done||{};keys.forEach(function(k){o.done[k]=true});localStorage.setItem('cacfp_packet_v1',JSON.stringify(o))}catch(_){}}
 
 /* ═══════════════════════ CENTER: served meals (CACFP_Enrollment_v12 slot gate) ═══════════════════════ */
 function loadMealSlots(){
@@ -600,7 +754,10 @@ if(!CENTER_SLUG){document.getElementById("f").innerHTML='<h2>Open this interview
 else{
   if(DEMO){var dl=document.createElement("div");dl.className="note";dl.id="demoLine";dl.setAttribute("role","note");dl.textContent="Example data — this sends a real test submission to the demo center.";var tl=document.getElementById("tools");tl.parentNode.insertBefore(dl,tl);
     document.getElementById("tools").hidden=false;document.getElementById("sampleBtn").onclick=function(){S=sample();STEP=0;render()}}
-  render();loadMealSlots();loadPrefill();
+  if(WANT_INFANT_ONLY){location.replace(infantUrl({tok:TOKEN}))}
+  else{document.getElementById("f").innerHTML='<p class="sub">One moment…</p>';loadMealSlots();
+    if(!TOKEN){loadDeviceProfile();CONSENT=consentSentHere()?'yes':'form';render()}
+    else loadPrefill().then(function(){if(!CONSENT)CONSENT='form';render()})}
 }
 </script>
 </body></html>
