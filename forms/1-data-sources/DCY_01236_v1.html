@@ -10,7 +10,7 @@
      MEDICATION FOR EARLY CARE AND EDUCATION PROGRAMS
      DCY 01236 (Rev. 7/2026) · fillable · e-signature · Supabase
      v1 · 2026-07-07
-     Signer = physician (physician_sig) + parent + certified trainer
+     Signer = parent (required) + physician (ONLY in the blank's own cases, p.3) + certified trainer
      Care plan for a child with special health care needs
      ============================================================ */
 
@@ -494,9 +494,14 @@
    DCY 01236 v1 — form-specific config only; shared behaviour = form-kit.js
    submission_type = 'medical'  (form_data.dcy_form = '01236')
    Signers: parent (required) + physician (CONDITIONAL) + certified trainer.
-   Physician signature is NOT data-required: a parent-only submission is
-   allowed and sets form_data.awaiting_physician = true so the Inbox can
-   route it to the "awaiting physician" lane.
+   Physician signature is NOT data-required and NOT expected by default
+   (owner's decision 17.10 «уберите это из правила»; the blank, p.3: «Health
+   Care Professional's signature is only required in this box if their
+   instructions have been provided on this form, prescribed medication does
+   not have a prescription label, or as directed by the manufacturer's
+   instructions.»). 17.10: the form no longer stamps today's date into the
+   physician's Date of Signature — empty stays empty — and no longer writes
+   awaiting_physician (nothing is awaited by default).
    ============================================================ */
 var CENTER_NAMES_={pearl:"Play Academy Parma Heights",alpha:"Play Academy Highland Heights",ridge:"Play Academy Wickliffe"};
 function $id(id){return document.getElementById(id);}
@@ -520,7 +525,7 @@ function resetForm(){
   document.querySelectorAll('input[type="checkbox"]').forEach(function(el){el.checked=false;});
   document.querySelectorAll('input[type="date"]').forEach(function(el){el.value='';});
   if(window.FormKit){FormKit.clearSig('parentSig');FormKit.clearSig('physicianSig');FormKit.clearSig('trainerSig');}
-  var sd=$id('signedDate');if(sd)sd.value=todayISO();dateTouched=false;
+  var sd=$id('signedDate');if(sd)sd.value='';dateTouched=false;
   if(window.FormKit)FormKit.status('Form cleared','');
 }
 function PA_APPLY(fd){
@@ -572,7 +577,6 @@ window.FORMKIT_CONFIG={
      ⛔ В ТАБЛИЦУ СТР. 2 ОБЕЩАННОЕ НЕ ПОПАДАЕТ: таблица под подписью — это и есть
      разрешение, и препарат, которого никто не разрешал, в ней выглядел бы разрешённым. */
   collect:function(){
-    if(!dateTouched){var sd=$id('signedDate');if(sd)sd.value=todayISO();}
     var medications=[1,2,3].map(function(i){return {name:val('med'+i+'Name'),dosage:val('med'+i+'Dosage'),time:val('med'+i+'Time'),administer_when_symptoms_present:chk('med'+i+'Symptoms')};}).filter(function(m){return m.name||m.dosage||m.time||m.administer_when_symptoms_present;});
     var program_staff=[1,2,3,4,5].map(function(i){return {printed_name:val('staffName'+i),signature_note:val('staffSig'+i),date:val('staffDate'+i)};}).filter(function(s){return s.printed_name||s.signature_note||s.date;});
     var med_log=Array.prototype.slice.call(document.querySelectorAll('#logRows tr')).map(function(tr){return {date:tr.querySelector('.logDate').value.trim(),time:tr.querySelector('.logTime').value.trim(),dosage:tr.querySelector('.logDosage').value.trim(),administered_by:tr.querySelector('.logSig').value.trim()};}).filter(function(r){return r.date||r.time||r.dosage||r.administered_by;});
@@ -618,15 +622,13 @@ window.FORMKIT_CONFIG={
       medication_log:                      med_log
     };
     var sigs={physician_sig:FormKit.getSig('physicianSig'),parent_sig:FormKit.getSig('parentSig'),trainer_sig:FormKit.getSig('trainerSig')};
-    /* Physician conditional: flag parent-only submissions for the "awaiting physician" Inbox lane. */
+    /* Physician conditional: record whether the box is signed; an empty box is not «awaiting» (17.10). */
     d.physician_signed   = !!sigs.physician_sig;
-    d.awaiting_physician = !sigs.physician_sig;
     var sigDate=(sigs.physician_sig&&d.physician_date_of_signature)?d.physician_date_of_signature:(d.parent_signature_date||todayISO());
     return {formData:d,signatures:sigs,signatureDate:sigDate};
   },
   onSuccess:function(){
-    var awaiting=!FormKit.getSig('physicianSig');
-    FormKit.status(awaiting?'✓ Submitted — awaiting physician signature':'✓ Submitted for center review','ok');
+    FormKit.status('✓ Submitted for center review','ok');
   }
 };
 
@@ -651,8 +653,9 @@ document.addEventListener('DOMContentLoaded',function(){
   /* Administration-log rows (print fidelity) */
   var body=$id('logRows');
   if(body){var html='';for(var i=0;i<19;i++){html+='<tr><td><input type="text" class="logDate"></td><td><input type="text" class="logTime"></td><td><input type="text" class="logDosage"></td><td><input type="text" class="logSig"></td></tr>';}body.innerHTML=html;}
-  /* Today's date default for physician date of signature */
-  var sd=$id('signedDate');if(sd&&!sd.value)sd.value=todayISO();
+  /* ⛔ 17.10: no default date for the physician's Date of Signature — a date under an empty
+     signature says a clinician signed on a day nobody signed. Empty stays empty. */
+  var sd=$id('signedDate');
   if(sd)sd.addEventListener('input',function(){dateTouched=true;});
   /* Mirror child name across pages + medication name onto log */
   var cnEl=$id('childName');if(cnEl)cnEl.addEventListener('input',mirror);
