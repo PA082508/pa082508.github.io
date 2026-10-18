@@ -48,6 +48,8 @@
     "paperOnlyKeys": "birthdate, child_name, day_phone, mailing, age, signature_date бланк НЕ кладёт — они приходят бумажным/OCR путём"
   },
   "exemptForms": {
+    "food_interview_enroll": "модуль «CACFP Enrollment» интервью фуд-программы (food-interview.html?forms=enroll), не бланк кита — строки словаря у самого бланка CACFP Enrollment",
+    "food_interview_iea": "модуль «IEA» интервью фуд-программы (food-interview.html?forms=iea), не бланк кита — строки словаря у самого бланка IEA",
     "food_interview": "само интервью фуд-программы (food-interview.html), не бланк кита: оно заполняет IEA и CACFP Enrollment — их строки словаря живут у самих бланков (запись реестра 18.10 по слову владельца)",
     "staff_why_cover": "лист для чтения (Why-письмо владельца 18:19), не форма — collect() нет",
     "what_to_bring_infant": "лист для чтения, не форма — collect() нет",
