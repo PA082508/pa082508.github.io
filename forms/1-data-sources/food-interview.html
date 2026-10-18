@@ -204,10 +204,11 @@ var LINKS_BY_CENTER={_default:[
   {kind:'general',title:'Ohio Department of Children and Youth',url:'https://childrenandyouth.ohio.gov/'}
 ]};
 
-/* ⚑ SLOT — the IEA introduction (canon 17.10 18:55; owner's text NOT given). The wording «help us get reimbursed…»
-   exists nowhere (checked 17.10). EMPTY ON PURPOSE: nothing is shown until the owner gives the text verbatim.
-   Do not write or invent it here. */
-var IEA_INTRO_TEXT='';
+/* The IEA introduction — the owner's text verbatim (18.10, in session: «да "Before you start: …"»); shown only on the family's
+   screen before the IEA module, the form itself does not change (LAWS §L5). [Center name] is filled with the center's name
+   (CENTERS_INFO); a center without a name gets «the center» — the same fallback as formulaWords(). */
+var IEA_INTRO_TEXT='Before you start: this form helps [Center name] receive federal CACFP meal funding for your child. Your answers are kept confidential and are used only for the food program. It takes about 5 minutes.';
+function ieaIntroWords(){return IEA_INTRO_TEXT.split('[Center name]').join(CENTER.name||'the center')}
 
 /* ═══ E-SIGN CONSENT FIRST (17.10, canon 2) ═══
    One per adult, for both sets. Skipped when THIS adult (the guardian named by the link's token) has an active consent
@@ -335,13 +336,13 @@ function formulaWords(){return CENTER.formula?CENTER.formula:"the iron-fortified
    August, per district); September 30 is the older line and only shows the (unticked) question to a few children born
    between the district's first day and September 30 — it never ticks anything. KINDERGARTEN_CUTOFF is the one place to
    change it. Was (6f0ae0e): 72 months (the app's CACFP food group 6–12, not a school rule). */
-/* ⛔ 17.10: THE CUTOFF IS UNSET. The owner has not named the kindergarten cutoff yet (open decision; the proposal
+/* 18.10: SET by the owner's word in session «30 сентября» — five years old by September 30 (Ohio). Was 17.10: THE CUTOFF IS UNSET. The owner has not named the kindergarten cutoff yet (open decision; the proposal
    «five by 30.09» was NOT accepted as a value). One named parameter, value null = UNSET. While it is unset the page
    does not decide «school age» by the date of birth: it says so in words (KINDERGARTEN_CUTOFF_UNSET_WORDS) and asks
    the (unticked) school question for every child of one year and older — nothing is ticked for the family.
    To set it: KINDERGARTEN_CUTOFF={month:M,day:D} (five years old by that day of the school year) — only by the owner's word.
    Was (b960c59): KINDERGARTEN_CUTOFF={month:9,day:30}. */
-var KINDERGARTEN_CUTOFF=null;
+var KINDERGARTEN_CUTOFF={month:9,day:30};
 var KINDERGARTEN_CUTOFF_UNSET_WORDS='Kindergarten cutoff not set: the center has not set the kindergarten age line yet, so we cannot tell from the birth date whether your child goes to school. Tick the box only if your child goes to school.';
 function cutoffSet(){return !!(KINDERGARTEN_CUTOFF&&KINDERGARTEN_CUTOFF.month&&KINDERGARTEN_CUTOFF.day)}
 function schoolYearStart(now){now=now||centerNow();return now.getMonth()>=7?now.getFullYear():now.getFullYear()-1}
@@ -420,7 +421,7 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
      :'This interview fills in '+compWords()+'. Everything you tell us is kept confidential.')+'</div>'+
     (SET==="full"?'<div class="note">This interview is for a new child at the center. Besides the two food program forms, it also covers the child enrollment form and the papers you confirm you have read.</div>':'')+
     (has("iea")?'<h2>The letter from the State of Ohio</h2><blockquote>“The CACFP provides reimbursement to the child care center for healthy meals and snacks served to children enrolled in child care. The completion of the income eligibility application is optional. … You or your children do not have to be U.S. citizens to qualify for meal benefits. … An application must contain complete information to be considered for free or reduced-price meals.”</blockquote><p class="sub small">— Ohio CACFP Income Eligibility Application, FY 2026–2027, Household Letter</p>':'')+
-    (has("iea")&&IEA_INTRO_TEXT?'<div class="note" id="ieaIntro">'+esc(IEA_INTRO_TEXT)+'</div>':'')+'<div class="note">We ask one thing at a time. Every answer goes into its own box on the official forms. At the end you see '+(compCount()>1?'each form and sign it':'the form and sign it')+'.</div>'}
+    (has("iea")&&IEA_INTRO_TEXT?'<div class="note" id="ieaIntro">'+esc(ieaIntroWords())+'</div>':'')+'<div class="note">We ask one thing at a time. Every answer goes into its own box on the official forms. At the end you see '+(compCount()>1?'each form and sign it':'the form and sign it')+'.</div>'}
   if(k==="children"){h='<h2>Your child at the center</h2><p class="sub">Start with one child. If more of your children attend Play Academy, add them below.</p>';
     S.children.forEach(function(c,i){h+='<div class="member"><b>Child '+(i+1)+'</b>'+fld("c"+i+"n","Child’s full name",c.name)+'<div class="row">'+fld("c"+i+"d","Birth date",c.dob,{type:"date"})+'<div class="field"><label>Age</label><input type="text" id="c'+i+'age" value="'+age(c.dob)+'" disabled aria-label="Age, filled from birth date"></div></div></div>'});
     h+='<p class="sub small">Made a mistake? Just correct the name or the date. An extra row you leave empty is skipped.</p>';
