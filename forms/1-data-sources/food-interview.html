@@ -116,7 +116,14 @@ canvas{width:100%;height:140px;border:1px dashed var(--line);border-radius:8px;b
 .mbox{background:var(--card);color:var(--ink);border:2px solid var(--attn);border-radius:12px;padding:20px;max-width:380px;display:flex;flex-direction:column;gap:12px}
 /* 16.10 — the signature pop-up: a live finger signature, never a stored sample (canon 27.07) */
 .sbox{background:var(--card);color:var(--ink);border:2px solid var(--accent);border-radius:12px;padding:18px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:10px}
-.sbox canvas{height:200px;background:#fff}  /* black ink on white in both themes — the signature lands on a white form */
+.sbox canvas{height:200px;background:#fff}
+/* 18.10 (owner's canon 13:45) — «View the completed form»: the SAME official blank of the storefront, filled by its own
+   PA_APPLY with exactly the data that will be sent, read-only, before that form's signature. */
+.vbox{background:var(--card);color:var(--ink);border:2px solid var(--accent);border-radius:12px;padding:12px;width:100%;max-width:1000px;height:calc(100vh - 32px);display:flex;flex-direction:column;gap:8px}
+.vbox iframe{flex:1;width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+.vbox .row3{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.vbox h2{margin:0;font-size:1.05rem}
+.btn.locked{opacity:.55}  /* black ink on white in both themes — the signature lands on a white form */
 .sbox .row3{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}
 .signed{display:block;max-width:100%;height:80px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff}
 .ready{font-family:var(--f-display);font-size:1.35rem;margin:0}
@@ -134,6 +141,7 @@ canvas{width:100%;height:140px;border:1px dashed var(--line);border-radius:8px;b
   </div>
   <div id="banner" class="banner" role="alert" hidden></div>
   <div id="modal" class="modal" hidden role="alertdialog" aria-modal="true" aria-labelledby="mt"><div class="mbox"><h2 id="mt">Please sign the form</h2><p id="mx">Your signature is missing. Sign in the box with your finger, then tap “Sign and submit”.</p><button type="button" class="btn primary" id="mok">OK, I will sign</button></div></div>
+  <div id="viewmodal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="vt"><div class="vbox"><div class="row3"><h2 id="vt">The completed form</h2><button type="button" class="btn primary" id="vclose">Close</button></div><p class="sub small" id="vnote">This is the official form with your answers. Check it, then close it and sign.</p><iframe id="vframe" title="The completed form"></iframe></div></div>
   <div id="sigmodal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="st"><div class="sbox"><h2 id="st">Sign with your finger</h2><p class="sub small" id="sfor"></p><canvas id="sigpad" aria-label="Signature pad"></canvas><span class="small sub" id="sempty" hidden>Please sign in the box first.</span><div class="row3"><button type="button" class="btn ghost" id="sclr">Clear</button><span><button type="button" class="btn ghost" id="scancel">Cancel</button> <button type="button" class="btn primary" id="sdone">Done</button></span></div></div></div>
   <form id="f" class="card" novalidate></form>
 </div>
@@ -406,7 +414,31 @@ function fld(id,lbl,val,o){o=o||{};return '<div class="field" data-f="'+id+'"><l
    :'<input id="'+id+'" type="'+(o.type||'text')+'" value="'+esc(val)+'"'+(o.ph?' placeholder="'+o.ph+'"':'')+(o.mode?' inputmode="'+o.mode+'"':'')+'>')+'<span class="miss">'+(o.msg||'Please fill this in to continue.')+'</span></div>'}
 function yn(key,val,yes,no){return '<div class="choices"><button type="button" class="choice" data-yn="'+key+'" data-v="1" aria-pressed="'+(val===true)+'">'+(yes||"Yes")+'</button><button type="button" class="choice" data-yn="'+key+'" data-v="0" aria-pressed="'+(val===false)+'">'+(no||"No")+'</button></div><div class="field" data-f="'+key+'"><span class="miss">Please choose one answer.</span></div>'}
 function tm(v){var t=TIMES.filter(function(x){return x[0]===v})[0];return t?t[1]:""}
-function signField(id,title){var png=S.sigPng&&S.sigPng[id];return '<div class="field" data-f="sig_'+id+'"><label class="req">Parent or guardian signature</label>'+(png?'<img class="signed" alt="Your signature" src="'+png+'">':'<p class="small sub">Not signed yet.</p>')+'<span class="miss">Please sign this form.</span><button type="button" class="btn '+(png?'ghost small':'primary')+'" data-signpop="'+id+'" data-signtitle="'+esc(title)+'">'+(png?'Sign again':'Sign')+'</button></div>'}
+function signField(id,title){var png=S.sigPng&&S.sigPng[id],seen=!!(S.viewed&&S.viewed[id]);return '<div class="field" data-f="sig_'+id+'"><label class="req">Parent or guardian signature</label>'+(png?'<img class="signed" alt="Your signature" src="'+png+'">':'<p class="small sub">'+(seen?'Not signed yet.':'Not signed yet. First look over the completed form.')+'</p>')+'<span class="miss">Please sign this form.</span><button type="button" class="btn '+(seen?'ghost':'primary')+'" data-view="'+id+'" data-viewtitle="'+esc(title)+'">'+(seen?'View the completed form again':'View the completed form')+'</button> <button type="button" class="btn '+(png?'ghost small':(seen?'primary':'ghost locked'))+'" data-signpop="'+id+'" data-signtitle="'+esc(title)+'"'+(seen?'':' aria-disabled="true"')+'>'+(png?'Sign again':'Sign')+'</button></div>'}
+/* 18.10 — «View» opens the SAME official blank (no replica: one carrier of the form's look) and draws the data of
+   buildSubmissions() into it with the blank's own PA_APPLY. Read-only; the kit's bar is hidden. Whatever the blank's
+   kit writes into this phone's storage while it is open is put back exactly as it was on Close — the direct blank
+   must never open later with answers it did not get from its own family. Sign is unlocked only after a successful
+   View of THAT form; a failure is said in words and nothing is unlocked (LAWS §L2). */
+var VIEW_FILE={iea:'IEA_FY2026-27_v10.html',enr:'CACFP_Enrollment_v12.html'};
+function viewData(d){var sd=todayISO();return kitNormalize(d.kind==='iea'?ieaData(sd):enrData(d.child,sd))}
+function storeSnap(){var o={};[['l',localStorage],['s',sessionStorage]].forEach(function(p){try{for(var i=0;i<p[1].length;i++){var k=p[1].key(i);o[p[0]+'|'+k]=p[1].getItem(k)}}catch(_){}});return o}
+function storeRestore(o){[['l',localStorage],['s',sessionStorage]].forEach(function(p){try{var keys=[];for(var i=0;i<p[1].length;i++)keys.push(p[1].key(i));keys.forEach(function(k){if(!(p[0]+'|'+k in o))p[1].removeItem(k)});Object.keys(o).forEach(function(x){if(x.indexOf(p[0]+'|')===0){var k=x.slice(2);if(p[1].getItem(k)!==o[x])p[1].setItem(k,o[x])}})}catch(_){}})}
+function openView(id,title){var d=docs().filter(function(x){return x.id===id})[0];if(!d||!VIEW_FILE[d.kind])return;
+  var m=document.getElementById("viewmodal"),fr=document.getElementById("vframe"),note=document.getElementById("vnote"),snap=storeSnap(),ok=false;
+  document.getElementById("vt").innerHTML=title;note.textContent='One moment\u2026';m.hidden=false;
+  fr.onload=function(){setTimeout(fill,900)};
+  /* the blank's kit finishes its own start (center, packet memory) after load — the answers are drawn once it is done */
+  function fill(){try{var w=fr.contentWindow,doc=w.document;if(typeof w.PA_APPLY!=='function')throw new Error('this form cannot show your answers');
+      w.PA_APPLY(viewData(d));
+      var st=doc.createElement('style');st.textContent='.fk-print-hidden,.fk-toolbar,.fk-banner,.fk-progress,.fk-center-header,.fk-tip,.fk-tip-pop,.fk-msg,.fk-deny,.fk-photo-btn,.fk-flash{display:none!important}';doc.head.appendChild(st);
+      doc.querySelectorAll('input,select,textarea,button').forEach(function(e){e.disabled=true});
+      /* the blank is laid out for a page width: fit it to the window, the parent reads the whole form without sideways scrolling */
+      var sw=doc.documentElement.scrollWidth,cw=fr.clientWidth;if(sw>cw+4)doc.documentElement.style.zoom=(cw/sw).toFixed(3);
+      ok=true;note.textContent='This is the official form with your answers. Check it, then close it and sign.'}
+    catch(e){note.textContent='The completed form could not be shown: '+(e&&e.message||e)+'. Tap Back to change an answer, or try View again. You cannot sign this form until you have seen it.'}}
+  fr.src=VIEW_FILE[d.kind]+'?center='+encodeURIComponent(CENTER_SLUG)+'&view=1';
+  document.getElementById("vclose").onclick=function(){m.hidden=true;fr.onload=null;fill=function(){};fr.src='about:blank';storeRestore(snap);if(ok){S.viewed=S.viewed||{};S.viewed[id]=true}render()}}
 function sigBox(id,title){return '<div class="field" data-f="sig_'+id+'"><label class="req">Signature</label><canvas class="pad" data-sig="'+id+'" aria-label="Signature pad for '+esc(title)+'"></canvas><span class="miss">Please sign this form.</span><button type="button" class="btn ghost small" data-clr="'+id+'">Clear signature</button></div>'}
 function linksFor(){var all=LINKS_BY_CENTER[CENTER_SLUG]||LINKS_BY_CENTER._default||[];return all.filter(function(l){return l.kind==="food"?anyFood():has("dcy01234")})}
 
@@ -470,8 +502,8 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
   /* 16.10: «My child goes to school» is unticked by default (blankKid school:false) and shown only from kindergarten age
      up (schoolAge above). Without the tick no school hours are asked. A younger child never carries a school tick. */
   if(k.indexOf("care")===0){K=+k.slice(4);var c=S.children[K];if(!schoolAge(c)){c.school=false;c.busTo=false;c.busFrom=false;c.a2="";c.d2=""}h='<h2>'+esc(c.name)+': days, hours and meals</h2><p class="sub">For the CACFP Enrollment Form. Check the days your child is normally in care, the hours, and the meals your child normally receives here.</p><b>Days in care</b><div class="days">'+DAYS.map(function(d){return CENTER.closedDays[d[0]]?'<label class="off" title="The center is closed on this day"><span aria-hidden="true">✕</span>'+d[1]+'</label>':'<label><input type="checkbox" data-day="'+d[0]+'"'+(c.days[d[0]]?' checked':'')+'>'+d[1]+'</label>'}).join('')+'</div><div class="field" data-f="days"><span class="miss">Check at least one day.</span></div>'+
-    (c.school?'<div class="note small">School days: list the morning hours before school and the afternoon hours after school.</div><b>Before school</b><div class="row">'+fld("a1","Arrives at the center",c.a1,{select:TIMES,msg:"Choose the arrival time."})+fld("d1","Leaves for school",c.d1,{select:TIMES,msg:"Choose the time."})+'</div><label class="check"><input type="checkbox" id="busTo"'+(c.busTo?' checked':'')+'>The center’s school bus takes my child to school</label><b>After school</b><div class="row">'+fld("a2","Comes back from school",c.a2,{select:TIMES,msg:"Choose the time."})+fld("d2","Goes home",c.d2,{select:TIMES,msg:"Choose the time."})+'</div><label class="check"><input type="checkbox" id="busFrom"'+(c.busFrom?' checked':'')+'>The center’s school bus brings my child back from school</label>'
-      :'<div class="row">'+fld("a1","Arrives",c.a1,{select:TIMES,msg:"Choose the arrival time."})+fld("d1","Leaves",c.d1,{select:TIMES,msg:"Choose the departure time."})+'</div>')+
+    (c.school?'<div class="note small">School days: list the morning hours before school and the afternoon hours after school.</div><b>Before school</b><div class="row">'+fld("a1","Arrives at the center",c.a1,{select:TIMES,msg:"Choose the arrival time."})+fld("d1","Leaves for school",c.d1,{select:TIMES,msg:"Choose the time."})+'</div><div class="field" data-f="hours1"><span class="miss">“Leaves for school” must be later than “Arrives at the center”.</span></div><label class="check"><input type="checkbox" id="busTo"'+(c.busTo?' checked':'')+'>The center’s school bus takes my child to school</label><b>After school</b><div class="row">'+fld("a2","Comes back from school",c.a2,{select:TIMES,msg:"Choose the time."})+fld("d2","Goes home",c.d2,{select:TIMES,msg:"Choose the time."})+'</div><div class="field" data-f="hours2"><span class="miss">After school: “Comes back from school” must be later than “Leaves for school”, and “Goes home” later than “Comes back from school”.</span></div><label class="check"><input type="checkbox" id="busFrom"'+(c.busFrom?' checked':'')+'>The center’s school bus brings my child back from school</label>'
+      :'<div class="row">'+fld("a1","Arrives",c.a1,{select:TIMES,msg:"Choose the arrival time."})+fld("d1","Leaves",c.d1,{select:TIMES,msg:"Choose the departure time."})+'</div><div class="field" data-f="hours1"><span class="miss">“Leaves” must be later than “Arrives”.</span></div>')+
     (schoolAge(c)==='unset'?'<div class="note small" id="cutoffUnset">'+esc(KINDERGARTEN_CUTOFF_UNSET_WORDS)+'</div>':'')+
     (schoolAge(c)?'<label class="check"><input type="checkbox" id="school"'+(c.school?' checked':'')+'>My child goes to school (before and after school care)</label>':'')+
     '<b>Meals normally received while in care</b><div class="days">'+MEALS.map(function(m){return CENTER.noMeals[m[0]]?'<label class="off" title="Not served at this center"><span aria-hidden="true">✕</span>'+m[1]+'</label>':'<label><input type="checkbox" data-meal="'+m[0]+'"'+(c.meals[m[0]]?' checked':'')+'>'+m[1]+'</label>'}).join('')+'<span class="small sub" style="flex-basis:100%">✕ = not offered at this center</span>'+'</div><div class="field" data-f="meals"><span class="miss">Check at least one meal.</span></div><label class="check"><input type="checkbox" id="varies"'+(c.varies?' checked':'')+'>The schedule may often change because of my work schedule</label>'}
@@ -508,7 +540,8 @@ function docs(){var a=S.adult,out=[];
     out.push({id:"enr"+i,kind:"enr",child:i,title:"CACFP Enrollment Form — "+esc(c.name),body:'<div class="sum"><dl><dt>Child</dt><dd>'+esc(c.name)+' · '+esc(c.dob)+' · age '+age(c.dob)+'</dd><dt>Days</dt><dd>'+days+'</dd><dt>Hours</dt><dd>'+(c.school?'before school '+tm(c.a1)+' – '+tm(c.d1)+(c.busTo?' (center bus to school)':'')+' · after school '+tm(c.a2)+' – '+tm(c.d2)+(c.busFrom?' (center bus from school)':''):tm(c.a1)+' – '+tm(c.d1))+'</dd><dt>Meals</dt><dd>'+meals+'</dd><dt>Schedule varies</dt><dd>'+(c.varies?'yes':'no')+'</dd><dt>Parent</dt><dd>'+esc(a.name)+' · born '+esc(a.dob)+' · '+esc(a.day)+' · '+esc(a.email)+'</dd><dt>Address</dt><dd>'+esc(a.street)+', '+esc(a.city)+' '+esc(a.zip)+'</dd></dl></div>'})});
   if(has("infant"))S.children.forEach(function(c,i){if(!isInfant(c))return;var F={center:"Center provides formula",bring_formula:"Parent brings formula: "+esc(c.fname||""),bring_bm:"Parent brings expressed breast milk",breastfeed:"Parent comes to breastfeed"},Sd={center:"Center provides all solid foods",one:"Parent brings one solid food item"};
     out.push({id:"inf"+i,kind:"inf",child:i,title:"Infant Meals – Parent Preference Letter — "+esc(c.name),body:'<div class="sum"><dl><dt>Infant</dt><dd>'+esc(c.name)+' · '+esc(c.dob)+'</dd><dt>Formula / breast milk</dt><dd>'+(F[c.formula]||'')+'</dd><dt>Solid food</dt><dd>'+(Sd[c.solid]||'')+'</dd></dl></div>'})});
-  return out}
+  /* 18.10 (owner): the signing page goes Enrollment for each child first, then the IEA. */
+  return out.filter(function(d){return d.kind!=="iea"}).concat(out.filter(function(d){return d.kind==="iea"}))}
 
 /* ═══════════════════════ SIGNATURE PADS ═══════════════════════ */
 var pads={};
@@ -564,9 +597,12 @@ function bind(k){var f=document.getElementById("f"),c=S.children[K];
   if((g=document.getElementById("addMember")))g.onclick=function(){var ki=S.members.findIndex(function(m){return m.kid});if(ki<0)S.members.push(blankMember(""));else S.members.splice(ki,0,blankMember(""));render()};
   if((g=document.getElementById("kidsOk")))g.onchange=function(){S.kidsOk=this.checked};
   if((g=document.getElementById("nossn")))g.onchange=function(){S.adult.nossn=document.getElementById("nossn").checked;if(S.adult.nossn)S.adult.ssn="";render()};
-  if((g=document.getElementById("back")))g.onclick=function(){if(SENDING)return;if(k==="review"&&S.sigPng){docs().forEach(function(d){delete S.sigPng[d.id];S.sig[d.id]=false})}STEP--;render()};
+  if((g=document.getElementById("back")))g.onclick=function(){if(SENDING)return;if(k==="review"&&S.sigPng){docs().forEach(function(d){delete S.sigPng[d.id];S.sig[d.id]=false})}if(k==="review")S.viewed={};STEP--;render()};
   if(f.querySelector("canvas.pad"))setupPads();
-  f.querySelectorAll("[data-signpop]").forEach(function(b){b.onclick=function(){openSignPop(b.dataset.signpop,b.dataset.signtitle)}});
+  f.querySelectorAll("[data-view]").forEach(function(b){b.onclick=function(){openView(b.dataset.view,b.dataset.viewtitle)}});
+  f.querySelectorAll("[data-signpop]").forEach(function(b){b.onclick=function(){var id=b.dataset.signpop;
+    if(!(S.viewed&&S.viewed[id])){var md=document.getElementById("modal");document.getElementById("mt").textContent='Please review the completed form first';document.getElementById("mx").textContent='Tap “View the completed form”, look it over, close it — then you can sign.';md.hidden=false;var ok=document.getElementById("mok");ok.focus();ok.onclick=function(){md.hidden=true};return}
+    openSignPop(id,b.dataset.signtitle)}});
   f.onsubmit=function(e){e.preventDefault();if(SENDING)return;prune(k);var bad=check(k);
     document.querySelectorAll(".field.bad").forEach(function(x){x.classList.remove("bad")});
     if(bad.length){bad.forEach(function(id){var el=f.querySelector('[data-f="'+id+'"]');if(el)el.classList.add("bad")});
@@ -592,7 +628,9 @@ function check(k){var b=[];function need(id,v){if(!String(v||"").trim())b.push(i
   if(k==="household"){kidSync();if(S.kidInc===true){var kp=S.members.filter(function(m){return m.kid&&m.kidPick});if(!kp.length)b.push("kidany");S.members.forEach(function(m,i){if(!m.kid||!m.kidPick)return;if(!m.kidSrc)b.push("k"+i+"s");else{if(!m.inc[m.kidSrc].a)b.push("k"+i+"a");if(!m.inc[m.kidSrc].f)b.push("k"+i+"f")}})}}
   if(k==="household")S.members.forEach(function(m,i){if(m.kid)return;need("m"+i+"n",m.name);if(m.has===null){b.push("m"+i+"has");return}if(m.has===false)return;var any=false;SRC.forEach(function(s){var v=m.inc[s[0]];if(v.a&&!v.f)b.push("m"+i+s[0]+"f");if(v.f&&!v.a)b.push("m"+i+s[0]+"a");if(v.a&&v.f)any=true});if(!any)b.push("m"+i+"any")});
   if(k==="adult"){var a=S.adult;need("an",a.name);if(has("enroll")){need("pdob",a.dob);if(!/.+@.+\..+/.test(a.email))b.push("email")}need("day",a.day);need("street",a.street);need("city",a.city);if(has("iea"))need("state",a.state);if(!/^\d{5}$/.test(a.zip))b.push("zip");if(has("iea")&&!notApplying())need("county",a.county)}
-  if(k.indexOf("care")===0){var c=S.children[+k.slice(4)];if(!DAYS.some(function(d){return c.days[d[0]]&&!CENTER.closedDays[d[0]]}))b.push("days");need("a1",c.a1);need("d1",c.d1);if(c.school){need("a2",c.a2);need("d2",c.d2)}if(!MEALS.some(function(m){return c.meals[m[0]]&&!CENTER.noMeals[m[0]]}))b.push("meals")}
+  if(k.indexOf("care")===0){var c=S.children[+k.slice(4)];if(!DAYS.some(function(d){return c.days[d[0]]&&!CENTER.closedDays[d[0]]}))b.push("days");need("a1",c.a1);need("d1",c.d1);if(c.school){need("a2",c.a2);need("d2",c.d2)}
+    /* 18.10: the hours must run forward — a form with «leaves» before «arrives» is refused in words (LAWS §L2). */
+    if(c.a1&&c.d1&&+c.d1<=+c.a1)b.push("hours1");if(c.school&&c.a2&&c.d2&&+c.d2<=+c.a2)b.push("hours2");if(c.school&&c.d1&&c.a2&&+c.a2<=+c.d1)b.push("hours2");if(!MEALS.some(function(m){return c.meals[m[0]]&&!CENTER.noMeals[m[0]]}))b.push("meals")}
   if(k.indexOf("infant")===0&&k.indexOf("infantno")!==0){var ci=S.children[+k.slice(6)];if(!ci.formula)b.push("inf_formula");if(ci.formula==="bring_formula")need("fname",ci.fname);if(!ci.solid)b.push("inf_solid")}
   if(k==="acks")ACKS.forEach(function(a){if(!S.acks[a.id])b.push("ack_"+a.id);if(!S.sig["ack_"+a.id])b.push("sig_ack_"+a.id)});
   if(k==="nondisc"){if(!S.nondiscSeen)b.push("nondisc_seen");if(NONDISC_SIGNATURE_REQUIRED&&!S.sig.nondisc)b.push("sig_nondisc")}
