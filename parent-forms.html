@@ -52,6 +52,9 @@
      Поэтому в одноформенном режиме карточка перестаёт быть карточкой: действие
      во всю ширину и первым, описание — под ним. Мини-QR убран: он ведёт туда,
      где человек уже стоит (он пришёл по нему), и только занимает место. */
+  /* 17.10 — one link, two sections, each with its own progress */
+  .sec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 18px 2px 9px; font: 700 15px/1.3 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--green); }
+  .sec-h .sec-p { font: 600 12.5px/1.2 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: var(--muted); white-space: nowrap; }
   .solo .card { display: block; padding: 18px; }
   .solo .card .num { display: none; }
   .solo .card .right { display: block; margin: 0 0 12px; }
@@ -215,6 +218,15 @@
         c.classList.add('pkt-next'); if (o) o.textContent = 'Next →';
       }
     });
+    /* the one interview card stands for the food forms it fills: done when the server has each of them */
+    Array.prototype.forEach.call(document.querySelectorAll('.card[data-key="food_interview"]'), function (c) {
+      var ks = (c.dataset.keys || '').split(',').filter(Boolean);
+      if (ks.length && ks.every(function (k) { var f = byKey[k]; return f && (f.status === 'sent' || f.status === 'on_file'); })) {
+        c.classList.add('done'); var num = c.querySelector('.num'); if (num) num.innerHTML = '&#10003;';
+        var o = c.querySelector('.open'); if (o) o.textContent = 'Done ✓';
+      }
+    });
+    sectionProgress();
     var old = document.getElementById('pkt-done'); if (old) old.remove();
     if (PKT.done) {
       var d = document.createElement('div'); d.id = 'pkt-done';
@@ -247,7 +259,15 @@
 
   // ---- session "done" tracking (per form key) ----
   function packetLoad() { try { var raw = localStorage.getItem(PACKET_KEY); if (!raw) return null; var o = JSON.parse(raw); if (!o.ts || Date.now() - o.ts > PACKET_TTL_MS) { localStorage.removeItem(PACKET_KEY); return null; } return o; } catch (e) { return null; } }
-  function refreshDone() { var done = (packetLoad() || {}).done || {}; Array.prototype.forEach.call(document.querySelectorAll('.card[data-key]'), function (c) { var k = c.dataset.key, d = !!done[k]; c.classList.toggle('done', d); var num = c.querySelector('.num'); if (num) num.innerHTML = d ? '&#10003;' : c.dataset.n; var o = c.querySelector('.open'); if (o) o.textContent = d ? 'Done ✓' : 'Open'; }); }
+  function refreshDone() { var done = (packetLoad() || {}).done || {}; Array.prototype.forEach.call(document.querySelectorAll('.card[data-key]'), function (c) { var k = c.dataset.key, d = !!done[k]; c.classList.toggle('done', d); var num = c.querySelector('.num'); if (num) num.innerHTML = d ? '&#10003;' : c.dataset.n; var o = c.querySelector('.open'); if (o) o.textContent = d ? 'Done ✓' : 'Open'; }); sectionProgress(); }
+  /* 17.10 (canon 1д): each section counts its own fill-and-sign cards — «2 of 5 done». */
+  function sectionProgress() {
+    Array.prototype.forEach.call(document.querySelectorAll('.sec[data-sec]'), function (sec) {
+      var cards = sec.querySelectorAll('.card[data-key]'), d = 0;
+      Array.prototype.forEach.call(cards, function (c) { if (c.classList.contains('done')) d++; });
+      var p = sec.querySelector('.sec-p'); if (p) p.textContent = cards.length ? (d + ' of ' + cards.length + ' done') : '';
+    });
+  }
 
   // ---- QR (vendored qrcodegen, no external calls) ----
   function drawQR(canvas, text, px) {
@@ -303,7 +323,19 @@
       headers: { 'apikey': SB_ANON, 'Authorization': 'Bearer ' + SB_ANON,
                  'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
       body: JSON.stringify(body || {})
-    }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    }).then(function (r) { if (!r.ok) { doorRefused('the server answered ' + r.status); return null; } return r.json(); })
+      .catch(function () { doorRefused('no connection to the server'); return null; });
+  }
+  /* ⭐ 08.10 (LAWS §L2): ОТКАЗ ДВЕРИ ВИДЕН. Канон 26.08 «молчащая дверь не должна запирать семью» в силе — семья
+     получает список форм; но теперь это сказано словами с причиной, а не молча (13.09→06.10: 415 отказов 401
+     прошли незамеченными). Починка права — миграция 20261102zzzm в приложении. */
+  function doorRefused(why) {
+    try { console.warn('[interview door]', why); if (document.getElementById('door-refused')) return;
+      var n = document.createElement('div'); n.id = 'door-refused'; n.setAttribute('role', 'status');
+      n.textContent = 'The online interview could not be opened (' + why + '). You can still fill in each form below.';
+      n.style.cssText = 'margin:10px auto;max-width:720px;padding:10px 14px;border:1px solid #c7c2e8;border-radius:10px;background:#f3f0fb;color:#3b2a7a;font:600 14px/1.4 Arial,sans-serif';
+      (document.body || document.documentElement).insertBefore(n, (document.body || document.documentElement).firstChild);
+    } catch (e) { console.warn('[interview door] note', e); }
   }
 
   function interviewDoor() {
@@ -572,8 +604,76 @@
         });
       })();
 
-      var list = document.getElementById('list'), n = 0;
-      slots.forEach(function (s) {
+      /* ⭐ 17.10 — ONE LINK, TWO SECTIONS (canon 1а–д, owner's word «порядок меняем мы сами»).
+         The consent is the parent's paper for BOTH sets — it stands first, above the sections, once (one per adult).
+         Licensing / Center documents: everything that is not a food program form (DCY 01234 first — FORM_RANK).
+         Food Program (CACFP): the forms the registry says the CACFP requires (forms{}.requiringOrg «…CACFP», and the
+         school enrollments that are the CACFP Enrollment under another label — sameAs:'enroll'). One carrier: the
+         registry field, no second list here. A link without food forms (a center without CACFP) shows no headers.
+         FOOD_VIA_INTERVIEW: the IEA and the CACFP Enrollment become ONE interview card (food-interview.html, the
+         combined interview Enrollment → IEA); the Infant Meals form stays its own official card — the third step.
+         Was (974bce9, reverted a423da8): the food slots removed from one flat list; Infant Meals went into the interview. */
+      var FOOD_VIA_INTERVIEW = false;  /* 18.10 deploy step 1: routing OFF until the acts zze/zzf/zzg; turned ON as the last step (rollback = false, one line) */
+      var INTERVIEW_KEYS = { enroll: 'enroll', school_enrollment_regular: 'enroll', school_enrollment_fullday: 'enroll', iea: 'iea' };
+      function isFoodForm(k) {
+        var f = (reg.forms || {})[k] || {}; var src = f.sameAs ? ((reg.forms || {})[f.sameAs] || f) : f;
+        return /CACFP/.test(String(src.requiringOrg || ''));
+      }
+      var consentSlots = slots.filter(function (s) { return s.key === 'parent_consent'; });
+      var foodAll = slots.filter(function (s) { return s.key !== 'parent_consent' && isFoodForm(s.key); });
+      var licSlots = slots.filter(function (s) { return s.key !== 'parent_consent' && !isFoodForm(s.key); });
+      var ivSlots = FOOD_VIA_INTERVIEW ? foodAll.filter(function (s) { return !s.pending && Object.prototype.hasOwnProperty.call(INTERVIEW_KEYS, s.key); }) : [];
+      var foodSlots = foodAll.filter(function (s) { return ivSlots.indexOf(s) < 0; });
+      function interviewUrl(withPersonal) {
+        var f = []; ['enroll', 'iea'].forEach(function (k) { if (ivSlots.some(function (s) { return INTERVIEW_KEYS[s.key] === k; })) f.push(k); });
+        var u = 'https://pa082508.github.io/forms/1-data-sources/food-interview.html?center=' + encodeURIComponent(center)
+              + '&forms=' + encodeURIComponent(f.join(',')) + '&k=food_interview&v=' + encodeURIComponent(FORM_V);
+        return withPersonal ? withToken(u) : u;
+      }
+      /* a link that names only the interview's forms opens the interview straight away (it asks the consent itself) */
+      if (ivSlots.length && ivSlots.length === slots.length) { location.replace(interviewUrl(true)); return; }
+
+      var root = document.getElementById('list'), list = root, n = 0;
+      var twoSections = foodAll.length > 0 && (licSlots.length > 0 || consentSlots.length > 0);
+      function section(id, title) {
+        if (!twoSections) return root;
+        var sec = document.createElement('div'); sec.className = 'sec'; sec.dataset.sec = id;
+        var h = document.createElement('div'); h.className = 'sec-h';
+        h.innerHTML = '<span class="sec-t"></span><span class="sec-p"></span>';
+        h.querySelector('.sec-t').textContent = title;
+        sec.appendChild(h); root.appendChild(sec); return sec;
+      }
+      function interviewCard() {
+        n++;
+        var fc = document.createElement('div'), fLink = interviewUrl(false);
+        fc.className = 'card'; fc.dataset.key = 'food_interview'; fc.dataset.n = String(n);
+        fc.dataset.keys = ivSlots.map(function (s) { return s.key; }).join(',');
+        fc.innerHTML = '<div class="num">' + n + '</div>'
+          + '<div class="info"><div class="t"></div><span class="badge fs">Fill &amp; sign</span><div class="d"></div></div>'
+          + '<div class="right"><span class="miniqr" title="Scan / share this interview"><canvas></canvas></span>'
+          + '<a class="open" target="_blank" rel="noreferrer">Open</a></div>';
+        fc.querySelector('.t').textContent = 'Food program forms — one short interview';
+        fc.querySelector('.d').textContent = 'We ask one thing at a time and fill in '
+          + ivSlots.map(function (s) { var fm = reg.forms[s.key] || {}; return s.label || fm.title || s.key; }).join(', ')
+          + ' for you. At the end you sign.';
+        fc.querySelector('.open').href = interviewUrl(true);
+        list.appendChild(fc);
+        drawQR(fc.querySelector('.miniqr canvas'), fLink, 46);
+        fc.querySelector('.miniqr').addEventListener('click', function () { openQR('Food program forms', fLink); });
+      }
+      var GROUPS = [
+        { id: 'consent', title: null, slots: consentSlots },
+        { id: 'licensing', title: 'Licensing / Center documents', slots: licSlots },
+        { id: 'food', title: 'Food Program (CACFP)', slots: foodSlots, interview: ivSlots.length > 0 }
+      ];
+      GROUPS.forEach(function (g) {
+        if (!g.slots.length && !g.interview) return;
+        list = g.title ? section(g.id, g.title) : root;
+        if (g.interview) interviewCard();
+        g.slots.forEach(renderSlot);
+      });
+      list = root;
+      function renderSlot(s) {
         var form = reg.forms[s.key] || {};
         // sameAs alias (e.g. School Enrollment Regular/Full-Day → enroll): resolve the
         // real document/version/kind from the TARGET, but keep the alias's own label and
@@ -687,6 +787,9 @@
         card.querySelector('.d').textContent = s.key === 'iea'
           ? 'One per family — not one per child. List all your children on it.'
             + (note ? ' ' + note : '')
+          : s.key === 'infant_meals'
+          /* 17.10 (canon 1б): the third step of the Food Program — one official form per child under 12 months */
+          ? 'Only for a child under 12 months — one form per infant, twins too.' + (note ? ' ' + note : '')
           : note;
         if (link) { card.querySelector('.open').href = openHref; }
         list.appendChild(card);
@@ -694,11 +797,11 @@
           drawQR(card.querySelector('.miniqr canvas'), link, 46);
           card.querySelector('.miniqr').addEventListener('click', function () { openQR(label, link); });
         } else { card.querySelector('.miniqr').style.display = 'none'; }
-      });
+      }
 
       // Одноформенный режим: ссылка/QR названы ОДНУ форму — страница становится
       // её обложкой, а не списком пакета (замер 09.08).
-      if (slots.length === 1 && n === 1) { list.classList.add('solo'); }
+      if (slots.length === 1 && n === 1) { root.classList.add('solo'); }
 
       howToComplete();
       refreshDone();
