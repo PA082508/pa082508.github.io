@@ -92,7 +92,7 @@
     },
     "food_interview": {
       "slug": "food_interview",
-      "title": "Food program forms — one short interview (IEA + CACFP Enrollment)",
+      "title": "Food Program Interview (Enrollment + IEA)",
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "online",
       "signer": "parent",
@@ -114,6 +114,54 @@
         {
           "at": "2026-10-18",
           "note": "Registered by the owner 18.10 («Выставляем на прод и ставим в библиотеку … отдельным файлом»): ONE interview fills the IEA v10 (household) and a CACFP Enrollment v12 per child; each form is viewed as the official blank (View) and signed in the pop-up. The direct IEA / CACFP Enrollment entries are NOT changed by this entry — the owner makes them unavailable himself."
+        },
+        {
+          "at": "2026-10-18",
+          "note": "Owner 18.10 «Три записи в библиотеке»: this entry is the combined interview; the two modules are their own entries food_interview_enroll (?forms=enroll) and food_interview_iea (?forms=iea) — the same page, one carrier."
+        }
+      ]
+    },
+    "food_interview_enroll": {
+      "slug": "food_interview_enroll",
+      "title": "CACFP Enrollment — interview",
+      "requiringOrg": "ODE Nutrition/CACFP",
+      "intakeMode": "online",
+      "signer": "parent",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/food-interview.html?forms=enroll"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/food-interview.html?forms=enroll",
+      "fills": [
+        "enroll"
+      ],
+      "perInstance": false,
+      "history": [
+        {
+          "at": "2026-10-18",
+          "note": "Owner 18.10 «Три записи в библиотеке»: the module «CACFP Enrollment» of the food-program interview (food-interview.html?forms=enroll) — one Enrollment per child, each viewed as the official blank and signed. The direct CACFP Enrollment entry is not changed."
+        }
+      ]
+    },
+    "food_interview_iea": {
+      "slug": "food_interview_iea",
+      "title": "Income Eligibility (IEA) — interview",
+      "requiringOrg": "ODE Nutrition/CACFP",
+      "intakeMode": "online",
+      "signer": "parent",
+      "current": "v1",
+      "versions": {
+        "v1": "https://pa082508.github.io/forms/1-data-sources/food-interview.html?forms=iea"
+      },
+      "fallbackUrl": "https://pa082508.github.io/forms/1-data-sources/food-interview.html?forms=iea",
+      "fills": [
+        "iea"
+      ],
+      "perInstance": false,
+      "history": [
+        {
+          "at": "2026-10-18",
+          "note": "Owner 18.10 «Три записи в библиотеке»: the module «IEA» of the food-program interview (food-interview.html?forms=iea) — mid-year income change; by a named link the family's children come from the center's records (get_prefill._family.children, 20261103zzf). The direct IEA entry is not changed."
         }
       ]
     },
