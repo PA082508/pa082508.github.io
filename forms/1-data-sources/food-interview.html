@@ -18,8 +18,7 @@
      Stub for the future entry: forms.food_interview { current:'v1', versions:{v1:'…/food-interview.html'}, sets:['food','full'] }.
 
   ⭐ 17.10 REORDER (owner's word «порядок меняем мы сами»; canon 17.10 18:55 — two modules + combined):
-     0  e-sign consent FIRST (one per adult; skipped when THIS adult — the guardian of the named link — has an active
-        consent; none → no e-signature, words + «sign on paper», LAWS §L2; a withdrawn consent → paper in words)
+     0  (removed 18.10 by the owner: the e-sign consent is NOT part of this interview — the director sends it by hand)
      1  module «CACFP Enrollment»: which children eat here → the parent → days / hours / meals per child
         (one Enrollment per child, each signed live in the window that names the form and the child)
      2  module «IEA»: SNAP → OWF/TANF → foster → case number (short IEA, FREE, no income, no SSN) · or the income check
@@ -218,70 +217,9 @@ var LINKS_BY_CENTER={_default:[
 var IEA_INTRO_TEXT='Before you start: this form helps [Center name] receive federal CACFP meal funding for your child. Your answers are kept confidential and are used only for the food program. It takes about 5 minutes.';
 function ieaIntroWords(){return IEA_INTRO_TEXT.split('[Center name]').join(CENTER.name||'the center')}
 
-/* ═══ E-SIGN CONSENT FIRST (17.10, canon 2) ═══
-   One per adult, for both sets. Skipped when THIS adult (the guardian named by the link's token) has an active consent
-   (get_prefill._family.has_esign_consent — after 20261103zzf a withdrawn consent does not count). No consent → no
-   e-signature: words + «sign on paper» (LAWS §L2). A withdrawn consent → paper, in words (the director sees «withdrawn»
-   on the parent's card). A link with no named adult (QR / shared link) cannot record a consent for anyone → the official
-   consent form first (Parent_ESign_Consent, through the storefront), unless it was submitted on this phone.
-   ⚠ COPY THAT DECLARES ITSELF: consentGate() and paperExit() below are byte-for-byte the texts of
-   interview-live.html consentGate()/paperExit() (owner's text 12.09). The carrier is interview-live.html; a change
-   there must be made here in the same commit. */
-var ESIGN_VERSION='v1.0-2026-09';
-var CONSENT=null;   /* null until known; 'yes' · 'need' · 'form' · 'paper' · 'withdrawn' */
-function consentGate(){
-  return '<div><h1>Electronic forms &amp; signature</h1>'
-    +'<p>This form is completed and signed electronically. Your finger-drawn signature counts the '
-    +'same as a signature on paper.</p>'
-    +'<p>By checking the box and continuing, you agree to fill out and sign your child\u2019s forms '
-    +'electronically. You can change your mind at any time \u2014 just tell the director, and you\u2019ll '
-    +'get paper forms instead.</p>'
-    +'<label class="card" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin:16px 0">'
-    +'<input type="checkbox" id="esignAgree" style="margin-top:2px;width:18px;height:18px;flex:0 0 auto">'
-    +'<span><b>I agree to complete and sign forms electronically</b></span></label>'
-    +'<button class="btn" id="esignContinue" disabled style="opacity:.5">I agree \u2014 continue</button>'
-    +'<button class="btn" id="esignPaper" style="background:#eef1ef;color:#16211c;margin-top:10px">'
-    +'I\u2019d rather use paper</button></div>';
-}
-function paperExit(){
-  return '<div><h1>Paper works too</h1>'
-    +'<p>No problem \u2014 ask the director for a paper copy of your child\u2019s enrollment form. '
-    +'Everything on paper counts exactly the same. This link will keep working for 7 days if you '
-    +'change your mind.</p>'
-    +'<button class="btn" id="esignBack" style="background:#eef1ef;color:#16211c">\u2190 Back</button></div>';
-}
-/* New words (17.10) — no carrier had them. */
-function paperWithdrawn(){
-  return '<div><h1>Paper forms</h1><p>You told the center that you no longer want to sign forms electronically. '
-    +'Nothing can be signed on this page. Please ask the director for the paper forms \u2014 everything on paper counts exactly the same.</p></div>';
-}
-function consentFormFirst(){
-  var u='../../parent-forms.html?center='+encodeURIComponent(CENTER_SLUG)+'&only=parent_consent';
-  return '<div><h1>First: consent to sign electronically</h1>'
-    +'<p>Before the food program forms, each parent signs the Parent Consent for Electronic Signatures once. '
-    +'Sign it first, then come back to this page.</p>'
-    +'<p><a class="btn primary" style="display:inline-block;text-decoration:none" id="consentFormLink" href="'+esc(u)+'" target="_blank" rel="noopener">Open the consent form</a></p>'
-    +'<p class="sub small">Already signed it on this phone? Tap \u201cI signed it\u201d. Prefer paper? Ask the director for the paper forms.</p>'
-    +'<div class="nav"><button type="button" class="btn ghost" id="esignPaper">I\u2019d rather use paper</button>'
-    +'<button type="button" class="btn primary" id="consentSigned">I signed it \u2014 continue</button></div>'
-    +'<span class="small sub" id="consentNotYet" hidden>We do not see the consent form sent from this phone yet. Sign it and tap Submit on it, then try again.</span></div>';
-}
-/* the consent form submitted on this phone (the kit marks its packet slot done — cacfp_packet_v1.done.parent_consent) */
-function consentSentHere(){try{var o=JSON.parse(localStorage.getItem('cacfp_packet_v1'))||{};return !!(o.done&&o.done.parent_consent)&&(Date.now()-(+o.ts||0))<7*24*60*60*1000}catch(_){return false}}
-function bindConsent(){
-  var cb=document.getElementById('esignAgree'),go=document.getElementById('esignContinue'),pp=document.getElementById('esignPaper'),bk=document.getElementById('esignBack'),sg=document.getElementById('consentSigned');
-  if(cb&&go)cb.onchange=function(){go.disabled=!cb.checked;go.style.opacity=cb.checked?'1':'.5'};
-  if(go)go.onclick=function(e){e.preventDefault();if(go.disabled)return;go.disabled=true;go.textContent='One moment\u2026';
-    rpcSubmit('esign_record_consent',{p_token:TOKEN,p_version:ESIGN_VERSION}).then(function(r){
-      if(r&&r.ok){CONSENT='yes';STEP=0;render();window.scrollTo(0,0)}
-      else if(r&&r.error==='no_live_token_or_guardian'){CONSENT='form';STEP=0;render()}
-      else throw new Error('not recorded')})
-    .catch(function(){go.disabled=false;go.textContent='I agree \u2014 continue';var bn=document.getElementById('banner');bn.hidden=false;bn.textContent='We could not record your agreement \u2014 please try again, or ask the director for paper.'})};
-  if(pp)pp.onclick=function(e){e.preventDefault();CONSENT='paper';STEP=0;render();window.scrollTo(0,0)};
-  if(bk)bk.onclick=function(e){e.preventDefault();CONSENT=TOKEN&&CONSENT_HAD_GUARDIAN?'need':'form';STEP=0;render()};
-  if(sg)sg.onclick=function(e){e.preventDefault();if(consentSentHere()){CONSENT='yes';STEP=0;render()}else{document.getElementById('consentNotYet').hidden=false}};
-}
-var CONSENT_HAD_GUARDIAN=false;
+/* 18.10 (owner's decision, replaces canon 17.10 «consent first in any sending»): this interview knows NOTHING about
+   the e-signature consent — no step, no check, no screen, no status read. The director sends or attaches the consent
+   form by hand. Was 7a36c8f: consentGate / consentFormFirst / bindConsent / consentSentHere / paperExit / paperWithdrawn. */
 
 /* Editions of the real forms this interview fills (p_form_version). */
 var IEA_VERSION='v10', ENR_VERSION='v12';
@@ -384,13 +322,8 @@ function categorical(){return allFoster()||S.snap===true||S.owf===true}
 function notApplying(){return has('iea')&&!categorical()&&S.above===true}
 function incomePath(){return has('iea')&&!categorical()&&S.above===false}
 function ageWords(d){var m=months(d);if(m<0)return'';if(m<24)return m+' month'+(m===1?'':'s')+' old';var a=+age(d);return a+' years old'}
-/* ═══ STEPS — 17.10 order: [consent] → module 1 Enrollment → module 2 IEA → the papers → review ═══ */
+/* ═══ STEPS — 17.10 order (consent removed 18.10): module 1 Enrollment → module 2 IEA → the papers → review ═══ */
 function steps(){var st=[];
-  /* 0 — consent first (one per adult). CONSENT: 'yes' (on file or just given) · 'need' (ask) · 'paper' · 'withdrawn' ·
-     'form' (no named adult on this link: the official consent form first). */
-  if(CONSENT==='need'||CONSENT==='form')st.push("consent");
-  if(CONSENT==='paper'||CONSENT==='withdrawn'){st.push("paper");return st}
-  if(CONSENT==='need'||CONSENT==='form')return st;
   if(anyFood())st.push("letter","children");
   if(has("dcy01234")&&FLAG_01234_STUB)st.push("dcy01234");
   /* module 1 — CACFP Enrollment: the parent, then days / hours / meals per child */
@@ -407,7 +340,7 @@ function steps(){var st=[];
   if(anyFood()||NONDISC_FOR_01234_ONLY)st.push("nondisc");
   if(linksFor().length)st.push("links");
   st.push("review");return st}
-function partOf(k){if(k.indexOf("care")===0)return "Enrollment · "+(S.children[+k.slice(4)].name||"child");return {consent:"Electronic forms & signature",paper:"Paper forms",ssn:"Income · Social Security Number",letter:"Before you start",children:"Your children",dcy01234:"Child enrollment (DCY 01234)",foster:"Foster child",snap:"Benefits · SNAP",owf:"Benefits · OWF",cases:"Benefits · case number",tablea:"Income check",notapply:"Not applying for income",ieanotneeded:"Income form not needed",household:"Household and income",adult:"Parent or guardian",part5:"Optional",acks:"Acknowledgments",nondisc:"Nondiscrimination statement",links:"Useful links",review:"Review and sign"}[k]}
+function partOf(k){if(k.indexOf("care")===0)return "Enrollment · "+(S.children[+k.slice(4)].name||"child");return {ssn:"Income · Social Security Number",letter:"Before you start",children:"Your children",dcy01234:"Child enrollment (DCY 01234)",foster:"Foster child",snap:"Benefits · SNAP",owf:"Benefits · OWF",cases:"Benefits · case number",tablea:"Income check",notapply:"Not applying for income",ieanotneeded:"Income form not needed",household:"Household and income",adult:"Parent or guardian",part5:"Optional",acks:"Acknowledgments",nondisc:"Nondiscrimination statement",links:"Useful links",review:"Review and sign"}[k]}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function fld(id,lbl,val,o){o=o||{};return '<div class="field" data-f="'+id+'"><label for="'+id+'" class="'+(o.req===false?'':'req')+'">'+lbl+'</label>'+
   (o.select?'<select id="'+id+'">'+o.select.map(function(x){return '<option value="'+x[0]+'"'+(String(val)===x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>'
@@ -446,8 +379,6 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
   document.getElementById("prog").style.width=Math.round((STEP+1)/st.length*100)+"%";
   document.getElementById("partlbl").textContent=partOf(k)+" · step "+(STEP+1)+" of "+st.length;
   document.getElementById("banner").hidden=true;
-  if(k==="consent")h=CONSENT==='form'?consentFormFirst():consentGate();
-  if(k==="paper")h=CONSENT==='withdrawn'?paperWithdrawn():paperExit();
   if(k==="letter"){h='<h2>Help us receive support for your child’s meals</h2><div class="note">Play Academy serves your child healthy meals and snacks every day. The USDA Child and Adult Care Food Program pays the center back for part of the cost of these meals. '+
     (has("iea")&&has("enroll")?'Every year the program needs two forms from each family: the Enrollment Form for each child, and the Income Eligibility Application for the household. This interview fills in both. It takes about five minutes, and everything you tell us is kept confidential.'
      :'This interview fills in '+compWords()+'. Everything you tell us is kept confidential.')+'</div>'+
@@ -565,7 +496,6 @@ function openSignPop(id,title){var m=document.getElementById("sigmodal"),c=docum
 /* ═══════════════════════ BINDING ═══════════════════════ */
 function fmtPhone(v){var d=String(v||'').replace(/\D/g,'').slice(0,10);return d.length>6?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):d.length>3?'('+d.slice(0,3)+') '+d.slice(3):d}
 function bind(k){var f=document.getElementById("f"),c=S.children[K];
-  if(k==="consent"||k==="paper"){bindConsent();return}
   f.oninput=function(e){var t=e.target,id=t.id,m;
     if((m=id.match(/^c(\d)([nd])$/))){S.children[+m[1]][m[2]==="n"?"name":"dob"]=t.value;if(m[2]==="d"){var ag=document.getElementById("c"+m[1]+"age");if(ag)ag.value=age(t.value)}return}
     if((m=id.match(/^case(\d)$/))){S.cases[+m[1]]=t.value.replace(/\D/g,"").slice(0,7);t.value=S.cases[+m[1]];return}
@@ -735,16 +665,15 @@ async function submitAll(){var f=document.getElementById("f"),btn=document.getEl
   document.getElementById("prog").style.width="100%";document.getElementById("partlbl").textContent="Done";window.scrollTo(0,0)}
 
 /* get_prefill (the kit's door, same body {p_token}): the child of the link and the parent, once, only into empty boxes.
-   17.10: + the consent of THIS adult decides step 0; + the family's other children from the center's records
+   17.10: + the family's other children from the center's records
    (_family.children after 20261103zzf; before it — get_prefill_siblings, the same door interview-live.html reads);
    the parent confirms them on the children step. */
 function anon(fn,body){return fetch(SUPA_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json','Content-Profile':'menumaker'},body:JSON.stringify(body)}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}
 function loadPrefill(){if(!TOKEN)return Promise.resolve(null);
   return anon('get_prefill',{p_token:TOKEN}).then(function(d){var bn=document.getElementById("banner");
-      if(d&&d.error){bn.hidden=false;bn.textContent=d.message||'This link cannot open the forms.';CONSENT='form';return}
-      if(!d){bn.hidden=false;bn.textContent='This personal link has expired or could not be read, so nothing is filled in for you. You can still answer every question.';CONSENT='form';return}
+      if(d&&d.error){bn.hidden=false;bn.textContent=d.message||'This link cannot open the forms.';return}
+      if(!d){bn.hidden=false;bn.textContent='This personal link has expired or could not be read, so nothing is filled in for you. You can still answer every question.';return}
       var fam=d._family||{};
-      CONSENT=fam.esign_withdrawn===true?'withdrawn':fam.has_esign_consent===true?'yes':'need';CONSENT_HAD_GUARDIAN=CONSENT==='need';
       var c=S.children[0];c.tok=TOKEN;if(!c.name&&d.child_name)c.name=d.child_name;if(!c.dob&&d.dob)c.dob=d.dob;
       if(d.child_name)S.kidsFromRecords='records';
       var a=S.adult;if(!a.name&&d.parent_name)a.name=d.parent_name;if(!a.email&&d.parent_email)a.email=d.parent_email;if(!a.day&&d.phone_day)a.day=fmtPhone(d.phone_day);
@@ -795,8 +724,8 @@ else{
     document.getElementById("tools").hidden=false;document.getElementById("sampleBtn").onclick=function(){S=sample();STEP=0;render()}}
   if(WANT_INFANT_ONLY){location.replace(infantUrl({tok:TOKEN}))}
   else{document.getElementById("f").innerHTML='<p class="sub">One moment…</p>';loadMealSlots();
-    if(!TOKEN){loadDeviceProfile();CONSENT=consentSentHere()?'yes':'form';render()}
-    else loadPrefill().then(function(){if(!CONSENT)CONSENT='form';render()})}
+    if(!TOKEN){loadDeviceProfile();render()}
+    else loadPrefill().then(function(){render()})}
 }
 </script>
 </body></html>
