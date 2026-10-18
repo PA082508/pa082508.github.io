@@ -96,6 +96,10 @@ select.need{outline:3px solid #E53935;outline-offset:1px}
   body.sponsor-only #sheet{padding:0!important}
 }
 #sponsorHead{display:none}
+/* ⭐ СЕКЦИЯ ЦЕНТРА НЕ У СЕМЬИ (07.10, пункт Б, слово владельца «Сними замок IEA для Б»). Низ «completed by
+   center» заполняет и подписывает центр — в приложении, на этой же форме. На устройстве семьи его нет ни
+   на экране, ни в печати, и в подачу он не уходит (collect ниже). Бумажный бланк для офиса — ?office=1. */
+body:not(.fk-office) #sponsor,body:not(.fk-office) #sponsorHead,body:not(.fk-office) .fk-office-only{display:none!important}
 @media print{ body.sponsor-only #sponsorHead{display:block!important;margin-bottom:8px;font-size:9.5pt} }
 @media print{
   #tb,.sigclear{display:none}
@@ -108,6 +112,8 @@ select.need{outline:3px solid #E53935;outline-offset:1px}
 </style>
 </head>
 <body>
+<script>/* ?office=1 — бланк офиса с секцией центра (печать на бумагу); подача её всё равно не несёт */
+if(/[?&]office=1(&|$)/.test(location.search))document.body.classList.add('fk-office')</script>
 <div id="tb">
   <!-- ⚠️ ЯРЛЫК В ШАПКЕ ОТСТАВАЛ ОТ ИМЕНИ ФАЙЛА: файл звался v8, а печаталось «v7».
        Правится вместе с изданием — иначе на вопрос «какую редакцию заполняли» файл и
@@ -122,7 +128,7 @@ select.need{outline:3px solid #E53935;outline-offset:1px}
        429 мм при полезных 263 мм, то есть в 1,63 раза выше листа; уместить его на одну
        сторону можно лишь сжав до 61 %, а это 5,5 пункта — бланк, который не заполнить
        рукой. Поэтому одностраничной сделана СЕКЦИЯ ЦЕНТРА, которую и подписывает центр. -->
-  <button class="btn bs" onclick="printSponsorOnly()">&#128424; Print center section &mdash; 1 page</button>
+  <button class="btn bs fk-office-only" onclick="printSponsorOnly()">&#128424; Print center section &mdash; 1 page</button>
   <!-- ⭐ ССЫЛКА НА ОБЪЯСНЯЮЩУЮ СТРАНИЦУ (21.08). Родитель, открывший заявление, должен
        иметь возможность СНАЧАЛА понять, нужно ли ему её вообще заполнять: страница несёт
        письмо семье дословно, инструкции и таблицу порогов. Открывается в новой вкладке,
@@ -477,7 +483,7 @@ function PA_APPLY(fd){
 
 /* ═══ FORMKIT_CONFIG — shared transport/embed/signatures live in form-kit.js ═══ */
 window.FORMKIT_CONFIG={
-  formType:'iea',version:'v8',title:'Income Eligibility Application (FY2026-27)',expiry:'12 mo',reset:clear_,applyPrefill:PA_APPLY,
+  formType:'iea',version:'v10',title:'Income Eligibility Application (FY2026-27)',expiry:'12 mo',reset:clear_,applyPrefill:PA_APPLY,
   collect:function(){
     var kids=[1,2,3,4].map(function(k){return {name:gv('kid'+k+'_name'),age:gv('kid'+k+'_age'),
       dob:gv('kid'+k+'_dob'),foster:gcb('kid'+k+'_foster'),case_no:gv('kid'+k+'_case')};})
@@ -510,13 +516,11 @@ window.FORMKIT_CONFIG={
          развёл бы историю надвое; пустые значения читатели уже переживают — у них стоит
          запасной путь на секцию центра. */
       helper:(function(){var t=function(id){var el=document.getElementById(id);return el?el.textContent:''};
-        return {household_size:t('hh'),annualized:t('ann'),verdict:t('verdict')}})(),
-      sponsor:{free:gcb('cat_free'),free_case:gcb('free_case'),free_income:gcb('free_inc'),
-        free_foster:gcb('free_foster'),reduced:gcb('cat_red'),paid:gcb('cat_paid'),
-        paid_high:gcb('paid_high'),paid_incomplete:gcb('paid_inc'),paid_invalid:gcb('paid_inv'),
-        hh:gv('sp_hh'),income:gv('sp_income'),cert_date:gv('sp_certdate'),
-        effective:gv('sp_eff'),expiration:gv('sp_exp')}};
-    var sigs={adult_sig:FormKit.getSig('sig_adult'),sponsor_sig:FormKit.getSig('sig_sponsor')};
+        return {household_size:t('hh'),annualized:t('ann'),verdict:t('verdict')}})()
+      /* ⛔ sponsor НЕ уходит с устройства семьи (07.10, пункт Б): низ — дело центра, его носитель — карточка
+         ребёнка (income_eligibility) и подпись центра в signatures.sponsor_sig, поставленная в приложении. */
+      };
+    var sigs={adult_sig:FormKit.getSig('sig_adult')};
     var sigDate=gv('p4_date')||null;
     return {formData:form_data,signatures:sigs,signatureDate:sigDate};
   },
