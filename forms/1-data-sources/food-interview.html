@@ -218,11 +218,9 @@ var LINKS_BY_CENTER={_default:[
   {kind:'general',title:'Ohio Department of Children and Youth',url:'https://childrenandyouth.ohio.gov/'}
 ]};
 
-/* The IEA introduction — the owner's text verbatim (18.10, in session: «да "Before you start: …"»); shown only on the family's
-   screen before the IEA module, the form itself does not change (LAWS §L5). [Center name] is filled with the center's name
-   (CENTERS_INFO); a center without a name gets «the center» — the same fallback as formulaWords(). */
-var IEA_INTRO_TEXT='Before you start: this form helps [Center name] receive federal CACFP meal funding for your child. Your answers are kept confidential and are used only for the food program. It takes about 5 minutes.';
-function ieaIntroWords(){return IEA_INTRO_TEXT.split('[Center name]').join(CENTER.name||'the center')}
+/* 18.10 (owner: «Да, с названием центра»): the IEA introduction and the first paragraph of «Before you start» are ONE
+   paragraph built only from approved sentences (the first paragraph + the owner's 18.10 introduction); the center's name
+   stands where «Play Academy» stood. Was: a separate block «Before you start: this form helps [Center name]…». */
 
 /* 18.10 (owner's decision, replaces canon 17.10 «consent first in any sending»): this interview knows NOTHING about
    the e-signature consent — no step, no check, no screen, no status read. The director sends or attaches the consent
@@ -377,7 +375,7 @@ function openView(id,title){var d=docs().filter(function(x){return x.id===id})[0
   /* the blank's kit finishes its own start (center, packet memory) after load — the answers are drawn once it is done */
   function fill(){try{var w=fr.contentWindow,doc=w.document;if(typeof w.PA_APPLY!=='function')throw new Error('this form cannot show your answers');
       w.PA_APPLY(viewData(d));
-      var st=doc.createElement('style');st.textContent='.fk-print-hidden,.fk-toolbar,.fk-banner,.fk-progress,.fk-center-header,.fk-tip,.fk-tip-pop,.fk-msg,.fk-deny,.fk-photo-btn,.fk-flash{display:none!important}';doc.head.appendChild(st);
+      var st=doc.createElement('style');st.textContent='.fk-print-hidden,.fk-toolbar,.fk-banner,.fk-progress,.fk-center-header,.fk-tip,.fk-tip-pop,.fk-msg,.fk-deny,.fk-photo-btn,.fk-flash,.fkpad-trigger{display:none!important}';doc.head.appendChild(st);
       doc.querySelectorAll('input,select,textarea,button').forEach(function(e){e.disabled=true});
       viewFit(fr,doc,VIEW_W[d.kind]);
       ok=true;note.textContent='This is the official form with your answers. Check it, then close it and sign.'}
@@ -392,12 +390,12 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
   document.getElementById("prog").style.width=Math.round((STEP+1)/st.length*100)+"%";
   document.getElementById("partlbl").textContent=partOf(k)+" · step "+(STEP+1)+" of "+st.length;
   document.getElementById("banner").hidden=true;
-  if(k==="letter"){h='<h2>Help us receive support for your child’s meals</h2><div class="note">Play Academy serves your child healthy meals and snacks every day. The USDA Child and Adult Care Food Program pays the center back for part of the cost of these meals. '+
-    (has("iea")&&has("enroll")?'Every year the program needs two forms from each family: the Enrollment Form for each child, and the Income Eligibility Application for the household. This interview fills in both. It takes about five minutes, and everything you tell us is kept confidential.'
-     :'This interview fills in '+compWords()+'. Everything you tell us is kept confidential.')+'</div>'+
+  if(k==="letter"){h='<h2>Help us receive support for your child’s meals</h2><div class="note" id="introPara">'+esc(CENTER.name||'The center')+' serves your child healthy meals and snacks every day. The USDA Child and Adult Care Food Program pays the center back for part of the cost of these meals. '+
+    (has("iea")&&has("enroll")?'Every year the program needs two forms from each family: the Enrollment Form for each child, and the Income Eligibility Application for the household. This interview fills in both. '
+     :'This interview fills in '+compWords()+'. ')+'Your answers are kept confidential and are used only for the food program. It takes about 5 minutes.</div>'+
     (SET==="full"?'<div class="note">This interview is for a new child at the center. Besides the two food program forms, it also covers the child enrollment form and the papers you confirm you have read.</div>':'')+
     (has("iea")?'<h2>The letter from the State of Ohio</h2><blockquote>“The CACFP provides reimbursement to the child care center for healthy meals and snacks served to children enrolled in child care. The completion of the income eligibility application is optional. … You or your children do not have to be U.S. citizens to qualify for meal benefits. … An application must contain complete information to be considered for free or reduced-price meals.”</blockquote><p class="sub small">— Ohio CACFP Income Eligibility Application, FY 2026–2027, Household Letter</p>':'')+
-    (has("iea")&&IEA_INTRO_TEXT?'<div class="note" id="ieaIntro">'+esc(ieaIntroWords())+'</div>':'')+'<div class="note">We ask one thing at a time. Every answer goes into its own box on the official forms. At the end you see '+(compCount()>1?'each form and sign it':'the form and sign it')+'.</div>'}
+    '<div class="note">We ask one thing at a time. Every answer goes into its own box on the official forms. At the end you see '+(compCount()>1?'each form and sign it':'the form and sign it')+'.</div>'}
   if(k==="children"){h='<h2>Your child at the center</h2><p class="sub">Start with one child. If more of your children attend Play Academy, add them below.</p>';
     S.children.forEach(function(c,i){h+='<div class="member"><b>Child '+(i+1)+'</b>'+fld("c"+i+"n","Child’s full name",c.name)+'<div class="row">'+fld("c"+i+"d","Birth date",c.dob,{type:"date"})+'<div class="field"><label>Age</label><input type="text" id="c'+i+'age" value="'+age(c.dob)+'" disabled aria-label="Age, filled from birth date"></div></div></div>'});
     h+='<p class="sub small">Made a mistake? Just correct the name or the date. An extra row you leave empty is skipped.</p>';
@@ -419,7 +417,7 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
       for(var n=1;n<=8;n++){var r=lineR(n);h+='<tr><td>'+n+'</td><td>$'+r.toLocaleString()+'</td><td>$'+Math.ceil(r/12).toLocaleString()+'</td><td>$'+Math.ceil(r/24).toLocaleString()+'</td><td>$'+Math.ceil(r/26).toLocaleString()+'</td><td>$'+Math.ceil(r/52).toLocaleString()+'</td></tr>'}
       h+='<tr><td>each more</td><td>+$10,508</td><td>+$876</td><td>+$438</td><td>+$405</td><td>+$203</td></tr></tbody></table></div><p class="small sub">Ohio CACFP Income Eligibility Guidelines, FY 2026–2027. Use the row for the number of people in your household and the column for how often you are paid.</p>'+
         '<b>Is your household’s income above the figure in your row?</b>'+yn("above",S.above,"Yes — our income is above it","No — it is at or below it")}}
-  if(k==="notapply"){var names=S.children.map(function(c){return esc(c.name)}).join(", ");h='<h2>You do not need to fill in the income form</h2><div class="note">Your '+(S.children.length>1?'children':'child')+' ('+names+') will receive the same healthy meals as every other child at the center. The center records that you chose not to apply for income-based support, so no one will ask you for the income form again this year.</div><div class="note"><b>One form is still required.</b> The CACFP Enrollment Form for each child is required every year by federal rules (7 CFR 226.15). We fill it in from your answers. Next we ask for your contact details and each child’s days, hours and meals. Then you sign the enrollment form'+(S.children.length>1?' for each child':'')+'.</div>'}
+  if(k==="notapply"){var names=S.children.map(function(c){return esc(c.name)}).join(", ");h='<h2>You do not need to fill in the income form</h2><div class="note">Your '+(S.children.length>1?'children':'child')+' ('+names+') will receive the same healthy meals as every other child at the center. The center records that you chose not to apply for income-based support, so no one will ask you for the income form again this year.</div><div class="note"><b>One form is still required.</b> The CACFP Enrollment Form for each child is required every year by federal rules (7 CFR 226.15). We fill it in from your answers. Then you sign the enrollment form'+(S.children.length>1?' for each child':'')+'.</div>'}
   if(k==="ieanotneeded"){h='<h2>You do not need to fill in the income form</h2><div class="note">Your household’s income is above the figure in your row, so the Income Eligibility Application is not needed. Nothing is sent to the center for the income form. Your '+(S.children.length>1?'children':'child')+' will receive the same healthy meals as every other child at the center.</div>'+(steps().indexOf(k)===steps().length-1?'<div class="note">That is all. You can close this page.</div>':'')}
   if(k.indexOf("infantno")===0){var cn=S.children[+k.slice(8)];h='<h2>This form is only for children under 12 months</h2><div class="note">This form is only for children under 12 months — '+esc(cn.name)+' is '+esc(ageWords(cn.dob))+'. Ask the center for the right form.</div><p class="sub">Nothing is sent for '+esc(cn.name)+'.</p>'}
   if(k==="ssn")h='<h2>Last 4 digits of Social Security Number</h2>'+'<div class="field" data-f="ssnblock">'+fld("ssn","Last 4 digits of Social Security Number",S.adult.ssn,{req:!S.adult.nossn,mode:"numeric",ph:"4 digits",msg:"Enter 4 digits, or check the box below."})+'<label class="check"><input type="checkbox" id="nossn"'+(S.adult.nossn?' checked':'')+'>I do not have a Social Security Number</label></div>';
