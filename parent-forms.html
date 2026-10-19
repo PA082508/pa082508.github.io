@@ -613,7 +613,7 @@
          FOOD_VIA_INTERVIEW: the IEA and the CACFP Enrollment become ONE interview card (food-interview.html, the
          combined interview Enrollment → IEA); the Infant Meals form stays its own official card — the third step.
          Was (974bce9, reverted a423da8): the food slots removed from one flat list; Infant Meals went into the interview. */
-      var FOOD_VIA_INTERVIEW = false;  /* 18.10 deploy step 1: routing OFF until the acts zze/zzf/zzg; turned ON as the last step (rollback = false, one line) */
+      var FOOD_VIA_INTERVIEW = true;  /* 19.10: routing ON — the last step of the 18.10 deploy, after the acts zze/zzf/zzg (applied 18.10); was false (step 1); rollback = false, one line */
       var INTERVIEW_KEYS = { enroll: 'enroll', school_enrollment_regular: 'enroll', school_enrollment_fullday: 'enroll', iea: 'iea' };
       function isFoodForm(k) {
         var f = (reg.forms || {})[k] || {}; var src = f.sameAs ? ((reg.forms || {})[f.sameAs] || f) : f;
