@@ -30,6 +30,7 @@
       "submissionType": "cacfp_enrollment",
       "slug": "enroll",
       "title": "CACFP Enrollment",
+      "sendable": false,
       "aliases": [
         "cacfp_enrollment"
       ],
@@ -46,6 +47,10 @@
         {
           "at": "2026-07-24",
           "note": "FLIP current v9 → v10 — date = signature STAMP (f_sig_date bound to f_parent_sig, auto on signing, read-only, cleared with the signature, bound 1:1, re-runs calcExp; data dates DOB untouched) + TYPED autograph beside Draw (3 script faces, records signature_method/signature_typed_value) + FKPad draw-big/fits-small pad for the tiny 25px overlay signature slot (a hand can't fit in 25px; the pad captures big, bbox scale-to-fit downscaled into the slot, CLIPPED so nothing spills onto the official scan; slot direct-draw disabled). f_parent_sig data-fk-adopt preserved. v9 kept historical. form-kit.js untouched so ?v= stays 11; no replica. Playwright: FKPad type/draw fit within the 25px slot bounds + f_sig_date stamps read-only, drawn-path regression green. CLOSES the coverage: all live signing kits now carry date-stamp + typed (+FKPad where the slot is narrow). Deploy markers: Pages fa433f6 · app dcad1f3 (merged + verified live 2026-07-24: form 200 w/ v10 markers, FKPad on f_parent_sig, adopt present, registry current=v10 on both, mirrors IDENTICAL)."
+        },
+        {
+          "at": "2026-10-19",
+          "note": "Owner 19.10 (evening, with the interview routing on): not sendable as a separate form — families get it through the interview (food_interview / food_interview_enroll). The library card and the blank stay; undo = remove «sendable: false»."
         }
       ],
       "effective": {
@@ -71,6 +76,7 @@
       "submissionType": "iea",
       "slug": "iea",
       "title": "Income Eligibility Application (FY2026-27)",
+      "sendable": false,
       "aliases": [
         "iea_fy2026_27"
       ],
@@ -87,12 +93,16 @@
         {
           "at": "2026-07-24",
           "note": "FLIP current v6 → v7 — date = signature STAMP on BOTH date fields (p4_date bound to sig_adult, sp_certdate bound to sig_sponsor + calcDates; auto on signing, read-only, cleared with the signature, bound 1:1; data dates untouched) + TYPED autograph beside Draw on the ADULT/parent signature (sig_adult, 3 script faces, records signature_method/signature_typed_value) + FKPad draw-big/fits-small pad for the 52px adult overlay slot (bbox scale-to-fit, clipped). SPONSOR signature (sig_sponsor) NOT given typed/FKPad — untouched this flip; #17 'Sponsor Use Only' layout NOT touched (separate заход). sig_adult data-fk-adopt preserved. v6 kept historical. form-kit.js untouched so ?v= stays 11; no replica. Playwright: adult FKPad type/draw fit in slot + p4 stamps, sponsor untouched + sp_certdate stamps on its own sig, drawn-path regression green. Deploy markers: Pages c6553a8 · app 6143dd5 (merged + verified live 2026-07-24: form 200 w/ v7 markers, sig_adult adopt present, 0 FKPad on sponsor, registry current=v7 on both, mirrors IDENTICAL)."
+        },
+        {
+          "at": "2026-10-19",
+          "note": "Owner 19.10 (evening, with the interview routing on): not sendable as a separate form — families get it through the interview (food_interview / food_interview_iea). The library card and the blank stay; undo = remove «sendable: false»."
         }
       ]
     },
     "food_interview": {
       "slug": "food_interview",
-      "title": "Food Program Interview (Enrollment + IEA)",
+      "title": "CACFP Enrollment and Income Eligibility Application",
       "requiringOrg": "ODE Nutrition/CACFP",
       "intakeMode": "online",
       "signer": "parent",
@@ -118,6 +128,10 @@
         {
           "at": "2026-10-18",
           "note": "Owner 18.10 «Три записи в библиотеке»: this entry is the combined interview; the two modules are their own entries food_interview_enroll (?forms=enroll) and food_interview_iea (?forms=iea) — the same page, one carrier."
+        },
+        {
+          "at": "2026-10-19",
+          "note": "Owner 19.10 19:48: the name everywhere is «CACFP Enrollment and Income Eligibility Application» (Enrollment first, then Income). Was «Food Program Interview (Enrollment + IEA)»."
         }
       ]
     },
