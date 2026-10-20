@@ -726,15 +726,27 @@ function loadMealSlots(){
 
 /* ═══════════════ 19.10 — THE OWNER'S INTRODUCTIONS OF THE THREE MODES (19:48 / 20:33 / 20:36) ═══════════════
    The name everywhere: «CACFP Enrollment and Income Eligibility Application» (Enrollment first, then Income — owner 19:48).
-   both = food_interview · enroll only = food_interview_enroll · iea only = food_interview_iea. The center's name stands where
-   «Play Academy» stands (canon 18.10 «Да, с названием центра»). The quote is the OFFICIAL Household Letter word for word
+   both = food_interview · enroll only = food_interview_enroll · iea only = food_interview_iea. «Play Academy» without a center
+   name (owner 19.10 21:06 «Форма универсальная на все центры. Нужно будет убрать упоминание центра» — REPLACES canon 18.10
+   «Да, с названием центра» for these introductions); the submission still goes to the center of the link (p_center from ?center=). The quote is the OFFICIAL Household Letter word for word
    (forms/income-instructions.html), not a retelling — the owner's draft differed; the difference is shown to the owner.
    The set «full» (a new child with DCY 01234) keeps its own introduction. */
 var FOOD_MODE=SET!=="full"&&COMP.length>0&&COMP.every(function(f){return f==="enroll"||f==="iea"});
 var MODE_TITLE=has("enroll")&&has("iea")?"CACFP Enrollment and Income Eligibility Application":has("enroll")?"CACFP Enrollment":"CACFP Income Eligibility Application";
 var IEA_LETTER_QUOTE='“The CACFP provides reimbursement to the child care center for healthy meals and snacks served to children enrolled in child care. The completion of the income eligibility application is optional. … You or your children do not have to be U.S. citizens to qualify for meal benefits offered at the child care center. … An application must contain complete information to be considered for free or reduced-price meals.”';
+/* 2) owner 21:06 «желтый абзац из Your forms нужно будет поместить во все эти формы». Checked against this page 19.10: the
+   interview keeps NO answers on the device (no draft is saved; a reload starts again) and sends nothing before «Sign and
+   submit» (only reads: get_prefill, get_center_meal_slots). So the packet's words «kept on this device for 7 days, finish later»
+   would not be true here — the notice says what is true. Light green in the tone of the interview, the button dark green
+   (owner: not orange / brown, not yellow — yellow is the bus). Contrast: ink #1b2620 on #e6efe9 and #fff on #1f4d3a ≥ 4.5:1. */
+var KEEP_NOTICE='⏳ Your answers stay on this page only. <strong>Nothing is sent to the center until you press Sign and submit</strong> at the end. If you close or reload the page, the answers are not kept — so please finish in one go (about five minutes).';
+function showKeepNotice(){if(document.getElementById("keepNotice"))return;var d=document.createElement("div");d.id="keepNotice";d.setAttribute("role","note");
+  d.style.cssText="display:flex;gap:12px;align-items:flex-start;background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:15px;line-height:1.45";
+  d.innerHTML='<div style="flex:1">'+KEEP_NOTICE+'</div><button type="button" id="keepGotIt" style="flex:none;background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:6px 12px;font:inherit;font-weight:700;font-size:14px;cursor:pointer">Got it</button>';
+  var bar=document.querySelector(".bar");bar.parentNode.insertBefore(d,bar.nextSibling);
+  document.getElementById("keepGotIt").onclick=function(){d.remove()}}
 function foodModeIntro(){
-  var nm=esc(CENTER.name||'The center'), both=has("enroll")&&has("iea");
+  var nm='Play Academy', both=has("enroll")&&has("iea");
   var h='<div class="note" id="introPara"><p>'+nm+' serves your child healthy meals and snacks every day. We take part in the USDA Child and Adult Care Food Program (CACFP).</p><p>'+
     (both?'Each year, the program asks every family for two forms: an Enrollment Form for each child, and one Income Eligibility Application for the whole household. This short questionnaire completes both — first enrollment, then income.'
      :has("enroll")?'Each year, the program asks every family for an Enrollment Form for each child. This short questionnaire completes your child’s enrollment.'
@@ -750,7 +762,7 @@ function compNames(){var N={dcy01234:'Child Enrollment and Health Information (D
 function compCount(){return COMP.length}
 function compWords(){var W={dcy01234:'the child enrollment form (DCY 01234)',iea:'the Income Eligibility Application for your household',enroll:'the CACFP Enrollment Form for each child',infant:'the Infant Meals – Parent Preference Letter for each child under 12 months'};var w=COMP.filter(function(f){return f!=='dcy01234'}).map(function(f){return W[f]});return w.length>1?w.slice(0,-1).join(', ')+' and '+w[w.length-1]:w[0]}
 if(SET!=="food"&&SET!=="full"){document.getElementById("h1").textContent=compNames().join(" and ");document.getElementById("lead").textContent="One interview fills "+(COMP.length>1?"these forms":"this form")+". We ask one thing at a time."}
-if(FOOD_MODE){document.getElementById("h1").textContent=MODE_TITLE;document.title=MODE_TITLE;document.getElementById("lead").hidden=true}
+if(FOOD_MODE){document.getElementById("h1").textContent=MODE_TITLE;document.title=MODE_TITLE;document.getElementById("lead").hidden=true;showKeepNotice()}
 if(SET==="full"){document.getElementById("h1").textContent="New child: enrollment and food program forms";document.getElementById("lead").textContent="One interview fills the forms for a new child: the CACFP Enrollment Form for each child, the Income Eligibility Application for your household, and the papers you confirm you have read."}
 if(!CENTER_SLUG){document.getElementById("f").innerHTML='<h2>Open this interview from your center’s link</h2><p>This page does not know which Play Academy center it is for. Please open it from the link or QR code your center gave you.</p>';document.getElementById("partlbl").textContent="";}
 else{
