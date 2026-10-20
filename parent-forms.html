@@ -643,6 +643,12 @@
         h.querySelector('.sec-t').textContent = title;
         sec.appendChild(h); root.appendChild(sec); return sec;
       }
+      /* 19.10 (owner 19:48): the interview card carries the name of what it fills — «CACFP Enrollment and Income Eligibility
+         Application» (Enrollment first), or the one form of the link. Was «Food program forms — one short interview». */
+      function interviewTitle() {
+        var e = ivSlots.some(function (s) { return INTERVIEW_KEYS[s.key] === 'enroll'; }), i = ivSlots.some(function (s) { return INTERVIEW_KEYS[s.key] === 'iea'; });
+        return e && i ? 'CACFP Enrollment and Income Eligibility Application' : e ? 'CACFP Enrollment' : 'CACFP Income Eligibility Application';
+      }
       function interviewCard() {
         n++;
         var fc = document.createElement('div'), fLink = interviewUrl(false);
@@ -652,14 +658,14 @@
           + '<div class="info"><div class="t"></div><span class="badge fs">Fill &amp; sign</span><div class="d"></div></div>'
           + '<div class="right"><span class="miniqr" title="Scan / share this interview"><canvas></canvas></span>'
           + '<a class="open" target="_blank" rel="noreferrer">Open</a></div>';
-        fc.querySelector('.t').textContent = 'Food program forms — one short interview';
+        fc.querySelector('.t').textContent = interviewTitle();
         fc.querySelector('.d').textContent = 'We ask one thing at a time and fill in '
           + ivSlots.map(function (s) { var fm = reg.forms[s.key] || {}; return s.label || fm.title || s.key; }).join(', ')
           + ' for you. At the end you sign.';
         fc.querySelector('.open').href = interviewUrl(true);
         list.appendChild(fc);
         drawQR(fc.querySelector('.miniqr canvas'), fLink, 46);
-        fc.querySelector('.miniqr').addEventListener('click', function () { openQR('Food program forms', fLink); });
+        fc.querySelector('.miniqr').addEventListener('click', function () { openQR(interviewTitle(), fLink); });
       }
       var GROUPS = [
         { id: 'consent', title: null, slots: consentSlots },

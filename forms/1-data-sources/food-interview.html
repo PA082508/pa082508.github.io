@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Food Program Interview</title>
+<title>CACFP Enrollment and Income Eligibility Application</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <!--
@@ -138,7 +138,7 @@ canvas{width:100%;height:140px;border:1px dashed var(--line);border-radius:8px;b
 <div class="wrap">
   <div class="top">
     <span class="eyebrow" id="eyebrow">Play Academy · CACFP · FY 2026–2027</span>
-    <h1 id="h1">Income Eligibility Application and CACFP Enrollment</h1><p class="sub small" id="lead">One interview fills both yearly forms: the Income Eligibility Application for your household and the CACFP Enrollment Form for each child.</p>
+    <h1 id="h1">CACFP Enrollment and Income Eligibility Application</h1><p class="sub small" id="lead">One interview fills both yearly forms: the Income Eligibility Application for your household and the CACFP Enrollment Form for each child.</p>
     <div class="bar"><i id="prog" style="width:5%"></i></div>
     <span class="part" id="partlbl"></span>
   </div>
@@ -390,7 +390,8 @@ function render(){var st=steps();if(STEP>=st.length)STEP=st.length-1;var k=st[ST
   document.getElementById("prog").style.width=Math.round((STEP+1)/st.length*100)+"%";
   document.getElementById("partlbl").textContent=partOf(k)+" · step "+(STEP+1)+" of "+st.length;
   document.getElementById("banner").hidden=true;
-  if(k==="letter"){h='<h2>Help us receive support for your child’s meals</h2><div class="note" id="introPara">'+esc(CENTER.name||'The center')+' serves your child healthy meals and snacks every day. The USDA Child and Adult Care Food Program pays the center back for part of the cost of these meals. '+
+  if(k==="letter"&&FOOD_MODE){h=foodModeIntro()}
+  else if(k==="letter"){h='<h2>Help us receive support for your child’s meals</h2><div class="note" id="introPara">'+esc(CENTER.name||'The center')+' serves your child healthy meals and snacks every day. The USDA Child and Adult Care Food Program pays the center back for part of the cost of these meals. '+
     (has("iea")&&has("enroll")?'Every year the program needs two forms from each family: the Enrollment Form for each child, and the Income Eligibility Application for the household. This interview fills in both. '
      :'This interview fills in '+compWords()+'. ')+'Your answers are kept confidential and are used only for the food program. It takes about 5 minutes.</div>'+
     (SET==="full"?'<div class="note">This interview is for a new child at the center. Besides the two food program forms, it also covers the child enrollment form and the papers you confirm you have read.</div>':'')+
@@ -723,11 +724,33 @@ function loadMealSlots(){
     .catch(function(){/* all 6 stay offered */});
 }
 
+/* ═══════════════ 19.10 — THE OWNER'S INTRODUCTIONS OF THE THREE MODES (19:48 / 20:33 / 20:36) ═══════════════
+   The name everywhere: «CACFP Enrollment and Income Eligibility Application» (Enrollment first, then Income — owner 19:48).
+   both = food_interview · enroll only = food_interview_enroll · iea only = food_interview_iea. The center's name stands where
+   «Play Academy» stands (canon 18.10 «Да, с названием центра»). The quote is the OFFICIAL Household Letter word for word
+   (forms/income-instructions.html), not a retelling — the owner's draft differed; the difference is shown to the owner.
+   The set «full» (a new child with DCY 01234) keeps its own introduction. */
+var FOOD_MODE=SET!=="full"&&COMP.length>0&&COMP.every(function(f){return f==="enroll"||f==="iea"});
+var MODE_TITLE=has("enroll")&&has("iea")?"CACFP Enrollment and Income Eligibility Application":has("enroll")?"CACFP Enrollment":"CACFP Income Eligibility Application";
+var IEA_LETTER_QUOTE='“The CACFP provides reimbursement to the child care center for healthy meals and snacks served to children enrolled in child care. The completion of the income eligibility application is optional. … You or your children do not have to be U.S. citizens to qualify for meal benefits offered at the child care center. … An application must contain complete information to be considered for free or reduced-price meals.”';
+function foodModeIntro(){
+  var nm=esc(CENTER.name||'The center'), both=has("enroll")&&has("iea");
+  var h='<div class="note" id="introPara"><p>'+nm+' serves your child healthy meals and snacks every day. We take part in the USDA Child and Adult Care Food Program (CACFP).</p><p>'+
+    (both?'Each year, the program asks every family for two forms: an Enrollment Form for each child, and one Income Eligibility Application for the whole household. This short questionnaire completes both — first enrollment, then income.'
+     :has("enroll")?'Each year, the program asks every family for an Enrollment Form for each child. This short questionnaire completes your child’s enrollment.'
+     :'Each year, the program asks every family for one Income Eligibility Application for the whole household. This short questionnaire completes the application.')+
+    ' It takes about five minutes, and everything you share is kept confidential.</p></div>';
+  if(has("iea"))h+='<blockquote id="ieaQuote">'+IEA_LETTER_QUOTE+'</blockquote><p class="sub small">— Ohio CACFP Income Eligibility Application, FY 2026–2027, Household Letter</p>'+
+    '<div class="note">Your answers help us receive support and partial reimbursement for your child’s meals. Thank you!</div>';
+  return h;
+}
+
 /* ═══════════════════════ BOOT ═══════════════════════ */
 function compNames(){var N={dcy01234:'Child Enrollment and Health Information (DCY 01234)',iea:'Income Eligibility Application',enroll:'CACFP Enrollment',infant:'Infant Meals – Parent Preference Letter'};return COMP.map(function(f){return N[f]})}
 function compCount(){return COMP.length}
 function compWords(){var W={dcy01234:'the child enrollment form (DCY 01234)',iea:'the Income Eligibility Application for your household',enroll:'the CACFP Enrollment Form for each child',infant:'the Infant Meals – Parent Preference Letter for each child under 12 months'};var w=COMP.filter(function(f){return f!=='dcy01234'}).map(function(f){return W[f]});return w.length>1?w.slice(0,-1).join(', ')+' and '+w[w.length-1]:w[0]}
 if(SET!=="food"&&SET!=="full"){document.getElementById("h1").textContent=compNames().join(" and ");document.getElementById("lead").textContent="One interview fills "+(COMP.length>1?"these forms":"this form")+". We ask one thing at a time."}
+if(FOOD_MODE){document.getElementById("h1").textContent=MODE_TITLE;document.title=MODE_TITLE;document.getElementById("lead").hidden=true}
 if(SET==="full"){document.getElementById("h1").textContent="New child: enrollment and food program forms";document.getElementById("lead").textContent="One interview fills the forms for a new child: the CACFP Enrollment Form for each child, the Income Eligibility Application for your household, and the papers you confirm you have read."}
 if(!CENTER_SLUG){document.getElementById("f").innerHTML='<h2>Open this interview from your center’s link</h2><p>This page does not know which Play Academy center it is for. Please open it from the link or QR code your center gave you.</p>';document.getElementById("partlbl").textContent="";}
 else{
