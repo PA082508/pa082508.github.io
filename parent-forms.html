@@ -756,6 +756,12 @@
             card.querySelector('.d').textContent = note || 'No signature needed — save or print for your information.';
           }
           card.querySelector('.dl').href = fileLink; card.querySelector('.pr').href = fileLink;
+          /* 21.10 (owner 16:29 «надо, чтобы она была как PDF-форма»): a read-only PAGE (.html) is not downloaded —
+             «View» opens it, «Print» opens it with ?print=1 (the print dialog = the PDF). Files (.pdf / .docx) keep Download. */
+          if (/\.html?(\?|#|$)/i.test(url)) {
+            var dl = card.querySelector('.dl'); dl.removeAttribute('download'); dl.target = '_blank'; dl.rel = 'noreferrer'; dl.textContent = 'View';
+            card.querySelector('.pr').href = fileLink + (fileLink.indexOf('?') >= 0 ? '&' : '?') + 'print=1';
+          }
           list.appendChild(card);
           drawQR(card.querySelector('.miniqr canvas'), qrLink, 46);
           card.querySelector('.miniqr').addEventListener('click', function(){ openQR(label, qrLink); });

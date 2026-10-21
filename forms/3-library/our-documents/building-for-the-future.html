@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building for the Future with CACFP</title>
+<!--
+  Building for the Future with CACFP — USDA Food and Nutrition Service FNS-317 (November 2019), the flyer Ohio DEW links in
+  its CACFP › Civil Rights resources (https://www.fns.usda.gov/cacfp/build-future). Owner 21.10 16:39 / 16:45 «делаем».
+  ⭐ The flyer's own words are kept verbatim; nothing is composed. The space the flyer leaves for contacts is filled with:
+     · the sponsoring organization / center — read from the center's own record (menumaker.centers through the door
+       center_public_contact, by ?center=<slug>); no address is typed into this page;
+     · the State agency — Ohio Department of Education and Workforce, Office of Nutrition, as its CACFP page states it.
+  ⭐ Nondiscrimination: the text the families read with CACFP Enrollment and the Income Eligibility Application, taken verbatim
+     from the food-program interview (forms/1-data-sources/food-interview.html, NONDISC_TEXT, storefront d54d0c0) — owner 16:39 «А».
+  Read-only: nothing to fill in, nothing to sign, nothing is sent. ?print=1 opens the print dialog (= the PDF).
+-->
+<style>
+:root{--green:#1b5e20;--soft:#e8f2ea;--ink:#1d2b20;--line:#d6e2d8;--muted:#4c5a4f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f8f6;color:var(--ink)}
+.toolbar{max-width:820px;margin:0 auto;padding:12px 18px 0;text-align:right}
+.toolbar button{font:inherit;font-size:10pt;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--green);cursor:pointer}
+main{max-width:820px;margin:12px auto 40px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:28px 30px}
+.tag{font-size:13pt;font-style:italic;color:var(--green);text-align:center;margin:0}
+h1{font-size:26pt;color:var(--green);text-align:center;margin:6px 0 0;line-height:1.1}
+h1 small{display:block;font-size:13pt;font-weight:normal;color:var(--ink);margin:4px 0}
+h1 .cacfp{display:block;font-size:30pt;letter-spacing:.06em}
+.lead{font-size:13pt;line-height:1.5;text-align:center;margin:18px auto 6px;max-width:560px}
+.q{font-size:14pt;font-weight:bold;color:var(--green);margin:22px 0 8px;text-align:center}
+.contacts{display:flex;gap:16px;flex-wrap:wrap}
+.c{flex:1;min-width:250px;border:2px solid var(--green);border-radius:10px;padding:12px 14px}
+.c .t{font-size:8.5pt;font-weight:bold;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px}
+.c .name{font-size:12pt;font-weight:bold;color:var(--green)}
+.c .meta{font-size:10.5pt;color:var(--ink);margin-top:3px;line-height:1.45}
+.c .said{font-size:10pt;color:#991b1b;margin-top:3px}
+.learn{text-align:center;font-size:11pt;margin:20px 0 4px}
+.nds{margin-top:22px;border-top:1px solid var(--line);padding-top:12px}
+.nds h2{font-size:10.5pt;color:var(--green);margin:0 0 6px}
+.nds p,.nds li{font-size:8.6pt;line-height:1.45;margin:0 0 6px;color:#233}
+.nds ol{margin:0 0 6px;padding-left:18px}
+.foot{display:flex;justify-content:space-between;gap:12px;font-size:8.5pt;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:8px}
+@media print{ body{background:#fff} .toolbar{display:none} main{border:0;margin:0;max-width:none;padding:0 4mm} .c{page-break-inside:avoid} }
+</style>
+</head>
+<body>
+<div class="toolbar"><button type="button" onclick="window.print()">🖨 Print</button></div>
+<main>
+  <p class="tag">Good nutrition today means a stronger tomorrow!</p>
+  <h1>Building for the Future<small>with</small><span class="cacfp">CACFP</span></h1>
+  <p class="lead">This day care receives support from the Child and Adult Care Food Program to serve healthy meals to your children.</p>
+  <p class="lead">Meals served here must meet USDA’s nutrition standards.</p>
+
+  <div class="q">Questions? Concerns?</div>
+  <div class="contacts">
+    <div class="c" id="center">
+      <div class="t">Sponsoring organization / center</div>
+      <div class="name" id="cName">Your child’s center</div>
+      <div class="meta" id="cMeta"></div>
+      <div class="said" id="cSaid" hidden></div>
+    </div>
+    <div class="c">
+      <div class="t">State agency</div>
+      <div class="name">Ohio Department of Education and Workforce</div>
+      <div class="meta">Office of Nutrition<br>25 S. Front Street, MS 303<br>Columbus, OH 43215-4183<br>(614) 466-2945 or (800) 808-6325<br>child.nutrition@education.ohio.gov</div>
+    </div>
+  </div>
+
+  <p class="learn">Learn more about CACFP at USDA’s website:<br>https://www.fns.usda.gov/</p>
+
+  <div class="nds">
+    <h2>Nondiscrimination statement</h2>
+    <p>In accordance with federal civil rights law and USDA civil rights regulations and policies, the USDA, its agencies, offices, employees, and institutions participating in or administering USDA programs are prohibited from discriminating based on race, color, national origin, religion, sex, disability, age, marital status, family/parental status, income derived from a public assistance program, political beliefs, or reprisal or retaliation for prior civil rights activity, in any program or activity conducted or funded by USDA (not all bases apply to all programs). Remedies and complaint filing deadlines vary by program or incident.</p>
+    <p>Persons with disabilities who require alternative means of communication for program information (e.g., Braille, large print, audiotape, American Sign Language, etc.) should contact the state or local agency that administers the program or contact USDA through the Telecommunications Relay Service at 711 (voice and TTY). Additionally, program information may be made available in languages other than English.</p>
+    <p>To file a program discrimination complaint, complete the USDA Program Discrimination Complaint Form, AD-3027, found online at How to File a Program Discrimination Complaint and at any USDA office or write a letter addressed to USDA and provide in the letter all of the information requested in the form. To request a copy of the complaint form, call (866) 632-9992. Submit your completed form or letter to USDA by:</p>
+    <ol>
+      <li>Mail: U.S. Department of Agriculture, Office of the Assistant Secretary for Civil Rights, 1400 Independence Avenue, SW, Mail Stop 9410, Washington, D.C. 20250-9410;</li>
+      <li>Fax: (202) 690-7442; or</li>
+      <li>Email: program.intake@usda.gov.</li>
+    </ol>
+    <p>USDA is an equal opportunity provider, employer, and lender.</p>
+  </div>
+
+  <div class="foot"><span>United States Department of Agriculture · Food and Nutrition Service · FNS-317 · November 2019</span><span>For your information — nothing to sign</span></div>
+</main>
+<script>
+(function(){
+  'use strict';
+  var Q; try { Q = new URLSearchParams(location.search); } catch (_) { Q = { get: function(){ return null } }; }
+  var slug = (Q.get('center') || '').trim();
+  var printNow = Q.get('print') === '1';
+  function said(t){ var e = document.getElementById('cSaid'); e.textContent = t; e.hidden = false; }
+  function done(){ if (printNow) setTimeout(function(){ window.print(); }, 150); }
+  if (!slug) { said('Ask your center’s office — this copy was opened without a center.'); done(); return; }
+  // The center's contact is read from its own record, never typed here (one carrier: menumaker.centers).
+  fetch('../../../enroll-registry.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(reg){
+      var sb = reg && reg.supabase;
+      if (!sb || !sb.url || !sb.anonKey) throw new Error('no service address');
+      return fetch(sb.url + '/rest/v1/rpc/center_public_contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': sb.anonKey, 'Authorization': 'Bearer ' + sb.anonKey, 'Content-Profile': 'menumaker', 'Accept-Profile': 'menumaker' },
+        body: JSON.stringify({ p_center_slug: slug })
+      });
+    })
+    .then(function(r){ if (!r.ok) throw new Error('the center could not be read (' + r.status + ')'); return r.json(); })
+    .then(function(c){
+      if (!c || !c.name) throw new Error('no such center');
+      document.getElementById('cName').textContent = c.name;
+      var meta = document.getElementById('cMeta');
+      meta.textContent = '';
+      [c.address, c.phone].filter(Boolean).forEach(function(line, i){ if (i) meta.appendChild(document.createElement('br')); meta.appendChild(document.createTextNode(line)); });
+      done();
+    })
+    .catch(function(e){ said('The center’s address could not be shown (' + (e && e.message || e) + ') — ask your center’s office.'); done(); });
+})();
+</script>
+</body>
+</html>
