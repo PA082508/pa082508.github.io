@@ -635,17 +635,24 @@
     },
     "building_for_the_future": {
       "slug": "building_for_the_future",
-      "title": "Building For the Future",
+      "title": "Building for the Future with CACFP",
       "kind": "keep",
       "section": "our_documents",
-      "requiringOrg": "Play Academy",
-      "current": "v1",
+      "requiringOrg": "USDA FNS · FNS-317",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Building%20For%20the%20Future.docx"
+        "v1": "https://pa082508.github.io/forms/3-library/our-documents/Building%20For%20the%20Future.docx",
+        "v2": "https://pa082508.github.io/forms/3-library/our-documents/building-for-the-future.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/Building%20For%20the%20Future.docx",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/our-documents/building-for-the-future.html",
       "perInstance": false,
-      "history": []
+      "note": "Read-only CACFP notice every family receives (USDA FNS-317, November 2019 — the flyer Ohio DEW links under CACFP › Civil Rights). Center contact read from menumaker.centers by ?center= (door center_public_contact); State agency = Ohio DEW, Office of Nutrition; nondiscrimination = the text of the food-program interview (CACFP Enrollment / IEA), verbatim. ?print=1 prints (= PDF).",
+      "history": [
+        {
+          "at": "2026-10-21",
+          "note": "FLIP current v1 → v2 — owner 21.10 16:39 / 16:45 «делаем»: the Word file v1 (.docx, uploaded 10.07; the old pre-2019 USDA flyer: «Ohio Department of Education», «Head State», the Wickliffe address printed for every center, an outdated nondiscrimination text) is replaced by a page from the official FNS-317 text with the contacts of the child's own center. v1 is kept in versions (history), the file is not deleted."
+        }
+      ]
     },
     "what_to_bring_infant": {
       "slug": "what_to_bring_infant",
@@ -1242,8 +1249,7 @@
           "section": "mandatory",
           "keep": true,
           "label": "WIC Information",
-          "tag": "Coming soon",
-          "note": "Awaiting the ODH WIC application (HEA 4460-4466)."
+          "note": "Read — how to apply for WIC benefits."
         },
         {
           "key": "parents_book_ack",
@@ -1357,8 +1363,7 @@
           "section": "mandatory",
           "keep": true,
           "label": "WIC Information",
-          "tag": "Coming soon",
-          "note": "Awaiting the ODH WIC application (HEA 4460-4466)."
+          "note": "Read — how to apply for WIC benefits."
         },
         {
           "key": "parents_book_ack",
