@@ -498,24 +498,32 @@
     },
     "center_parent_info": {
       "slug": "center_parent_info",
-      "title": "Center Parent Information (Appendix 5101:2-12-07)",
+      "title": "Center Parent Information (Appendix C to OAC 5180:2-12-07)",
       "kind": "document",
       "section": "dcy",
-      "requiringOrg": "ODJFS/DCY",
-      "current": "v1",
+      "requiringOrg": "Ohio DCY · OAC 5180:2-12-07(B)(6)",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center%20Parent%20Information.docx"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center%20Parent%20Information.docx",
+        "v2": "https://pa082508.github.io/forms/3-library/ohio-dcy/center-parent-information-2026.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center%20Parent%20Information.docx",
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/center-parent-information-2026.html",
       "perInstance": false,
-      "history": []
+      "history": [
+        {
+          "at": "2026-10-21",
+          "note": "FLIP current v1 → v2 — owner 21.10 17:08 «Заменить Center Parent Information на действующую редакцию — да»: v1 was the 12/06/2016 appendix to 5101:2-12-07 (Ohio Department of Job and Family Services); v2 is Appendix C to OAC 5180:2-12-07 (enacted 06/18/2026, rule effective July 1, 2026), verbatim from codes.ohio.gov, with one marked note: the Child Care Search address printed in the rule did not open on 21.10.2026 — the search is at childcaresearch.ohio.gov. v1 kept in versions; the file is not deleted."
+        }
+      ]
     },
     "sutq_family_needs_survey": {
       "slug": "sutq_family_needs_survey",
       "title": "Family Needs Survey (SUTQ)",
       "kind": "document",
       "section": "sutq",
-      "requiringOrg": "ODE/SUTQ",
+      "requiringOrg": "Ohio DCY · SUTQ FCP1 (OAC 5180:2-17-01, appendix A)",
+      "signer": "parent",
+      "note": "SUTQ FCP1 (Bronze, part of Gold): a tool that identifies the needs of the whole family within 30 days of enrollment and then annually. Owner 21.10 17:08 «Анкету семьи SUTQ — в пакет: да».",
       "current": "v1",
       "versions": {
         "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Family_Needs_Survey.pdf"
@@ -679,13 +687,20 @@
     "center_parent_information": {
       "slug": "center_parent_information",
       "title": "Center Parent Information",
-      "requiringOrg": "Ohio DCY · Appendix 5101:2-12-07",
+      "requiringOrg": "Ohio DCY · Appendix C to OAC 5180:2-12-07",
       "kind": "keep",
-      "current": "v1",
+      "current": "v2",
       "versions": {
-        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center_Parent_Information_v1.pdf"
+        "v1": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center_Parent_Information_v1.pdf",
+        "v2": "https://pa082508.github.io/forms/3-library/ohio-dcy/center-parent-information-2026.html"
       },
-      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/Center_Parent_Information_v1.pdf"
+      "fallbackUrl": "https://pa082508.github.io/forms/3-library/ohio-dcy/center-parent-information-2026.html",
+      "history": [
+        {
+          "at": "2026-10-21",
+          "note": "FLIP current v1 → v2 — owner 21.10 17:08 «Заменить Center Parent Information на действующую редакцию — да»: v1 was the 12/06/2016 appendix to 5101:2-12-07 (Ohio Department of Job and Family Services); v2 is Appendix C to OAC 5180:2-12-07 (enacted 06/18/2026, rule effective July 1, 2026), verbatim from codes.ohio.gov, with one marked note: the Child Care Search address printed in the rule did not open on 21.10.2026 — the search is at childcaresearch.ohio.gov. v1 kept in versions; the file is not deleted."
+        }
+      ]
     },
     "start_form": {
       "slug": "start_form",
@@ -1122,6 +1137,12 @@
           "note": "Keep — how to apply for WIC benefits."
         },
         {
+          "key": "sutq_family_needs_survey",
+          "section": "mandatory",
+          "label": "Family Needs Survey",
+          "note": "Print, fill in and bring to the center within 30 days — it helps us connect your family with resources (SUTQ)."
+        },
+        {
           "key": "dcy_01218",
           "section": "if_applicable",
           "label": "Basic Infant Care Plan (DCY 01218)",
@@ -1243,7 +1264,7 @@
           "section": "mandatory",
           "keep": true,
           "label": "Center Parent Information",
-          "note": "Ohio parent rights & center policies (Appendix 5101:2-12-07)."
+          "note": "Ohio parent rights — Appendix C to OAC 5180:2-12-07 (required at enrollment)."
         },
         {
           "key": "building_for_the_future",
@@ -1257,6 +1278,12 @@
           "keep": true,
           "label": "WIC Information",
           "note": "Read — how to apply for WIC benefits."
+        },
+        {
+          "key": "sutq_family_needs_survey",
+          "section": "mandatory",
+          "label": "Family Needs Survey",
+          "note": "Print, fill in and bring to the center within 30 days — it helps us connect your family with resources (SUTQ)."
         },
         {
           "key": "parents_book_ack",
@@ -1357,7 +1384,7 @@
           "section": "mandatory",
           "keep": true,
           "label": "Center Parent Information",
-          "note": "Ohio parent rights & center policies (Appendix 5101:2-12-07)."
+          "note": "Ohio parent rights — Appendix C to OAC 5180:2-12-07 (required at enrollment)."
         },
         {
           "key": "building_for_the_future",
@@ -1371,6 +1398,12 @@
           "keep": true,
           "label": "WIC Information",
           "note": "Read — how to apply for WIC benefits."
+        },
+        {
+          "key": "sutq_family_needs_survey",
+          "section": "mandatory",
+          "label": "Family Needs Survey",
+          "note": "Print, fill in and bring to the center within 30 days — it helps us connect your family with resources (SUTQ)."
         },
         {
           "key": "parents_book_ack",
@@ -1444,6 +1477,12 @@
         {
           "key": "wic_information",
           "section": "mandatory"
+        },
+        {
+          "key": "sutq_family_needs_survey",
+          "section": "mandatory",
+          "label": "Family Needs Survey",
+          "note": "Print, fill in and bring to the center within 30 days — it helps us connect your family with resources (SUTQ)."
         },
         {
           "key": "parents_book_ack",
