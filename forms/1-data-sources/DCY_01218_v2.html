@@ -200,14 +200,16 @@
         <input type="date" class="date-fill" id="parentDate" data-required data-label="Parent signature date"></td>
     </tr>
     <tr>
-      <td><span class="lbl">Primary Caregiver Signature</span> <span class="pending-tag">optional now</span>
-        <span class="hint">May be signed later at the center — leaving it blank will not block submission.</span>
+      <td><span class="lbl">Primary Caregiver Signature</span>
+        <span class="hint">Signed by the center after review.</span>
+        <!-- 🔒 22.10 (owner's rule 15.10: the center's slots of an online form are closed to the parent; owner 08:26/08:28): the caregiver
+             (center) slot is NEVER signable on the family device — the center signs it in its own slot when it reviews the form
+             (as DCY 01234 program_sig, 17.09). Before, a family's device could ink it (one approved form at Wickliffe, 23.09). -->
         <div class="sig-wrap">
-          <canvas class="sig" id="sigCaregiver" width="520" height="46" data-formkit="signature" data-label="Primary Caregiver Signature"></canvas>
-          <button type="button" class="sig-clear" onclick="FormKit.clearSig('sigCaregiver')">Clear</button>
+          <canvas class="sig" id="sigCaregiver" width="520" height="46" data-label="Primary Caregiver Signature" data-center-slot="1" tabindex="-1" style="pointer-events:none;background:#f4f4f4;cursor:not-allowed"></canvas>
         </div></td>
       <td><span class="lbl">Date</span>
-        <input type="date" class="date-fill" id="caregiverDate"></td>
+        <input type="date" class="date-fill" id="caregiverDate" data-center-slot="1" readonly tabindex="-1" style="pointer-events:none;background:#f4f4f4"></td>
     </tr>
     <tr>
       <td colspan="2"><span class="lbl">Date form last updated</span>
@@ -235,7 +237,7 @@
   function clearForm() {
     document.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(function (e) { e.value = ''; });
     document.querySelectorAll('input[type="checkbox"]').forEach(function (e) { e.checked = false; });
-    if (window.FormKit) { FormKit.clearSig('sigParent'); FormKit.clearSig('sigCaregiver'); }
+    if (window.FormKit) { FormKit.clearSig('sigParent'); }
     setFormulaBrand();
     setDefaults();
     refreshSleepWaiver();
