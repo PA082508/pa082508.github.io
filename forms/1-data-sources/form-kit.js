@@ -1199,6 +1199,56 @@ document.addEventListener('click', function (e) {
 }, true);
 /* fk:pad:end */
 
+  /* fk:return:start — v56 (22.10, owner 10:11 / 10:14 / 10:22): REJECT = RETURN TO THE FAMILY.
+     The center returns a form with a reason; the family's e-mail carries `?r=<token>`. The link gives the family's own form back
+     (get_return_prefill — WITHOUT signatures, their dates, typed signatures and SSN digits: cut on the server) and says the
+     center's reason at the top. The family corrects and signs again; the new submission comes in the usual way. A link that
+     expired or is unknown says so in words, never an empty screen. */
+  async function fkReturn() {
+    var t = null;
+    try { t = new URLSearchParams(location.search).get('r'); } catch (_) {}
+    if (!t) return;
+    var data = null;
+    try {
+      var r = await fetch(SUPA_URL + '/rest/v1/rpc/get_return_prefill', {
+        method: 'POST',
+        headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
+        body: JSON.stringify({ p_token: t }),
+      });
+      if (r.ok) data = await r.json();
+    } catch (_) {}
+    var esc = function (x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    var banner = function (html, ok) {
+      var b = document.createElement('div');
+      b.className = 'fk-return-banner fk-print-hidden';
+      b.setAttribute('data-fk-return', ok ? 'open' : 'closed');
+      b.setAttribute('style', 'position:sticky;top:0;z-index:9998;background:' + (ok ? '#eef2ff' : '#fef2f2') + ';border-bottom:2px solid ' + (ok ? '#1e3a8a' : '#991b1b') + ';padding:12px 16px;font:400 14px/1.5 Arial,sans-serif;color:#0f172a');
+      b.innerHTML = html;
+      document.body.insertBefore(b, document.body.firstChild);
+    };
+    if (!data || typeof data !== 'object') { banner('<strong>This link is not valid.</strong> Please ask the center to send the form again.', false); return; }
+    if (data.expired) { banner('<strong>This link has expired.</strong> Please ask the center to send it again. The center\u2019s reason was: ' + esc(data.reason), false); return; }
+    if (!centerUuid() && data.center_id) { for (var cc in CENTERS) { if (CENTERS[cc] === data.center_id) { setResolvedCenter(cc); break; } } }
+    var bag = data._return || {};
+    Object.keys(bag).forEach(function (k) {
+      var v = bag[k];
+      if (k.charAt(0) === '_' || v === null || v === undefined || typeof v === 'object') return;
+      var sv = String(v); if (!sv.trim()) return;
+      var el = document.getElementById(k) || document.getElementById('f_' + k) || document.querySelector('[data-fk-field="' + k + '"]');
+      if (!el || el.tagName === 'CANVAS' || el.getAttribute('data-fk-touched')) return;
+      if (el.type === 'checkbox' || el.type === 'radio') { el.checked = (sv === 'true' || sv === 'Yes' || sv === 'on' || sv === '1'); if (!el.checked) return; }
+      else el.value = fkShape(el, sv);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    if (CFG.applyPrefill) { try { CFG.applyPrefill(Object.assign({}, bag)); } catch (_) {} }
+    try { refreshCounter(); } catch (_) {}
+    var why = String(data.reason || '').trim();
+    banner('<strong>The center returned this form to you.</strong> Reason: <b data-fk-return-reason>' + esc(why) + '</b>' + (/[.!?]$/.test(why) ? ' ' : '. ') +
+      'Your answers are filled in \u2014 please correct what is needed, sign again and send.', true);
+  }
+  /* fk:return:end */
+
   /* fk:prefill:start — А3, кит v17 (15.08).
      ИМЕННАЯ ССЫЛКА НАКОНЕЦ ЗАПОЛНЯЕТ ФОРМУ. До v17 кит спрашивал у токена только СРОК
      жизни и никогда не звал get_prefill: родитель по именной ссылке открывал пустой
@@ -2607,6 +2657,7 @@ document.addEventListener('click', function (e) {
     showSubmittedBanner();   // «уже отправлено» — переживает закрытие вкладки
     linkStatusNotice();      // истёкшая адресная ссылка — словами, а не пустым экраном
     fkPrefill();             // именная ссылка заполняет форму (А3, v17)
+    fkReturn();              // форма, возвращённая центром семье (?r=, v56)
     fkTwinsNote();           // про близнецов — ДО заполнения, а не после подачи
     if (window.fkAttachPads) window.fkAttachPads();   // окно подписи — всем формам (v18)
   }
