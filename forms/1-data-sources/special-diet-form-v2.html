@@ -227,18 +227,18 @@
     </tr>
     <tr>
       <td colspan="3">Address:
-        <input type="text" class="fill" id="address" name="address" autocomplete="street-address" data-fk-field="street" style="width:70%">
+        <input type="text" class="fill" id="address" name="address" autocomplete="street-address" data-fk-field="street" data-fk-address data-fk-addr-state="state" data-required data-label="Address" style="width:70%">
       </td>
     </tr>
     <tr>
       <td>City:
-        <input type="text" class="fill" id="city" autocomplete="address-level2" data-fk-field="city" style="width:60%">
+        <input type="text" class="fill" id="city" autocomplete="address-level2" data-fk-field="city" data-required data-label="City" style="width:60%">
       </td>
       <td>State:
-        <input type="text" class="fill" id="state" autocomplete="address-level1" style="width:55%">
+        <input type="text" class="fill" id="state" autocomplete="address-level1" data-fk-field="state" maxlength="2" data-required data-label="State" style="width:55%">
       </td>
       <td>Zip:
-        <input type="text" class="fill" id="zip" autocomplete="postal-code" inputmode="numeric" data-fk-field="zip" style="width:55%">
+        <input type="text" class="fill" id="zip" autocomplete="postal-code" inputmode="numeric" data-fk-field="zip" data-required data-label="ZIP" style="width:55%">
       </td>
     </tr>
   </table>
