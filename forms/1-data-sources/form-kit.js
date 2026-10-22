@@ -1243,9 +1243,40 @@ document.addEventListener('click', function (e) {
     });
     if (CFG.applyPrefill) { try { CFG.applyPrefill(Object.assign({}, bag)); } catch (_) {} }
     try { refreshCounter(); } catch (_) {}
-    var why = String(data.reason || '').trim();
-    banner('<strong>The center returned this form to you.</strong> Reason: <b data-fk-return-reason>' + esc(why) + '</b>' + (/[.!?]$/.test(why) ? ' ' : '. ') +
-      'Your answers are filled in \u2014 please correct what is needed, sign again and send.', true);
+    /* ⭐ 22.10 11:04 (owner): short, on the form itself — the places the center marked get «Correct this» and a frame; the
+       parent's signature is empty with «Sign again»; the button reads «Send back». No long texts: everything else is filled. */
+    var MARK = '#1e3a8a';
+    var tag = function (el, text) {
+      var t = document.createElement('span');
+      t.className = 'fk-return-tag fk-print-hidden'; t.textContent = text;
+      t.setAttribute('style', 'display:inline-block;margin:0 6px 4px 0;padding:2px 9px;border-radius:7px;background:' + MARK + ';color:#fff;font:700 12.5px/1.4 Arial,sans-serif');
+      el.parentNode.insertBefore(t, el);
+      el.style.outline = '3px solid ' + MARK; el.style.outlineOffset = '2px';
+      return t;
+    };
+    var marks = Array.isArray(data.marks) ? data.marks : [];
+    var first = null;
+    marks.forEach(function (k) {
+      if (k === '@signature') return;
+      var el = document.getElementById(k) || document.getElementById('f_' + k) || document.querySelector('[data-fk-field="' + k + '"]');
+      if (!el || !el.parentNode) return;
+      el.setAttribute('data-fk-return-mark', k);
+      var t = tag(el, '\u2794 Correct this');
+      if (!first) first = t;
+    });
+    $$('canvas').forEach(function (c) {
+      // the center's slots are never the family's to sign: program / caregiver / sponsor / admin / staff, or locked for good
+      if (c.closest('[data-center-slot],#sponsor') || c.getAttribute('data-center-slot') || c.getAttribute('data-office-use') !== null) return;
+      if (/program|caregiver|sponsor|admin|staff/i.test(c.id || '') || (c.parentNode && c.parentNode.querySelector('[data-fk-permanent]') && !c.hasAttribute('data-fk-adopt'))) return;
+      if ((c.getAttribute('data-formkit') || '') !== 'signature' && !/sig/i.test(c.id || '')) return;
+      c.setAttribute('data-fk-return-sign', '1');
+      var t = tag(c, '\u270D Sign again');
+      if (!first && marks.indexOf('@signature') >= 0) first = t;
+    });
+    var sub = $('[data-formkit="submit"]'); if (sub) sub.textContent = '\u2714 Send back';
+    var why = String(data.reason || '').trim().replace(/[.!?]$/, '');
+    banner('<strong>Your form needs a correction:</strong> <b data-fk-return-reason>' + esc(why) + '</b>', true);
+    if (first) setTimeout(function () { try { first.scrollIntoView({ block: 'center' }); } catch (_) {} }, 300);
   }
   /* fk:return:end */
 
