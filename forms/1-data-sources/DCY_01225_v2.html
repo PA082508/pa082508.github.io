@@ -189,8 +189,10 @@ function pickSchool(name){
   }
   return false;
 }
-function loadSchools(){
+function loadSchools(tries){
+  /* the kit names the center in its own boot (after this page's listener; an embed even later) — wait for it, up to 5 s */
   var center=window.FormKit&&FormKit.centerUuid&&FormKit.centerUuid();
+  if(!center && (tries||0)<20){ setTimeout(function(){ loadSchools((tries||0)+1); },250); return; }
   if(!center){ schoolsLine('Open this form from your center\u2019s link \u2014 then its list of schools appears here.'); return; }
   fetch(FormKit.supa.url+'/rest/v1/rpc/center_transport_schools',{method:'POST',headers:FormKit.supa.headers,body:JSON.stringify({p_center:center})})
     .then(function(r){ if(!r.ok) throw new Error(String(r.status)); return r.json(); })
@@ -206,7 +208,7 @@ function loadSchools(){
     })
     .catch(function(){ schoolsLine('The list of schools could not be read \u2014 check the connection and reload the page.'); });
 }
-document.addEventListener('DOMContentLoaded', loadSchools);
+document.addEventListener('DOMContentLoaded', function(){ loadSchools(0); });
 
 function swimNote(){
   var n=document.getElementById('swimnote'); if(!n) return;
