@@ -31,6 +31,7 @@
     padding:1px 4px;outline:none}
   .f:focus{background:rgba(255,246,120,0.8)}
   .cb{position:absolute;width:18px;height:18px;margin:0;accent-color:#0f4c35;cursor:pointer}
+  .modelbl{position:absolute;font:600 10.5px Arial,sans-serif;color:#0f4c35;white-space:nowrap;transform:translateX(-50%);pointer-events:none}
   .sig{position:absolute;background:rgba(210,235,255,0.35);border:1.5px dashed #0f4c35;border-radius:4px;cursor:crosshair;display:block}
   .siglock{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;
     background:rgba(90,107,96,.9);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:4px;z-index:5}
@@ -41,7 +42,7 @@
   @media print{
     body{background:#fff}.doc{padding:0}.page{box-shadow:none;margin:0}
     .f{background:transparent;border:none}
-    .siglock,.sigclear,.swimnote{display:none!important}.sig{background:transparent;border:none}
+    .siglock,.sigclear,.swimnote,.modelbl{display:none!important}.sig{background:transparent;border:none}
     @page{size:8.5in 11in;margin:0}
   }
 .fkml{margin:6px 0;padding:8px 10px;border:1.5px solid #fcd34d;background:#fffbeb;border-radius:8px;font:13px Arial,Helvetica,sans-serif;color:#92400e}
@@ -170,6 +171,13 @@ function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
     }
     if(f.t==='cb') el.addEventListener('change',gate);
   });
+
+  /* 1.11 (owner's direct word «подписи под квадратиками формы 01225»): the blank's OWN words under each box, on the screen only —
+     the print stays the official blank (.modelbl is hidden in @media print); the words are the blank's line in brackets, not ours. */
+  [['mode_walk','walking'],['mode_bus','school bus'],['mode_public','public transportation'],['mode_parent','parent vehicles'],['mode_provider','provider vehicle and driver']]
+    .forEach(function(m){ var f=FIELDS.filter(function(x){return x.id===m[0]})[0]; if(!f) return;
+      var l=document.createElement('div'); l.className='modelbl'; l.setAttribute('data-mode-label',m[0]);
+      l.style.left=(f.x+9)+'px'; l.style.top=(f.y+21)+'px'; l.textContent=m[1]; host.appendChild(l); });
 
   /* Подсказка про плавание — появляется у СВОЕГО вопроса и только при «Yes». */
   var note=document.createElement('div'); note.className='swimnote fk-print-hidden';
