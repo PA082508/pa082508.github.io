@@ -68,7 +68,11 @@
    x/y — левый верхний угол поля на скане 1275x1650. */
 var FIELDS = [
   /* ── Routine Trip Information ─────────────────────────────────────── */
-  {id:'destinations',    t:'text',x:132,y:312,w:1005,h:30,r:1,label:'Routine trip destination(s)'},
+  /* ⭐ 1.11 (канон 30.10, слово владельца «онлайн-форму 01225 менять»): пункт назначения — ЖИВОЙ список школ центра, отмеченных
+     «we transport here» в Settings → Schools; читается при КАЖДОМ открытии бланка (дверь center_transport_schools), а не вшит в бланк.
+     Галочку сняли / школу переименовали — следующее открытие показывает это сразу. В подаче хранится выбранное: имя на момент
+     подписи (destinations) и id школы (school_id); подписанная форма задним числом не меняется. Свободного ввода нет. */
+  {id:'destinations',    t:'school',x:132,y:312,w:1005,h:30,r:1,label:'Routine trip destination(s)'},
   {id:'permission_date', t:'text',x:132,y:378,w:300,h:30,r:1,date:1,ph:'MM/DD/YYYY',
      label:'Date of permission (valid for one year)'},
 
@@ -110,7 +114,9 @@ var FIELDS = [
   {id:'parent_sig_dt', t:'text',x:880,y:938,w:240,h:26,label:'Date'}
 ];
 
-function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkbox'?(e.checked?'Yes':''):(e.value||'').trim()):''}
+function g(id){var e=document.getElementById('f_'+id);if(!e)return '';
+  if(e.tagName==='SELECT') return e.value?((e.options[e.selectedIndex]||{}).text||'').trim():'';   /* the school's name as chosen */
+  return e.type==='checkbox'?(e.checked?'Yes':''):(e.value||'').trim()}
 function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
 
 (function(){
@@ -137,6 +143,10 @@ function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
       /* Замок И ЕСТЬ открывашка окна подписи — кит второй кнопки не ставит (v23). */
       lock.setAttribute('data-fk-pad','f_'+f.id);
       host.appendChild(lock);
+    } else if(f.t==='school'){
+      el=document.createElement('select'); el.className='f';
+      el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
+      var o=document.createElement('option'); o.value=''; o.textContent='Loading the center\u2019s schools\u2026'; el.appendChild(o);
     } else {
       el=document.createElement('input'); el.type='text'; el.className='f';
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
@@ -151,6 +161,7 @@ function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
     if(f.id==='mode_walk') el.setAttribute('data-required-alt','f_mode_other');
     host.appendChild(el);
     if(f.t==='text') el.addEventListener('input',gate);
+    if(f.t==='school') el.addEventListener('change',gate);
     if(f.t==='cb') el.addEventListener('change',gate);
   });
 
@@ -161,6 +172,41 @@ function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
   host.appendChild(note);
   gate();
 })();
+
+/* ⭐ ЖИВОЙ СПИСОК ШКОЛ (1.11). Читается при открытии; отказ чтения сказан словами (§L2) — пустой список ≠ «школ нет». */
+var SCHOOL_WANT=null;   /* the school named by the family's 01234 / the link, chosen once the list is in */
+function schoolsLine(text){
+  var sel=document.getElementById('f_destinations'); if(!sel) return;
+  sel.innerHTML=''; var o=document.createElement('option'); o.value=''; o.textContent=text; sel.appendChild(o);
+}
+function pickSchool(name){
+  var sel=document.getElementById('f_destinations'); if(!sel||!name) return false;
+  var key=String(name).replace(/^\s*school\s*[-\u2013\u2014:]\s*/i,'').replace(/\s+/g,' ').trim().toLowerCase();
+  for(var i=0;i<sel.options.length;i++){
+    if(sel.options[i].value && sel.options[i].text.replace(/\s+/g,' ').trim().toLowerCase()===key){
+      sel.value=sel.options[i].value; sel.dispatchEvent(new Event('change',{bubbles:true})); return true;
+    }
+  }
+  return false;
+}
+function loadSchools(){
+  var center=window.FormKit&&FormKit.centerUuid&&FormKit.centerUuid();
+  if(!center){ schoolsLine('Open this form from your center\u2019s link \u2014 then its list of schools appears here.'); return; }
+  fetch(FormKit.supa.url+'/rest/v1/rpc/center_transport_schools',{method:'POST',headers:FormKit.supa.headers,body:JSON.stringify({p_center:center})})
+    .then(function(r){ if(!r.ok) throw new Error(String(r.status)); return r.json(); })
+    .then(function(rows){
+      var sel=document.getElementById('f_destinations'); if(!sel) return;
+      if(!rows||!rows.length){ schoolsLine('The center has not listed its schools yet \u2014 ask the center.'); return; }
+      sel.innerHTML='';
+      var o=document.createElement('option'); o.value=''; o.textContent='Choose your child\u2019s school'; sel.appendChild(o);
+      rows.forEach(function(s){ var x=document.createElement('option'); x.value=s.id; x.textContent=s.name; sel.appendChild(x); });
+      if(SCHOOL_WANT && pickSchool(SCHOOL_WANT)) lockCell('destinations');
+      if(window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
+      gate();
+    })
+    .catch(function(){ schoolsLine('The list of schools could not be read \u2014 check the connection and reload the page.'); });
+}
+document.addEventListener('DOMContentLoaded', loadSchools);
 
 function swimNote(){
   var n=document.getElementById('swimnote'); if(!n) return;
@@ -253,7 +299,7 @@ var PRESET = null;
 
 function lockCell(id, on){
   var e=document.getElementById('f_'+id); if(!e) return;
-  if(e.type==='checkbox'){ e.disabled=true; }
+  if(e.type==='checkbox' || e.tagName==='SELECT'){ e.disabled=true; }
   else { e.readOnly=true; }
   e.style.background='#f3f5f4'; e.style.color='#6b7280'; e.style.cursor='not-allowed';
   e.setAttribute('data-preset-locked','1');
@@ -275,11 +321,8 @@ function applySchoolTransportPreset(school){
   setCb('wact_n',  true);  setCb('wact_y',  false);
   ['water_y','water_n','wact_y','wact_n'].forEach(lockCell);
   /* Куда возим — из ответа семьи на 01234. */
-  var dest=document.getElementById('f_destinations');
-  if(dest){
-    if(school){ dest.value=school; dest.dispatchEvent(new Event('input',{bubbles:true})); lockCell('destinations'); }
-    else { dest.placeholder='your child\u2019s school'; }
-  }
+  /* 1.11: the school is CHOSEN from the live list by its name; not on the list → the parent chooses (nothing typed in) */
+  if(school){ SCHOOL_WANT=school; if(pickSchool(school)) lockCell('destinations'); }
   /* Дата выдачи — ЦЕНТРА, не подписи родителя. */
   var d=document.getElementById('f_permission_date');
   if(d && !d.value){
@@ -313,8 +356,6 @@ function plainPrefill(){
     d.value=('0'+(t.getMonth()+1)).slice(-2)+'/'+('0'+t.getDate()).slice(-2)+'/'+t.getFullYear();
     d.dispatchEvent(new Event('input',{bubbles:true}));
   }
-  var dest=document.getElementById('f_destinations');
-  if(dest && !dest.value) dest.placeholder='where your child is taken';
   if(window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
   gate();
 }
@@ -340,6 +381,8 @@ window.FORMKIT_CONFIG = {
     /* ⛔ ПРЕСЕТ ОБЪЯВЛЯЕТ СЕБЯ: без этого через год не ответить, чья рука поставила «воды нет». */
     if(PRESET) fd.preset = PRESET;
     fd.mode_other = g('mode_other');
+    /* 1.11: the chosen school by id (the live list); «destinations» keeps its name at signing */
+    fd.school_id = (document.getElementById('f_destinations')||{}).value || null;
     fd.signature_method='drawn';
     return {
       formData: fd,
