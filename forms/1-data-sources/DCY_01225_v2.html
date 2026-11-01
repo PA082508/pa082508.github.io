@@ -166,8 +166,8 @@ function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
     /* 1.11 (defect on the owner's phone 9:44 AM ET): the kit re-checks the «required» line only on the field that carries it (mode_walk);
        a tick on any other box of the question (or «other») left «Mode of transportation is required» on screen while the question was
        answered. Every member of the question now asks the kit to re-check that one line. The kit itself is not touched (all forms share it). */
-    if((f.excl==='mode' && f.id!=='mode_walk') || f.id==='mode_other'){
-      el.addEventListener(f.t==='cb'?'change':'input', function(){ var w=document.getElementById('f_mode_walk'); if(w) w.dispatchEvent(new Event('change')); });
+    if(f.id==='mode_other'){   /* «other» answers the mode question too (data-required-alt) — it asks for the same re-check */
+      el.addEventListener('input', function(){ var w=document.getElementById('f_mode_walk'); if(w) w.dispatchEvent(new Event('change')); });
     }
     if(f.t==='cb') el.addEventListener('change',gate);
   });
@@ -185,6 +185,18 @@ function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
   note.textContent='A swimming permission slip is required — the center will give it to you.';
   host.appendChild(note);
   gate();
+})();
+
+/* 1.11 (owner's word «сделайте исправление ещё 7 мест»): a question «one of» (excl) carries «required» on ONE box; the kit re-checks the
+   red «… is required» line only on that box (form-kit initValidation). Every other box of the question asks the kit to re-check that one
+   line, so a tick on any answer clears it. The kit itself is not touched (all forms share it; IEA is frozen, §L5). */
+(function groupRequiredRecheck(){
+  var req={}; FIELDS.forEach(function(f){ if(f.excl && f.r) req[f.excl]=f.id; });
+  FIELDS.forEach(function(f){
+    if(!f.excl || f.r || !req[f.excl]) return;
+    var el=document.getElementById('f_'+f.id); if(!el) return;
+    el.addEventListener('change', function(){ var r=document.getElementById('f_'+req[f.excl]); if(r) r.dispatchEvent(new Event('change')); });
+  });
 })();
 
 /* ⭐ ЖИВОЙ СПИСОК ШКОЛ (1.11). Читается при открытии; отказ чтения сказан словами (§L2) — пустой список ≠ «школ нет». */

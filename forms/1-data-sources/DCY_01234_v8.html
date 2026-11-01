@@ -331,6 +331,18 @@ function g(id){var e=document.getElementById('f_'+id);return e?(e.type==='checkb
   gate();
 })();
 
+/* 1.11 (owner's word «сделайте исправление ещё 7 мест»): a question «one of» (excl) carries «required» on ONE box; the kit re-checks the
+   red «… is required» line only on that box (form-kit initValidation). Every other box of the question asks the kit to re-check that one
+   line, so a tick on any answer clears it. The kit itself is not touched (all forms share it; IEA is frozen, §L5). */
+(function groupRequiredRecheck(){
+  var req={}; FIELDS.forEach(function(f){ if(f.excl && f.r) req[f.excl]=f.id; });
+  FIELDS.forEach(function(f){
+    if(!f.excl || f.r || !req[f.excl]) return;
+    var el=document.getElementById('f_'+f.id); if(!el) return;
+    el.addEventListener('change', function(){ var r=document.getElementById('f_'+req[f.excl]); if(r) r.dispatchEvent(new Event('change')); });
+  });
+})();
+
 // ── Speed-standard additions (additive JS, packet kit standard): today-default on
 //    the parent sign date + "Same as Child's" auto-copies the child address into a
 //    parent block on both Parent #1 and Parent #2. Phone masking + autocomplete +
