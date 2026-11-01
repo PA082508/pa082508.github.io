@@ -146,7 +146,7 @@ function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
     } else if(f.t==='school'){
       el=document.createElement('select'); el.className='f';
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
-      var o=document.createElement('option'); o.value=''; o.textContent='Loading the center\u2019s schools\u2026'; el.appendChild(o);
+      var o=document.createElement('option'); o.value=''; o.textContent='Loading the center\u0027s schools\u2026'; el.appendChild(o);
     } else {
       el=document.createElement('input'); el.type='text'; el.className='f';
       el.style.cssText='left:'+f.x+'px;top:'+f.y+'px;width:'+f.w+'px;height:'+f.h+'px';
@@ -193,20 +193,20 @@ function loadSchools(tries){
   /* the kit names the center in its own boot (after this page's listener; an embed even later) — wait for it, up to 5 s */
   var center=window.FormKit&&FormKit.centerUuid&&FormKit.centerUuid();
   if(!center && (tries||0)<20){ setTimeout(function(){ loadSchools((tries||0)+1); },250); return; }
-  if(!center){ schoolsLine('Open this form from your center\u2019s link \u2014 then its list of schools appears here.'); return; }
+  if(!center){ schoolsLine('Please open this form from your center\u0027s link to see its list of schools.'); return; }
   fetch(FormKit.supa.url+'/rest/v1/rpc/center_transport_schools',{method:'POST',headers:FormKit.supa.headers,body:JSON.stringify({p_center:center})})
     .then(function(r){ if(!r.ok) throw new Error(String(r.status)); return r.json(); })
     .then(function(rows){
       var sel=document.getElementById('f_destinations'); if(!sel) return;
       if(!rows||!rows.length){ schoolsLine('The center has not listed its schools yet \u2014 ask the center.'); return; }
       sel.innerHTML='';
-      var o=document.createElement('option'); o.value=''; o.textContent='Choose your child\u2019s school'; sel.appendChild(o);
+      var o=document.createElement('option'); o.value=''; o.textContent='Choose your child\u0027s school'; sel.appendChild(o);
       rows.forEach(function(s){ var x=document.createElement('option'); x.value=s.id; x.textContent=s.name; sel.appendChild(x); });
       if(SCHOOL_WANT && pickSchool(SCHOOL_WANT)) lockCell('destinations');
       if(window.FormKit && FormKit.refreshCounter) FormKit.refreshCounter();
       gate();
     })
-    .catch(function(){ schoolsLine('The list of schools could not be read \u2014 check the connection and reload the page.'); });
+    .catch(function(){ schoolsLine('The list of schools could not be loaded. Check your connection and reload the page.'); });
 }
 document.addEventListener('DOMContentLoaded', function(){ loadSchools(0); });
 
