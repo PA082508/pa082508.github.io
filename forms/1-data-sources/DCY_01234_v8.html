@@ -26,6 +26,7 @@
     background-size:1275px 1650px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
   .page.p1{background-image:url("DCY01234_2026_page-1.png")}
   .page.p2{background-image:url("DCY01234_2026_page-2.png")}
+  .notsub{display:none}
   .f{position:absolute;font-family:Arial,sans-serif;font-size:15px;color:#111;
     background:rgba(255,253,150,0.55);border:none;border-bottom:1.5px solid var(--line);
     padding:1px 4px;outline:none}
@@ -50,6 +51,12 @@
     .doc{padding:0}.page{box-shadow:none;margin:0}
     .f,textarea.f{background:transparent;border:none}
     .siglock{display:none}.sigclear{display:none}.sig{background:transparent;border:none}
+    /* 2.11: the blank is a background, the browser drops it unless told; 1275 px is scaled to the 8.5 in sheet, one blank = one sheet */
+    html,body{width:8.5in;height:auto}
+    .page{zoom:.64;height:1649px;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page.p1{break-after:page;page-break-after:always}
+    .notsub{display:block;position:absolute;left:0;right:0;top:30px;text-align:center;font:700 22px Arial,sans-serif;color:#b91c1c;z-index:7}
+    .notsub[hidden]{display:none}
     @page{size:8.5in 11in;margin:0}
   }
 .fkml{margin:6px 0;padding:8px 10px;border:1.5px solid #fcd34d;background:#fffbeb;border-radius:8px;font:13px Arial,Helvetica,sans-serif;color:#92400e}
@@ -648,6 +655,20 @@ function dcyReset(){
   });
   gate(); if(window.FormKit){FormKit.refreshCounter&&FormKit.refreshCounter();FormKit.status&&FormKit.status('Cleared','')}
 }
+
+/* 2.11 (owner): a copy printed before Submit says so on the paper. The blank in View is a filed form: blankFiller hides the line there. */
+(function(){
+  function mark(){
+    var sent=!!(window.FormKit&&FormKit.submitState&&FormKit.submitState().submitted);
+    Array.prototype.forEach.call(document.querySelectorAll('.page'),function(p){
+      var n=p.querySelector('.notsub');
+      if(!n){ n=document.createElement('div'); n.className='notsub'; n.textContent='Not submitted \u2014 this copy is not on file. Submit the form to save it.'; p.appendChild(n); }
+      n.hidden=sent;
+    });
+  }
+  window.addEventListener('load',mark);
+  window.addEventListener('beforeprint',mark);
+})();
 
 // ── form-kit integration: reuse submit / status / counter / signature capture. ──
 window.FORMKIT_CONFIG = {

@@ -26,6 +26,9 @@
   .page{position:relative;width:1275px;height:1650px;margin:0 auto 20px;background:#fff no-repeat;
     background-size:1275px 1650px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
   .page.p1{background-image:url("DCY01225_page-1.png")}
+  /* 2.11: «Reset Form» is printed inside the state's picture of the blank — closed on the screen and on paper */
+  .resetcover{position:absolute;left:566px;top:995px;width:166px;height:56px;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .notsub{display:none}
   .f{position:absolute;font-family:Arial,sans-serif;font-size:15px;color:#111;
     background:rgba(255,253,150,0.55);border:none;border-bottom:1.5px solid var(--line);
     padding:1px 4px;outline:none}
@@ -43,6 +46,11 @@
     body{background:#fff}.doc{padding:0}.page{box-shadow:none;margin:0}
     .f{background:transparent;border:none}
     .siglock,.sigclear,.swimnote,.modelbl{display:none!important}.sig{background:transparent;border:none}
+    /* 2.11: the blank is a background, the browser drops it unless told; 1275 px is scaled to the 8.5 in sheet, one blank = one sheet */
+    html,body{width:8.5in;height:auto}
+    .page{zoom:.64;height:1649px;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .notsub{display:block;position:absolute;left:0;right:0;top:30px;text-align:center;font:700 22px Arial,sans-serif;color:#b91c1c;z-index:7}
+    .notsub[hidden]{display:none}
     @page{size:8.5in 11in;margin:0}
   }
 .fkml{margin:6px 0;padding:8px 10px;border:1.5px solid #fcd34d;background:#fffbeb;border-radius:8px;font:13px Arial,Helvetica,sans-serif;color:#92400e}
@@ -62,7 +70,7 @@
 </div>
 
 <div data-formkit="missing-list" class="fkml fk-print-hidden" style="display:none"></div>
-<div class="doc"><div class="page p1" id="pg1"></div></div>
+<div class="doc"><div class="page p1" id="pg1"><div class="resetcover" aria-hidden="true"></div></div></div>
 
 <script>
 /* Клетки бланка — СЛОВО В СЛОВО с оригинала DCY 01225 (Rev. 6/2025).
@@ -203,8 +211,14 @@ function gc(id){var e=document.getElementById('f_'+id);return !!(e&&e.checked)}
 var SCHOOL_WANT=null;   /* the school named by the family's 01234 / the link, chosen once the list is in */
 function schoolsLine(text){
   var sel=document.getElementById('f_destinations'); if(!sel) return;
+  if(sel.value) return;   /* 2.11: a filed blank in View carries its school — a word about the list never replaces it */
   sel.innerHTML=''; var o=document.createElement('option'); o.value=''; o.textContent=text; sel.appendChild(o);
 }
+/* 2.11: View of a filed form — the school as it was signed, never the live list (blankFiller calls this) */
+window.__afterFill=function(fd){
+  var sel=document.getElementById('f_destinations'), name=fd&&fd.destinations; if(!sel||!name) return;
+  sel.innerHTML=''; var o=document.createElement('option'); o.value=fd.school_id||String(name); o.textContent=name; sel.appendChild(o); sel.value=o.value;
+};
 function pickSchool(name){
   var sel=document.getElementById('f_destinations'); if(!sel||!name) return false;
   var key=String(name).replace(/^\s*school\s*[-\u2013\u2014:]\s*/i,'').replace(/\s+/g,' ').trim().toLowerCase();
@@ -223,7 +237,7 @@ function loadSchools(tries){
   fetch(FormKit.supa.url+'/rest/v1/rpc/center_transport_schools',{method:'POST',headers:FormKit.supa.headers,body:JSON.stringify({p_center:center})})
     .then(function(r){ if(!r.ok) throw new Error(String(r.status)); return r.json(); })
     .then(function(rows){
-      var sel=document.getElementById('f_destinations'); if(!sel) return;
+      var sel=document.getElementById('f_destinations'); if(!sel||sel.value) return;
       if(!rows||!rows.length){ schoolsLine('The center has not listed its schools yet \u2014 ask the center.'); return; }
       sel.innerHTML='';
       var o=document.createElement('option'); o.value=''; o.textContent='Choose your child\u0027s school'; sel.appendChild(o);
@@ -395,6 +409,20 @@ function plainPrefill(){
     if (school || preset==='school_transport') applySchoolTransportPreset(school);
     else plainPrefill();
   });
+})();
+
+/* 2.11 (owner): a copy printed before Submit says so on the paper. The blank in View is a filed form: blankFiller hides the line there. */
+(function(){
+  function mark(){
+    var sent=!!(window.FormKit&&FormKit.submitState&&FormKit.submitState().submitted);
+    Array.prototype.forEach.call(document.querySelectorAll('.page'),function(p){
+      var n=p.querySelector('.notsub');
+      if(!n){ n=document.createElement('div'); n.className='notsub'; n.textContent='Not submitted \u2014 this copy is not on file. Submit the form to save it.'; p.appendChild(n); }
+      n.hidden=sent;
+    });
+  }
+  window.addEventListener('load',mark);
+  window.addEventListener('beforeprint',mark);
 })();
 
 window.FORMKIT_CONFIG = {
