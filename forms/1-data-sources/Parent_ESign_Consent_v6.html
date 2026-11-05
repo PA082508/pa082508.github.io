@@ -179,7 +179,7 @@ window.FORMKIT_CONFIG = {
   nextForm:function(){
     var q=new URLSearchParams(location.search); if(q.get('t')) return null;
     var c=q.get('center')||FormKit.centerCode()||'';
-    return { url:'https://pa082508.github.io/forms/1-data-sources/DCY_01234_v8.html?center='+encodeURIComponent(c)+'&k=dcy_01234', label:'Child Enrollment & Health (DCY 01234) \u2192' };
+    return { url:'https://pa082508.github.io/forms/1-data-sources/DCY_01234_v8.html?center='+encodeURIComponent(c)+'&k=dcy_01234', label:'Child Enrollment & Health (DCY 01234)' };
   },
   collect:function(){
     var sigDate=g('signed_date')||FormKit.todayISO();
