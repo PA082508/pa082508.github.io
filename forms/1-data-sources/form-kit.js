@@ -245,9 +245,20 @@
     } catch (_) {}
   }
   function fkFields() { return $$('[data-fk-field]'); }
+  /* ⭐ 4.11 (consolidated «Enrollment», п.5): ДАТА РОЖДЕНИЯ В ПАМЯТИ ПАКЕТА — ВСЕГДА ISO.
+     01234 v8 держит ДР текстом ММ/ДД/ГГГГ (fk:'dob'); память отдавала её как есть, поле
+     input[type=date] следующей формы такую строку не принимает — оставалось пустым, и на
+     iPhone тап по пустой дате давал «сегодня» (7 подач с ДР = дню подписи, расследование
+     2026-11-04_dcy01236). Теперь в память ложится ISO, а в поле — форма поля (fkShape). */
+  function fkIsoDate(v) {
+    var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(v || '').trim());
+    if (!m) return v;
+    return m[3] + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2);
+  }
+  function fkDateKey(k) { return k === 'dob' || /(^|_)dob($|_)|birth/.test(k || ''); }
   function savePacket() {
     var r = pkLoad() || { ts: Date.now(), data: {} };
-    fkFields().forEach(function (e) { var k = e.getAttribute('data-fk-field'); var v = (e.value || '').trim(); if (k && v) r.data[k] = v; });
+    fkFields().forEach(function (e) { var k = e.getAttribute('data-fk-field'); var v = (e.value || '').trim(); if (k && v) r.data[k] = fkDateKey(k) ? fkIsoDate(v) : v; });
     if (centerCode()) r.data.center_code = centerCode();
     pkWrite(r.data);
   }
@@ -412,7 +423,7 @@
   }
   function applyPacket() {
     var r = pkLoad(); if (!r) return;
-    fkFields().forEach(function (e) { var k = e.getAttribute('data-fk-field'); if (k && !(e.value || '').trim() && r.data[k]) { e.value = r.data[k]; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); } });
+    fkFields().forEach(function (e) { var k = e.getAttribute('data-fk-field'); if (k && !(e.value || '').trim() && r.data[k]) { e.value = fkShape(e, fkDateKey(k) ? fkIsoDate(r.data[k]) : r.data[k]); e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true })); } });
     var banner = $('[data-formkit="autofill-banner"]'); if (banner) banner.style.display = 'none';
     status('↳ Auto-filled from a previous form — please verify', '');
   }
@@ -1657,6 +1668,23 @@ document.addEventListener('click', function (e) {
       mem().setItem(PK_KEY, JSON.stringify(rec));
     } catch (_) {}
   }
+  /* ⭐ 4.11 (consolidated «Enrollment», п.4): REVEAL ГАСНЕТ ПРИ ОБРАТНОМ ОТВЕТЕ. До этого память
+     только прибавляла: тронутое «Yes» на здоровье оставляло карточку 01236 в пакете навсегда,
+     что бы семья ни ответила потом (расследование 2026-11-04_dcy01236). Теперь форма объявляет
+     ответы (CFG.reveals → {key: true|false}); «false» снимает карточку, и последняя подача
+     побеждает: fkReveals применяется при отправке. Списки (extra) не трогаются. */
+  function fkUnreveal(key) {
+    try {
+      var r = pkLoad(); if (!r || !r.reveal || !(key in r.reveal)) return;
+      delete r.reveal[key];
+      var rec = { ts: Date.now(), data: r.data, next: r.next, reveal: r.reveal };
+      mem().setItem(PK_KEY, JSON.stringify(rec));
+    } catch (_) {}
+  }
+  function fkReveals(map) {
+    if (!map || typeof map !== 'object') return;
+    Object.keys(map).forEach(function (k) { if (map[k] === true) fkReveal(k); else if (map[k] === false) fkUnreveal(k); });
+  }
 
   function lockForm(ref) {
     _submitted = true;
@@ -1666,10 +1694,19 @@ document.addEventListener('click', function (e) {
        а не только липкой строкой снизу. lockForm-механику не трогаем — это ВТОРОЙ, верхний баннер. */
     var tb = document.createElement('div'); tb.className = 'fk-submitted-top fk-print-hidden';
     tb.setAttribute('style', 'position:sticky;top:0;left:0;right:0;z-index:9998;background:#fffbeb;border-bottom:2px solid #f59e0b;color:#7a4b00;padding:12px 16px;font:700 14px/1.4 Arial,sans-serif;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.12)');
+    /* ⭐ 4.11 (consolidated «Enrollment», п.1): у БЕЗЫМЯННОЙ подачи единственной живой кнопкой было «Start a new form» —
+       и семья Zoueini подписала согласие девять раз за пять минут (расследование 2026-11-04_parent_consent_repeats).
+       Теперь верхняя плашка называет следующий шаг, а «Start a new form» уходит за слова «Need changes?» — ниже. */
+    var nxList = [];
+    try { var nx0 = CFG.nextForm ? CFG.nextForm() : null; nxList = (!nx0 ? [] : (Array.isArray(nx0) ? nx0 : [nx0])).filter(function (x) { return x && x.url; }); } catch (_) {}
+    var tkn0 = fkToken();
     tb.innerHTML = (_fkAlreadySent
         ? '✓ Already sent — waiting for the office. This form for ' + (_fkAlreadySent.who || 'your child') + ' is in; you don’t need to fill it again.'
-        : '✓ Already submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. This form is locked and can’t be changed here.')
-      + ' Need changes? Use “Start a new form” below.';
+          + ' Need changes? Use “Start a new form” below.'
+        : (!tkn0 && nxList.length)
+        ? '✓ Received' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. This form is locked. Next step: ' + nxList.map(function (x) { return String(x.label || 'the next form').replace(/^next:\s*/i, ''); }).join(' · ') + ' — tap the green button at the bottom of this page.'
+        : '✓ Already submitted for center review' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '. This form is locked and can’t be changed here.'
+          + ' Need changes? Use “Start a new form” below.');
     document.body.insertBefore(tb, document.body.firstChild);
     var b = document.createElement('div'); b.className = 'fk-submitted-banner fk-print-hidden';
     b.setAttribute('style', 'position:sticky;bottom:0;left:0;right:0;z-index:9999;background:#0a7d46;color:#fff;padding:12px 16px;font:600 14px/1.4 Arial,sans-serif;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -2px 12px rgba(0,0,0,.18)');
@@ -1735,7 +1772,27 @@ document.addEventListener('click', function (e) {
     var nf = document.createElement('button'); nf.type = 'button'; nf.setAttribute('data-fk-newform', '1'); nf.textContent = 'Start a new form';
     nf.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:8px 16px;font:700 13px Arial,sans-serif;cursor:pointer');
     nf.addEventListener('click', newForm);
-    b.appendChild(txt); b.appendChild(nf);
+    if (!tkn && nxList.length) {
+      /* безымянный вход с названной следующей формой: сначала «Next», потом — малым — «Need changes? Start a new form» */
+      txt.innerHTML = '✓ Received' + (ref ? ' — Ref <strong>' + ref + '</strong>' : '') + '.';
+      b.appendChild(txt);
+      nxList.forEach(function (x) {
+        var a = document.createElement('a');
+        a.href = x.url; a.rel = 'noreferrer'; a.setAttribute('data-fk-newform', '1'); a.setAttribute('data-fk-next', '1');
+        a.textContent = 'Next: ' + String(x.label || 'the next form').replace(/^next:\s*/i, '');
+        a.setAttribute('style', 'background:#fff;color:#0a7d46;border:none;border-radius:8px;padding:10px 18px;font:800 14px Arial,sans-serif;cursor:pointer;text-decoration:none');
+        b.appendChild(a);
+      });
+      var nc = document.createElement('span'); nc.setAttribute('data-fk-need-changes', '1');
+      nc.setAttribute('style', 'display:inline-flex;align-items:center;gap:6px;font:400 12px Arial,sans-serif;opacity:.85');
+      nc.textContent = 'Need to change something? ';
+      nf.textContent = 'Sign again';   // advisor 4.11: the second-rank button after an anonymous signing — not «Start a new form»
+      nf.setAttribute('style', 'background:transparent;color:#fff;border:1px solid rgba(255,255,255,.7);border-radius:7px;padding:4px 10px;font:600 12px Arial,sans-serif;cursor:pointer');
+      nc.appendChild(nf); b.appendChild(nc);
+      nxList = [];   // drawn above — the chain block below must not draw the same links twice
+    } else {
+      b.appendChild(txt); b.appendChild(nf);
+    }
     /* ⭐ ЦЕПОЧКА: ФОРМА МОЖЕТ НАЗВАТЬ СЛЕДУЮЩУЮ (v22).
      * Родитель, ответивший «у ребёнка есть состояние здоровья», сейчас узнаёт про план
      * ухода ПИСЬМОМ через несколько дней — то есть тогда, когда он уже не за формой.
@@ -1748,7 +1805,8 @@ document.addEventListener('click', function (e) {
          три разрешения, по одному на препарат («одно разрешение = одно лекарство»). */
       var nx = CFG.nextForm ? CFG.nextForm() : null;
       var list = !nx ? [] : (Array.isArray(nx) ? nx : [nx]);
-      list.filter(function (x) { return x && x.url; }).forEach(function (x) {
+      if (!tkn && $('[data-fk-next]', b)) list = list.filter(function (x) { return x && x.url; }).map(function (x) { return { url: x.url, label: x.label, __drawn: true }; });
+      list.filter(function (x) { return x && x.url && !x.__drawn; }).forEach(function (x) {
         var a = document.createElement('a');
         a.href = x.url; a.target = '_blank'; a.rel = 'noreferrer';
         a.setAttribute('data-fk-newform', '1');
@@ -1803,6 +1861,7 @@ document.addEventListener('click', function (e) {
   }
   function anotherChild(snap) {
     var b = $('.fk-submitted-banner'); if (b) b.remove();
+    var tb1 = $('.fk-submitted-top'); if (tb1) tb1.remove();
     $$('input,select,textarea,button').forEach(function (el) { el.disabled = false; });
     _submitted = false; _submitting = false;
     IDEMP = newIdemp();                            // новая подача — новый ключ идемпотентности
@@ -1820,6 +1879,7 @@ document.addEventListener('click', function (e) {
 
   function newForm() {
     var b = $('.fk-submitted-banner'); if (b) b.remove();
+    var tb0 = $('.fk-submitted-top'); if (tb0) tb0.remove();   // 4.11: a cleared form must not say «already submitted»
     $$('input,select,textarea,button').forEach(function (el) { el.disabled = false; });
     _submitted = false;
     IDEMP = newIdemp();   // fresh idempotency token for the new form
@@ -2039,6 +2099,7 @@ document.addEventListener('click', function (e) {
         : 'Received. Your center will confirm who you are and add these forms to your '
           + 'child\u2019s file — you may be asked to bring a document.', 'ok');
       savePacket();
+      try { if (CFG.reveals) fkReveals(CFG.reveals()); } catch (_) {}   // 4.11: the answers of THIS submission decide the packet's cards
       markSlotDone();
       mintSignature(data);
       var ref = shortRef(res);
@@ -2723,12 +2784,15 @@ document.addEventListener('click', function (e) {
        v32 — второй заход против авто-Reader: role="form" + aria на контейнере и снятие
        ярлыков article/main. ⚠️ Теория v30 («хватит обёртки в <form>») НЕ ПОДТВЕРДИЛАСЬ на
        живом iPhone владельца — подробности у deReader(). */
-    KIT: 51,
+    KIT: 52,   // 4.11: consolidated «Enrollment» — ISO dob in the packet memory, un-reveal, the bar after an anonymous submit
     // armed() === true means "pressing Submit would really call the RPC". The
     // rehearsal asserts THIS, not the presence of a button ([[submit assert]]).
     armed: function () { return !!centerUuid(); },
     /* Форма объявляет условие выполненным: окно + память пакета одним вызовом. */
-    tell: fkTell, reveal: fkReveal, photo: photoValue,
+    tell: fkTell, reveal: fkReveal, unreveal: fkUnreveal, reveals: fkReveals, photo: photoValue,
+    /* 4.11 (п.8): the signature plate names what is missing — one wording for every blank */
+    labelOf: humanLabel,
+    plateWords: function (missing) { var l = (missing || []).filter(function (e) { return e.tagName !== 'CANVAS'; }).map(humanLabel); if (!l.length) return ''; var head = l.slice(0, 3).join(', '); return 'Complete first: ' + head + (l.length > 3 ? ' + ' + (l.length - 3) + ' more' : ''); },
     /* Состояние отправки — наружу ради РЕПЕТИЦИИ, тем же правом, что и armed(). Проба
        обязана уметь спросить «форма ещё считает себя отправленной?»: без этого отказ
        второй подачи выглядит одинаково при трёх разных причинах. Только чтение. */

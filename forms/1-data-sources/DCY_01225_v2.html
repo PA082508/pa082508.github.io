@@ -282,7 +282,7 @@ function gate(){
   var lock=document.getElementById('lock_parent_sig');
   if(lock){
     if(signed){ lock.style.display='none'; lock.onclick=null }
-    else if(!ok){ lock.style.display='flex'; lock.textContent='Complete the required fields first'; lock.onclick=null }
+    else if(!ok){ lock.style.display='flex'; lock.textContent=(window.FormKit&&FormKit.plateWords&&FormKit.plateWords(FormKit.refreshCounter()))||'Complete the required fields first'; lock.onclick=null }
     else { lock.style.display='flex'; lock.textContent='✍ Tap to sign — draw big';
            lock.onclick=function(){ if(window.FKPad) FKPad.open('f_parent_sig',{title:'Parent signature'}) } }
   }
@@ -448,6 +448,6 @@ window.FORMKIT_CONFIG = {
   }
 };
 </script>
-<script src="form-kit.js?v=56"></script>
+<script src="form-kit.js?v=57"></script>
 </body>
 </html>

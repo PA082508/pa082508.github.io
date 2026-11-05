@@ -13,7 +13,7 @@
     "Реестр приложения синхронизирован с витриной 23.08 — расхождение версий снято.",
     "ПОПРАВКА 23.08: личные поля бланка staff (имя, почта, телефон, адрес, дата рождения) стояли на уровнях family/child — их смыслы были ошибочно склеены с родительскими. Сотрудник не есть parent1: уровень определяет, ЧТО ПЕРЕНОСИТСЯ между детьми семьи, и кадровым полям там места нет."
   ],
-  "version": "2026-09-21b",
+  "version": "2026-11-04",
   "measuredOn": "2026-08-23",
   "measuredFrom": "pa082508.github.io — версии current на 23.08.2026",
   "levels": {
@@ -4048,5 +4048,8 @@
       "value": "Yes"
     }
   },
-  "_schoolNote": "ВРЕЗКА СНЕСЕНА 26.08 — ОТВЕТ ИДЁТ ПРЯМЫМ КЛЮЧОМ. Пока врезка стояла, `collect()` считал `attends_school_age` из галочек и перезаписал бы прямую запись, поэтому смысл был объявлен ПАРОЙ. Галочек больше нет: бланк несёт ответ скрытым полем `attends_school_age`, а `collect()` приводит его к языку подачи (`yes`/`no`; пусто = «не спрашивали», то есть `null`, а не «нет»). Носитель, `enrollmentApprove` и `conditions.school_age → detectOn: dcy_01234` не менялись ни разу: переезжал ВОПРОС."
+  "_schoolNote": "ВРЕЗКА СНЕСЕНА 26.08 — ОТВЕТ ИДЁТ ПРЯМЫМ КЛЮЧОМ. Пока врезка стояла, `collect()` считал `attends_school_age` из галочек и перезаписал бы прямую запись, поэтому смысл был объявлен ПАРОЙ. Галочек больше нет: бланк несёт ответ скрытым полем `attends_school_age`, а `collect()` приводит его к языку подачи (`yes`/`no`; пусто = «не спрашивали», то есть `null`, а не «нет»). Носитель, `enrollmentApprove` и `conditions.school_age → detectOn: dcy_01234` не менялись ни разу: переезжал ВОПРОС.",
+  "registryDrift": {
+    "parent_consent": "4.11 (consolidated «Enrollment», п.1): registry current v6 = v5 + nextForm after an ANONYMOUS signing; the fields and the rows of the consent are unchanged — the dictionary measured v5 and stays valid for v6."
+  }
 }
