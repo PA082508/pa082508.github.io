@@ -1021,7 +1021,14 @@
       headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Content-Profile': 'menumaker' },
       body: JSON.stringify(payload),
     });
-    if (!r.ok) throw new Error(await r.text());
+    if (!r.ok) {
+      /* 5.11 (owner's word «сделайте сейчас правку»): the door's refusal reaches the family AS WORDS, not as the PostgREST JSON
+         it travels in ({"code":"23514",…,"message":"…"}). Only the message is shown; anything else stays as it was. */
+      var raw = await r.text(), words = null;
+      try { var j = JSON.parse(raw); if (j && typeof j.message === 'string' && j.message) words = j.message; } catch (_) {}
+      var err = new Error(words || raw); if (words) err.doorWords = true;
+      throw err;
+    }
     return r.json();
   }
   // F4 — one submission per filled form. _submitting blocks the double-click race;
@@ -2107,7 +2114,7 @@ document.addEventListener('click', function (e) {
       lockForm(ref);                     // read-only + banner; blocks re-submit
       if (copyKey) saveSignedCopy(res, copyKey);   // 28.09: fire-and-forget — never holds the family up
       if (CFG.onSuccess) CFG.onSuccess(ref);   // pass the Ref so a form's #done can echo it
-    } catch (e) { status('Error: ' + e.message, 'er'); if (window.console) console.error(e); }
+    } catch (e) { status(e && e.doorWords ? e.message : 'Error: ' + e.message, 'er'); if (window.console) console.error(e); }   // 5.11: a door's refusal = its words only
     finally { _submitting = false; }
   }
 
