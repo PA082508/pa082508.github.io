@@ -214,6 +214,45 @@
     if (window.PA_KIOSK) return true;
     try { return new URLSearchParams(location.search).get('office') === '1'; } catch (_) { return false; }
   }
+  /* ── РЕЖИМ БУМАГИ (v59, блок владельца 5.11 «ПРИМЕНИТЬ ГОТОВОЕ … CACFP с бумаги») ─────
+     Бумажную форму, подписанную родителем, офис ПЕЧАТАЕТ В ТОТ ЖЕ ОНЛАЙН-БЛАНК — путь,
+     которым онлайн-подача сама заполняет карточку ребёнка (неделя + дата), уже существует,
+     и второго носителя для бумаги не заводится. Режим = `?office=1&paper=1` (общее
+     устройство стойки, память сидения как у ?office=1). В нём меняется ровно четыре вещи:
+       · источник подачи `p_source: 'manual_entry'` (дверь принимает его с 2026-07; приём
+         читает его как «бумага», см. originMark.kindFromChannel);
+       · подпись родителя НЕ рисуется — она на бумаге в деле центра: канва не обязательна,
+         вместо кнопки пера — одна строка-плашка (слова ждут одобрения владельца);
+       · дата подписи НЕ штампуется — офис печатает дату, написанную на бумаге;
+       · в данных подачи `_entered_from_paper: true` — след происхождения, объявленный сам.
+     Вне режима — ни одного изменения. */
+  function paperMode() {
+    try { var q = new URLSearchParams(location.search); return q.get('office') === '1' && q.get('paper') === '1'; } catch (_) { return false; }
+  }
+  var PAPER_PLATE = 'Paper form signed by the parent \u2014 kept on file at the center. The office types it in.';   // EN — awaiting the owner's approval (v59)
+  var PAPER_DONE = 'Typed in from the paper form \u2014 now waiting for review.';                                   // EN — awaiting the owner's approval (v59)
+  var NET_WORDS = 'We couldn\'t reach the server, so nothing was sent. Please check your internet connection and tap Submit again.';   // owner's text 5.11 (v59)
+  var COLLECT_WORDS = 'Something went wrong on this form, so nothing was sent. Please try again or contact the center.';          // owner's text 5.11 (v59)
+  /* A fetch that never reached the server: Chromium «Failed to fetch», Safari «Load failed», Firefox «NetworkError when
+     attempting to fetch resource.», an aborted request, or the browser knows it is offline. Nothing was sent in any of these. */
+  function isNetworkError(e) {
+    if (!e) return false;
+    if (e.name === 'AbortError') return true;
+    if (e instanceof TypeError && /fetch|network|load failed/i.test(e.message || '')) return true;
+    try { if (typeof navigator !== 'undefined' && navigator.onLine === false) return true; } catch (_) {}
+    return false;
+  }
+  /* v59: ONE reader of a door's refusal for every form — the kit's own rpc() and the three diet blanks (special_diet,
+     fluid_milk, infant_meals) that keep their own transport. The PostgREST JSON ({"code","message",…}) becomes an Error
+     carrying only `message` (`doorWords = true`); the HTTP status never reaches the screen. */
+  async function doorError(r) {
+    var raw = '', words = null;
+    try { raw = await r.text(); } catch (_) {}
+    try { var j = JSON.parse(raw); if (j && typeof j.message === 'string' && j.message) words = j.message; } catch (_) {}
+    var err = new Error(words || raw || ('The server refused the form (' + (r && r.status) + ').'));
+    if (words) err.doorWords = true;
+    return err;
+  }
   var _sharedMem = null;
   function mem() {
     if (!sharedDevice()) return localStorage;
@@ -574,6 +613,7 @@
   function requiredEls() {
     return $$('[data-required]').filter(function (e) {
       if (e.getAttribute('data-inactive')) return false;
+      if (e.tagName === 'CANVAS' && paperMode()) return false;   // v59: the parent signed the paper — the canvas is not asked for
       var w = e.getAttribute('data-required-when');
       if (w) {
         var src = document.getElementById(w) || document.getElementById('f_' + w);
@@ -1023,11 +1063,9 @@
     });
     if (!r.ok) {
       /* 5.11 (owner's word «сделайте сейчас правку»): the door's refusal reaches the family AS WORDS, not as the PostgREST JSON
-         it travels in ({"code":"23514",…,"message":"…"}). Only the message is shown; anything else stays as it was. */
-      var raw = await r.text(), words = null;
-      try { var j = JSON.parse(raw); if (j && typeof j.message === 'string' && j.message) words = j.message; } catch (_) {}
-      var err = new Error(words || raw); if (words) err.doorWords = true;
-      throw err;
+         it travels in ({"code":"23514",…,"message":"…"}). Only the message is shown; anything else stays as it was.
+         v59: the reader lives once — doorError(), shared with the diet blanks. */
+      throw await doorError(r);
     }
     return r.json();
   }
@@ -2057,7 +2095,7 @@ document.addEventListener('click', function (e) {
       return;
     }
     var data;
-    try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status('Error: ' + e.message, 'er'); return; }
+    try { data = CFG.collect ? CFG.collect() : null; } catch (e) { status(COLLECT_WORDS, 'er'); if (window.console) console.error('collect', e); return; }   // v59: the owner's words; the real error stays in the console
     if (!data) { status('Nothing to submit', 'er'); return; }
     // Title Case имён в полезной нагрузке (collect-сторона; blur ловит живой ввод, это — вставку/автозаполнение).
     titleCaseFormData(data.formData);
@@ -2095,13 +2133,15 @@ document.addEventListener('click', function (e) {
           var _pass = sessionStorage.getItem('pa_interview_pass');
           if (_pass) data.formData = Object.assign({}, data.formData, { _interview_pass: _pass });
         } catch (_) {}
-        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: 'online', p_idempotency_key: IDEMP, p_form_version: fkVersion(), p_token: fkToken() });
+        /* v59 — paper mode: the office typed a paper form signed by the parent → source manual_entry, the mark in the data. */
+        if (paperMode()) data.formData = Object.assign({}, data.formData, { _entered_from_paper: true });
+        res = await rpc({ p_org: ORG, p_center: centerUuid(), p_submission_type: FORM_TYPE, p_form_data: data.formData, p_signatures: data.signatures || {}, p_signature_date: data.signatureDate || null, p_source: paperMode() ? 'manual_entry' : 'online', p_idempotency_key: IDEMP, p_form_version: fkVersion(), p_token: fkToken() });
         copyKey = IDEMP;   // 28.09: the one-time key proves this page made the submission — the signed copy rides on it
       }
       /* ⛔ БЕЗЫМЯННОЙ ПОДАЧЕ ОБЕЩАТЬ «В ДЕЛЕ» НЕЛЬЗЯ (26.08). У неё нет ключа ребёнка:
          кто это, решит человек в центре, и до его решения подача делом не стала.
          «Submitted for center review» у именной подачи верно — там ребёнок известен. */
-      status(fkToken()
+      status(paperMode() ? PAPER_DONE : fkToken()
         ? 'Submitted for center review'
         : 'Received. Your center will confirm who you are and add these forms to your '
           + 'child\u2019s file — you may be asked to bring a document.', 'ok');
@@ -2114,7 +2154,11 @@ document.addEventListener('click', function (e) {
       lockForm(ref);                     // read-only + banner; blocks re-submit
       if (copyKey) saveSignedCopy(res, copyKey);   // 28.09: fire-and-forget — never holds the family up
       if (CFG.onSuccess) CFG.onSuccess(ref);   // pass the Ref so a form's #done can echo it
-    } catch (e) { status(e && e.doorWords ? e.message : 'Error: ' + e.message, 'er'); if (window.console) console.error(e); }   // 5.11: a door's refusal = its words only
+    } catch (e) {
+      // 5.11: a door's refusal = its words only; v59: a request that never reached the server = the owner's network words
+      status(e && e.doorWords ? e.message : isNetworkError(e) ? NET_WORDS : 'Error: ' + e.message, 'er');
+      if (window.console) console.error(e);
+    }
     finally { _submitting = false; }
   }
 
@@ -2736,6 +2780,23 @@ document.addEventListener('click', function (e) {
     kids.forEach(function (n) { if (n !== f) f.appendChild(n); });
   }
 
+  /* v59 — paper mode: every pen button gives way to one plate line; the canvases stay in the markup (print parity) but are not
+     asked for (requiredEls). The counter is refreshed so «N remaining» stops counting the signature. */
+  function initPaperMode() {
+    if (!paperMode()) return;
+    $$('.fkpad-trigger').forEach(function (b) {
+      if (b.getAttribute('data-fk-paper-plated')) return;
+      b.setAttribute('data-fk-paper-plated', '1');
+      b.style.display = 'none';
+      var p = document.createElement('div');
+      p.className = 'fk-paper-plate'; p.setAttribute('data-fk-paper-plate', '1');
+      p.style.cssText = 'font:600 11.5px/1.3 Arial,sans-serif;color:#0f4c35;background:#eef6f1;border:1px solid #0f4c35;border-radius:8px;padding:5px 9px;max-width:380px';
+      p.textContent = PAPER_PLATE;
+      b.parentNode.insertBefore(p, b);
+    });
+    try { refreshCounter(); } catch (_) {}
+  }
+
   function boot() {
     wrapInForm();      // ПЕРВЫМ, до тулбара
     deReader();        // и сразу — снять признаки статьи
@@ -2759,6 +2820,7 @@ document.addEventListener('click', function (e) {
     fkReturn();              // форма, возвращённая центром семье (?r=, v56)
     fkTwinsNote();           // про близнецов — ДО заполнения, а не после подачи
     if (window.fkAttachPads) window.fkAttachPads();   // окно подписи — всем формам (v18)
+    initPaperMode();                                  // v59: office=1&paper=1 — the plate instead of the pen, the date typed
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
@@ -2778,6 +2840,7 @@ document.addEventListener('click', function (e) {
     centerUuid: centerUuid, centerCode: centerCode, centerName: centerName,
     refreshCounter: refreshCounter, applyConditionals: applyConditionals,
     fmtPhone: fmtPhone, todayISO: todayISO, isoDate: isoDate,
+    paperMode: paperMode, doorError: doorError,   // v59: the office's paper mode; one reader of a door's refusal
     CENTERS: CENTERS, ORG: ORG,
     // KIT is the cache-bust number in the <script src="form-kit.js?v=N"> includes.
     // A rehearsal reads it to prove the browser got the build it thinks it got.

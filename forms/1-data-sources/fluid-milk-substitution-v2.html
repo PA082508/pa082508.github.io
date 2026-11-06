@@ -390,7 +390,7 @@
         body: JSON.stringify({ p_form:'fluid_milk', p_center_slug: FormKit.centerCode(),
           p_data: row, p_idempotency_key: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null })
       });
-      if (!r.ok) throw new Error(await r.text());
+      if (!r.ok) throw await FormKit.doorError(r);   // v59: the door's words only, never the status code
       return await r.json();   // uuid → Ref (F4 standard)
     }
   };
@@ -430,6 +430,6 @@ window.addEventListener('error',function(e){var t=e&&e.target;if(t&&t.tagName===
 setTimeout(function(){up()?clear():retry();},4000);
 })();</script>
 <noscript><div id="fk-wd-ns" style="position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#b00020;color:#fff;font:600 14px Arial,sans-serif;padding:12px 16px;text-align:center">This form needs JavaScript enabled — please open it in Safari or Chrome.</div></noscript>
-<script defer src="form-kit.js?v=58"></script>
+<script defer src="form-kit.js?v=59"></script>
 </body>
 </html>
