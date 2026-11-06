@@ -229,8 +229,8 @@
   function paperMode() {
     try { var q = new URLSearchParams(location.search); return q.get('office') === '1' && q.get('paper') === '1'; } catch (_) { return false; }
   }
-  var PAPER_PLATE = 'Paper form signed by the parent \u2014 kept on file at the center. The office types it in.';   // EN — awaiting the owner's approval (v59)
-  var PAPER_DONE = 'Typed in from the paper form \u2014 now waiting for review.';                                   // EN — awaiting the owner's approval (v59)
+  var PAPER_PLATE = 'Paper form signed by the parent and kept on file at the center \u2014 the office enters it here.';   // EN approved (owner's block 5.11 evening)
+  var PAPER_DONE = 'Entered from the paper form \u2014 now waiting for review.';                                     // EN approved (owner's block 5.11 evening)
   var NET_WORDS = 'We couldn\'t reach the server, so nothing was sent. Please check your internet connection and tap Submit again.';   // owner's text 5.11 (v59)
   var COLLECT_WORDS = 'Something went wrong on this form, so nothing was sent. Please try again or contact the center.';          // owner's text 5.11 (v59)
   /* A fetch that never reached the server: Chromium «Failed to fetch», Safari «Load failed», Firefox «NetworkError when
